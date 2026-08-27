@@ -5,6 +5,8 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
 public import Mathlib.Topology.Algebra.OpenSubgroup
 public import TauCeti.GroupTheory.GroupAction.FixedPoints
 
@@ -103,5 +105,28 @@ instance continuousSMulQuotientFixedPoints (U : OpenNormalSubgroup G) :
     (FixedPoints.addSubmonoid U.toSubgroup M)
 
 end FiniteLevelAddGroup
+
+section ClosedLevel
+
+variable (G : Type*) [Group G] [TopologicalSpace G] [IsTopologicalGroup G]
+variable (M : Type*) [AddGroup M] [DistribMulAction G M] [TopologicalSpace M]
+  [DiscreteTopology M] [ContinuousSMul G M]
+
+/-- For an arbitrary normal subgroup `N` the action of `G ⧸ N` on the invariants `M ^ N` of a
+discrete module with continuous `G`-action is continuous: the stabiliser of a point of `M ^ N` in
+`G ⧸ N` pulls back along the quotient map to its stabiliser in `M`, which is open.
+
+This is the coefficient continuity that inflation along `G → G ⧸ N` needs. It neither implies nor
+follows from `TauCeti.continuousSMulQuotientFixedPoints`, which reads the continuity off
+discreteness of `G ⧸ U` for an **open** `U` and so needs no continuity of the `G`-action at all. -/
+instance continuousSMulQuotientFixedPointsOfContinuousSMul (N : Subgroup G) [N.Normal] :
+    ContinuousSMul (G ⧸ N) (FixedPoints.addSubgroup N M) := by
+  refine continuousSMul_iff_stabilizer_isOpen.2 fun x => ?_
+  rw [← (QuotientGroup.isQuotientMap_mk N).isOpen_preimage]
+  convert stabilizer_isOpen G ((x : M)) using 1
+  ext g
+  simp [MulAction.mem_stabilizer_iff, Subtype.ext_iff]
+
+end ClosedLevel
 
 end TauCeti
