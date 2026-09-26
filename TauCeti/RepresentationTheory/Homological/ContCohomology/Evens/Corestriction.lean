@@ -31,7 +31,7 @@ both sides of the formula are classes in `H1`.  The formula holds for an arbitra
 
 ## Main results
 
-* `TauCeti.ContCohomology.evensNorm_cor_shapiro`: the degree-one corestriction
+* `TauCeti.ContCohomology.explicitCor1_evensHomCocycleAmbient`: the degree-one corestriction
   `explicitCor1` of the class of `α` is the class of `evensCorCocycle`, the cocycle whose
   underlying cochain is the Shapiro sum `evensCorCochain`.
 
@@ -132,7 +132,7 @@ is; the equation is between the corestriction class and the class of that sum, i
 inhomogeneous model `H1` that carries the corestriction `explicitCor1`.  This is the model
 computation behind the Evens-norm corestriction identity, not a statement about canonical
 `continuousCohomology` classes. -/
-theorem evensNorm_cor_shapiro (U : OpenSubgroup G) (hU : U.toSubgroup.index = 2)
+theorem explicitCor1_evensHomCocycleAmbient (U : OpenSubgroup G) (hU : U.toSubgroup.index = 2)
     (s : G) (hs : s ∉ U) (α : U.toSubgroup →* Multiplicative (ZMod 2))
     (hα : Continuous α) :
     letI : U.toSubgroup.FiniteIndex := ⟨by omega⟩
