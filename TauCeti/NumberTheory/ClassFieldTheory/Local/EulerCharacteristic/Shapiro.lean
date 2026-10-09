@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Algebra.Field.ZMod
 public import TauCeti.FieldTheory.Galois.AbsoluteGaloisGroup.FiniteExtension
+public import TauCeti.Lookahead.EulerCharacteristicMixed.Stubs
 public import TauCeti.RepresentationTheory.Induction.FiniteDimensional.Basic
 public import TauCeti.Topology.Algebra.Group.OpenSubgroup.FiniteIndex
 
@@ -47,6 +48,8 @@ size interpretation.
 * `finrank_base_shapiroField`: the degree formula in a finite scalar tower.
 * `finrank_base_mul_finrank_ind_eq_shapiroField`: the equality of arithmetic exponents on the two
   sides of Shapiro's lemma.
+* `localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiro`: transport of
+  `χ = φ` from the fixed field to an inflated induced representation.
 
 ## References
 
@@ -198,5 +201,29 @@ theorem finrank_base_mul_finrank_ind_eq_shapiroField
   rw [finrank_ind_eq_finrank_shapiroField_mul,
     finrank_base_shapiroField (k := k) F V C]
   ac_rfl
+
+/-- **Transport of the Euler-characteristic identity across Shapiro.** If `χ = φ` holds for
+the representation over the fixed field, it holds for the corresponding inflated induced
+representation over the base field. -/
+theorem localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiro
+    (p : ℕ) [Fact p.Prime]
+    {K : Type} [Field K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] [FinitePadicExtension K p]
+    {L : Type} [Field L] [ValuativeRel L] [TopologicalSpace L]
+    [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
+    [FinitePadicExtension L p] [IsScalarTower ℚ_[p] K L]
+    (sigma : L →ₐ[K] SeparableClosure K) (n : ℕ)
+    {V : OpenNormalSubgroup (Field.absoluteGaloisGroup K)}
+    {C : Subgroup (Field.absoluteGaloisGroup K ⧸ V.toSubgroup)}
+    (hσ : (absoluteGaloisGroupExtend K L sigma).range =
+      C.comap (QuotientGroup.mk' V.toSubgroup))
+    (B : Rep (ZMod n) C) [Finite B] (hn : (n : K) ≠ 0)
+    (hB : localEulerCharacteristic
+        (map_natCast (algebraMap K L) n ▸ (map_ne_zero (algebraMap K L)).2 hn)
+        (shapiroGalRep sigma n hσ B) = localCardNorm p (shapiroGalRep sigma n hσ B)) :
+    localEulerCharacteristic hn ((galRepOfQuotient n K V).obj (Rep.ind C.subtype B)) =
+      localCardNorm p ((galRepOfQuotient n K V).obj (Rep.ind C.subtype B)) := by
+  rw [localEulerCharacteristic_galRepOfQuotient_ind sigma n hσ B hn, hB,
+    localCardNorm_galRepOfQuotient_ind sigma n hσ B p]
 
 end TauCeti.ClassFieldTheory
