@@ -38,6 +38,6 @@ theorem finrank_invariants_kummerH1FiniteRepresentation_eq
           (Additive (powerClassQuotient Lˣ ell)))
         ((kummerCoeffFiniteRepresentation sigma ell hN).dual.tprod
           (powerClassRepresentation (K := K) (L := L) ell))) :=
-  (kummerEquiv_mixed sigma hn hN).invariantsLinearEquiv.finrank_eq
+  (kummerH1FiniteRepresentationEquiv sigma ell hn hN).invariantsLinearEquiv.finrank_eq
 
 end TauCeti

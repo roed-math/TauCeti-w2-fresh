@@ -48,14 +48,14 @@ section FiniteGalois
 
 variable [Normal K L] (sigma : L →ₐ[K] SeparableClosure K) (n : ℕ)
 
-/-- Equivariant Kummer theory with constant coefficients. -/
-def kummerEquiv_mixed {ell : ℕ} [Fact ell.Prime]
-    (hn : IsUnit (ell : K))
+/-- **Equivariant Kummer theory**: when `sigma(L)` contains the `n`th roots of unity,
+`H¹(N, ℤ/n) ≃ Hom(μₙ, ℤ/n) ⊗ Lˣ ⧸ (Lˣ)ⁿ` as `ZMod n`-representations of `Gal(L/K)`. -/
+def kummerH1FiniteRepresentationEquiv (hn : IsUnit (n : K))
     (hN : ∀ g : AbsoluteGaloisGroup K, g ∈ sigma.fieldRange.fixingSubgroup →
-      ∀ xi : KummerCoeff K ell, g • xi = xi) :
-    (kummerH1FiniteRepresentation sigma ell).Equiv
-      ((kummerCoeffFiniteRepresentation sigma ell hN).dual.tprod
-        (powerClassRepresentation (K := K) (L := L) ell)) :=
+      ∀ xi : KummerCoeff K n, g • xi = xi) :
+    (kummerH1FiniteRepresentation sigma n).Equiv
+      ((kummerCoeffFiniteRepresentation sigma n hN).dual.tprod
+        (powerClassRepresentation (K := K) (L := L) n)) :=
   sorry
 
 end FiniteGalois
