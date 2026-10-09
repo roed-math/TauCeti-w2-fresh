@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"cyclotomic-character-artin-map","main":"5f61106b2cee58685c18fc86ccfedfdc814dcf51","status":"partial","suppliers":["cyclotomic-character-artin-map-padic"],"splits":[{"n":1,"after":[],"title":"Prove the cyclotomic normalization over finite p-adic extensions"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"cyclotomic-character-artin-map","main":"35eba062841377c3f45196bdc1c67a530bd58c82","status":"partial","suppliers":["cyclotomic-character-artin-map-padic"],"splits":[{"n":1,"after":[],"title":"Prove the cyclotomic normalization over finite p-adic extensions"}]}-->
 
 # Cyclotomic character of the local Artin map
 
@@ -47,10 +47,11 @@ the roadmap-only `TauCetiRoadmap.ClassFieldTheory` namespace to the neighbouring
 `TauCeti.ClassFieldTheory`; the body uses `by sorry` rather than `:= sorry`, with no type-level
 difference.
 
-Supplier PR #13626 was also inspected. It adds
+Supplier PR #13626 was also inspected at its current two-commit head. It adds
 `exists_localCyclotomicCharacter_eq_and_apply_of_pow_eq_one`, a prerequisite for the supplier's
-comparison argument, but it does not state `cyclotomicCharacter_artinMap_padic`; consequently the
-stub continues to use the pinned `Suggested.lean` form rather than a PR form.
+comparison argument, but it does not state `cyclotomicCharacter_artinMap_padic`; its description
+explicitly leaves that exported comparison to a follow-up PR. Consequently there is no differing
+PR signature to stub, and the stub continues to use the pinned `Suggested.lean` form.
 
 ## Split plan
 
