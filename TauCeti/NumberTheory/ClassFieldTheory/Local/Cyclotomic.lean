@@ -66,9 +66,8 @@ cyclotomic character at units and at a uniformizer.
   character of the Artin symbol of `x ∈ Lˣ` is that of the Artin symbol of `N_{L/K} x`.
 * `TauCeti.ClassFieldTheory.localCyclotomicCharacter_artinMap_padic_uniformizer`: the `p`-adic
   cyclotomic character of the Artin symbol of `p` over `ℚ_[p]` is `1`.
-* `TauCeti.ClassFieldTheory.cyclotomicCharacter_artinMap_of_valuativeExtension`: the cyclotomic
-  character of a unit Artin symbol over a compatible finite extension of `ℚ_[p]` is the inverse
-  of its field norm.
+* `TauCeti.ClassFieldTheory.cyclotomicCharacter_artinMap`: the cyclotomic character of the
+  Artin symbol of a unit over a finite extension `F/ℚ_p` is the inverse of its field norm.
 * `TauCeti.ClassFieldTheory.range_localCyclotomicCharacter`: the image of the cyclotomic
   character of `G_K` is the closure of its values on the absolute Artin symbols.
 
@@ -333,36 +332,38 @@ theorem localCyclotomicCharacter_artinMap_padic_uniformizer (σ : Field.absolute
   exact cyclotomicCharacter_eq_of_forall_pow_eq_one p fun _ _ ht ↦
     absoluteGaloisGroupRestrictEquiv_artinMap_padic_apply_of_pow_eq_one p σ hσ ht
 
-/-- **Cyclotomic orientation with the field norm.** Let `F/ℚ_p` be a finite extension and let
-`u ∈ Fˣ` have valuation zero. If `σ` represents the absolute local Artin symbol of `u`, then
+/-- **The cyclotomic normalization of the local Artin map.** Let `F/ℚ_p` be a finite extension
+and let `u ∈ Fˣ` have valuation zero. If `σ` represents the absolute local Artin symbol of `u`,
+then
 
 ```text
 χ_cyc(σ) = N_{F/ℚ_p}(u)⁻¹.
 ```
 
 The equality is read in `ℚ_pˣ`: the cyclotomic character is first mapped from `ℤ_pˣ`, while the
-right-hand side is the field norm. -/
-theorem cyclotomicCharacter_artinMap_of_valuativeExtension (p : ℕ) [Fact p.Prime]
+right-hand side is the field norm. The cyclotomic character of `G_F` is that of `G_{ℚ_p}` read
+through the restriction, and norm functoriality of the Artin map
+(`abelianizedLocalCyclotomicCharacter_artinMap_norm`) reduces the formula to its `ℚ_p` case
+`cyclotomicCharacter_artinMap_padic`. No compatibility of `ℚ_[p] → F` with the valuation of `F`
+is assumed: it is automatic (`TauCeti.Padic.valuativeExtension`). -/
+theorem cyclotomicCharacter_artinMap (p : ℕ) [Fact p.Prime]
     (F : Type) [Field F] [ValuativeRel F] [TopologicalSpace F]
-    [IsNonarchimedeanLocalField F] [Algebra ℚ_[p] F] [ValuativeExtension ℚ_[p] F]
-    [Module.Finite ℚ_[p] F]
-    (u : Fˣ) (_hu : ValuativeRel.valuation F (u : F) = 1)
+    [IsNonarchimedeanLocalField F] [Algebra ℚ_[p] F] [Module.Finite ℚ_[p] F]
+    (u : Fˣ) (hu : ValuativeRel.valuation F (u : F) = 1)
     (σ : Field.absoluteGaloisGroup F)
-    (_hσ : (QuotientGroup.mk σ : Field.absoluteGaloisGroupAbelianization F) = artinMap F u) :
+    (hσ : (QuotientGroup.mk σ : Field.absoluteGaloisGroupAbelianization F) = artinMap F u) :
     Units.map (algebraMap ℤ_[p] ℚ_[p]).toMonoidHom
         (cyclotomicCharacter (AlgebraicClosure F) p σ.toRingEquiv)
       = (Units.map (Algebra.norm ℚ_[p] : F →* ℚ_[p]) u)⁻¹ := by
+  have := Padic.valuativeExtension p (F := F)
   let n : ℚ_[p]ˣ := Algebra.normUnits ℚ_[p] u
-  let _ : Nontrivial ℚ_[p] := Padic.instNontriviallyNormedField.toNontrivial
-  let _ : Algebra.IsAlgebraic ℚ_[p] F := Algebra.IsAlgebraic.of_finite ℚ_[p] F
-  let _ : Algebra.IsSeparable ℚ_[p] F :=
-    Algebra.IsAlgebraic.isSeparable_of_perfectField
-  have hu : normalizedValuation F u = 1 := (normalizedValuation_eq_one_iff u).2 _hu
+  -- Instance search for these times out through the valuative structures on `ℚ_[p]` and `F`.
+  have : Nontrivial ℚ_[p] := Padic.instNontriviallyNormedField.toNontrivial
+  have : Algebra.IsSeparable ℚ_[p] F := Algebra.IsAlgebraic.isSeparable_of_perfectField
   have hn : normalizedValuation ℚ_[p] n = 1 :=
-    normalizedValuation_norm_eq_one_of_eq_one u hu
+    normalizedValuation_norm_eq_one_of_eq_one u ((normalizedValuation_eq_one_iff u).2 hu)
   have hnval : (n : ℚ_[p]).valuation = 0 := by
-    have h := congrArg Multiplicative.toAdd hn
-    simpa using h
+    simpa using congrArg Multiplicative.toAdd hn
   have hnnorm : ‖(n : ℚ_[p])‖ = 1 := by
     rw [Padic.norm_eq_zpow_neg_valuation n.ne_zero, hnval]
     simp
@@ -375,7 +376,7 @@ theorem cyclotomicCharacter_artinMap_of_valuativeExtension (p : ℕ) [Fact p.Pri
       artinMap ℚ_[p] (Units.map (algebraMap ℤ_[p] ℚ_[p]).toMonoidHom w) := by
     simpa only [hw] using hτ
   have hchars := abelianizedLocalCyclotomicCharacter_artinMap_norm ℚ_[p] p u
-  rw [← _hσ, ← hτ, abelianizedLocalCyclotomicCharacter_mk,
+  rw [← hσ, ← hτ, abelianizedLocalCyclotomicCharacter_mk,
     abelianizedLocalCyclotomicCharacter_mk] at hchars
   have hchars' : cyclotomicCharacter (AlgebraicClosure F) p σ.toRingEquiv =
       cyclotomicCharacter (AlgebraicClosure ℚ_[p]) p τ.toRingEquiv := by

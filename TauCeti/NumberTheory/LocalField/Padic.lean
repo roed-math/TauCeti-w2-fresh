@@ -33,6 +33,11 @@ concrete p-adic norm and valuation APIs.
   `Padic.natCastValuation_two` are the two values it takes on the residue prime and on `2`.
 * `TauCeti.Padic.irreducible_natCast_self` shows that the residue prime is a uniformizer of
   the integer ring.
+* `TauCeti.Padic.valuativeExtension`: every `ℚ_[p]`-algebra structure on a nonarchimedean local
+  field `F` is a valuative extension, with no continuity assumed;
+  `TauCeti.Padic.ringChar_residueField_eq` and `TauCeti.Padic.normalizedValuation_algebraMap`
+  record that the residue characteristic of `F` is `p` and that the normalized valuation of `F`
+  restricts to `v_F(p) • v_p`.
 * `Padic.not_isSquare_neg_one_of_mod_four_eq_three`: `-1` is nonsquare in `ℚ_[p]` when
   `p ≡ 3 (mod 4)`.
 * `Padic.not_isSquare_intCast_of_not_isSquare_zmod`: an integer that is not a square modulo a
@@ -211,5 +216,120 @@ namespace TauCeti.Padic
 theorem irreducible_natCast_self : Irreducible (p : 𝒪[ℚ_[p]]) := by
   simpa only [map_natCast] using
     (PadicInt.irreducible_p (p := p)).map (_root_.Padic.integerRingEquiv p).symm
+
+/-! ### Algebras over `ℚ_[p]`
+
+Let `F` be a nonarchimedean local field with an arbitrary `ℚ_[p]`-algebra structure; no
+compatibility between the structure map and the valuation of `F` is assumed. The compatibility is
+automatic. A principal unit of `ℚ_[p]` is an `n`-th power for every `n` prime to `p`, so its
+normalized valuation in `F` is divisible by all such `n` and therefore vanishes; every unit
+`u ∈ ℤ_pˣ` has `u ^ (p - 1)` principal, so the normalized valuation of `F` vanishes on `ℤ_pˣ` and
+is a multiple `v_F(p) • v_p` of the `p`-adic valuation on `ℚ_[p]ˣ`. A prime `ℓ ≠ p` is a unit of
+`ℤ_p`, so the residue characteristic of `F`, which has positive valuation in `F`, is `p`; hence
+`v_F(p) > 0`, and the valuation of `F` restricts to an equivalent of that of `ℚ_[p]`.
+-/
+
+variable {F : Type*} [Field F] [ValuativeRel F] [TopologicalSpace F]
+  [IsNonarchimedeanLocalField F] [Algebra ℚ_[p] F]
+
+/-- The normalized valuation of `F` vanishes on the image of a `p`-adic unit `x`: the power
+`x ^ (p - 1)` is a principal unit, hence an `n`-th power for every `n` prime to `p`, and the value
+group `ℤ` has no nonzero element divisible by all such `n`. -/
+theorem normalizedValuation_algebraMap_eq_one {x : ℚ_[p]ˣ} (hx : valuation ℚ_[p] (x : ℚ_[p]) = 1) :
+    normalizedValuation F (Units.map (algebraMap ℚ_[p] F).toMonoidHom x) = 1 := by
+  have hp := (Fact.out : p.Prime)
+  have h1 : x ^ (p - 1) ∈ unitFiltration ℚ_[p] 1 := by
+    have h := (unitFiltration ℚ_[p] 1).pow_relIndex_mem ((mem_unitFiltration_zero x).2 hx)
+    rwa [relIndex_unitFiltration_one_zero, _root_.Padic.natCard_residueField] at h
+  set t := (normalizedValuation F (Units.map (algebraMap ℚ_[p] F).toMonoidHom x)).toAdd
+  set n := p * ((p - 1 : ℕ) * t).natAbs + 1
+  have hn : IsUnit (n : 𝒪[ℚ_[p]]) := by
+    simpa [n] using (PadicInt.isUnit_iff.2 <| PadicInt.norm_natCast_eq_one_iff.2 <|
+      (Nat.coprime_mul_left_add_right p 1 ((p - 1 : ℕ) * t).natAbs).2 <|
+        Nat.coprime_one_right p).map
+        (_root_.Padic.integerRingEquiv p).symm
+  obtain ⟨b, hb⟩ := unitFiltration_one_le_range_powMonoidHom_of_isUnit hn h1
+  -- Mapped to `F`, the equation `b ^ n = x ^ (p - 1)` makes `(p - 1) • t` divisible by `n`.
+  have hdvd := congrArg
+    (fun y ↦ (normalizedValuation F (Units.map (algebraMap ℚ_[p] F).toMonoidHom y)).toAdd) hb
+  simp only [powMonoidHom_apply, map_pow, toAdd_pow, nsmul_eq_mul] at hdvd
+  have h0 : ((p - 1 : ℕ) : ℤ) * t = 0 := by
+    refine Int.eq_zero_of_dvd_of_natAbs_lt_natAbs ⟨_, hdvd.symm⟩ ?_
+    rw [Int.natAbs_natCast]
+    exact Nat.lt_succ_of_le (Nat.le_mul_of_pos_left _ hp.pos)
+  rw [← ofAdd_toAdd (normalizedValuation F (Units.map (algebraMap ℚ_[p] F).toMonoidHom x))]
+  simpa [t, Nat.sub_ne_zero_of_lt hp.one_lt] using h0
+
+/-- **The residue characteristic of a local field over `ℚ_[p]` is `p`**, for an arbitrary
+`ℚ_[p]`-algebra structure: a prime `ℓ ≠ p` is a `p`-adic unit, so its image in `F` has valuation
+zero, whereas the residue characteristic of `F` has positive valuation. -/
+theorem ringChar_residueField_eq : ringChar 𝓀[F] = p := by
+  have hℓ := CharP.prime_ringChar 𝓀[F]
+  by_contra hne
+  have hℓ0 : ((ringChar 𝓀[F] : ℕ) : ℚ_[p]) ≠ 0 := Nat.cast_ne_zero.2 hℓ.ne_zero
+  have hunit : IsUnit ((ringChar 𝓀[F] : ℕ) : 𝒪[ℚ_[p]]) := by
+    simpa using (PadicInt.isUnit_iff.2 <| PadicInt.norm_natCast_eq_one_iff.2 <|
+      (Nat.coprime_primes Fact.out hℓ).2 (Ne.symm hne)).map (_root_.Padic.integerRingEquiv p).symm
+  have hnorm : valuation ℚ_[p] ((ringChar 𝓀[F] : ℕ) : ℚ_[p]) = 1 := by
+    simpa using (Valuation.integer.integers (valuation ℚ_[p])).one_of_isUnit hunit
+  have hF : ((ringChar 𝓀[F] : ℕ) : F) ≠ 0 := by
+    simpa using (algebraMap ℚ_[p] F).injective.ne hℓ0
+  have h := normalizedValuation_algebraMap_eq_one p (F := F) (x := Units.mk0 _ hℓ0) hnorm
+  have hx : Units.map (algebraMap ℚ_[p] F).toMonoidHom (Units.mk0 _ hℓ0) = Units.mk0 _ hF :=
+    Units.ext (by simp)
+  rw [hx, normalizedValuation_natCast, ofAdd_eq_one, Nat.cast_eq_zero] at h
+  exact (natCastValuation_ne_zero_iff_ringChar_eq F hℓ hF).2 rfl h
+
+omit [ValuativeRel F] [TopologicalSpace F] [IsNonarchimedeanLocalField F] in
+/-- The image of `p` in a field over `ℚ_[p]` is nonzero. -/
+theorem natCast_ne_zero_of_algebra : (p : F) ≠ 0 := by
+  simpa using (algebraMap ℚ_[p] F).injective.ne
+    (Nat.cast_ne_zero.2 (Fact.out : p.Prime).ne_zero : (p : ℚ_[p]) ≠ 0)
+
+/-- **The normalized valuation of `F` restricted to `ℚ_[p]`**: it is `v_F(p)` times the `p`-adic
+valuation. -/
+theorem normalizedValuation_algebraMap (x : ℚ_[p]ˣ) :
+    (normalizedValuation F (Units.map (algebraMap ℚ_[p] F).toMonoidHom x)).toAdd =
+      natCastValuation F p (natCast_ne_zero_of_algebra p) * (x : ℚ_[p]).valuation := by
+  have hπ := irreducible_natCast_self p
+  obtain ⟨u, n, hu, rfl⟩ := exists_eq_mul_zpow_of_irreducible hπ x
+  have hv : (u : ℚ_[p]).valuation = 0 := by
+    have h := _root_.Padic.toAdd_normalizedValuation_eq_valuation p u
+    rwa [(normalizedValuation_eq_one_iff u).2 hu, toAdd_one, eq_comm] at h
+  have hcast : ((p : 𝒪[ℚ_[p]]) : ℚ_[p]) = p := by push_cast; rfl
+  have hp : Units.map (algebraMap ℚ_[p] F).toMonoidHom
+      (Units.mk0 ((p : 𝒪[ℚ_[p]]) : ℚ_[p]) fun h ↦ hπ.ne_zero (Subtype.ext h)) =
+      Units.mk0 (p : F) (natCast_ne_zero_of_algebra p) :=
+    Units.ext (by simp [hcast])
+  rw [map_mul, map_mul, map_zpow, map_zpow, normalizedValuation_algebraMap_eq_one p hu, hp,
+    normalizedValuation_natCast, one_mul, toAdd_zpow, toAdd_ofAdd, smul_eq_mul, Units.val_mul,
+    Units.val_zpow_eq_zpow_val, Padic.valuation_mul u.ne_zero (zpow_ne_zero _ (by simpa using
+      hπ.ne_zero)), Units.val_mk0, hcast, Padic.valuation_zpow, Padic.valuation_p]
+  rw [hv]
+  ring
+
+/-- **Every `ℚ_[p]`-algebra structure on a nonarchimedean local field is valuative**: the valuation
+of `F` restricts to one equivalent to the `p`-adic valuation. No continuity of the structure map
+is assumed. -/
+theorem valuativeExtension : ValuativeExtension ℚ_[p] F := by
+  refine ⟨fun a b ↦ ?_⟩
+  rcases eq_or_ne b 0 with rfl | hb
+  · simp only [map_zero, vle_zero_iff, map_eq_zero_iff _ (algebraMap ℚ_[p] F).injective]
+  rcases eq_or_ne a 0 with rfl | ha
+  · simp only [map_zero, zero_vle]
+  have he : 0 < (natCastValuation F p (natCast_ne_zero_of_algebra p) : ℤ) := by
+    rw [Nat.cast_pos, Nat.pos_iff_ne_zero, natCastValuation_ne_zero_iff_ringChar_eq F Fact.out]
+    exact ringChar_residueField_eq p
+  have hF := toAdd_normalizedValuation_le_iff_valuation_le
+    (Units.map (algebraMap ℚ_[p] F).toMonoidHom (Units.mk0 b hb))
+    (Units.map (algebraMap ℚ_[p] F).toMonoidHom (Units.mk0 a ha))
+  have hQ := toAdd_normalizedValuation_le_iff_valuation_le (Units.mk0 b hb) (Units.mk0 a ha)
+  rw [normalizedValuation_algebraMap, normalizedValuation_algebraMap,
+    mul_le_mul_iff_right₀ he] at hF
+  rw [_root_.Padic.toAdd_normalizedValuation_eq_valuation,
+    _root_.Padic.toAdd_normalizedValuation_eq_valuation] at hQ
+  simp only [Units.coe_map, MonoidHom.coe_ofClass, RingHom.toMonoidHom_eq_coe, Units.val_mk0]
+    at hF hQ
+  rw [(valuation F).vle_iff_le, (valuation ℚ_[p]).vle_iff_le, ← hF, ← hQ]
 
 end TauCeti.Padic
