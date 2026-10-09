@@ -128,6 +128,13 @@ theorem augmentation_comp_mapDomainRingHom {M : Type v} {N : Type w} [Monoid M] 
     (augmentation R N).comp (mapDomainRingHom R f) = augmentation R M := by
   apply ringHom_ext <;> intro <;> simp
 
+/-- The coefficient-sum augmentation is invariant under an isomorphism of monoids. -/
+@[simp]
+theorem augmentation_mapDomainRingEquiv {M : Type v} {N : Type w} [Monoid M] [Monoid N]
+    (e : M ≃* N) (x : MonoidAlgebra R M) :
+    augmentation R N (mapDomainRingEquiv R e x) = augmentation R M x :=
+  RingHom.congr_fun (augmentation_comp_mapDomainRingHom R (e : M →* N)) x
+
 private theorem mapDomain_basisDifference {M : Type v} {N : Type w} [Monoid M] [Monoid N]
     (f : M →* N) (m : M) :
     (mapDomainRingHom R f) (single m (1 : R) - 1) = single (f m) (1 : R) - 1 := by

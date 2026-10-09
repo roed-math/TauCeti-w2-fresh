@@ -60,6 +60,8 @@ transformations `resNatTrans` and `inflNatTrans`, matching the shape of Mathlib'
 * `TauCeti.ContinuousCohomology.map_comp_coeffMap`: the map of a compatible pair is natural in
   the coefficients, under simultaneous change of group and coefficients.
 * `TauCeti.ContinuousCohomology.map_congr`: two compatible pairs that agree induce the same map.
+* `TauCeti.ContinuousCohomology.map_continuousMulEquiv_injective`: restriction along an
+  isomorphism of topological groups is injective.
 * `TauCeti.ContinuousCohomology.iCycles_cocyclesMap_one_apply` and
   `TauCeti.ContinuousCohomology.iCycles_cocyclesMap_two_apply`: evaluation of mapped homogeneous
   cocycles in degrees one and two.
@@ -494,6 +496,40 @@ theorem coeffMap_eqToHom {X Y : TopRep R G} (e : X = Y) (n : ℕ) :
   simp
 
 end Elementwise
+
+section ContinuousMulEquiv
+
+variable {R} {H : Type v} [Group H] [TopologicalSpace H] [IsTopologicalGroup H]
+
+/-- Along the identity, the map of the compatible pair `(id, 𝟙)` on continuous cohomology is
+injective, whatever the proof that the homomorphism is the identity. -/
+private theorem map_injective_of_eq_id (X : TopRep R G) (n : ℕ) (φ : G →ₜ* G)
+    (hφ : φ = ContinuousMonoidHom.id G) :
+    Function.Injective (map φ (𝟙 (TopRep.res (φ : G →* G) X)) n) := by
+  subst hφ
+  -- `TopRep.res (id) X` is `X` by definition, which is the form `map_id` is stated in.
+  change Function.Injective (map (ContinuousMonoidHom.id G) (𝟙 X) n)
+  rw [map_id]
+  exact fun _ _ h ↦ h
+
+/-- **Restriction along an isomorphism of topological groups is injective.** For
+`e : H ≃ₜ* G`, the map `Hⁿ(G, X) → Hⁿ(H, res e X)` of continuous cohomology is injective: followed
+by the map back along `e⁻¹`, it is the map along `e ∘ e⁻¹ = id`. -/
+theorem map_continuousMulEquiv_injective (e : H ≃ₜ* G) (X : TopRep R G) (n : ℕ) :
+    Function.Injective
+      (map (X := X) (e : H →ₜ* G) (𝟙 (TopRep.res ((e : H →ₜ* G) : H →* G) X)) n) := by
+  have hcomp := map_comp (X := X) (e : H →ₜ* G) (e.symm : G →ₜ* H) (𝟙 _) (𝟙 _) n
+  have hinj := map_injective_of_eq_id X n ((e : H →ₜ* G).comp (e.symm : G →ₜ* H))
+    (ContinuousMonoidHom.ext fun g ↦ e.apply_symm_apply g)
+  intro a b hab
+  apply hinj
+  have h2 := congrArg (ConcreteCategory.hom (map (e.symm : G →ₜ* H)
+    (𝟙 (TopRep.res ((e.symm : G →ₜ* H) : G →* H) (TopRep.res ((e : H →ₜ* G) : H →* G) X))) n)) hab
+  rw [← ConcreteCategory.comp_apply, ← ConcreteCategory.comp_apply, ← hcomp] at h2
+  -- `hcomp` is stated with the coefficient map `res.map 𝟙 ≫ 𝟙`, which is `𝟙` by definition.
+  exact h2
+
+end ContinuousMulEquiv
 
 end ContinuousCohomology
 

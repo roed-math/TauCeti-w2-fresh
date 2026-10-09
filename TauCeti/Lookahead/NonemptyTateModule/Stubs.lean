@@ -13,11 +13,13 @@ set_option warningAsError false
 # Lookahead stubs for `nonempty-tate-module`
 
 These are lookahead stubs for the supplier slug `projective-ker-of-is-zero-res`
-(ClassFieldTheory, Layer 0, item 4), to be replaced by the landed declarations. Each stub restates
+(ClassFieldTheory, Layer 0, item 4), to be replaced by the landed declarations. The stub restates
 the pinned statement of
 `TauCetiRoadmap.ClassFieldTheory.TateCohomology.projective_ker_of_isZero_res`
-against `main`, beside its landed siblings `Rep.projective_of_isZero_res` and
-`Rep.isZero_res_of_exact` in `TauCeti.RepresentationTheory.Homological.TateCohomology.Projective`.
+against `main`, in the form of the supplier's open pull request #13553, which states it as
+`Rep.projective_ker_of_isZero_res` in
+`TauCeti.RepresentationTheory.Homological.TateCohomology.NakayamaRim`, beside its landed siblings
+`Rep.projective_of_isZero_res` and `Rep.isZero_res_of_exact`.
 -/
 
 public section
