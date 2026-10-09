@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"cyclotomic-character-artin-map","main":"639cb3ebbfe504f23010bf461ea4bdc254c4f41c","status":"partial","suppliers":["cyclotomic-character-artin-map-padic"],"splits":[{"n":1,"after":[],"title":"Prove the cyclotomic normalization over finite p-adic extensions"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"cyclotomic-character-artin-map","main":"5f61106b2cee58685c18fc86ccfedfdc814dcf51","status":"partial","suppliers":["cyclotomic-character-artin-map-padic"],"splits":[{"n":1,"after":[],"title":"Prove the cyclotomic normalization over finite p-adic extensions"}]}-->
 
 # Cyclotomic character of the local Artin map
 
