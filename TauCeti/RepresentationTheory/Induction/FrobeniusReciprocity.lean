@@ -39,6 +39,7 @@ representation is involved, so it also covers class functions that are not chara
   phrased against `TauCeti.ClassFunction.characterPairing`.
 * `TauCeti.card_inv_mul_sum_character_indFDRep`: reciprocity against the trivial representation,
   which says that induction does not change the (normalized) average of a character.
+* `TauCeti.finrank_invariants_indFDRep`: induction does not change the dimension of invariants.
 * `TauCeti.frobenius_reciprocity_classFunction` and `TauCeti.characterPairing_ind`: the class
   function form, `⟨Ind f, h⟩_G = ⟨f, Res h⟩_S`, for arbitrary class functions `f` on `S` and `h`
   on `G`.  `TauCeti.frobenius_reciprocity` is its special case for two characters and follows
@@ -133,6 +134,49 @@ private noncomputable def resIndFDRepHomEquiv [S.FiniteIndex] (A : FDRep k S) (B
 theorem finrank_hom_resFDRep [S.FiniteIndex] (A : FDRep k S) (B : FDRep k G) :
     Module.finrank k (Subgroup.resFDRep S B ⟶ A) = Module.finrank k (B ⟶ indFDRep A) :=
   (resIndFDRepHomEquiv A B).finrank_eq
+
+/-- Intertwiners from the trivial line are the invariant vectors. -/
+private def repHomTrivialEquivInvariants {V : Type u} [AddCommGroup V] [Module k V]
+    (ρ : Representation k G V) :
+    (Rep.of (Representation.trivial k G k) ⟶ Rep.of ρ) ≃ₗ[k] ρ.invariants where
+  toFun f := ⟨f.hom 1, fun g ↦ by
+    have h := Rep.hom_comm_apply f g 1
+    simpa using h.symm⟩
+  invFun x := Rep.ofHom
+    ⟨{ toFun := fun r ↦ r • (x : V)
+       map_add' := fun r s ↦ add_smul r s (x : V)
+       map_smul' := fun r s ↦ by simp [mul_smul] },
+      fun g ↦ by
+        apply LinearMap.ext
+        intro r
+        simp [x.2 g]⟩
+  map_add' f g := Subtype.ext rfl
+  map_smul' r f := Subtype.ext rfl
+  left_inv f := by
+    apply Rep.hom_ext
+    apply Representation.IntertwiningMap.ext
+    apply LinearMap.ext
+    intro r
+    change r • f.hom 1 = f.hom r
+    rw [← map_smul]
+    simp
+  right_inv x := Subtype.ext (one_smul k (x : V))
+
+/-- Intertwiners in `FDRep` from the trivial line are the invariant vectors. -/
+private noncomputable def homTrivialEquivInvariants (A : FDRep k G) :
+    (FDRep.of (Representation.trivial k G k) ⟶ A) ≃ₗ[k]
+      Representation.invariants A.ρ :=
+  (FDRep.forget₂HomLinearEquiv (FDRep.of (Representation.trivial k G k)) A).symm.trans
+    (repHomTrivialEquivInvariants A.ρ)
+
+/-- **Induction preserves the dimension of invariants.** The invariant subspace of
+`Ind_S^G A` has the same dimension as the invariant subspace of `A`. -/
+theorem finrank_invariants_indFDRep [S.FiniteIndex] (A : FDRep k S) :
+    Module.finrank k (Representation.invariants (indFDRep A).ρ) =
+      Module.finrank k (Representation.invariants A.ρ) := by
+  rw [← (homTrivialEquivInvariants (indFDRep A)).finrank_eq,
+    ← (homTrivialEquivInvariants A).finrank_eq]
+  exact (finrank_hom_resFDRep A (FDRep.of (Representation.trivial k G k))).symm
 
 end HomSpaces
 

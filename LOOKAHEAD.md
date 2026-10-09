@@ -1,12 +1,14 @@
-<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"euler-characteristic-mixed","main":"4d21702c1b01ed0d5f2b04cb6cd2df3b6899dddc","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: reduce the local Euler characteristic by modular Artin induction"},{"n":2,"after":[],"title":"feat: compare induced local Euler characteristics by Shapiro"},{"n":3,"after":[],"title":"feat: compute cyclic prime-to-characteristic Euler characteristics"},{"n":4,"after":[1,2,3],"title":"feat: prove the mixed-characteristic Euler characteristic formula"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"euler-characteristic-mixed","main":"639cb3ebbfe504f23010bf461ea4bdc254c4f41c","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: reduce the local Euler characteristic by modular Artin induction"},{"n":2,"after":[],"title":"feat: compare induced local Euler characteristics by Shapiro"},{"n":3,"after":[],"title":"feat: compute cyclic prime-to-characteristic Euler characteristics"},{"n":4,"after":[1,2,3],"title":"feat: prove the mixed-characteristic Euler characteristic formula"}]}-->
 
 # Mixed-characteristic Euler characteristic lookahead
 
 This branch develops `euler-characteristic-mixed` on main commit
-`4d21702c1b01ed0d5f2b04cb6cd2df3b6899dddc`. It proves the modular-Artin reduction, including an
-objectwise interface for the forthcoming Shapiro calculation, and the final numerical conversion
-from `χ_F(A) = φ_F(A)` to the cardinality and `𝔽_p`-finrank formulae. These are coherent parts of
-the target, but the branch does not claim either exported target theorem.
+`639cb3ebbfe504f23010bf461ea4bdc254c4f41c`. It proves the modular-Artin reduction, including an
+objectwise interface for the forthcoming Shapiro calculation; proves that induction preserves
+invariant dimension, both for finite-dimensional representations and on the group-algebra
+Grothendieck group; and proves the final numerical conversion from `χ_F(A) = φ_F(A)` to the
+cardinality and `𝔽_p`-finrank formulae. These are coherent parts of the target, but the branch does
+not claim either exported target theorem.
 
 ## Supplier stubs
 
@@ -43,11 +45,14 @@ faithfully restate the supplier's current PR form.
    is opened only after `euler-characteristic-shapiro` lands.
 
 3. **feat: compute cyclic prime-to-characteristic Euler characteristics.** Files: a focused
-   `TauCeti/NumberTheory/ClassFieldTheory/Local/EulerCharacteristic/CyclicCoprime.lean` module.
-   Adds the cyclic prime-to-characteristic calculation using equivariant Kummer, the landed
-   power-class `K₀` identity, `finrankTensorInvariantsK0`,
-   `finrank_H1_eq_finrank_representationInvariants`, and the degree-two duality formula. Needs no
-   earlier target split, but is opened only after `kummer-equiv-mixed-equivariant` lands.
+   `TauCeti/NumberTheory/ClassFieldTheory/Local/EulerCharacteristic/CyclicCoprime.lean` module,
+   `TauCeti/RepresentationTheory/Induction/FrobeniusReciprocity.lean`, and
+   `TauCeti/RepresentationTheory/GrothendieckGroup/GroupAlgebra/Invariants.lean`. Adds
+   `finrank_invariants_indFDRep`, `finrankInvariantsK0_indK0`, and the cyclic
+   prime-to-characteristic calculation using equivariant Kummer, the landed power-class `K₀`
+   identity, `finrankTensorInvariantsK0`, `finrank_H1_eq_finrank_representationInvariants`, and the
+   degree-two duality formula. Needs no earlier target split, but is opened only after
+   `kummer-equiv-mixed-equivariant` lands.
 
 4. **feat: prove the mixed-characteristic Euler characteristic formula.** Files:
    `TauCeti/NumberTheory/ClassFieldTheory/Local/EulerCharacteristic/Formula.lean` and
@@ -69,6 +74,8 @@ Proved:
   Galois quotient;
 - the global reduction for all finite smooth discrete `ZMod ℓ` Galois representations, both in
   homomorphism form and in the objectwise form expected from Shapiro;
+- induction preserves the dimension of invariant vectors for finite-dimensional representations;
+- invariant dimension after `indK0` equals invariant dimension over the subgroup;
 - the elementary conversion of `localEulerCharacteristic = localCardNorm` into the pinned
   cardinality formula;
 - the conversion of the same equality into the pinned `ZMod p` finrank formula.
