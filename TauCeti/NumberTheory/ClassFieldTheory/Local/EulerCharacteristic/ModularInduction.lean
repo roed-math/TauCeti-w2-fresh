@@ -58,6 +58,7 @@ theorem eq_of_comp_indK0_eq_of_cyclic_coprime
   intro x
   obtain ⟨N, hN, hx⟩ := modularArtin_exists_nsmul_mem_indCyclicCoprime p x
   apply nsmul_right_injective hN.ne'
+  -- Expose the pointwise scalar multiples after applying injectivity in the target group.
   change N • f x = N • g x
   rw [← map_nsmul, ← map_nsmul]
   apply AddSubgroup.iSup_induction (C := fun y ↦ f y = g y)

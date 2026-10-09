@@ -1,10 +1,12 @@
-<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"euler-characteristic-mixed","main":"b57d1cec40bc94b37b220555858eeacdc29f93fb","status":"partial","suppliers":["modular-artin-exists-nsmul-mem-ind-cyclic-coprime"],"splits":[{"n":1,"after":[],"title":"feat: reduce the local Euler characteristic by modular Artin induction"},{"n":2,"after":[],"title":"feat: compare induced local Euler characteristics by Shapiro"},{"n":3,"after":[],"title":"feat: compute the cyclic prime-to-characteristic Euler characteristic"},{"n":4,"after":[1,2,3],"title":"feat: prove the mixed-characteristic Euler characteristic formula"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ClassFieldTheory","slug":"euler-characteristic-mixed","main":"5946afd420963656ee276c03160777cd1b5adf74","status":"partial","suppliers":["modular-artin-exists-nsmul-mem-ind-cyclic-coprime"],"splits":[{"n":1,"after":[],"title":"feat: reduce the local Euler characteristic by modular Artin induction"},{"n":2,"after":[],"title":"feat: compare induced local Euler characteristics by Shapiro"},{"n":3,"after":[],"title":"feat: compute the cyclic prime-to-characteristic Euler characteristic"},{"n":4,"after":[1,2,3],"title":"feat: prove the mixed-characteristic Euler characteristic formula"}]}-->
 
 # Mixed-characteristic Euler characteristic lookahead
 
 This branch develops the `euler-characteristic-mixed` target on main commit
-`b57d1cec40bc94b37b220555858eeacdc29f93fb`. It currently proves the modular-Artin reduction,
-which is a coherent first part of the target. It does not claim the two exported target theorems.
+`5946afd420963656ee276c03160777cd1b5adf74`. It currently proves the modular-Artin reduction and
+the final numerical conversion from `χ_F(A) = φ_F(A)` to the cardinality and `𝔽_p`-finrank
+formulae. These are coherent parts of the target. It does not claim the two exported target
+theorems.
 
 ## Supplier stubs
 
@@ -89,9 +91,12 @@ the first theorem, following the actual declaration's argument order.
    duality formula. Needs no earlier split; it can be opened in parallel with splits 1 and 2 after
    `kummer-equiv-mixed-equivariant` lands.
 4. **feat: prove the mixed-characteristic Euler characteristic formula.** Files:
-   `TauCeti/NumberTheory/ClassFieldTheory/Local/EulerCharacteristic/Mixed.lean` and the existing
-   target-facing import location selected by neighbouring modules. Adds the prime-exponent,
-   prime-power, and primary-decomposition devissage and exports `eulerCharacteristic_mixed` and
+   `TauCeti/NumberTheory/ClassFieldTheory/Local/EulerCharacteristic/Formula.lean`,
+   `TauCeti/NumberTheory/ClassFieldTheory/Local/EulerCharacteristic/Mixed.lean`, and the existing
+   target-facing import location selected by neighbouring modules. Adds
+   `natCard_continuousCohomology_one_eq_mul_of_localEulerCharacteristic_eq_localCardNorm`,
+   `finrank_continuousCohomology_one_eq_add_of_localEulerCharacteristic_eq_localCardNorm`, the
+   prime-power and primary-decomposition devissage, and exports `eulerCharacteristic_mixed` and
    `eulerCharacteristic_finrank_fp`. Needs splits 1, 2, and 3, and is the only split that completes
    the roadmap target.
 
@@ -104,6 +109,9 @@ Proved:
 - the corresponding equality of `localEulerCharacteristicK0` and `localCardNormK0` for one finite
   Galois quotient;
 - the global reduction for all finite smooth discrete `ZMod ℓ` Galois representations.
+- the elementary conversion of `localEulerCharacteristic = localCardNorm` into the pinned
+  cardinality formula;
+- the conversion of the same equality into the pinned `ZMod p` finrank formula.
 
 Remaining:
 
@@ -114,5 +122,5 @@ Remaining:
   prime-to-characteristic `H¹` calculation using the landed power-class `K₀` identity;
 - combine that calculation with the landed `H²` dual formula and coprime descent;
 - carry out prime-power and primary-decomposition devissage;
-- derive the cardinality equality `eulerCharacteristic_mixed` and its `ZMod p` finrank corollary
-  `eulerCharacteristic_finrank_fp`.
+- apply the proved numerical conversion lemmas to export `eulerCharacteristic_mixed` and
+  `eulerCharacteristic_finrank_fp` with their pinned statements.
