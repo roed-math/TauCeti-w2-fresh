@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Lookahead.EulerCharacteristicMixed.Stubs
+public import TauCeti.FieldTheory.GaloisCohomology.EquivariantKummer
 public import TauCeti.RepresentationTheory.QuotSMulTop
 public import TauCeti.RepresentationTheory.RestrictScalars
 

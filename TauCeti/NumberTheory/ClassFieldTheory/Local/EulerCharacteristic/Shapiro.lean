@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.Field.ZMod
 public import TauCeti.FieldTheory.Galois.AbsoluteGaloisGroup.FiniteExtension
 public import TauCeti.Lookahead.EulerCharacteristicMixed.Stubs
+public import TauCeti.NumberTheory.LocalField.FiniteExtension.IntermediateField
 public import TauCeti.RepresentationTheory.Induction.FiniteDimensional.Basic
 public import TauCeti.Topology.Algebra.Group.OpenSubgroup.FiniteIndex
 
@@ -50,6 +51,10 @@ size interpretation.
   sides of Shapiro's lemma.
 * `localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiro`: transport of
   `χ = φ` from the fixed field to an inflated induced representation.
+* `localEulerCharacteristic_eq_localCardNorm_fdGalRepOfQuotient_indFDRep_of_shapiro`: the same
+  transport for Tau Ceti's finite-dimensional induction model.
+* `localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiroField`: specialization
+  to the canonical fixed field with its finite-extension local-field structures.
 
 ## References
 
@@ -61,6 +66,8 @@ size interpretation.
 public section
 
 namespace TauCeti.ClassFieldTheory
+
+open CategoryTheory
 
 universe u v w
 
@@ -225,5 +232,128 @@ theorem localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapir
       localCardNorm p ((galRepOfQuotient n K V).obj (Rep.ind C.subtype B)) := by
   rw [localEulerCharacteristic_galRepOfQuotient_ind sigma n hσ B hn, hB,
     localCardNorm_galRepOfQuotient_ind sigma n hσ B p]
+
+/-- **The Shapiro bridge for finite-dimensional induction.** If the local
+Euler-characteristic identity holds for a finite-dimensional representation over the fixed field,
+it holds for the inflation of Tau Ceti's finite-dimensional model of its induction. -/
+theorem localEulerCharacteristic_eq_localCardNorm_fdGalRepOfQuotient_indFDRep_of_shapiro
+    (p : ℕ) [Fact p.Prime]
+    {K : Type} [Field K] [ValuativeRel K] [TopologicalSpace K]
+    [IsNonarchimedeanLocalField K] [FinitePadicExtension K p]
+    {L : Type} [Field L] [ValuativeRel L] [TopologicalSpace L]
+    [IsNonarchimedeanLocalField L] [Algebra K L] [FiniteDimensional K L]
+    [FinitePadicExtension L p] [IsScalarTower ℚ_[p] K L]
+    (sigma : L →ₐ[K] SeparableClosure K) (ell : ℕ) [Fact ell.Prime]
+    {V : OpenNormalSubgroup (Field.absoluteGaloisGroup K)}
+    {C : Subgroup (Field.absoluteGaloisGroup K ⧸ V.toSubgroup)}
+    (hσ : (absoluteGaloisGroupExtend K L sigma).range =
+      C.comap (QuotientGroup.mk' V.toSubgroup))
+    (B : FDRep (ZMod ell) C) (hn : (ell : K) ≠ 0)
+    (hB :
+      let _ : Finite ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B) :=
+        Module.finite_of_finite (ZMod ell) (M := B)
+      localEulerCharacteristic
+        (map_natCast (algebraMap K L) ell ▸ (map_ne_zero (algebraMap K L)).2 hn)
+        (shapiroGalRep sigma ell hσ
+          ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B)) =
+      localCardNorm p
+        (shapiroGalRep sigma ell hσ
+          ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B))) :
+    localEulerCharacteristic hn ((fdGalRepOfQuotient ell K V).obj
+        (indFDRep (k := ZMod ell) (G := Field.absoluteGaloisGroup K ⧸ V.toSubgroup) B)) =
+      localCardNorm p ((fdGalRepOfQuotient ell K V).obj
+        (indFDRep (k := ZMod ell) (G := Field.absoluteGaloisGroup K ⧸ V.toSubgroup) B)) := by
+  let _ : Finite ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B) :=
+    Module.finite_of_finite (ZMod ell) (M := B)
+  let e : (fdGalRepOfQuotient ell K V).obj
+        (indFDRep (k := ZMod ell) (G := Field.absoluteGaloisGroup K ⧸ V.toSubgroup) B) ≅
+      (galRepOfQuotient ell K V).obj
+        (Rep.ind C.subtype
+          ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B)) :=
+    eqToIso (fdGalRepOfQuotient_obj ell K V _) ≪≫
+      (galRepOfQuotient ell K V).mapIso (indFDRepForgetIso B)
+  calc
+    localEulerCharacteristic hn ((fdGalRepOfQuotient ell K V).obj
+        (indFDRep (k := ZMod ell) (G := Field.absoluteGaloisGroup K ⧸ V.toSubgroup) B)) =
+        localEulerCharacteristic hn ((galRepOfQuotient ell K V).obj
+          (Rep.ind C.subtype
+            ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B))) :=
+      localEulerCharacteristic_congr hn e
+    _ = localCardNorm p ((galRepOfQuotient ell K V).obj
+          (Rep.ind C.subtype
+            ((forget₂ (FDRep (ZMod ell) C) (Rep (ZMod ell) C)).obj B))) :=
+      localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiro
+        p sigma ell hσ _ hn hB
+    _ = localCardNorm p ((fdGalRepOfQuotient ell K V).obj
+        (indFDRep (k := ZMod ell) (G := Field.absoluteGaloisGroup K ⧸ V.toSubgroup) B)) :=
+      (localCardNorm_congr p e).symm
+
+/-- **The Shapiro bridge at the canonical fixed field.** If the local Euler-characteristic
+identity holds for `B` over the fixed field of the preimage of `C`, it holds over `F` for the
+inflation of `Ind_C^{G_F / V} B`.
+
+The fixed field is equipped locally with its canonical finite-extension valuation and topology;
+these structures are kept out of global instance search to avoid diamonds with other realizations
+of the same finite extension. -/
+theorem localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiroField
+    (p : ℕ) [Fact p.Prime]
+    {F : Type} [Field F] [ValuativeRel F] [TopologicalSpace F]
+    [IsNonarchimedeanLocalField F] [FinitePadicExtension F p]
+    (n : ℕ) [NeZero n]
+    (V : OpenNormalSubgroup (Field.absoluteGaloisGroup F))
+    (C : Subgroup (Field.absoluteGaloisGroup F ⧸ V.toSubgroup))
+    (B : Rep (ZMod n) C) [Finite B]
+    (hB :
+      let _ : CharZero F := FinitePadicExtension.charZero F p
+      let _ : ValuativeRel (shapiroField F V C) :=
+        finiteIntermediateFieldValuativeRel F (AlgebraicClosure F) (shapiroField F V C)
+      let _ : TopologicalSpace (shapiroField F V C) :=
+        finiteIntermediateFieldTopology F (AlgebraicClosure F) (shapiroField F V C)
+      let _ : IsNonarchimedeanLocalField (shapiroField F V C) :=
+        finiteIntermediateField_isNonarchimedeanLocalField F (AlgebraicClosure F)
+          (shapiroField F V C)
+      let _ : ValuativeExtension F (shapiroField F V C) :=
+        finiteIntermediateField_valuativeExtension F (AlgebraicClosure F) (shapiroField F V C)
+      let _ : Module.Finite ℚ_[p] (shapiroField F V C) :=
+        Module.Finite.trans F (shapiroField F V C)
+      let _ : ValuativeExtension ℚ_[p] (shapiroField F V C) :=
+        ValuativeExtension.trans ℚ_[p] F (shapiroField F V C)
+      let _ : FinitePadicExtension (shapiroField F V C) p :=
+        FinitePadicExtension.ofInstances (shapiroField F V C) p
+      localEulerCharacteristic
+        (map_natCast (algebraMap F (shapiroField F V C)) n ▸
+          (map_ne_zero (algebraMap F (shapiroField F V C))).2
+            (Nat.cast_ne_zero.2 (NeZero.ne n)))
+        (shapiroGalRep (shapiroFieldEmbedding F V C) n
+          (range_absoluteGaloisGroupExtend_shapiroFieldEmbedding F V C) B) =
+      localCardNorm p
+        (shapiroGalRep (shapiroFieldEmbedding F V C) n
+          (range_absoluteGaloisGroupExtend_shapiroFieldEmbedding F V C) B)) :
+    localEulerCharacteristic
+        (map_natCast (algebraMap ℚ_[p] F) n ▸
+          (map_ne_zero (algebraMap ℚ_[p] F)).2 (Nat.cast_ne_zero.2 (NeZero.ne n)))
+        ((galRepOfQuotient n F V).obj (Rep.ind C.subtype B)) =
+      localCardNorm p ((galRepOfQuotient n F V).obj (Rep.ind C.subtype B)) := by
+  let _ : CharZero F := FinitePadicExtension.charZero F p
+  let _ : ValuativeRel (shapiroField F V C) :=
+    finiteIntermediateFieldValuativeRel F (AlgebraicClosure F) (shapiroField F V C)
+  let _ : TopologicalSpace (shapiroField F V C) :=
+    finiteIntermediateFieldTopology F (AlgebraicClosure F) (shapiroField F V C)
+  let _ : IsNonarchimedeanLocalField (shapiroField F V C) :=
+    finiteIntermediateField_isNonarchimedeanLocalField F (AlgebraicClosure F)
+      (shapiroField F V C)
+  let _ : ValuativeExtension F (shapiroField F V C) :=
+    finiteIntermediateField_valuativeExtension F (AlgebraicClosure F) (shapiroField F V C)
+  let _ : Module.Finite ℚ_[p] (shapiroField F V C) :=
+    Module.Finite.trans F (shapiroField F V C)
+  let _ : ValuativeExtension ℚ_[p] (shapiroField F V C) :=
+    ValuativeExtension.trans ℚ_[p] F (shapiroField F V C)
+  let _ : FinitePadicExtension (shapiroField F V C) p :=
+    FinitePadicExtension.ofInstances (shapiroField F V C) p
+  exact localEulerCharacteristic_eq_localCardNorm_galRepOfQuotient_ind_of_shapiro p
+    (shapiroFieldEmbedding F V C) n
+    (range_absoluteGaloisGroupExtend_shapiroFieldEmbedding F V C) B
+    (map_natCast (algebraMap ℚ_[p] F) n ▸
+      (map_ne_zero (algebraMap ℚ_[p] F)).2 (Nat.cast_ne_zero.2 (NeZero.ne n))) hB
 
 end TauCeti.ClassFieldTheory

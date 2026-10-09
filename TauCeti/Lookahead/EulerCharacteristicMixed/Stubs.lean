@@ -36,11 +36,6 @@ universe u v
 
 /-! ## Equivariant Kummer -/
 
-/-- The `n`th power classes, written additively, form a `ZMod n`-module. -/
-instance instModuleZModPowerClassQuotient {L : Type*} [Field L] (n : ℕ) :
-    Module (ZMod n) (Additive (powerClassQuotient Lˣ n)) :=
-  sorry
-
 variable {K : Type u} [Field K] {L : Type v} [Field L] [Algebra K L]
 
 local instance : DistribMulAction (AbsoluteGaloisGroup K) (ZMod n) :=
@@ -49,35 +44,9 @@ local instance : DistribMulAction (AbsoluteGaloisGroup K) (ZMod n) :=
 local instance : ContinuousSMul (AbsoluteGaloisGroup K) (ZMod n) :=
   ⟨continuous_snd⟩
 
-/-- The action of `Gal(L/K)` on power classes. -/
-def powerClassRepresentation (n : ℕ) :
-    Representation (ZMod n) Gal(L/K) (Additive (powerClassQuotient Lˣ n)) :=
-  sorry
-
-/-- The action of a field automorphism on a power class is induced by its action on units. -/
-@[simp]
-theorem powerClassRepresentation_apply (n : ℕ) (tau : Gal(L/K))
-    (x : Additive (powerClassQuotient Lˣ n)) :
-    powerClassRepresentation (K := K) (L := L) n tau x =
-      MonoidHom.toAdditive (powerClassMap n (Units.map (tau : L →* L))) x :=
-  sorry
-
 section FiniteGalois
 
 variable [Normal K L] (sigma : L →ₐ[K] SeparableClosure K) (n : ℕ)
-
-/-- The roots-of-unity representation of `Gal(L/K)`. -/
-def kummerCoeffFiniteRepresentation
-    (hN : ∀ g : AbsoluteGaloisGroup K, g ∈ sigma.fieldRange.fixingSubgroup →
-      ∀ xi : KummerCoeff K n, g • xi = xi) :
-    Representation (ZMod n) Gal(L/K) (KummerCoeff K n) :=
-  sorry
-
-/-- The finite-layer conjugation representation on first cohomology. -/
-def kummerH1FiniteRepresentation :
-    Representation (ZMod n) Gal(L/K)
-      (H1 sigma.fieldRange.fixingSubgroup (ZMod n)) :=
-  sorry
 
 /-- Equivariant Kummer theory with constant coefficients. -/
 def kummerEquiv_mixed {ell : ℕ} [Fact ell.Prime]
