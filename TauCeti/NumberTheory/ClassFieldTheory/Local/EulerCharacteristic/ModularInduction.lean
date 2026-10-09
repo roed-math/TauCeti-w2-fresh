@@ -5,8 +5,8 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Lookahead.EulerCharacteristicMixed.Stubs
 public import TauCeti.NumberTheory.ClassFieldTheory.Local.EulerCharacteristic.GrothendieckGroup
+public import TauCeti.RepresentationTheory.Induction.Artin.Spanning
 
 /-!
 # Modular induction for the local Euler characteristic
@@ -29,6 +29,8 @@ that multiple implies equality on the original class.
   the modular-Artin reduction for a fixed finite Galois quotient.
 * `TauCeti.ClassFieldTheory.forall_localEulerCharacteristic_eq_localCardNorm_of_indCyclicCoprime`:
   the same reduction for every finite smooth discrete Galois representation.
+* `TauCeti.ClassFieldTheory.forall_localEulerCharacteristic_eq_localCardNorm_of_indFDRep`:
+  the objectwise form used after applying Shapiro's lemma.
 
 ## References
 
@@ -119,6 +121,27 @@ theorem forall_localEulerCharacteristic_eq_localCardNorm_of_indCyclicCoprime
     (Nat.cast_ne_zero.2 (NeZero.ne ℓ)).isUnit).2
   intro V
   exact localEulerCharacteristicK0_eq_localCardNormK0_of_indCyclicCoprime p F V ℓ (h V)
+
+/-- **Objectwise modular-Artin reduction.** To prove the local Euler-characteristic formula for
+all finite smooth discrete `ZMod ℓ`-representations, it suffices to prove it for the inflations of
+actual representations induced from cyclic subgroups of order prime to `ℓ`. -/
+theorem forall_localEulerCharacteristic_eq_localCardNorm_of_indFDRep
+    (ℓ : ℕ) [Fact ℓ.Prime]
+    (h : ∀ (V : OpenNormalSubgroup (Field.absoluteGaloisGroup F))
+      (C : Subgroup (Field.absoluteGaloisGroup F ⧸ V.toSubgroup)),
+      IsCyclic C ∧ ¬ ℓ ∣ Nat.card C → ∀ B : FDRep (ZMod ℓ) C,
+        localEulerCharacteristic (Nat.cast_ne_zero.2 (NeZero.ne ℓ))
+            ((fdGalRepOfQuotient ℓ F V).obj (indFDRep B)) =
+          localCardNorm p ((fdGalRepOfQuotient ℓ F V).obj (indFDRep B))) :
+    ∀ (A : GalRep ℓ F) [Finite A.V] [DiscreteTopology A.V]
+      [Fact (IsSmoothDiscrete (ZMod ℓ) A)],
+        localEulerCharacteristic (Nat.cast_ne_zero.2 (NeZero.ne ℓ)) A = localCardNorm p A := by
+  apply forall_localEulerCharacteristic_eq_localCardNorm_of_indCyclicCoprime p F ℓ
+  intro V C hC
+  apply comp_indK0_eq_of_eq_on_indFDRep
+  intro B
+  rw [localEulerCharacteristicK0_of, localCardNormK0_of]
+  exact congrArg Additive.ofMul (h V C hC B)
 
 end ClassFieldTheory
 

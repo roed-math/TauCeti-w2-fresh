@@ -15,6 +15,7 @@ public import TauCeti.RepresentationTheory.GrothendieckGroup.GroupAlgebra.Restri
 public import TauCeti.RepresentationTheory.Induction.FiniteDimensional.Basic
 public import TauCeti.RepresentationTheory.Induction.Permutation
 public import TauCeti.RepresentationTheory.OfModule
+import TauCeti.RepresentationTheory.GrothendieckGroup.GroupAlgebra.Equivalence
 
 /-!
 # Induction between Grothendieck groups of group algebras
@@ -62,6 +63,8 @@ isomorphism `Subgroup.subgroupOfEquivOfLe`, by restriction (`TauCeti.resK0`).
   `k[S ⧸ (D ⊓ S)]` goes to the class of the permutation module `k[G ⧸ D]`.
 * `TauCeti.indK0_of_indFDRep`: over a field, the class of a finite-dimensional representation goes
   to the class of `TauCeti.indFDRep` of it.
+* `TauCeti.comp_indK0_eq_of_eq_on_indFDRep`: equality after induction can be checked on induced
+  finite-dimensional representations.
 * `TauCeti.indK0_comp_indK0` and `TauCeti.indK0_indK0`: induction is transitive along a chain of
   subgroups `S ≤ T ≤ G`.
 
@@ -206,5 +209,40 @@ theorem indK0_of_indFDRep (k : Type u) [Field k] {G : Type u} [Group G] [Finite 
     indK0 k S (ExactK0.of (FGModuleCat.of k[S] (Representation.asModule A.ρ))) =
       ExactK0.of (FGModuleCat.of k[G] (Representation.asModule (indFDRep A).ρ)) :=
   indK0_of_asModule_of_equiv k S A.ρ (indFDRep A).ρ (indFDRepForgetEquiv A).symm
+
+/-- Two additive invariants agree after induction from `S` if they agree on the classes of
+induced finite-dimensional representations. -/
+theorem comp_indK0_eq_of_eq_on_indFDRep (k : Type u) [Field k]
+    {G : Type u} [Group G] [Finite G] (S : Subgroup G) {A : Type*} [AddCommGroup A]
+    (f g : ExactK0 (finiteModulesExactStructure k[G]) →+ A)
+    (h : ∀ V : FDRep k S,
+      letI : Module.Finite k[G] (Representation.asModule (indFDRep V).ρ) :=
+        Module.Finite.of_restrictScalars_finite k k[G] _
+      f (ExactK0.of (FGModuleCat.of k[G] (Representation.asModule (indFDRep V).ρ))) =
+        g (ExactK0.of (FGModuleCat.of k[G] (Representation.asModule (indFDRep V).ρ)))) :
+    f.comp (indK0 k S) = g.comp (indK0 k S) := by
+  let e := ExactK0.mapEquiv (fdRepEquivalence k S)
+    (isConflationExact_fdRepEquivalence_functor k S)
+    (isConflationExact_fdRepEquivalence_inverse k S)
+  suffices he : (f.comp (indK0 k S)).comp e.toAddMonoidHom =
+      (g.comp (indK0 k S)).comp e.toAddMonoidHom by
+    apply DFunLike.ext
+    intro x
+    obtain ⟨y, rfl⟩ := e.surjective x
+    exact DFunLike.congr_fun he y
+  apply ExactK0.hom_ext
+  intro V
+  let : Module.Finite k[S] (Representation.asModule V.ρ) :=
+    Module.Finite.of_restrictScalars_finite k k[S] _
+  let : Module.Finite k[G] (Representation.asModule (indFDRep V).ρ) :=
+    Module.Finite.of_restrictScalars_finite k k[G] _
+  have hV : e (ExactK0.of V) =
+      (ExactK0.of (FGModuleCat.of k[S] (Representation.asModule V.ρ)) :
+        ExactK0 (finiteModulesExactStructure k[S])) := by
+    rw [ExactK0.mapEquiv_of]
+    exact ExactK0.of_congr (ObjectProperty.isoMk _
+      (eqToIso (fdRepEquivalence_functor_obj_obj k S V)))
+  simp only [AddMonoidHom.comp_apply, AddEquiv.coe_toAddMonoidHom, hV, indK0_of_indFDRep]
+  exact h V
 
 end TauCeti
