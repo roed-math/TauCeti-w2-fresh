@@ -28,8 +28,7 @@ its image.
 
 The Puiseux field is not complete. The partial sums of `∑_{j ≥ 1} t ^ (j + 1 / (j + 1))` form a
 Cauchy sequence of Puiseux series, but a limit would have every `j + 1 / (j + 1)` in its support,
-and these exponents have no common denominator. For the same reason the Hahn series with this
-support is not a Puiseux series, so the Puiseux field is a proper subfield of `HahnSeries ℚ K`.
+and these exponents have no common denominator.
 
 ## Main definitions
 
@@ -41,6 +40,8 @@ support is not a Puiseux series, so the Puiseux field is a proper subfield of `H
 
 * `TauCeti.puiseuxField.addVal_levelEmbedding`: the order of a level-`n` element is the order of
   the Laurent series divided by `n`.
+* `TauCeti.puiseuxField.addVal_single` and `TauCeti.puiseuxField.valuation_single`: the additive
+  and multiplicative valuations of a nonzero Puiseux monomial.
 * `TauCeti.puiseuxField.tendsto_iff_addVal_sub`: convergence in the valuation topology means that
   the order of the difference eventually exceeds every rational bound.
 * `TauCeti.puiseuxField.isEmbedding_levelEmbedding`: the level embeddings are homeomorphisms onto
@@ -49,7 +50,6 @@ support is not a Puiseux series, so the Puiseux field is a proper subfield of `H
   `TauCeti.puiseuxField.not_tendsto_sum_single`: the partial sums of
   `∑_{j ≥ 1} t ^ (j + 1 / (j + 1))` are Cauchy but do not converge.
 * `TauCeti.puiseuxField.not_completeSpace`: the Puiseux field is not complete.
-* `TauCeti.puiseuxField_ne_top`: the Puiseux field is a proper subfield of `HahnSeries ℚ K`.
 -/
 
 public section
@@ -105,12 +105,23 @@ noncomputable def valuation : Valuation (puiseuxField K) ℚᵐ⁰ :=
 @[simp]
 theorem valuation_apply (x : puiseuxField K) :
     valuation K x = HahnSeries.valuation ℚ K x :=
-  (rfl)
+  Valuation.comap_apply _ _ _
 
 /-- A nonzero Puiseux series has valuation `exp (-ord x)`. -/
 theorem valuation_of_ne_zero {x : puiseuxField K} (hx : x ≠ 0) :
     valuation K x = exp (-(x : HahnSeries ℚ K).order) :=
   HahnSeries.valuation_of_ne_zero (by simpa using hx)
+
+/-- The additive valuation of the nonzero Puiseux monomial `a t ^ q` is `q`. -/
+theorem addVal_single (q : ℚ) {a : K} (ha : a ≠ 0) :
+    addVal K (monomial K q a) = q := by
+  rw [addVal_apply, coe_monomial]
+  exact orderTop_single ha
+
+/-- The multiplicative valuation of the nonzero Puiseux monomial `a t ^ q` is `exp (-q)`. -/
+theorem valuation_single (q : ℚ) {a : K} (ha : a ≠ 0) :
+    valuation K (monomial K q a) = exp (-q) := by
+  rw [valuation_apply, coe_monomial, HahnSeries.valuation_single q ha]
 
 /-- A Puiseux series has valuation at most `exp (-q)` exactly when its order is at least `q`. -/
 theorem valuation_le_exp_neg_iff {x : puiseuxField K} {q : ℚ} :
@@ -155,13 +166,13 @@ theorem tendsto_iff_addVal_sub {ι : Type*} {l : Filter ι} (f : ι → puiseuxF
   constructor
   · intro h q
     -- the ball of radius `exp (-q)` is the set of series of order above `q`
-    let y : puiseuxField K := ⟨single q 1, single_mem_puiseuxField q 1⟩
+    let y : puiseuxField K := monomial K q 1
     have hy : y ≠ 0 := by
       rw [ne_eq, ← Subtype.coe_inj]
       simp [y]
     filter_upwards [h (Units.mk0 ((valuation K).restrict y) (by simp [hy]))] with i hi
     rw [Units.val_mk0, ← Valuation.restrict_lt_iff_lt_embedding, Valuation.restrict_lt_iff,
-      valuation_apply y, valuation_single q one_ne_zero,
+      valuation_single q one_ne_zero,
       valuation_lt_exp_neg_iff] at hi
     exact hi.le
   · intro h γ
@@ -196,59 +207,30 @@ end Topology
 
 section NotComplete
 
-/-- The exponents `j + 1 / (j + 1)` increase strictly with `j`. -/
-private theorem strictMono_exponent : StrictMono fun j : ℕ ↦ (j : ℚ) + 1 / (j + 1) := by
-  refine strictMono_nat_of_lt_succ fun j ↦ ?_
-  have h₁ : 1 / ((j : ℚ) + 1) ≤ 1 := div_le_one_of_le₀ (by linarith [j.cast_nonneg' (α := ℚ)])
-    (by positivity)
-  have h₂ : 0 < 1 / ((j + 1 : ℕ) + 1 : ℚ) := by positivity
-  push_cast at h₂ ⊢
-  linarith
+private noncomputable def partialSums (N : ℕ) : puiseuxField K :=
+  ∑ j ∈ Finset.Ico 1 N, monomial K ((j : ℚ) + 1 / (j + 1)) 1
 
-/-- The exponent `n + 1 / (n + 1)` has no denominator dividing `n`. -/
-private theorem not_den_exponent_dvd (n : ℕ+) : ¬ ((n : ℚ) + 1 / (n + 1)).den ∣ n := by
-  rintro ⟨c, hc⟩
-  set e : ℚ := (n : ℚ) + 1 / (n + 1)
-  -- `e * n` is an integer, but it is `n * n + n / (n + 1)` with `0 < n / (n + 1) < 1`
-  have hm : ((e.num * c - n * n : ℤ) : ℚ) = n / (n + 1) := by
-    have h : e * n = e.num * c := by
-      rw [hc, Nat.cast_mul, ← mul_assoc, Rat.mul_den_eq_num]
-    push_cast
-    rw [← h]
-    simp only [e]
-    field_simp
-    ring
-  have hpos : (0 : ℚ) < (n : ℕ) := by exact_mod_cast n.pos
-  have h₀ : (0 : ℚ) < ((e.num * c - n * n : ℤ) : ℚ) := by
-    rw [hm]
-    positivity
-  have h₁ : ((e.num * c - n * n : ℤ) : ℚ) < 1 := by
-    rw [hm, div_lt_one (by positivity)]
-    linarith
-  have h₀' : 0 < e.num * c - n * n := by exact_mod_cast h₀
-  have h₁' : e.num * c - n * n < 1 := by exact_mod_cast h₁
-  omega
-
-/-- The monomial `t ^ q` has order `q`. -/
-private theorem addVal_single_one (q : ℚ) :
-    addVal K (⟨single q 1, single_mem_puiseuxField q 1⟩ : puiseuxField K) = q := by
-  rw [addVal_apply]
-  exact orderTop_single one_ne_zero
+private theorem coeff_partialSums (N : ℕ) (q : ℚ) :
+    ((partialSums (K := K) N : puiseuxField K) : HahnSeries ℚ K).coeff q =
+      ∑ j ∈ Finset.Ico 1 N,
+        (HahnSeries.single ((j : ℚ) + 1 / (j + 1)) 1 : HahnSeries ℚ K).coeff q := by
+  rw [partialSums, AddSubmonoidClass.coe_finsetSum, coeff_sum]
+  simp only [coe_monomial]
 
 /-- **The partial sums of `∑_{j ≥ 1} t ^ (j + 1 / (j + 1))` are Cauchy** in the valuation
 topology of the Puiseux field: the terms of index at least `N` have order above `N`. -/
 theorem cauchySeq_sum_single :
     CauchySeq fun N : ℕ ↦ ∑ j ∈ Finset.Ico 1 N,
-      (⟨single ((j : ℚ) + 1 / (j + 1)) 1, single_mem_puiseuxField _ _⟩ : puiseuxField K) := by
-  set s := fun N : ℕ ↦ ∑ j ∈ Finset.Ico 1 N,
-    (⟨single ((j : ℚ) + 1 / (j + 1)) 1, single_mem_puiseuxField _ _⟩ : puiseuxField K)
+      monomial K ((j : ℚ) + 1 / (j + 1)) 1 := by
+  change CauchySeq (partialSums (K := K))
+  let s := partialSums (K := K)
   -- the tail from index `N ≥ 1` has order at least `N`
   have htail : ∀ N m : ℕ, 1 ≤ N → N ≤ m → ((N : ℚ) : WithTop ℚ) ≤ addVal K (s m - s N) := by
     intro N m h₁ h₂
-    simp only [s]
+    simp only [s, partialSums]
     rw [← Finset.sum_Ico_consecutive _ h₁ h₂, add_sub_cancel_left]
     refine AddValuation.map_le_sum _ fun j hj ↦ ?_
-    rw [addVal_single_one, WithTop.coe_le_coe]
+    rw [addVal_single _ one_ne_zero, WithTop.coe_le_coe]
     have : (N : ℚ) ≤ j := by exact_mod_cast (Finset.mem_Ico.mp hj).1
     linarith [show (0 : ℚ) ≤ 1 / (j + 1) by positivity]
   rw [CauchySeq, IsUniformAddGroup.cauchy_map_iff_tendsto]
@@ -268,8 +250,9 @@ field: a limit would have coefficient `1` at every exponent `j + 1 / (j + 1)`, a
 have no common denominator. -/
 theorem not_tendsto_sum_single (x : puiseuxField K) :
     ¬ Tendsto (fun N : ℕ ↦ ∑ j ∈ Finset.Ico 1 N,
-      (⟨single ((j : ℚ) + 1 / (j + 1)) 1, single_mem_puiseuxField _ _⟩ : puiseuxField K))
+      monomial K ((j : ℚ) + 1 / (j + 1)) 1)
         atTop (𝓝 x) := by
+  change ¬ Tendsto (partialSums (K := K)) atTop (𝓝 x)
   intro h
   obtain ⟨n, hn⟩ := mem_puiseuxField_iff_exists_den_dvd.mp x.2
   set e : ℚ := (n : ℚ) + 1 / (n + 1)
@@ -279,25 +262,11 @@ theorem not_tendsto_sum_single (x : puiseuxField K) :
     ((tendsto_iff_addVal_sub _ x).mp h (e + 1) |>.and (eventually_gt_atTop (n : ℕ))).exists
   rw [addVal_apply] at hN
   have hcoeff := coeff_eq_zero_of_lt_orderTop ((WithTop.coe_lt_coe.mpr (lt_add_one e)).trans_le hN)
-  rw [AddSubgroupClass.coe_sub, coeff_sub, sub_eq_zero, AddSubmonoidClass.coe_finsetSum,
-    coeff_sum] at hcoeff
+  simp only [AddSubgroupClass.coe_sub, coeff_sub, sub_eq_zero] at hcoeff
+  rw [coeff_partialSums] at hcoeff
   simp only [coeff_single, strictMono_exponent.injective.eq_iff, e] at hcoeff
   rw [mem_support, ← hcoeff, Finset.sum_ite_eq]
   simp [hnN]
-
-/-- **The Puiseux field is a proper subfield of the rational Hahn series field**: the Hahn series
-`∑_{j ≥ 1} t ^ (j + 1 / (j + 1))` has exponents with no common denominator. -/
-theorem _root_.TauCeti.puiseuxField_ne_top : puiseuxField K ≠ ⊤ := by
-  intro htop
-  set S : Set ℚ := (fun j : ℕ ↦ (j : ℚ) + 1 / (j + 1)) '' Set.Ici 1
-  let x : HahnSeries ℚ K :=
-    ⟨S.indicator 1, ((Set.isPWO_of_wellQuasiOrderedLE _).image_of_monotone
-      strictMono_exponent.monotone).mono Set.support_indicator_subset⟩
-  obtain ⟨n, hn⟩ :=
-    mem_puiseuxField_iff_exists_den_dvd.mp (htop ▸ IntermediateField.mem_top : x ∈ _)
-  refine not_den_exponent_dvd n (hn _ ?_)
-  have hS : (n : ℚ) + 1 / (n + 1) ∈ S := ⟨n, Set.mem_Ici.mpr n.pos, rfl⟩
-  simpa [x] using hS
 
 /-- **The Puiseux field is not complete** for its valuation topology. -/
 theorem not_completeSpace : ¬ CompleteSpace (puiseuxField K) := fun _ ↦

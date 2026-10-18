@@ -31,6 +31,7 @@ Puiseux field to a single level.
 ## Main definitions
 
 * `TauCeti.puiseuxField K`: the Puiseux series field, as an `IntermediateField K (HahnSeries ℚ K)`.
+* `TauCeti.puiseuxField.monomial K q a`: the Puiseux monomial `a t ^ q`.
 * `TauCeti.puiseuxField.levelEmbedding K n`: the level-`n` embedding `K⸨X⸩ →ₐ[K] puiseuxField K`,
   `X ↦ t ^ (1 / n)`.
 * The `K⸨X⸩`-algebra structure on `puiseuxField K` given by `levelEmbedding K 1`, with
@@ -42,6 +43,8 @@ Puiseux field to a single level.
   level.
 * `TauCeti.mem_puiseuxField_iff_exists_den_dvd`: a Hahn series is a Puiseux series exactly when
   the denominators of its exponents are bounded in divisibility by a single `n`.
+* `TauCeti.puiseuxField_ne_top`: the Puiseux field is a proper subfield of the rational Hahn
+  series field.
 * `TauCeti.puiseuxField_eq_iSup_fieldRange`: the Puiseux field is the supremum of the levels.
 * `TauCeti.puiseuxField.exists_forall_mem_range_levelEmbedding`: a finite family of Puiseux series
   lies in a common level.
@@ -104,6 +107,68 @@ theorem single_mem_puiseuxField (q : ℚ) (a : K) : single q a ∈ puiseuxField 
   refine mem_puiseuxField_iff_exists_den_dvd.mpr ⟨⟨q.den, q.den_pos⟩, fun r hr ↦ ?_⟩
   rw [Set.eq_of_mem_singleton (support_single_subset hr)]
   rfl
+
+namespace puiseuxField
+
+variable (K) in
+/-- The Puiseux monomial `a t ^ q`. -/
+noncomputable def monomial (q : ℚ) (a : K) : puiseuxField K :=
+  ⟨HahnSeries.single q a, single_mem_puiseuxField q a⟩
+
+/-- A Puiseux monomial coerces to the corresponding Hahn-series monomial. -/
+@[simp]
+theorem coe_monomial (q : ℚ) (a : K) :
+    (monomial K q a : HahnSeries ℚ K) = HahnSeries.single q a :=
+  (rfl)
+
+/-- The exponents `j + 1 / (j + 1)` increase strictly with `j`. -/
+theorem strictMono_exponent : StrictMono fun j : ℕ ↦ (j : ℚ) + 1 / (j + 1) := by
+  refine strictMono_nat_of_lt_succ fun j ↦ ?_
+  have h₁ : 1 / ((j : ℚ) + 1) ≤ 1 := div_le_one_of_le₀ (by linarith [j.cast_nonneg' (α := ℚ)])
+    (by positivity)
+  have h₂ : 0 < 1 / ((j + 1 : ℕ) + 1 : ℚ) := by positivity
+  push_cast at h₂ ⊢
+  linarith
+
+/-- The exponent `n + 1 / (n + 1)` has no denominator dividing `n`. -/
+theorem not_den_exponent_dvd (n : ℕ+) : ¬ ((n : ℚ) + 1 / (n + 1)).den ∣ n := by
+  rintro ⟨c, hc⟩
+  set e : ℚ := (n : ℚ) + 1 / (n + 1)
+  -- `e * n` is an integer, but it is `n * n + n / (n + 1)` with `0 < n / (n + 1) < 1`
+  have hm : ((e.num * c - n * n : ℤ) : ℚ) = n / (n + 1) := by
+    have h : e * n = e.num * c := by
+      rw [hc, Nat.cast_mul, ← mul_assoc, Rat.mul_den_eq_num]
+    push_cast
+    rw [← h]
+    simp only [e]
+    field_simp
+    ring
+  have hpos : (0 : ℚ) < (n : ℕ) := by exact_mod_cast n.pos
+  have h₀ : (0 : ℚ) < ((e.num * c - n * n : ℤ) : ℚ) := by
+    rw [hm]
+    positivity
+  have h₁ : ((e.num * c - n * n : ℤ) : ℚ) < 1 := by
+    rw [hm, div_lt_one (by positivity)]
+    linarith
+  have h₀' : 0 < e.num * c - n * n := by exact_mod_cast h₀
+  have h₁' : e.num * c - n * n < 1 := by exact_mod_cast h₁
+  omega
+
+end puiseuxField
+
+/-- **The Puiseux field is a proper subfield of the rational Hahn series field**: the Hahn series
+`∑_{j ≥ 1} t ^ (j + 1 / (j + 1))` has exponents with no common denominator. -/
+theorem puiseuxField_ne_top : puiseuxField K ≠ ⊤ := by
+  intro htop
+  set S : Set ℚ := (fun j : ℕ ↦ (j : ℚ) + 1 / (j + 1)) '' Set.Ici 1
+  let x : HahnSeries ℚ K :=
+    ⟨S.indicator 1, ((Set.isPWO_of_wellQuasiOrderedLE _).image_of_monotone
+      puiseuxField.strictMono_exponent.monotone).mono Set.support_indicator_subset⟩
+  obtain ⟨n, hn⟩ :=
+    mem_puiseuxField_iff_exists_den_dvd.mp (htop ▸ IntermediateField.mem_top : x ∈ _)
+  refine puiseuxField.not_den_exponent_dvd n (hn _ ?_)
+  have hS : (n : ℚ) + 1 / (n + 1) ∈ S := ⟨n, Set.mem_Ici.mpr n.pos, rfl⟩
+  simpa [x] using hS
 
 /-- Each level `K⸨t ^ (1 / n)⸩` is contained in the Puiseux field. -/
 theorem fieldRange_ramifiedEmbedding_le_puiseuxField (n : ℕ+) :

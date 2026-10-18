@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.RingTheory.HahnSeries.Valuation
+public import TauCeti.RingTheory.Valuation.ToAdditive
 
 /-!
 # The multiplicative valuation of Hahn series
@@ -24,6 +25,8 @@ Mathlib's valuation on Laurent series, for which `X` has valuation `exp (-1)`; i
 ## Main results
 
 * `HahnSeries.valuation_of_ne_zero`: the value of a nonzero series is `exp (-x.order)`.
+* `HahnSeries.valuation_addVal`: conversion back to an additive valuation recovers
+  `HahnSeries.addVal`.
 * `HahnSeries.valuation_le_exp_neg_iff` and `HahnSeries.valuation_lt_exp_neg_iff`: the valuation
   is at most (below) `exp (-q)` exactly when the order is at least (above) `q`, so balls for the
   valuation are the sets of series of large order.
@@ -39,37 +42,37 @@ namespace HahnSeries
 variable (Γ R : Type*) [AddCommGroup Γ] [LinearOrder Γ] [IsOrderedAddMonoid Γ] [Ring R]
   [IsDomain R]
 
-open scoped Classical in
 /-- The multiplicative valuation on Hahn series, sending a nonzero series `x` to
 `exp (-x.order)` and `0` to `0`. -/
-noncomputable def valuation : Valuation (HahnSeries Γ R) Γᵐ⁰ where
-  toFun x := if x = 0 then 0 else exp (-x.order)
-  map_zero' := by simp
-  map_one' := by simp
-  map_mul' x y := by
-    by_cases hx : x = 0
-    · simp [hx]
-    by_cases hy : y = 0
-    · simp [hy]
-    simp [hx, hy, order_mul hx hy, exp_add, mul_comm]
-  map_add_le_max' x y := by
-    by_cases hxy : x + y = 0
-    · simp [hxy]
-    by_cases hx : x = 0
-    · simp [hx]
-    by_cases hy : y = 0
-    · simp [hy]
-    simp only [hxy, hx, hy, ite_false, le_max_iff, exp_le_exp, neg_le_neg_iff]
-    exact (le_total x.order y.order).imp
-      (fun h ↦ (min_eq_left h).symm.trans_le (min_order_le_order_add hxy))
-      (fun h ↦ (min_eq_right h).symm.trans_le (min_order_le_order_add hxy))
+noncomputable def valuation : Valuation (HahnSeries Γ R) Γᵐ⁰ :=
+  Valuation.ofAddValuation ((addVal Γ R).map
+    ((orderAddIsoWithTop Γ).symm : WithTop Γ →+o (Additive Γᵐ⁰)ᵒᵈ) (by
+      apply (orderAddIsoWithTop Γ).injective
+      change orderAddIsoWithTop Γ ((orderAddIsoWithTop Γ).symm ⊤) =
+        orderAddIsoWithTop Γ (⊤ : (Additive Γᵐ⁰)ᵒᵈ)
+      have htop : orderAddIsoWithTop Γ (⊤ : (Additive Γᵐ⁰)ᵒᵈ) = ⊤ := by
+        rw [orderAddIsoWithTop_apply]
+        exact negLog_zero
+      exact (orderAddIsoWithTop Γ).apply_symm_apply ⊤ |>.trans htop.symm))
 
 variable {Γ R}
 
 /-- The valuation of a nonzero Hahn series is `exp (-x.order)`. -/
 theorem valuation_of_ne_zero {x : HahnSeries Γ R} (hx : x ≠ 0) :
     valuation Γ R x = exp (-x.order) := by
-  simp [valuation, hx]
+  rw [valuation, Valuation.ofAddValuation_apply, AddValuation.map_apply,
+    addVal_apply_of_ne hx]
+  change (orderAddIsoWithTop Γ).symm (x.order : WithTop Γ) = exp (-x.order)
+  exact orderAddIsoWithTop_symm_coe x.order
+
+/-- Converting the multiplicative Hahn-series valuation back to additive form recovers
+`HahnSeries.addVal`. -/
+@[simp]
+theorem valuation_addVal : (valuation Γ R).addVal = addVal Γ R := by
+  ext x
+  rcases eq_or_ne x 0 with rfl | hx
+  · simp
+  · simp [Valuation.addVal_apply, valuation_of_ne_zero hx, addVal_apply_of_ne hx]
 
 /-- The valuation of the monomial `r t ^ q`, `r ≠ 0`, is `exp (-q)`. -/
 @[simp]
