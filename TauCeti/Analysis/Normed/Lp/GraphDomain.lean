@@ -188,6 +188,7 @@ theorem _root_.ContinuousLinearMap.normalGraphL_apply (A : E →L[ℝ] ℝ) (x :
     (normalGraphEmbedding_snd A x).symm
 
 /-- As a function, the continuous linear graph map is the normal graph parametrization of `A`. -/
+@[simp]
 theorem _root_.ContinuousLinearMap.coe_normalGraphL (A : E →L[ℝ] ℝ) :
     ⇑A.normalGraphL = normalGraphEmbedding A :=
   funext A.normalGraphL_apply
