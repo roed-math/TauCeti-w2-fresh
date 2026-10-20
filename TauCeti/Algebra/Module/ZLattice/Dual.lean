@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
 public import Mathlib.Analysis.InnerProductSpace.PiL2
 public import Mathlib.LinearAlgebra.BilinearForm.DualLattice
 public import TauCeti.Algebra.Module.ZLattice.Basic
@@ -31,6 +32,10 @@ self-duality of `ℤⁿ ⊆ ℝⁿ`.
 
 The dual is antitone, and it commutes with pulling a lattice back along a linear isometry
 equivalence (`ZLattice.dual_comap`), so every notion defined from it is an isometry invariant.
+Along a general continuous linear equivalence `e` the dual transforms contragrediently: the dual
+of `e⁻¹ L` is the pull-back of `L^∨` along the adjoint of `e⁻¹`
+(`ZLattice.dual_comap_continuousLinearEquiv`). This is how the dual of an arbitrary full lattice
+is read off from the self-duality of `ℤⁿ`.
 
 This is the dual lattice entering Poisson summation over a lattice, and the integrality,
 evenness and unimodularity of a lattice in `TauCeti/Algebra/Module/ZLattice/Integral.lean` are
@@ -52,6 +57,8 @@ defined from it.
 * `ZLattice.dual_span_orthonormalBasis`: the `ℤ`-span of an orthonormal basis is self-dual.
 * `ZLattice.dual_dual`: the dual of the dual of a full lattice is the lattice itself.
 * `ZLattice.dual_comap`: the dual commutes with pulling back along a linear isometry equivalence.
+* `ZLattice.dual_comap_continuousLinearEquiv`: the dual of the pull-back of a lattice along a
+  continuous linear equivalence `e` is the pull-back of the dual along the adjoint of `e⁻¹`.
 -/
 
 public section
@@ -129,6 +136,21 @@ theorem dual_comap (L : Submodule ℤ E) (e : F ≃ₗᵢ[ℝ] E) :
   refine ⟨fun h z hz ↦ ?_, fun h y hy ↦ e.inner_map_map x y ▸ h _ hy⟩
   obtain ⟨m, hm⟩ := h (e.symm z) (by rwa [e.apply_symm_apply])
   exact ⟨m, by rwa [← e.inner_map_map, e.apply_symm_apply] at hm⟩
+
+/-- The dual of the pull-back `e⁻¹ L` of a lattice along a continuous linear equivalence `e` is the
+pull-back of the dual `L^∨` along the adjoint of `e⁻¹`. In terms of images: the dual of `A L` is
+`(A⁻¹)ᵀ L^∨`. For a linear isometry equivalence the adjoint of `e⁻¹` is `e` itself, which is
+`dual_comap`. -/
+@[simp]
+theorem dual_comap_continuousLinearEquiv [CompleteSpace E] [CompleteSpace F] (L : Submodule ℤ E)
+    (e : F ≃L[ℝ] E) :
+    dual (ZLattice.comap ℝ L e.toLinearMap) =
+      ZLattice.comap ℝ (dual L) (ContinuousLinearMap.adjoint (e.symm : E →L[ℝ] F)).toLinearMap := by
+  ext x
+  simp only [mem_comap, mem_dual, ContinuousLinearMap.coe_coe,
+    ContinuousLinearMap.adjoint_inner_left]
+  refine ⟨fun h z hz ↦ h _ (by simpa using hz), fun h y hy ↦ ?_⟩
+  simpa using h _ hy
 
 section FiniteDimensional
 

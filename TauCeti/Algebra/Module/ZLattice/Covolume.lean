@@ -28,11 +28,24 @@ The covolume of the dual lattice `L^∨ = ZLattice.dual L` is the inverse of the
 (`ZLattice.covolume_dual`): in an `ℤ`-basis of `L` and the dual basis of `L^∨`, the Gram matrices
 are inverse to each other.
 
+Pulling a lattice back along a linear automorphism `A` divides its covolume by `|det A|`, for any
+Haar measure (`ZLattice.covolume_comap_continuousLinearEquiv`). Since the `ℤ`-span of an
+orthonormal basis has covolume one, every full lattice `L` is the image of that standard lattice
+`ℤⁿ` under an automorphism `A` with `|det A| = covolume L`, and the adjoint of `A⁻¹` carries `ℤⁿ`
+onto `L^∨` (`ZLattice.exists_comap_eq_span_orthonormalBasis`). This is the change of coordinates
+that transports Fourier analysis on `ℤⁿ`, such as Poisson summation, to an arbitrary full lattice
+and its dual.
+
 ## Main results
 
 * `ZLattice.covolume_sq_eq_det_gram`: `covolume L ^ 2` is the determinant of the Gram matrix of
   any `ℤ`-basis of `L`.
 * `ZLattice.covolume_dual`: `covolume L^∨ = (covolume L)⁻¹`.
+* `ZLattice.covolume_comap_continuousLinearEquiv`: `covolume (A⁻¹ L) = |det A|⁻¹ * covolume L`.
+* `ZLattice.covolume_span_orthonormalBasis`: the `ℤ`-span of an orthonormal basis has covolume
+  one.
+* `ZLattice.exists_comap_eq_span_orthonormalBasis`: a full lattice and its dual are the images of
+  `ℤⁿ` under an automorphism `A` with `|det A| = covolume L` and under the adjoint of `A⁻¹`.
 -/
 
 public section
@@ -42,8 +55,42 @@ open LinearMap (BilinForm)
 
 namespace TauCeti
 
+section LinearEquiv
+
+variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E]
+  [MeasurableSpace E] [BorelSpace E]
+
+/-- Pulling a full lattice back along a linear automorphism `A` divides its covolume by `|det A|`,
+for any Haar measure: in terms of images, `covolume (A L) = |det A| * covolume L`. -/
+theorem _root_.ZLattice.covolume_comap_continuousLinearEquiv (L : Submodule ℤ E)
+    [DiscreteTopology L] [IsZLattice ℝ L] (μ : Measure E) [μ.IsAddHaarMeasure] (A : E ≃L[ℝ] E) :
+    ZLattice.covolume (ZLattice.comap ℝ L A.toLinearMap) μ =
+      |A.toLinearEquiv.toLinearMap.det|⁻¹ * ZLattice.covolume L μ := by
+  classical
+  let b := Free.chooseBasis ℤ L
+  let b₀ := b.ofZLatticeBasis ℝ L
+  -- The pulled-back lattice has the `ℤ`-basis `A⁻¹ ∘ b`.
+  have hb : ((↑) ∘ b.ofZLatticeComap ℝ L A.toLinearEquiv : _ → E) =
+      A.symm.toLinearEquiv.toLinearMap ∘ ((↑) ∘ b) := by
+    ext i
+    simp
+  rw [ZLattice.covolume_eq_det_mul_measureReal _ μ (b.ofZLatticeComap ℝ L A.toLinearEquiv) b₀,
+    ZLattice.covolume_eq_det_mul_measureReal L μ b b₀, hb, Basis.det_comp, abs_mul, mul_assoc,
+    ContinuousLinearEquiv.toLinearEquiv_symm, LinearEquiv.det_coe_symm, abs_inv]
+
+end LinearEquiv
+
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [FiniteDimensional ℝ E]
   [MeasurableSpace E] [BorelSpace E]
+
+/-- The `ℤ`-span of an orthonormal basis has covolume one. -/
+@[simp]
+theorem _root_.ZLattice.covolume_span_orthonormalBasis {ι : Type*} [Fintype ι]
+    (o : OrthonormalBasis ι ℝ E) : ZLattice.covolume (span ℤ (Set.range o)) = 1 := by
+  rw [← o.coe_toBasis, ZLattice.covolume_eq_measure_fundamentalDomain _ volume
+      (ZSpan.isAddFundamentalDomain o.toBasis volume),
+    measureReal_congr (ZSpan.fundamentalDomain_ae_parallelepiped o.toBasis volume),
+    OrthonormalBasis.coe_toBasis, measureReal_def, o.volume_parallelepiped, ENNReal.toReal_one]
 
 /-- The square of the covolume of a lattice in a finite-dimensional real inner product space is
 the determinant of the Gram matrix of any `ℤ`-basis of the lattice. -/
@@ -56,8 +103,9 @@ theorem _root_.ZLattice.covolume_sq_eq_det_gram (L : Submodule ℤ E) [DiscreteT
     (stdOrthonormalBasis ℝ E).reindex (Fintype.equivFinOfCardEq hcard.symm).symm
   -- The fundamental parallelepiped of an orthonormal basis has volume `1`.
   have hvol : volume.real (ZSpan.fundamentalDomain o.toBasis) = 1 := by
-    rw [measureReal_congr (ZSpan.fundamentalDomain_ae_parallelepiped o.toBasis volume),
-      OrthonormalBasis.coe_toBasis, measureReal_def, o.volume_parallelepiped, ENNReal.toReal_one]
+    rw [← ZLattice.covolume_eq_measure_fundamentalDomain _ volume
+      (ZSpan.isAddFundamentalDomain o.toBasis volume), o.coe_toBasis,
+      ZLattice.covolume_span_orthonormalBasis]
   -- The Gram matrix is `Mᵀ M`, where `M` is the matrix of the lattice basis in orthonormal
   -- coordinates.
   have hM : o.toBasis.toMatrix ((↑) ∘ b) = Matrix.of fun i j ↦ o.repr (b j : E) i := by
@@ -96,5 +144,42 @@ theorem _root_.ZLattice.covolume_dual (L : Submodule ℤ E) [DiscreteTopology L]
   have hpos := mul_pos (ZLattice.covolume_pos (ZLattice.dual L) volume)
     (ZLattice.covolume_pos L volume)
   exact eq_inv_of_mul_eq_one_left ((pow_eq_one_iff_of_nonneg hpos.le two_ne_zero).mp hsq)
+
+/-- A full lattice `L` is the image of the `ℤ`-span of any orthonormal basis `o` (a copy of `ℤⁿ`)
+under a linear automorphism `A` with `|det A| = covolume L`, and its dual `L^∨` is the image of
+the same span under the adjoint of `A⁻¹`. -/
+theorem _root_.ZLattice.exists_comap_eq_span_orthonormalBasis (L : Submodule ℤ E)
+    [DiscreteTopology L] [IsZLattice ℝ L] {ι : Type*} [Fintype ι] (o : OrthonormalBasis ι ℝ E) :
+    ∃ A : E ≃L[ℝ] E, ZLattice.comap ℝ L A.toLinearMap = span ℤ (Set.range o) ∧
+      ZLattice.comap ℝ (ZLattice.dual L)
+          (ContinuousLinearMap.adjoint (A.symm : E →L[ℝ] E)).toLinearMap =
+        span ℤ (Set.range o) ∧
+      |A.toLinearEquiv.toLinearMap.det| = ZLattice.covolume L := by
+  classical
+  -- A `ℤ`-basis of `L` indexed by `ι`, which has the right cardinality.
+  have hcard : Fintype.card ι = Fintype.card (Free.ChooseBasisIndex ℤ L) := by
+    rw [← finrank_eq_card_basis o.toBasis, ← finrank_eq_card_chooseBasisIndex, ZLattice.rank ℝ L]
+  let b : Basis ι ℤ L := (Free.chooseBasis ℤ L).reindex (Fintype.equivOfCardEq hcard).symm
+  -- `A` sends `o i` to the `i`-th vector of `b`.
+  let A : E ≃L[ℝ] E :=
+    (o.toBasis.equiv (b.ofZLatticeBasis ℝ L) (Equiv.refl ι)).toContinuousLinearEquiv
+  -- `L` is the `ℤ`-span of `A '' range o`, so its pull-back along `A` is the span of `range o`.
+  have hL : span ℤ ((A.toLinearMap.restrictScalars ℤ) '' Set.range o) = L := by
+    conv_rhs => rw [← b.ofZLatticeBasis_span ℝ L]
+    rw [← Set.range_comp]
+    congr 2
+    ext i
+    simp only [A, Function.comp_apply, LinearMap.coe_restrictScalars,
+      LinearEquiv.coe_toContinuousLinearEquiv, LinearEquiv.coe_coe]
+    rw [← o.coe_toBasis, Basis.equiv_apply, Equiv.refl_apply]
+  have hA : ZLattice.comap ℝ L A.toLinearMap = span ℤ (Set.range o) := by
+    ext x
+    rw [ZLattice.mem_comap, ← hL]
+    exact apply_mem_span_image_iff_mem_span A.injective
+  refine ⟨A, hA, ?_, ?_⟩
+  · rw [← ZLattice.dual_comap_continuousLinearEquiv, hA, ZLattice.dual_span_orthonormalBasis]
+  · have h := ZLattice.covolume_comap_continuousLinearEquiv L volume A
+    rw [hA, ZLattice.covolume_span_orthonormalBasis] at h
+    exact (inv_mul_eq_one₀ (abs_ne_zero.mpr A.toLinearEquiv.isUnit_det'.ne_zero)).mp h.symm
 
 end TauCeti
