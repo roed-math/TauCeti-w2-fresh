@@ -30,8 +30,8 @@ density, keeps it inversion-invariant.
 * `Measure.measure_eq_zero_of_pairwiseDisjoint_vadd`: a measurable set with infinitely many
   pairwise disjoint translates whose union has finite measure is null.
 * `Measure.measure_hyperplane`: a coordinate hyperplane `{a | a i = x}` of `ι → M` is null for a
-  left-invariant measure finite on compact sets, for `M` non-discrete, locally compact and
-  σ-compact.
+  left-invariant measure finite on compact sets, for `M` non-discrete and locally compact and
+  `ι → M` σ-compact.
 * `Measure.isProbabilityMeasure_inv`, `Measure.isProbabilityMeasure_neg`: the inverse and the
   negation of a probability measure are probability measures.
 * `Measure.map_inv_comp`, `Measure.map_neg_comp`: composing a pushforward from the inverted or
@@ -129,15 +129,15 @@ theorem measure_eq_zero_of_pairwiseDisjoint_vadd (μ : Measure E) [μ.IsAddLeftI
   simp only [measure_vadd, ENNReal.tsum_const_eq_top_of_ne_zero h, top_le_iff] at hle
   exact hfin hle
 
-variable {ι M : Type*} [Finite ι] [AddGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
-  [T2Space M] [WeaklyLocallyCompactSpace M] [SigmaCompactSpace M] [(𝓝[≠] (0 : M)).NeBot]
+variable {ι M : Type*} [AddGroup M] [TopologicalSpace M] [IsTopologicalAddGroup M]
+  [T2Space M] [WeaklyLocallyCompactSpace M] [(𝓝[≠] (0 : M)).NeBot] [SigmaCompactSpace (ι → M)]
   [MeasurableSpace (ι → M)] [BorelSpace (ι → M)]
 
 /-- A coordinate hyperplane `{a | a i = x}` of `ι → M` is null for every left-invariant measure
-that is finite on compact sets, when `M` is a non-discrete, locally compact, σ-compact additive
-group. This is the analogue of `MeasureTheory.Measure.addHaar_submodule` without a real vector
-space structure, and of `MeasureTheory.Measure.pi_hyperplane` without a product structure on the
-measure. -/
+that is finite on compact sets, when `M` is a non-discrete, locally compact additive group and
+`ι → M` is σ-compact (for instance, `ι` finite and `M` σ-compact). This is the analogue of
+`MeasureTheory.Measure.addHaar_submodule` without a real vector space structure, and of
+`MeasureTheory.Measure.pi_hyperplane` without a product structure on the measure. -/
 theorem measure_hyperplane (μ : Measure (ι → M)) [μ.IsAddLeftInvariant]
     [IsFiniteMeasureOnCompacts μ] (i : ι) (x : M) : μ {a | a i = x} = 0 := by
   classical

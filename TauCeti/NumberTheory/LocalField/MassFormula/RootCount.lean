@@ -7,8 +7,8 @@ module
 
 public import Mathlib.MeasureTheory.Group.Measure
 public import Mathlib.RingTheory.Polynomial.Eisenstein.Basic
+public import TauCeti.FieldTheory.IntermediateField.RootCount
 public import TauCeti.NumberTheory.LocalField.MassFormula.Basic
-public import TauCeti.RingTheory.Polynomial.Monic.OfCoeff
 import TauCeti.MeasureTheory.Group.Measure
 import TauCeti.NumberTheory.LocalField.MassFormula.Eisenstein
 import TauCeti.NumberTheory.LocalField.Topology
@@ -16,31 +16,25 @@ import TauCeti.NumberTheory.LocalField.Topology
 /-!
 # Root counts of Eisenstein polynomials in the counted extensions
 
-A monic polynomial of degree `n` over a field `K` is its coefficient vector `a : Fin n → K`,
-through `TauCeti.Polynomial.monicOfCoeff`. For an intermediate field `L`, the root count
-`L.rootCount a` is the number of roots of that polynomial in `L`, counted with multiplicity.
-
-For a nonarchimedean local field `K`, this file proves the identity that Serre's mass formula
-integrates over the Eisenstein region of coefficient space. For almost every Eisenstein
-coefficient vector `a`, the root counts of `a` in the totally ramified extensions of degree `n`
-inside the separable closure add up to `n`:
+For a nonarchimedean local field `K` and a coefficient vector `a : Fin n → K`, this file studies
+the root counts `L.rootCount a` (see `IntermediateField.rootCount`) of the monic polynomial
+`TauCeti.Polynomial.monicOfCoeff a` in the totally ramified extensions `L` of degree `n` inside
+the separable closure. It proves the identity that Serre's mass formula integrates over the
+Eisenstein region of coefficient space: for almost every Eisenstein coefficient vector `a`,
 `∑' L : totallyRamifiedOfDegree K n, L.rootCount a = n`.
 
-The proof has two halves.
+The identity needs separability. In equal characteristic an inseparable Eisenstein polynomial
+has no roots in the separable closure, so the identity fails for it; such polynomials form a
+null set of coefficient vectors.
 
-* `TauCeti.tsum_card_aroots_of_isEisensteinAt`: the identity holds for every separable
-  Eisenstein polynomial `f` of degree `n`. Such an `f` has `n` distinct roots in the separable
-  closure. Each root `x` generates a member `K⟮x⟯` of the family. For a member `L`, a root lies
-  in `L` exactly when it generates `L`, because both fields have degree `n`.
+## Main results
+
+* `TauCeti.tsum_card_aroots_of_isEisensteinAt`: the identity for every separable Eisenstein
+  polynomial of degree `n`.
 * `TauCeti.ae_separable_monicOfCoeff_of_isEisensteinAt`: almost every Eisenstein polynomial is
-  separable, for every left-invariant measure on `Fin n → K` that is finite on compact sets. An
-  Eisenstein polynomial is irreducible, so it is separable as soon as its derivative is nonzero.
-  For `2 ≤ n`, the derivative has constant term `a 1`, and the hyperplane `a 1 = 0` is null by
-  `MeasureTheory.Measure.measure_hyperplane`. In equal characteristic this is where the
-  inseparable Eisenstein polynomials, which have no roots in the separable closure, are
-  discarded.
-
-`TauCeti.ae_tsum_rootCount_of_isEisensteinAt` combines the two.
+  separable, for every left-invariant measure on `Fin n → K` that is finite on compact sets.
+* `TauCeti.ae_tsum_rootCount_of_isEisensteinAt`: the identity for almost every Eisenstein
+  coefficient vector.
 
 ## References
 
@@ -56,23 +50,6 @@ open ValuativeRel Polynomial MeasureTheory TauCeti.Polynomial
 open scoped IntermediateField ENNReal
 
 namespace TauCeti
-
-section RootCount
-
-variable {K E : Type*} [Field K] [Field E] [Algebra K E]
-
-/-- The root count of a coefficient vector `a : Fin n → K` in an intermediate field `L` of `E / K`:
-the number of roots in `L`, counted with multiplicity, of the monic polynomial
-`X ^ n + ∑ i, a i * X ^ i` whose lower coefficients are `a`. -/
-def _root_.IntermediateField.rootCount (L : IntermediateField K E) {n : ℕ} (a : Fin n → K) : ℕ :=
-  ((monicOfCoeff a).aroots L).card
-
-/-- The root count is the cardinality of the root multiset of `monicOfCoeff a` in `L`. -/
-theorem _root_.IntermediateField.rootCount_def (L : IntermediateField K E) {n : ℕ}
-    (a : Fin n → K) : L.rootCount a = ((monicOfCoeff a).aroots L).card := by
-  rw [IntermediateField.rootCount]
-
-end RootCount
 
 variable {K : Type*} [Field K] [ValuativeRel K] [TopologicalSpace K]
   [IsNonarchimedeanLocalField K]
@@ -148,7 +125,7 @@ theorem ae_separable_monicOfCoeff_of_isEisensteinAt {n : ℕ} [MeasurableSpace (
     rcases lt_or_ge 1 n with h | h
     · filter_upwards [compl_mem_ae_iff.2 (Measure.measure_hyperplane μ (⟨1, h⟩ : Fin n) 0)]
         with a ha _
-      rwa [show (1 : ℕ) = ((⟨1, h⟩ : Fin n) : ℕ) from rfl, coeff_monicOfCoeff]
+      rwa [← Fin.val_mk h, coeff_monicOfCoeff]
     · refine .of_forall fun a hn ↦ ?_
       obtain rfl : n = 1 := le_antisymm h hn
       have h1 := (monic_monicOfCoeff a).coeff_natDegree
