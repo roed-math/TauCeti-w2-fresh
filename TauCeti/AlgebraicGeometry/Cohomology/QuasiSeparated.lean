@@ -8,6 +8,8 @@ module
 public import TauCeti.AlgebraicGeometry.Cohomology.Affine
 public import TauCeti.AlgebraicGeometry.Cohomology.FiniteCover
 public import Mathlib.AlgebraicGeometry.Morphisms.QuasiSeparated
+import Mathlib.AlgebraicGeometry.Modules.Tilde
+import TauCeti.AlgebraicGeometry.Cohomology.OpenImmersion
 import TauCeti.AlgebraicGeometry.Scheme.Opens
 
 /-!
@@ -25,7 +27,8 @@ so Serre's vanishing theorem and the bound for finite Leray covers give `Hⁿ(W,
 `Hⁿ(W, F)` vanishes for `n ≥ N₁` and `Hⁿ(W ⊓ U, F)` for `n ≥ N₂`, where `U` is an affine open,
 then the Mayer–Vietoris sequence makes `Hⁿ(W ⊔ U, F)` vanish for `n ≥ max N₁ (N₂ + 1)`.
 Quasi-separation makes `W ⊓ U` a quasi-compact open of the affine open `U`, which is the first
-case.
+case. Over an arbitrary base, the preimage of an affine open is the source of a quasi-compact
+quasi-separated morphism to an affine scheme, so the bound is local on affine opens of the base.
 
 ## Main declarations
 
@@ -37,7 +40,9 @@ case.
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomology`: a uniform vanishing
   bound on a quasi-compact quasi-separated scheme;
 * `TauCeti.QCoh.higherDirectImage_vanishing`: the bound for the source of a quasi-compact
-  quasi-separated morphism to an affine scheme.
+  quasi-separated morphism to an affine scheme;
+* `TauCeti.QCoh.higherDirectImage_vanishing_of_isAffineOpen`: the bound on the preimage of an
+  affine open of an arbitrary base.
 
 ## References
 
@@ -142,6 +147,24 @@ theorem higherDirectImage_vanishing {X S : Scheme.{u}} (f : X ⟶ S) [QuasiCompa
   have := QuasiCompact.compactSpace_of_compactSpace f
   have := quasiSeparatedSpace_of_quasiSeparated f
   exact exists_subsingleton_cohomology X
+
+/-- **Uniform vanishing over an affine open of the base.** For a quasi-compact and
+quasi-separated morphism `f : X ⟶ S` and an affine open `U` of `S`, the cohomology of
+quasi-coherent modules on `f⁻¹ U` vanishes in a range depending only on `f` and `U`: on a general
+base the bound of `higherDirectImage_vanishing` is local on affine opens. Stacks, Lemmas
+30.4.1–30.4.6 (01XH). -/
+theorem higherDirectImage_vanishing_of_isAffineOpen {X S : Scheme.{u}} (f : X ⟶ S)
+    [QuasiCompact f] [QuasiSeparated f] {U : S.Opens} (hU : IsAffineOpen U) :
+    ∃ N : ℕ, ∀ (F : X.Modules) [F.IsQuasicoherent] (p : ℕ), N ≤ p →
+      Subsingleton (cohomologyOn F p (f ⁻¹ᵁ U)) := by
+  have : IsAffine U := hU
+  obtain ⟨N, hN⟩ := higherDirectImage_vanishing (f ∣_ U)
+  refine ⟨N, fun F _ p hp ↦ ?_⟩
+  -- Cohomology on `f⁻¹ U` is the cohomology of the restriction of `F` to the open subscheme.
+  have := hN (F.restrict (f ⁻¹ᵁ U).ι) p hp
+  rw [← (f ⁻¹ᵁ U).opensRange_ι]
+  exact (Scheme.Modules.cohomologyOnOpensRangeIso _ F p).addCommGroupIsoToAddEquiv.toEquiv
+    |>.subsingleton
 
 end QCoh
 

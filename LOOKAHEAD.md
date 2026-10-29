@@ -58,7 +58,7 @@ unchanged.
 
 ### Split 1 (needs nothing first): `feat: uniform vanishing of quasi-coherent cohomology on qcqs schemes`
 
-File: `TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean` (new, 148 lines). Declarations:
+File: `TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean` (new, 171 lines). Declarations:
 
 - `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomologyOn_of_le_isAffineOpen`:
   a uniform bound for a quasi-compact open contained in an affine open. It is covered by finitely
@@ -69,6 +69,11 @@ File: `TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean` (new, 148 lines
 - `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomology`: the bound on a qcqs
   scheme.
 - `TauCeti.QCoh.higherDirectImage_vanishing`: the pinned target.
+- `TauCeti.QCoh.higherDirectImage_vanishing_of_isAffineOpen`: the README's sentence that on a
+  general base the bound is local on affine opens. For `f` qcqs and `U ⊆ S` an affine open there
+  is `N` with `Hᵖ(f⁻¹U, F) = 0` for all quasi-coherent `F` and `p ≥ N`. It applies the pinned
+  theorem to `f ∣_ U` and transports along `Scheme.Modules.cohomologyOnOpensRangeIso`
+  (`Cohomology/OpenImmersion.lean`), using Mathlib's `isQuasicoherent_restrictFunctor`.
 
 This is the only split. It carries the target's exported theorem. The PR would use
 `Roadmap: SchemeAndStackFoundations` and cite §2.6 / `QCoh.higherDirectImage_vanishing`.
@@ -102,3 +107,8 @@ stub of the supplier would be needed. Items 3 and 4 also need the Čech comparis
   Stacks references, pinned name and signature, no unused hypotheses) and found nothing to change.
   `main` still has no `TauCeti.QCoh` namespace and no quasi-coherence result for
   `higherDirectImage`, so items 1–4 under *What remains* are still open.
+- Round 3 (2026-10-29): `origin/main` was still `ea7e54cf96`, and PR #21787 is still open. Added
+  `QCoh.higherDirectImage_vanishing_of_isAffineOpen` (bound local on affine opens of a general
+  base), which still needs no stub. `main` still has no comparison of
+  `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`. That comparison
+  is the first missing step for items 1–4, so they remain open.
