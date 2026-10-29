@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-higher-direct-image-vanishing","main":"45d6c5cf463be69fd00b2dc1dc7e0a397ff2e540","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: uniform vanishing of quasi-coherent cohomology on qcqs schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-higher-direct-image-vanishing","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: uniform vanishing of quasi-coherent cohomology on qcqs schemes"}]}-->
 
 # Lookahead: `qcoh-higher-direct-image-vanishing` (SchemeAndStackFoundations, §2.6)
 
-Built on `main` at `45d6c5cf46`. The target's only pinned Lean form,
+Built on `main` at `ea7e54cf96` (resumed from tip `6e97178a37`, with `origin/main` merged in). The target's only pinned Lean form,
 `QCoh.higherDirectImage_vanishing` (`SchemeAndStackFoundations/Suggested.lean`, §2.5–§2.7 block),
 is proved here in full, with **no `sorry` anywhere on the branch**. The status is `partial` because
 the target's prose (`qcoh_higherDirectImages`) also asks for more about `R^p f_*`; that part is
@@ -93,3 +93,12 @@ theorem above. Item 1 in degree 0 is exactly what the supplier provides: PR #217
 higher-degree version would generalise, to `H^p(f⁻¹ D(g), F) = H^p(f⁻¹U, F)_g`. That is where a
 stub of the supplier would be needed. Items 3 and 4 also need the Čech comparison for qcqs schemes
 (Stacks 30.6.1 (07TB); flat base change Stacks 30.5).
+
+## Resumption log
+
+- Round 2 (2026-10-29): merged `origin/main` (`ea7e54cf96`) into the branch. The merge had no
+  conflicts, `lake build` is green and `lookahead-check` passes. Checked the proof file against
+  the rubrics again (placement next to `FiniteCover.lean` and `MayerVietoris.lean`, docstrings,
+  Stacks references, pinned name and signature, no unused hypotheses) and found nothing to change.
+  `main` still has no `TauCeti.QCoh` namespace and no quasi-coherence result for
+  `higherDirectImage`, so items 1–4 under *What remains* are still open.
