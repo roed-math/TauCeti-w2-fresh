@@ -20,6 +20,9 @@ defined recursively by `L^{⊗0} = 𝒪_X` and `L^{⊗(n+1)} = L^{⊗n} ⊗ L`.
   power of the class of `L` in the Picard group.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.nonempty_tensorPow_obj_iso`: tensor powers of
   isomorphic line bundles are isomorphic.
+* `TauCeti.AlgebraicGeometry.InvertibleSheaf.nonempty_tensorPow_add_iso` and
+  `TauCeti.AlgebraicGeometry.InvertibleSheaf.nonempty_tensorPow_tensorPow_iso`: the exponent laws
+  `L^{⊗(m + n)} ≅ L^{⊗m} ⊗ L^{⊗n}` and `(L^{⊗m})^{⊗n} ≅ L^{⊗(m * n)}`.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.nonempty_pullback_tensorPow_iso`: pullback commutes
   with tensor powers up to isomorphism.
 
@@ -80,6 +83,19 @@ theorem nonempty_tensorPow_obj_iso {L K : InvertibleSheaf X} (h : Nonempty (L.ob
     (n : ℕ) : Nonempty ((L.tensorPow n).obj ≅ (K.tensorPow n).obj) := by
   rw [← LineBundleClass.mk_eq_mk_iff] at h ⊢
   rw [LineBundleClass.mk_tensorPow, LineBundleClass.mk_tensorPow, h]
+
+/-- The tensor power `L^{⊗(m + n)}` is isomorphic to `L^{⊗m} ⊗ L^{⊗n}`. -/
+theorem nonempty_tensorPow_add_iso (L : InvertibleSheaf X) (m n : ℕ) :
+    Nonempty ((L.tensorPow (m + n)).obj ≅ (tensorProduct (L.tensorPow m) (L.tensorPow n)).obj) := by
+  rw [← LineBundleClass.mk_eq_mk_iff, LineBundleClass.mk_tensorProduct,
+    LineBundleClass.mk_tensorPow, LineBundleClass.mk_tensorPow, LineBundleClass.mk_tensorPow,
+    pow_add]
+
+/-- The tensor power `(L^{⊗m})^{⊗n}` is isomorphic to `L^{⊗(m * n)}`. -/
+theorem nonempty_tensorPow_tensorPow_iso (L : InvertibleSheaf X) (m n : ℕ) :
+    Nonempty (((L.tensorPow m).tensorPow n).obj ≅ (L.tensorPow (m * n)).obj) := by
+  rw [← LineBundleClass.mk_eq_mk_iff, LineBundleClass.mk_tensorPow, LineBundleClass.mk_tensorPow,
+    LineBundleClass.mk_tensorPow, pow_mul]
 
 /-- **Pullback commutes with tensor powers.** For `f : X ⟶ Y` and a line bundle `L` on `Y`, the
 pullback of `L^{⊗n}` is isomorphic to `(f^* L)^{⊗n}`. -/

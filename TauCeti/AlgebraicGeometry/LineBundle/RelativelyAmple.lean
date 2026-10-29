@@ -41,6 +41,8 @@ Stacks Project characterization of relative ampleness by a relatively very ample
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.IsRelativelyVeryAmple.pullback` and
   `TauCeti.AlgebraicGeometry.InvertibleSheaf.IsRelativelyAmple.pullback`: relative (very)
   ampleness is preserved by pullback along an immersion.
+* `TauCeti.AlgebraicGeometry.InvertibleSheaf.IsRelativelyAmple.of_tensorPow`: a line bundle with
+  a relatively ample positive tensor power is relatively ample.
 * `TauCeti.AlgebraicGeometry.IsProjective.exists_isRelativelyVeryAmple`: a projective morphism
   has a relatively very ample line bundle.
 * `TauCeti.AlgebraicGeometry.IsProjective.isSeparated`: a projective morphism is separated.
@@ -123,6 +125,12 @@ theorem IsRelativelyVeryAmple.isRelativelyAmple {L : InvertibleSheaf X} {f : X �
     (hL : L.IsRelativelyVeryAmple f) : L.IsRelativelyAmple f := by
   refine ⟨1, Nat.one_pos, hL.of_iso (Classical.choice ?_)⟩
   rw [← LineBundleClass.mk_eq_mk_iff, LineBundleClass.mk_tensorPow, pow_one]
+
+/-- If a positive tensor power `L^{⊗m}` is relatively ample for `f`, then so is `L`. -/
+theorem IsRelativelyAmple.of_tensorPow {L : InvertibleSheaf X} {f : X ⟶ S} {m : ℕ} (hm : 0 < m)
+    (hL : (L.tensorPow m).IsRelativelyAmple f) : L.IsRelativelyAmple f := by
+  obtain ⟨n, hn, hLn⟩ := hL
+  exact ⟨m * n, Nat.mul_pos hm hn, hLn.of_iso (nonempty_tensorPow_tensorPow_iso L m n).some⟩
 
 /-- Relative ampleness depends only on the isomorphism class of the line bundle. -/
 theorem IsRelativelyAmple.of_iso {L K : InvertibleSheaf X} {f : X ⟶ S}

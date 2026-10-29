@@ -53,22 +53,24 @@ consumed and are not stubbed.
 ## Splits
 
 1. **Tensor powers of line bundles** (after: none; needs no supplier, can be opened at once).
-   - File: `TauCeti/AlgebraicGeometry/LineBundle/Power.lean` (96 lines, new).
+   - File: `TauCeti/AlgebraicGeometry/LineBundle/Power.lean` (112 lines, new).
    - Declarations: `InvertibleSheaf.tensorPow`, `InvertibleSheaf.tensorPow_zero`,
      `InvertibleSheaf.tensorPow_succ`, `LineBundleClass.mk_tensorPow`,
-     `InvertibleSheaf.nonempty_tensorPow_obj_iso`, `InvertibleSheaf.nonempty_pullback_tensorPow_iso`
+     `InvertibleSheaf.nonempty_tensorPow_obj_iso`, `InvertibleSheaf.nonempty_tensorPow_add_iso`,
+     `InvertibleSheaf.nonempty_tensorPow_tensorPow_iso`,
+     `InvertibleSheaf.nonempty_pullback_tensorPow_iso`
      (all in `TauCeti.AlgebraicGeometry`).
    - Subject: `feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles`
 2. **Relatively (very) ample line bundles and projective morphisms** (after: 1, and the supplier
    `relative-proj-twisting-sheaf` landing on `main`).
-   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (184 lines, new); its import
+   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (192 lines, new); its import
      of `TauCeti.Lookahead.RelativeAmpleness.Stubs` is replaced by the supplier's landed modules,
      and the stub file is deleted.
    - Declarations: `CommMon.relativeProjTwistingSheafOne`, `InvertibleSheaf.IsRelativelyVeryAmple`,
      `IsRelativelyVeryAmple.of_iso`, `isRelativelyVeryAmple_relativeProjTwistingSheaf`,
      `IsRelativelyVeryAmple.pullback`, `IsRelativelyVeryAmple.isSeparated`,
      `InvertibleSheaf.IsRelativelyAmple`, `IsRelativelyVeryAmple.isRelativelyAmple`,
-     `IsRelativelyAmple.of_iso`, `IsRelativelyAmple.pullback`, `IsRelativelyAmple.isSeparated`,
+     `IsRelativelyAmple.of_tensorPow`, `IsRelativelyAmple.of_iso`, `IsRelativelyAmple.pullback`, `IsRelativelyAmple.isSeparated`,
      `IsProjective` (class), `isProjective_relativeProjToBase`, the instance
      `IsProjective (j ≫ f)` for a closed immersion `j`, `IsProjective.exists_isRelativelyVeryAmple`,
      `IsProjective.isSeparated`.
@@ -81,7 +83,9 @@ relatively very ample line bundles (immersion into `Proj_S A`, `A` generated in 
 `A₁` of finite type, pulling `𝒪(1)` back to `L`; equivalent to the Stacks definition via `ℙ(A₁)`),
 `𝒪(1)` relatively very ample on `Proj_S A`, stability under pullback along immersions and under
 isomorphism, separatedness; relative ampleness as "some positive tensor power is relatively very
-ample" with the same API; projective morphisms (closed immersion into such a `Proj_S A`), their
+ample" with the same API, and a line bundle with a relatively ample positive tensor power is
+relatively ample (via the exponent laws `L^{⊗(m+n)} ≅ L^{⊗m} ⊗ L^{⊗n}` and
+`(L^{⊗m})^{⊗n} ≅ L^{⊗mn}`); projective morphisms (closed immersion into such a `Proj_S A`), their
 closure under precomposition with closed immersions, existence of a relatively very ample line
 bundle, separatedness.
 
@@ -91,8 +95,14 @@ Remains for the target:
 - Relative ampleness in the general Stacks sense (`L|_{f⁻¹V}` ample for every affine `V ⊆ S`, with
   absolute ampleness via nonvanishing loci of sections of tensor powers) and its comparison with
   the definition here for morphisms of finite type over a quasi-compact base.
-- Properness of projective morphisms (needs the supplier's finite generation of `A` by `A₁`
-  and a finiteness hypothesis on `A₀`), stability of projectivity under composition and base change.
+- The converse, `L` relatively ample ⇒ `L^{⊗m}` relatively ample for `m > 0` (needs that tensor
+  powers of a relatively very ample bundle are relatively very ample: the Veronese re-embedding
+  `Proj_S A ≅ Proj_S A^{(m)}` with `𝒪(m)` pulling back to `𝒪(1)`, which no supplier pins yet).
+- Global generation of tensor products and tensor powers of globally generated line bundles
+  (needs products of sections in the sheafified tensor product, not yet on `main`).
+- Properness of projective morphisms (needs an API for the supplier's "generated in degree one"
+  giving finite type of `A` over `A₀` from finite type of `A₁`, and `Proj_S A ≅ Proj_S (𝒪_S ⊕ A₊)`
+  so that the hypothesis on `A₀` of `isProper_relativeProjToBase` can be met), stability of projectivity under composition and base change.
 - Relative `Proj` of a finitely generated graded algebra over an affine base compared with
   Mathlib's `Proj` (the supplier's `relativeProj_affine_iso`), and the scheme-theoretic closure
   of `C ↪ ℙ^N_K` in `ℙ^N_R`.
