@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-extension","main":"45d6c5cf463be69fd00b2dc1dc7e0a397ff2e540","status":"partial","suppliers":["qcoh-pushforward"],"splits":[{"n":1,"after":[],"title":"feat: extend quasi-coherent modules and submodules along quasi-compact open immersions"},{"n":2,"after":[],"title":"feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules"},{"n":3,"after":[1,2],"title":"feat: extend finite-type and finitely presented quasi-coherent modules along quasi-compact open immersions"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-extension","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["qcoh-pushforward"],"splits":[{"n":1,"after":[],"title":"feat: extend quasi-coherent modules and submodules along quasi-compact open immersions"},{"n":2,"after":[],"title":"feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules"},{"n":3,"after":[1,2],"title":"feat: extend finite-type and finitely presented quasi-coherent modules along quasi-compact open immersions"}]}-->
 
 # Lookahead: `qcoh-extension` (SchemeAndStackFoundations, Layer 0, §0.4)
 
-Built on `main` at `45d6c5cf463be69fd00b2dc1dc7e0a397ff2e540`. Status: **partial**. Stacks
+Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial**. Stacks
 Lemma 28.23.1 (01PE), parts (1) and (2), is proved against a stub of the supplier. The
 finite-type and finitely-presented parts (01PF, 0G41, 01PI) are not proved yet.
 
@@ -70,6 +70,16 @@ On a quasi-compact quasi-separated `X`:
    `j_* F`), and a finitely presented `F` extends to a finitely presented `G`.
 4. 01PI (Lemma 28.23.4): a map from a finitely presented `F` to `j^* H` extends to a map from a
    finitely presented extension of `F` to `H`.
+
+Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-29). PR #21787 is
+still open, so the stub stays. Mathlib provides `SheafOfModules.IsFiniteType` and
+`SheafOfModules.IsFinitePresentation`. `main` provides `isQuasicoherent_of_isColimit` and
+`isColimitMapCoconeSectionsFunctor` in `Quasicoherent/Colimits.lean`: on an affine open, sections
+of quasi-coherent modules commute with colimits. It also has `Quasicoherent/Affine.lean`
+(`affineEquiv`, quasi-coherent modules on an affine scheme are module tildes). These are the
+natural inputs for the affine case of 01PG. A workable statement of 01PG: the finite-type
+quasi-coherent subobjects of `G` form a directed family whose supremum is `⊤`. Equivalently,
+the cocone of their inclusions into `G` is a colimit, which matches the existing colimit API.
 
 ## Split plan
 
