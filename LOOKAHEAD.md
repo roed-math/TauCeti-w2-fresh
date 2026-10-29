@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-higher-direct-image-vanishing","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: uniform vanishing of quasi-coherent cohomology on qcqs schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-higher-direct-image-vanishing","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: uniform vanishing of quasi-coherent cohomology and higher direct images on qcqs schemes"}]}-->
 
 # Lookahead: `qcoh-higher-direct-image-vanishing` (SchemeAndStackFoundations, §2.6)
 
@@ -56,16 +56,21 @@ unchanged.
 
 ## Split plan
 
-### Split 1 (needs nothing first): `feat: uniform vanishing of quasi-coherent cohomology on qcqs schemes`
+### Split 1 (needs nothing first): `feat: uniform vanishing of quasi-coherent cohomology and higher direct images on qcqs schemes`
 
-File: `TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean` (new, 171 lines). Declarations:
+File: `TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean` (new, 230 lines). Declarations:
 
-- `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomologyOn_of_le_isAffineOpen`:
-  a uniform bound for a quasi-compact open contained in an affine open. It is covered by finitely
-  many basic opens, whose nonempty intersections are basic opens and so affine.
-- `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomologyOn_of_isCompact`: a
-  uniform bound for a quasi-compact open of a quasi-separated scheme. Induction on finite affine
-  covers with Mayer–Vietoris, using the bound `max N₁ (N₂ + 1)`.
+- `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomologyOn_inf_basicOpen_of_le_isAffineOpen`:
+  a bound for `W ⊓ D(g)`, uniform in the coefficients and in the global section `g`, when `W` is
+  a quasi-compact open contained in an affine open `U`. `W` is covered by finitely many basic opens
+  of `U`, and their intersections with `D(g)` and with each other are basic opens of `U`, so they
+  are affine.
+- `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomologyOn_inf_basicOpen_of_isCompact`:
+  the same uniform bound on `W ⊓ D(g)` for a quasi-compact open `W` of a quasi-separated scheme.
+  The proof is induction on finite affine covers with Mayer–Vietoris, using the bound
+  `max N₁ (N₂ + 1)` and the fact that `U ⊓ D(g)` is a basic open of the affine open `U`.
+- `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomologyOn_of_isCompact`: the
+  case `g = 1`.
 - `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_subsingleton_cohomology`: the bound on a qcqs
   scheme.
 - `TauCeti.QCoh.higherDirectImage_vanishing`: the pinned target.
@@ -74,6 +79,12 @@ File: `TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean` (new, 171 lines
   is `N` with `Hᵖ(f⁻¹U, F) = 0` for all quasi-coherent `F` and `p ≥ N`. It applies the pinned
   theorem to `f ∣_ U` and transports along `Scheme.Modules.cohomologyOnOpensRangeIso`
   (`Cohomology/OpenImmersion.lean`), using Mathlib's `isQuasicoherent_restrictFunctor`.
+- `TauCeti.QCoh.exists_isZero_higherDirectImage`: for `f : X ⟶ S` qcqs with `S` affine there is
+  `N` with `Rᵖ f_* F = 0` (`Scheme.Hom.higherDirectImage` on `main`) for all quasi-coherent `F`
+  and `p ≥ N` (Stacks, Lemma 30.4.6, affine base). The preimage of a basic open `D(r)` of `S` is
+  the basic open `D(f^* r)` of `X`, where the bound above holds uniformly in `r`. The theorem then
+  applies `Scheme.Hom.isZero_higherDirectImage_succ_of_isBasis`
+  (`Cohomology/HigherDirectImage/Affine.lean`) to the basis of basic opens of `S`.
 
 This is the only split. It carries the target's exported theorem. The PR would use
 `Roadmap: SchemeAndStackFoundations` and cite §2.6 / `QCoh.higherDirectImage_vanishing`.
@@ -112,3 +123,15 @@ stub of the supplier would be needed. Items 3 and 4 also need the Čech comparis
   base), which still needs no stub. `main` still has no comparison of
   `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`. That comparison
   is the first missing step for items 1–4, so they remain open.
+- Round 4 (2026-10-29): `origin/main` was still `ea7e54cf96`, and PR #21787 is still open, so
+  there was nothing to merge. The two bounds on quasi-compact opens now hold uniformly on
+  `W ⊓ D(g)` for every global section `g`. They replace
+  `exists_subsingleton_cohomologyOn_of_le_isAffineOpen` (now unused, so it was dropped), and
+  `exists_subsingleton_cohomologyOn_of_isCompact` is now their case `g = 1`. With this uniformity,
+  the new `QCoh.exists_isZero_higherDirectImage` proves that the higher direct images themselves
+  vanish in a range depending only on `f` over an affine base. No stub is needed for this either.
+  Items 1–4 under *What remains* are still open. Their first missing step is still a comparison of
+  `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`. A smaller next
+  step: generalise `exists_isZero_higherDirectImage` to a quasi-compact base. That needs the
+  `W ⊓ D(g)` bound for sections `g` over an open rather than global sections, or a restriction
+  compatibility for `higherDirectImage`.
