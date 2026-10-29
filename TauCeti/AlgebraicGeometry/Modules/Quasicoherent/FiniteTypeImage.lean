@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.AffineGlobalSections
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Cokernels
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Kernels
 public import Mathlib.Algebra.Category.ModuleCat.Sheaf.LocallyFree
@@ -17,7 +18,8 @@ the image of a morphism `𝒪_X^I ⟶ G` from a finite free module is a submodul
 type, and it is quasi-coherent when `G` is. So every finite family of global sections of a
 quasi-coherent module lies in a quasi-coherent submodule of finite type. These images are the
 finite-type quasi-coherent submodules from which a quasi-coherent module on an affine scheme is
-built as a directed union.
+built as a directed union: on an affine scheme, a quasi-coherent submodule through which every
+finite-type quasi-coherent submodule factors is everything.
 
 ## Main declarations
 
@@ -32,7 +34,7 @@ built as a directed union.
 
 ## References
 
-* The Stacks Project, Lemma 28.22.3 (Tag 01PG), the affine step.
+* The Stacks Project, Lemma 28.22.3 (Tag 01PG), the affine case.
 -/
 
 public section
@@ -100,5 +102,35 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_section
   calc _ = N.freeHomEquiv (factorThruImage φ ≫ image.ι φ) k := rfl
     _ = N.freeHomEquiv φ k := congrArg (N.freeHomEquiv · k) (image.fac φ)
     _ = s k := congrFun (N.freeHomEquiv.apply_symm_apply s) k
+
+/-- The section of a module given by a section over `⊤` and its restrictions. -/
+private noncomputable def sectionsOfTop (N : X.Modules) (x : N.val.obj (Opposite.op ⊤)) :
+    N.sections :=
+  PresheafOfModules.sectionsMk (fun _ ↦ N.val.map (homOfLE le_top).op x) fun _ _ _ ↦ by
+    rw [← PresheafOfModules.map_comp_apply]
+    rfl
+
+private theorem sectionsOfTop_val_top (N : X.Modules) (x : N.val.obj (Opposite.op ⊤)) :
+    (sectionsOfTop N x).val (Opposite.op ⊤) = x := by
+  change N.val.map (𝟙 _) x = x
+  rw [PresheafOfModules.map_id]
+  rfl
+
+/-- On an affine scheme, a quasi-coherent module is the union of its finite-type quasi-coherent
+submodules: a quasi-coherent submodule `M` of a quasi-coherent `N` through which every finite-type
+quasi-coherent submodule of `N` factors is all of `N`. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.isIso_of_mono_of_forall_isFiniteType_factors
+    [IsAffine X] {M N : X.Modules} [M.IsQuasicoherent] [N.IsQuasicoherent] (i : M ⟶ N) [Mono i]
+    (h : ∀ (N' : X.Modules) (_ : N'.IsQuasicoherent) (_ : N'.IsFiniteType) (i' : N' ⟶ N),
+      Mono i' → ∃ g : N' ⟶ M, g ≫ i = i') : IsIso i := by
+  -- Every global section `x` of `N` lies in a finite-type quasi-coherent submodule, hence in `M`.
+  refine Scheme.Modules.isIso_of_mono_of_surjective_sectionsFunctor_map_top i fun x ↦ ?_
+  obtain ⟨N', _, _, i', _, t, ht⟩ :=
+    Scheme.Modules.exists_isFiniteType_mono_sections (I := PUnit.{u + 1})
+      fun _ ↦ sectionsOfTop N x
+  obtain ⟨g, rfl⟩ := h N' ‹_› ‹_› i' ‹_›
+  exact ⟨(SheafOfModules.sectionsMap g (t ⟨⟩)).val (Opposite.op ⊤),
+    (congrArg (fun σ : N.sections ↦ σ.val (Opposite.op ⊤)) (ht ⟨⟩)).trans
+      (sectionsOfTop_val_top N x)⟩
 
 end TauCeti.AlgebraicGeometry

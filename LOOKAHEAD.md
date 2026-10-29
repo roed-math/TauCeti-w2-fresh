@@ -5,8 +5,9 @@
 Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial**. Stacks
 Lemma 28.23.1 (01PE), parts (1) and (2), is proved against a stub of the supplier. So is the
 first, supplier-free step of 01PG: finitely many global sections of a quasi-coherent module lie
-in a quasi-coherent submodule of finite type. The rest of 01PG and the finite-type and
-finitely presented parts (01PF, 0G41, 01PI) are not proved yet.
+in a quasi-coherent submodule of finite type. So is the affine case of 01PG: on an affine scheme
+a quasi-coherent module is the union of its finite-type quasi-coherent submodules. The qcqs case
+of 01PG and the finite-type and finitely presented parts (01PF, 0G41, 01PI) are not proved yet.
 
 ## Stubbed declarations (supplier `qcoh-pushforward`)
 
@@ -74,6 +75,29 @@ The first step of 01PG is in `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/Fi
   submodule `i : N' ⟶ N` of finite type and `t : I → N'.sections` with
   `sectionsMap i (t k) = s k`. Here `N'` is the image of `𝒪_X^I ⟶ N`.
 
+The affine case of 01PG (added in session 3, 2026-10-29) does not use the stub either. New file
+`TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean`:
+
+- `AlgebraicGeometry.Scheme.Modules.isIso_of_isIso_restrictFunctor_map`: restriction along an
+  isomorphism of schemes `j` reflects isomorphisms of modules (via `restrictFunctorComp`,
+  `restrictFunctorCongr`, `restrictFunctorId`).
+- `AlgebraicGeometry.Scheme.Modules.isIso_of_bijective_sectionsFunctor_map_top`: on an affine
+  `X`, a morphism of quasi-coherent modules bijective on global sections (`sectionsFunctor ⊤`) is
+  an isomorphism. Proof: `IsAffineOpen.restrictFromSpecCompModuleSpecΓFunctorIso` for `⊤`, the
+  tilde equivalence reflects isomorphisms, and `IsAffineOpen.fromSpec_top` makes the chart an
+  isomorphism.
+- `AlgebraicGeometry.Scheme.Modules.isIso_of_mono_of_surjective_sectionsFunctor_map_top`: on an
+  affine `X`, a mono of quasi-coherent modules surjective on global sections is an isomorphism.
+
+And appended to `FiniteTypeImage.lean`:
+
+- `AlgebraicGeometry.Scheme.Modules.isIso_of_mono_of_forall_isFiniteType_factors`: on an affine
+  `X`, a quasi-coherent submodule `i : M ⟶ N` of a quasi-coherent `N` through which every
+  finite-type quasi-coherent submodule of `N` factors is an isomorphism. This is the affine case
+  of 01PG in mono form. It uses a private helper `sectionsOfTop` (a section over `⊤` as an element
+  of `N.sections`). A reviewer may ask for that helper to become public API, for instance an
+  equivalence `N.sections ≃ Γ(N, ⊤)`; Mathlib has none (checked `sectionsEquiv`, `IsInitial`).
+
 Elaboration notes. `X.Modules` and `SheafOfModules X.ringCatSheaf` carry the same category
 instance, but instance search does not unify across them. For example, `GeneratingSections.ofEpi`
 needs `Epi` stated with `C := SheafOfModules X.ringCatSheaf`. Inside the
@@ -83,14 +107,14 @@ build `LocalGeneratorsData.IsFiniteType` with `constructor`, not with an anonymo
 ## What remains (for `status: complete`)
 
 On a quasi-compact quasi-separated `X`:
-1. 01PG (Stacks, Lemma 28.22.3): a quasi-coherent module is the directed union of its
-   finite-type quasi-coherent submodules. `exists_isFiniteType_mono_sections` above is the
-   finite-sections step. The affine case still needs the following lemma. On an affine `X`, a mono
-   `i : N' ⟶ N` into a quasi-coherent `N` through which every global section of `N` factors is
-   an isomorphism. This needs global generation on affines: `freeHomEquiv.symm id` from
-   `free N.sections` to `N` is epi, via `N ≅ tilde Γ(N)` and `X.isoSpec`. `main` does not have
-   this as a `GeneratingSections` statement. The general case then needs an induction on a finite
-   affine cover, using 01PE (2) above.
+1. 01PG (Stacks, Lemma 28.22.3) on a qcqs `X`: a quasi-coherent module is the directed union of
+   its finite-type quasi-coherent submodules. The affine case is done
+   (`isIso_of_mono_of_forall_isFiniteType_factors`). The qcqs case still needs the induction on
+   the number of affines in a finite affine cover (`X = U ∪ W`, `W` affine), extending
+   finite-type submodules from `W` to `X` with 01PE (2). Stating it in the same mono form as the
+   affine case keeps the induction in one shape. Directedness (the sum of two finite-type
+   quasi-coherent submodules is one) is the image of the coproduct, using
+   `isQuasicoherent_sigma` and `isQuasicoherent_image`.
 2. 01PF (Lemma 28.23.2): a finite-type quasi-coherent submodule of `j^* G` is `j^* G'` for a
    finite-type quasi-coherent `G' ⊆ G`. Apply 01PE (2), then 01PG to the extension, and use the
    quasi-compactness of `U`.
@@ -118,10 +142,13 @@ the cocone of their inclusions into `G` is a colimit, which matches the existing
 2. **Split 2** (after: none, independent of the supplier). Started. File
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (104 lines), with
    `isFiniteType_of_generatingSections`, `isQuasicoherent_image`,
-   `isFiniteType_image_of_generatingSections` and `exists_isFiniteType_mono_sections`. Still to
-   write: global generation on affines, the affine directed-union statement, and the qcqs
-   induction, either in this file or in a sibling file proving 01PG. If the split exceeds about
-   600 lines, `FiniteTypeImage.lean` can be opened alone first.
+   `isFiniteType_image_of_generatingSections`, `exists_isFiniteType_mono_sections` and
+   `isIso_of_mono_of_forall_isFiniteType_factors` (136 lines now). Also
+   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean` (93 lines), with
+   `isIso_of_isIso_restrictFunctor_map`, `isIso_of_bijective_sectionsFunctor_map_top` and
+   `isIso_of_mono_of_surjective_sectionsFunctor_map_top`. Still to write: the qcqs induction,
+   in a sibling file proving 01PG. If the split exceeds about 600 lines, the two existing files
+   (the affine case, about 230 lines) can be opened alone first.
    Subject: `feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules`.
 3. **Split 3** (after: 1, 2). Not yet written. It adds the finite-type submodule extension
    (01PF), finite-type and finitely presented extension (0G41) and map extension (01PI), either
