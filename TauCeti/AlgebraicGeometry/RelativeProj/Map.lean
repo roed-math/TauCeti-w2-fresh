@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.AlgebraicGeometry.Modules.AffineGlobalSections
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ClosedImmersion
 public import TauCeti.AlgebraicGeometry.RelativeProj.Basic
 
@@ -36,6 +37,8 @@ of `AlgebraicGeometry.Proj.isClosedImmersion_map_of_grade_subset_range`.
   affine open `U`, the morphism is `Proj (⨁ n, Γ(Aₙ, U)) ⟶ Proj (⨁ n, Γ(Bₙ, U))`.
 * `CategoryTheory.CommMon.isClosedImmersion_relativeProjMap`: a morphism surjective in positive
   degrees on affine sections induces a closed immersion of relative `Proj`s.
+* `CategoryTheory.CommMon.isClosedImmersion_relativeProjMap_of_epi`: so does a morphism that is an
+  epimorphism of module sheaves in every positive degree.
 
 ## References
 
@@ -196,6 +199,38 @@ theorem _root_.CategoryTheory.CommMon.isClosedImmersion_relativeProjMap :
     ((MorphismProperty.cancel_left_of_respectsIso @IsClosedImmersion h.isoPullback.inv _).mpr this)
 
 end ClosedImmersion
+
+section Epi
+
+variable [∀ n, (A.X n).IsQuasicoherent] [∀ n, (B.X n).IsQuasicoherent] (φ : B ⟶ A)
+  (hφ : ∀ i, 0 < i → Epi (φ.hom.hom i))
+include hφ
+
+/-- A morphism of graded algebras that is an epimorphism of module sheaves in every positive degree
+is surjective in positive degrees on sections over affine opens, the components of `A` and `B`
+being quasicoherent. -/
+theorem _root_.CategoryTheory.CommMon.grade_subset_range_gradedSectionsGradedHom_of_epi
+    (U : X.Opens) (hU : IsAffineOpen U) (i : ℕ) (hi : 0 < i) :
+    (A.gradedSectionsGrading U i : Set (⨁ n, Γ(A.X n, U))) ⊆
+      Set.range (CommMon.gradedSectionsGradedHom φ U) := by
+  rintro _ hx
+  obtain ⟨x, rfl⟩ := DirectSum.mem_summand.mp hx
+  obtain ⟨y, rfl⟩ := @Scheme.Modules.Hom.app_surjective_of_epi_of_isAffineOpen _ (B.X i) (A.X i)
+    (φ.hom.hom i) (hφ i hi) _ _ U hU x
+  exact ⟨DirectSum.of _ i y, CommMon.gradedSectionsMap_of φ U i y⟩
+
+/-- **A morphism of graded algebras that is an epimorphism in positive degrees induces a closed
+immersion of relative `Proj`s**: if `φ : B ⟶ A` is an epimorphism `Bₙ ⟶ Aₙ` of module sheaves for
+every `n > 0`, then `Proj_X(A) ⟶ Proj_X(B)` is a closed immersion. -/
+@[stacks 01N0]
+theorem _root_.CategoryTheory.CommMon.isClosedImmersion_relativeProjMap_of_epi :
+    IsClosedImmersion (CommMon.relativeProjMap φ
+      (CommMon.irrelevant_le_map_gradedSectionsGradedHom_of_grade_subset_range φ
+        (CommMon.grade_subset_range_gradedSectionsGradedHom_of_epi φ hφ))) :=
+  CommMon.isClosedImmersion_relativeProjMap φ
+    (CommMon.grade_subset_range_gradedSectionsGradedHom_of_epi φ hφ)
+
+end Epi
 
 end
 
