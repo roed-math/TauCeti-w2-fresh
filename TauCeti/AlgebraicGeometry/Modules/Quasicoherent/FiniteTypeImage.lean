@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Modules.Biprod
+public import TauCeti.AlgebraicGeometry.Modules.Pullback.Basic
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.AffineGlobalSections
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Cokernels
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Kernels
@@ -15,13 +16,14 @@ public import Mathlib.Algebra.Category.ModuleCat.Sheaf.LocallyFree
 # Finite-type quasi-coherent submodules
 
 An `𝒪_X`-module with finitely many global generating sections is of finite type, and a quotient
-of a module of finite type is of finite type. Consequently, the image of a morphism `M ⟶ G` out
-of a module of finite type is a submodule of `G` of finite type, and it is quasi-coherent when
-`M` and `G` are. So every finite family of global sections of a quasi-coherent module lies in a
-quasi-coherent submodule of finite type, and any two finite-type quasi-coherent submodules lie
-in a third. These are the finite-type quasi-coherent submodules from which a quasi-coherent
-module on an affine scheme is built as a directed union: on an affine scheme, a quasi-coherent
-submodule through which every finite-type quasi-coherent submodule factors is everything.
+of a module of finite type is of finite type, as is its restriction along an open immersion.
+Consequently, the image of a morphism `M ⟶ G` out of a module of finite type is a submodule of
+`G` of finite type, and it is quasi-coherent when `M` and `G` are. So every finite family of
+global sections of a quasi-coherent module lies in a quasi-coherent submodule of finite type, and
+any two finite-type quasi-coherent submodules lie in a third. These are the finite-type
+quasi-coherent submodules from which a quasi-coherent module on an affine scheme is built as a
+directed union: on an affine scheme, a quasi-coherent submodule through which every finite-type
+quasi-coherent submodule factors is everything.
 
 ## Main declarations
 
@@ -29,6 +31,8 @@ submodule through which every finite-type quasi-coherent submodule factors is ev
   generating sections make a module of finite type.
 * `AlgebraicGeometry.Scheme.Modules.isFiniteType_of_epi`: a quotient of a module of finite type
   is of finite type.
+* `AlgebraicGeometry.Scheme.Modules.isFiniteType_restrict`: the restriction of a module of finite
+  type along an open immersion is of finite type.
 * `AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image`,
   `AlgebraicGeometry.Scheme.Modules.isFiniteType_image`: the image of a morphism of
   quasi-coherent modules is quasi-coherent, and the image of a morphism out of a module of
@@ -108,6 +112,13 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.isFiniteType_of_epi {M N : X.Mod
     have := hq.isFiniteType i
     exact ⟨SheafOfModules.GeneratingSections.IsFiniteType.finite (σ := q.generators i)⟩
   exact SheafOfModules.IsFiniteType.mk (R := X.ringCatSheaf) ⟨q', hq'⟩
+
+/-- The restriction of a module of finite type along an open immersion is of finite type: it is
+isomorphic to the pullback, which is of finite type. -/
+instance _root_.AlgebraicGeometry.Scheme.Modules.isFiniteType_restrict {U : Scheme.{u}}
+    (j : U ⟶ X) [IsOpenImmersion j] (M : X.Modules) [M.IsFiniteType] :
+    (M.restrict j).IsFiniteType :=
+  Scheme.Modules.isFiniteType_of_epi ((Scheme.Modules.restrictFunctorIsoPullback j).inv.app M)
 
 /-- The image of a morphism of quasi-coherent modules is quasi-coherent. -/
 instance _root_.AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image {M N : X.Modules}

@@ -2,7 +2,7 @@
 
 # Lookahead: `qcoh-extension` (SchemeAndStackFoundations, Layer 0, §0.4)
 
-Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 4, 2026-10-30). Stacks
+Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 5, 2026-10-30). Stacks
 Lemma 28.23.1 (01PE), parts (1) and (2), is proved against a stub of the supplier. So is the
 first, supplier-free step of 01PG: finitely many global sections of a quasi-coherent module lie
 in a quasi-coherent submodule of finite type. So is the affine case of 01PG: on an affine scheme
@@ -88,6 +88,14 @@ Session 4 (2026-10-30) added to `FiniteTypeImage.lean`, again without the stub:
   finite-type quasi-coherent submodules `N₁, N₂ ⟶ N` of a quasi-coherent `N` factor through a
   third, the image of `N₁ ⊞ N₂ ⟶ N` (using `isFiniteType_biprod` from `Modules/Biprod.lean`).
 
+Session 5 (2026-10-30) added to `FiniteTypeImage.lean`, without the stub:
+
+- `AlgebraicGeometry.Scheme.Modules.isFiniteType_restrict` (instance): the restriction of a
+  module of finite type along an open immersion is of finite type. It applies
+  `isFiniteType_of_epi` to `restrictFunctorIsoPullback`, and then uses `isFiniteType_pullback`
+  from `Modules/Pullback/Basic.lean`. The qcqs induction for 01PG needs it, to restrict a
+  finite-type submodule to `U ∩ W`.
+
 The affine case of 01PG (added in session 3, 2026-10-29) does not use the stub either. New file
 `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean`:
 
@@ -140,7 +148,13 @@ On a quasi-compact quasi-separated `X`:
 4. 01PI (Lemma 28.23.4): a map from a finitely presented `F` to `j^* H` extends to a map from a
    finitely presented extension of `F` to `H`.
 
-Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-30). PR #21787 is
+Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-30, session 5).
+Neither Mathlib nor `main` proves that finite type can be checked on an open cover. The
+quasi-coherent analogue is `isQuasicoherent_of_isQuasicoherent_restrict` in
+`Quasicoherent/Restriction.lean`, which goes through `SheafOfModules.IsQuasicoherent.of_coversTop`.
+A finite-type analogue (transport each `LocalGeneratorsData` of `M|_{U_i}` to the slice sites
+`X.Opens / U_i` with `overEquiv`, then concatenate over `i`) is the next prerequisite of the
+gluing step. PR #21787 is
 still open, so the stub stays. Mathlib provides `SheafOfModules.IsFiniteType` and
 `SheafOfModules.IsFinitePresentation`. `main` provides `isQuasicoherent_of_isColimit` and
 `isColimitMapCoconeSectionsFunctor` in `Quasicoherent/Colimits.lean`: on an affine open, sections
@@ -157,15 +171,16 @@ the cocone of their inclusions into `G` is a colimit, which matches the existing
    `exists_isQuasicoherent_restrict_iso` and `exists_mono_restrict_iso_of_isQuasicoherent`.
    Subject: `feat: extend quasi-coherent modules and submodules along quasi-compact open immersions`.
 2. **Split 2** (after: none, independent of the supplier). Started. File
-   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (188 lines), with
+   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (199 lines), with
    `isFiniteType_of_generatingSections`, `epi_overFunctor_map`, `isFiniteType_of_epi`,
+   `isFiniteType_restrict`,
    `isQuasicoherent_image`, `isFiniteType_image`, `exists_isFiniteType_mono_sections`,
    `exists_isFiniteType_mono_factors` and `isIso_of_mono_of_forall_isFiniteType_factors`. Also
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean` (93 lines), with
    `isIso_of_isIso_restrictFunctor_map`, `isIso_of_bijective_sectionsFunctor_map_top` and
    `isIso_of_mono_of_surjective_sectionsFunctor_map_top`. Still to write: the qcqs induction,
    in a sibling file proving 01PG. If the split exceeds about 600 lines, the two existing files
-   (the affine case and directedness, about 280 lines) can be opened alone first.
+   (the affine case and directedness, about 290 lines) can be opened alone first.
    Subject: `feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules`.
 3. **Split 3** (after: 1, 2). Not yet written. It adds the finite-type submodule extension
    (01PF), finite-type and finitely presented extension (0G41) and map extension (01PI), either
