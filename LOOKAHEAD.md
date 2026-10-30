@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/LineBundle): relatively (very) ample line bundles and projective morphisms"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): global generation of the trivial line bundle and of pullbacks"},{"n":3,"after":[1,2],"title":"feat(AlgebraicGeometry/LineBundle): relatively (very) ample line bundles and projective morphisms"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
 Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial**. Target text
@@ -65,7 +65,15 @@ consumed and are not stubbed.
      `InvertibleSheaf.nonempty_pullback_tensorPow_iso`
      (all in `TauCeti.AlgebraicGeometry`).
    - Subject: `feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles`
-2. **Relatively (very) ample line bundles and projective morphisms** (after: 1, and the supplier
+2. **Global generation of the trivial line bundle and of pullbacks** (after: none; needs no
+   supplier, can be opened at once).
+   - File: `TauCeti/AlgebraicGeometry/LineBundle/GlobalGeneration/Pullback.lean` (71 lines, new).
+   - Declarations: `InvertibleSheaf.isGloballyGenerated_trivial`,
+     `InvertibleSheaf.IsGloballyGenerated.pullback` (in `TauCeti.AlgebraicGeometry`), both via
+     Mathlib's `SheafOfModules.GeneratingSections` (`GeneratingSections.map` along the
+     colimit-preserving pullback functor with `pullbackObjUnitIso`).
+   - Subject: `feat(AlgebraicGeometry/LineBundle): global generation of the trivial line bundle and of pullbacks`
+3. **Relatively (very) ample line bundles and projective morphisms** (after: 1, 2, and the supplier
    `relative-proj-twisting-sheaf` landing on `main`).
    - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (192 lines, new); its import
      of `TauCeti.Lookahead.RelativeAmpleness.Stubs` is replaced by the supplier's landed modules,
@@ -93,6 +101,10 @@ relatively ample (via the exponent laws `L^{⊗(m+n)} ≅ L^{⊗m} ⊗ L^{⊗n}`
 closure under precomposition with closed immersions, existence of a relatively very ample line
 bundle, separatedness.
 
+Third session (2026-10-30, 00:50 UTC): added split 2, global generation of `𝒪_X` and of pullbacks
+of globally generated line bundles. The final split is listed after split 2 because the remaining
+global-generation statements for relatively ample bundles (tensor powers, below) will live there.
+
 Remains for the target:
 - Cartier divisors and degree on components for the invertible-sheaf API (partly on `main`
   under `CartierDivisor/` and `LineBundle/Degree.lean`; not yet connected to relative ampleness).
@@ -102,10 +114,11 @@ Remains for the target:
 - The converse, `L` relatively ample ⇒ `L^{⊗m}` relatively ample for `m > 0` (needs that tensor
   powers of a relatively very ample bundle are relatively very ample: the Veronese re-embedding
   `Proj_S A ≅ Proj_S A^{(m)}` with `𝒪(m)` pulling back to `𝒪(1)`, which no supplier pins yet).
-- Global generation of the trivial bundle, of pullbacks, of tensor products and of tensor powers
-  of globally generated line bundles (the trivial case first needs a rank-one trivialization of
-  `𝒪_X` over `⊤`, `free PUnit ≅ (free PUnit).over ⊤`, which `main` does not state;
-  the tensor cases need products of sections in the sheafified tensor product: `LineBundle/TensorProduct.lean`
+- Global generation of tensor products and of tensor powers of globally generated line bundles
+  (the trivial and pullback cases are now split 2). Via `GeneratingSections` this needs
+  `free I ⊗ free J ≅ free (I × J)` in `X.Modules` (tensoring preserves coproducts since
+  `X.Modules` is monoidal closed, and `𝒪 ⊗ 𝒪 ≅ 𝒪`) plus epimorphy of `σ.π ⊗ τ.π`; the pointwise
+  route needs products of sections in the sheafified tensor product: `LineBundle/TensorProduct.lean`
   on `main` has only the structural isomorphisms, no map `Γ(L) × Γ(K) → Γ(L ⊗ K)`, so this is
   the next piece to build, together with `nonvanishingLocus (s ⊗ t) = nonvanishingLocus s ⊓
   nonvanishingLocus t`).
