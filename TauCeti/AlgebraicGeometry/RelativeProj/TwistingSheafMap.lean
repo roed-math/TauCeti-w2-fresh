@@ -109,8 +109,8 @@ theorem _root_.CategoryTheory.CommMon.ι_relativeProjMap (U : X.AffineZariskiSit
 `Proj (⨁ n, Γ(Aₙ, U)) ⟶ Proj (⨁ n, Γ(Bₙ, U))`. -/
 def _root_.CategoryTheory.CommMon.relativeProjTwistingSheafMapChart (U : X.AffineZariskiSite) :
     (B.relativeProjTwistingSheafGlueData n).glued ⟶
-      (Scheme.Modules.pushforward (CommMon.relativeProjMap φ hφ :
-        colimit A.relativeProjGluingData.functor ⟶ colimit B.relativeProjGluingData.functor)).obj
+      (Scheme.Modules.pushforward (X := colimit A.relativeProjGluingData.functor)
+        (Y := colimit B.relativeProjGluingData.functor) (CommMon.relativeProjMap φ hφ)).obj
         ((Scheme.Modules.pushforward (colimit.ι A.relativeProjGluingData.functor U)).obj
           (Proj.twistingSheaf (A.gradedSectionsGrading U.toOpens) n)) :=
   (B.relativeProjTwistingSheafGlueData n).π U ≫
@@ -122,10 +122,8 @@ def _root_.CategoryTheory.CommMon.relativeProjTwistingSheafMapChart (U : X.Affin
         (Proj.twistingSheaf (A.gradedSectionsGrading U.toOpens) n) ≫
     (Scheme.Modules.pushforwardCongr (CommMon.ι_relativeProjMap φ hφ U).symm).hom.app
       (Proj.twistingSheaf (A.gradedSectionsGrading U.toOpens) n) ≫
-    (Scheme.Modules.pushforwardComp (colimit.ι A.relativeProjGluingData.functor U)
-      (CommMon.relativeProjMap φ hφ :
-        colimit A.relativeProjGluingData.functor ⟶
-          colimit B.relativeProjGluingData.functor)).inv.app
+    (Scheme.Modules.pushforwardComp (Z := colimit B.relativeProjGluingData.functor)
+      (colimit.ι A.relativeProjGluingData.functor U) (CommMon.relativeProjMap φ hφ)).inv.app
         (Proj.twistingSheaf (A.gradedSectionsGrading U.toOpens) n)
 
 end
