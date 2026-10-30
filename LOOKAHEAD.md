@@ -9,6 +9,9 @@ Build projective morphisms". The target has no pinned forms in
 
 ## Stubbed declarations
 
+Rechecked 2026-10-30 against PR #22384 head `2a19d275c572`: its `relativeProjTwistingSheaf`
+signature is unchanged, and `main` (still `ea7e54cf96`) has none of the stubbed declarations.
+
 All stubs are in `TauCeti/Lookahead/RelativeAmpleness/Stubs.lean`, for the supplier
 `relative-proj-twisting-sheaf` (SchemeAndStackFoundations §0.3, open PR #22384).
 `SchemeAndStackFoundations/Suggested.lean` pins **no** Lean signature for this supplier (grep for
@@ -99,7 +102,10 @@ Remains for the target:
   powers of a relatively very ample bundle are relatively very ample: the Veronese re-embedding
   `Proj_S A ≅ Proj_S A^{(m)}` with `𝒪(m)` pulling back to `𝒪(1)`, which no supplier pins yet).
 - Global generation of tensor products and tensor powers of globally generated line bundles
-  (needs products of sections in the sheafified tensor product, not yet on `main`).
+  (needs products of sections in the sheafified tensor product: `LineBundle/TensorProduct.lean`
+  on `main` has only the structural isomorphisms, no map `Γ(L) × Γ(K) → Γ(L ⊗ K)`, so this is
+  the next piece to build, together with `nonvanishingLocus (s ⊗ t) = nonvanishingLocus s ⊓
+  nonvanishingLocus t`).
 - Properness of projective morphisms (needs an API for the supplier's "generated in degree one"
   giving finite type of `A` over `A₀` from finite type of `A₁`, and `Proj_S A ≅ Proj_S (𝒪_S ⊕ A₊)`
   so that the hypothesis on `A₀` of `isProper_relativeProjToBase` can be met), stability of projectivity under composition and base change.
