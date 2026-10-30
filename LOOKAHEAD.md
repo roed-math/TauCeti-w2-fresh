@@ -176,3 +176,9 @@ stub of the supplier would be needed. Items 3 and 4 also need the Čech comparis
   *What remains* need the full isomorphism between `Hᵖ` of the sections of an acyclic resolution
   and `Hᵖ(V, F)`, and then the identification of `Scheme.Hom.higherDirectImage` with the
   sheafification of `V ↦ Hᵖ(f⁻¹V, F)`. That is still a multi-file job.
+- Round 10 (2026-10-30): `origin/main` was still `ea7e54cf96`, and PR #21787 is still open (head
+  `e9afd8375f`), so there was nothing to merge. `lake build` is green and `lookahead-check`
+  passes. Rechecked the proof file against the rubrics (module docstring, main declarations list,
+  pinned name and signature) and found nothing to change. Nothing was added: items 1–4 under
+  *What remains* still all start from the comparison of `Scheme.Hom.higherDirectImage` with the
+  sheafification of `V ↦ Hᵖ(f⁻¹V, F)`, which does not fit into one round.
