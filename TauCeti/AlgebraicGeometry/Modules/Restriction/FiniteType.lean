@@ -6,7 +6,8 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.Algebra.Category.ModuleCat.Sheaf.FiniteType
-public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Restriction
+public import Mathlib.AlgebraicGeometry.AffineScheme
+public import Mathlib.AlgebraicGeometry.Modules.Sheaf
 
 /-!
 # Restriction criteria for modules of finite type on schemes

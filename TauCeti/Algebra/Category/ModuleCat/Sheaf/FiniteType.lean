@@ -37,11 +37,11 @@ namespace TauCeti
 
 namespace SheafOfModules
 
-section bind
+section shrink
 
 variable {C : Type u₁} [Category.{v₁} C] {J : GrothendieckTopology C}
   {R : Sheaf J RingCat.{u}}
-  [∀ X, HasSheafify (J.over X) AddCommGrpCat.{u}]
+  [∀ X, HasWeakSheafify (J.over X) AddCommGrpCat.{u}]
   [∀ X, (J.over X).WEqualsLocallyBijective AddCommGrpCat.{u}]
 
 /-- Shrinking the covering family of finite-type local generators keeps each selected family of
@@ -51,20 +51,36 @@ instance _root_.SheafOfModules.LocalGeneratorsData.isFiniteType_shrink
     q.shrink.IsFiniteType where
   isFiniteType _ := _root_.SheafOfModules.LocalGeneratorsData.IsFiniteType.isFiniteType (p := q) _
 
+/-- Transporting local generators along an isomorphism keeps each family of generators finite. -/
+instance _root_.SheafOfModules.LocalGeneratorsData.isFiniteType_ofIsIso
+    {M N : SheafOfModules.{u} R} (f : M ⟶ N) [IsIso f] (q : M.LocalGeneratorsData)
+    [q.IsFiniteType] : (q.ofIsIso f).IsFiniteType where
+  isFiniteType i := by
+    have := _root_.SheafOfModules.LocalGeneratorsData.IsFiniteType.isFiniteType (p := q)
+      ((_root_.SheafOfModules.LocalGeneratorsData.ofIsIso_I f q).mp i)
+    rw [_root_.SheafOfModules.LocalGeneratorsData.ofIsIso_generators]
+    -- `ofIsIso` is not exposed, so the cast along `ofIsIso_X` does not reduce: transport along it.
+    have key {Y Z : C} (h : Y = Z) (σ : (N.over Y).GeneratingSections) [σ.IsFiniteType] :
+        (cast (congrArg (fun W ↦ (N.over W).GeneratingSections) h) σ).IsFiniteType := by
+      subst h
+      exact ‹_›
+    exact key (congrFun (_root_.SheafOfModules.LocalGeneratorsData.ofIsIso_X f q) i).symm _
+
 /-- Finite type is invariant under isomorphism. -/
 theorem _root_.SheafOfModules.IsFiniteType.of_iso {M N : SheafOfModules.{u} R} (e : M ≅ N)
     [M.IsFiniteType] : N.IsFiniteType := by
-  obtain ⟨q, hq⟩ := _root_.SheafOfModules.IsFiniteType.exists_localGeneratorsData M
-  let q' : _root_.SheafOfModules.LocalGeneratorsData.{u₁} N :=
-    { I := q.I
-      X := q.X
-      coversTop := q.coversTop
-      generators := fun i ↦ (q.generators i).ofEpi (e.hom.over (q.X i)) }
-  refine _root_.SheafOfModules.IsFiniteType.mk ⟨q', ⟨fun i ↦ ?_⟩⟩
-  have := hq.isFiniteType i
-  exact ⟨_root_.SheafOfModules.GeneratingSections.IsFiniteType.finite (σ := q.generators i)⟩
+  obtain ⟨q, _⟩ := _root_.SheafOfModules.IsFiniteType.exists_localGeneratorsData M
+  exact _root_.SheafOfModules.IsFiniteType.mk ⟨q.ofIsIso e.hom, inferInstance⟩
 
-variable [∀ X Y, HasWeakSheafify ((J.over X).over Y) AddCommGrpCat.{u}]
+end shrink
+
+section bind
+
+variable {C : Type u₁} [Category.{v₁} C] {J : GrothendieckTopology C}
+  {R : Sheaf J RingCat.{u}}
+  [∀ X, HasSheafify (J.over X) AddCommGrpCat.{u}]
+  [∀ X, (J.over X).WEqualsLocallyBijective AddCommGrpCat.{u}]
+  [∀ X Y, HasWeakSheafify ((J.over X).over Y) AddCommGrpCat.{u}]
   [∀ X Y, ((J.over X).over Y).WEqualsLocallyBijective AddCommGrpCat.{u}]
 
 /-- If a sheaf of modules is of finite type after restriction to every member of a covering
@@ -145,6 +161,24 @@ theorem _root_.SheafOfModules.LocalGeneratorsData.pushforward_X
     {M : SheafOfModules.{u} R} (P : _root_.SheafOfModules.LocalGeneratorsData M)
     (i : (P.pushforward G φ η h).I) :
     (P.pushforward G φ η h).X i = ((P.pushforward_I G φ η h).mp i).1 :=
+  (rfl)
+
+/-- The generators of local generators carried along `G` are the original generators of the
+indexed cover member, mapped along the pushforward between the slice sites. -/
+@[simp]
+theorem _root_.SheafOfModules.LocalGeneratorsData.pushforward_generators
+    {M : SheafOfModules.{u} R} (P : _root_.SheafOfModules.LocalGeneratorsData M)
+    (i : (P.pushforward G φ η h).I) :
+    (P.pushforward G φ η h).generators i =
+      letI j := (P.pushforward_I G φ η h).mp i
+      letI ψ : S.over j.1 ⟶
+          ((Over.post (X := j.1) G ⋙ Over.map j.2.2).sheafPushforwardContinuous RingCat.{u}
+            (K.over j.1) (J.over (P.X j.2.1))).obj (R.over (P.X j.2.1)) :=
+        ((Over.forget j.1).sheafPushforwardContinuous RingCat.{u} (K.over j.1) K).map φ
+      haveI := h j.1 _ j.2.2
+      cast (by rw [P.pushforward_X G φ η h]; rfl)
+        ((P.generators j.2.1).map (_root_.SheafOfModules.pushforward ψ)
+          ((_root_.SheafOfModules.overFunctor S j.1).mapIso η).symm) :=
   (rfl)
 
 /-- Carrying local generators along a continuous and cocontinuous functor preserves finiteness. -/
