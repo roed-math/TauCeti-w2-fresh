@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"ab1c5af023f864980704684df6008c9288ab4fcf","status":"partial","suppliers":["sheaf-h-pullback","qcoh-higher-direct-image-vanishing"],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: sections with support and the supported subsheaf"},{"n":3,"after":[2],"title":"feat: cohomology with supports and local cohomology sheaves"},{"n":4,"after":[3],"title":"feat: localization triangle and excision for cohomology with supports"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: geometric comparison and depth vanishing for local cohomology"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"ab1c5af023f864980704684df6008c9288ab4fcf","status":"partial","suppliers":["sheaf-h-pullback","qcoh-higher-direct-image-vanishing"],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":5,"after":[4],"title":"feat: flat base change of Noetherian local cohomology"},{"n":6,"after":[1,2,3,4,5],"title":"feat: geometric comparison and depth vanishing for local cohomology"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
@@ -29,20 +29,43 @@ as `TauCeti.Supports.localCohomology_degreeZero`, via:
   `I`-power torsion), plus the helpers `quotient_linearMap_eq_zero`, `smul_apply_mk_one_eq_zero`,
   `desc_evalOneCocone_ι_apply`, `desc_evalOneCocone_injective`, `range_desc_evalOneCocone`.
 
+## Also proved (session 2)
+
+`TauCeti/Topology/Sheaves/SupportedCohomology/Univ.lean` (no `sorry`, no stub used) proves the
+`Z = X` half of the pinned `cohomologyWithSupport_univ` (the `Z = ∅` half is main's
+`CategoryTheory.Sheaf.subsingleton_supportedH_of_le_compl`):
+
+- `TauCeti.CategoryTheory.isZero_freeYonedaSheafFunctor_obj_bot`: `ℤ_∅ = 0`;
+- instance `TauCeti.CategoryTheory.isIso_cokernel_π_complInclusion_top`: `ℤ_W ≅ ℤ_{W, W ∖ X}`;
+- `TauCeti.CategoryTheory.supportedHTopEquiv : F.supportedH ⊤ W n ≃+ F.H' n W`, with
+  `supportedHTopEquiv_apply` (it is `relativeH'.toH'`) and `toH'_complInclusion_top_bijective`.
+
+## What `main` already has (found in session 2)
+
+Most of the topological half of §2.7 landed on `main` under other names, so it is not re-proved:
+`sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
+(`TauCeti/Topology/Sheaves/SupportedCohomology.lean`); `supportedSubsheaf` is
+`supportedSectionsSheaf` (`TauCeti/Topology/Sheaves/LocalCohomology.lean`);
+`cohomologyWithSupport` is `supportedH` (relative cohomology `Hⁿ(W, W ∖ S; F)`, with
+`cohomologyWithSupport_zero` = `supportedHZeroEquiv`); `localCohomologySheaf` is
+`supportedHSheaf` (with `supportedHSheafZeroIso`); the long exact sequence of
+`supports_localization_triangle` is `relativeH'.exact_toH'_cohomologyPresheaf_map`,
+`exact_cohomologyPresheaf_map_δ`, `exact_δ_toH'`; excision is `supportedHExcisionEquiv`.
+
 ## What remains
 
-Everything else in README §2.7: `sectionsWithSupport Z hZ F`, `supportedSubsheaf Z F`,
-`cohomologyWithSupport Z F q := R^q Γ_Z(X, −)`, `localCohomologySheaf Z F q := R^q H_Z(F)` and the
-API `cohomologyWithSupport_zero`, `cohomologyWithSupport_univ` (with `test_support_all`,
-`test_support_empty`), `rHZ_adjunction`, `localToGlobal`, `cohomologyWithSupport_pullback`
-(consumes `Sheaf.H.pullback`); `supports_localization_triangle` and excision;
-`localCohomology_colimit_ext_comparison`; `localCohomology_module_comparison` (uses
-`QCoh.higherDirectImage_vanishing` for the affine/qcqs vanishing on `Spec A`); the pinned
-`Supports.localCohomology_flat_baseChange`; `depth_localCohomology_vanishing`,
-`depth_localCohomology_nonvanishing`; and the checks `test_support_affine_line_origin`,
-`test_support_not_restriction`, `test_depth_dvr`, `localCohomology_module_comparison_nil_ideal`,
-`localCohomology_module_comparison_dvr`, `depth_localCohomology_zero_guard`. None of the proved
-part consumes a stub yet; the stubs record the supplier forms these remaining pieces will use.
+- `cohomologyWithSupport_pullback` (consumes the `Sheaf.H.pullback` stub; split 3);
+- `rHZ_adjunction` and `localToGlobal` (derived-category statements; main has the edge map
+  `supportedHEdgeEquiv` only);
+- `localCohomology_colimit_ext_comparison` (split 4), `Supports.localCohomology_flat_baseChange`
+  and flat excision (split 5);
+- `localCohomology_module_comparison` (uses the `QCoh.higherDirectImage_vanishing` stub),
+  `depth_localCohomology_vanishing`, `depth_localCohomology_nonvanishing`, and the checks
+  `test_support_all` (from `supportedHTopEquiv` at `n = 1`), `test_support_empty`,
+  `test_support_affine_line_origin`, `test_support_not_restriction`, `test_depth_dvr`,
+  `localCohomology_module_comparison_nil_ideal`, `localCohomology_module_comparison_dvr`,
+  `depth_localCohomology_zero_guard` (split 6). The scheme-level wrappers with the `O(X)`-module
+  structure are not yet written; they should be thin wrappers of main's topological API.
 
 ## Stubbed declarations (`TauCeti/Lookahead/CohomologyWithSupport/Stubs.lean`)
 
@@ -94,27 +117,20 @@ becomes `TauCeti`) and that `Scheme.Modules.Cohomology` is main's Tau Ceti abbre
 ## Split plan
 
 1. **feat: degree zero of local cohomology is the power torsion** — after: none.
-   File `TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean` (on this branch, 174 lines):
-   `preservesFiniteLimits_linearYoneda_obj`, `extZeroIso`, `quotient_linearMap_eq_zero`,
-   `smul_apply_mk_one_eq_zero`, `evalOne`, `evalOne_apply`, `homDiagram`,
-   `localCohomologyZeroIso`, `evalOneCocone`, `localCohomologyZeroToModule`,
-   `desc_evalOneCocone_ι_apply`, `desc_evalOneCocone_injective`, `range_desc_evalOneCocone`,
-   `localCohomologyZeroToModule_injective`, `range_localCohomologyZeroToModule`,
-   `localCohomology_degreeZero`. Uses no supplier.
-2. **feat: sections with support and the supported subsheaf** — after: none (not yet written).
-   `TauCeti/AlgebraicGeometry/Cohomology/Support/Basic.lean`: `sectionsWithSupport`,
-   `supportedSubsheaf`, functoriality, the `Z = X` / `Z = ∅` cases.
-3. **feat: cohomology with supports and local cohomology sheaves** — after: 2 (not yet written).
-   `.../Support/Cohomology.lean`: `cohomologyWithSupport`, `localCohomologySheaf`,
-   `cohomologyWithSupport_zero`, `cohomologyWithSupport_univ`, `test_support_all`,
-   `test_support_empty`, `cohomologyWithSupport_pullback` (needs `sheaf-h-pullback` landed).
-4. **feat: localization triangle and excision for cohomology with supports** — after: 3
-   (not yet written). `supports_localization_triangle`, excision, `rHZ_adjunction`, `localToGlobal`.
-5. **feat: Noetherian local cohomology computes derived power torsion** — after: 1 (not yet
+   `TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean` (174 lines, done): the
+   declarations listed under "What is proved". Uses no supplier.
+2. **feat: cohomology with supports in the whole space is ordinary cohomology** — after: none.
+   `TauCeti/Topology/Sheaves/SupportedCohomology/Univ.lean` (done):
+   `isZero_freeYonedaSheafFunctor_obj_bot`, `isIso_cokernel_π_complInclusion_top`,
+   `supportedHTopEquiv`, `supportedHTopEquiv_apply`, `toH'_complInclusion_top_bijective`.
+   Uses no supplier.
+3. **feat: pullback of cohomology with supports** — after: none (not yet written; needs
+   `sheaf-h-pullback` landed). `cohomologyWithSupport_pullback` via `Sheaf.H.pullback`.
+4. **feat: Noetherian local cohomology computes derived power torsion** — after: 1 (not yet
    written). `localCohomology_colimit_ext_comparison`.
-6. **feat: flat base change of Noetherian local cohomology** — after: 5 (not yet written).
+5. **feat: flat base change of Noetherian local cohomology** — after: 4 (not yet written).
    `Supports.localCohomology_flat_baseChange`, flat excision.
-7. **feat: geometric comparison and depth vanishing for local cohomology** — after: 1–6 (not yet
+6. **feat: geometric comparison and depth vanishing for local cohomology** — after: 1–5 (not yet
    written). `localCohomology_module_comparison` (needs `qcoh-higher-direct-image-vanishing`
-   landed), `depth_localCohomology_vanishing`, `depth_localCohomology_nonvanishing`, and the §2.7
-   checks; this is the only split that completes the target.
+   landed), `depth_localCohomology_vanishing`, `depth_localCohomology_nonvanishing`, the scheme
+   wrappers and the §2.7 checks; the only split that completes the target.
