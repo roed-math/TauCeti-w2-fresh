@@ -119,6 +119,15 @@ Fourth session (2026-10-30, 04:25 UTC): merged `main` at `ab1c5af023`; added glo
 of tensor products and tensor powers of globally generated line bundles to split 2 (which now
 needs split 1 for `tensorPow`).
 
+Fifth session (2026-10-30, 05:00 UTC): `main` unchanged at `ab1c5af023` and PR #22384 still open
+at head `2a19d275c572`; the stubs stand as stated. No new declarations: the remaining items below
+are each larger than the session allowed. Checked the mathematics behind `IsProjective`: since
+`A₁` is of finite type over `𝒪_S` (not merely over `A₀`) and `A_n = A₁^n` for `n ≥ 1`, and
+`Proj_S(A) ≅ Proj_S(𝒪_S ⊕ A₊)` (the degree-zero parts of the localizations `A_(f)` only see `A₊`),
+`Proj_S(A)` is a closed subscheme of `ℙ(A₁)` even when `A₀` is not finite over `𝒪_S`. So the
+definition agrees with the Stacks one and properness of projective morphisms is true as stated;
+its proof needs that comparison isomorphism and an API for `IsGeneratedInDegreeOne`.
+
 Remains for the target:
 - Cartier divisors and degree on components for the invertible-sheaf API (partly on `main`
   under `CartierDivisor/` and `LineBundle/Degree.lean`; not yet connected to relative ampleness).
