@@ -22,8 +22,9 @@ Leray spectral sequence is the pullback `Sheaf.H.pullback pb c` of cohomology to
 (Stacks, Lemma 21.14.5 (0732) and Remark 21.14.4 (08J6)). This file defines it
 (`Sheaf.H.lerayEdge`) and proves that it is natural in `F`, compatible with the connecting
 homomorphisms of short exact sequences that stay exact after pushforward, and in degree zero
-given by the adjunction, hence bijective when `c` is an isomorphism, and injective in degree one,
-the first map of the five-term exact sequence. It also records the input
+given by the adjunction, hence bijective when `c` is an isomorphism, injective in degree one,
+the first map of the five-term exact sequence, and bijective in every degree when `f_*` is exact,
+the degenerate case of the spectral sequence. It also records the input
 on which the Leray spectral sequence rests: `f_*` sends injective sheaves to injective sheaves,
 whose higher cohomology vanishes.
 
@@ -35,6 +36,8 @@ whose higher cohomology vanishes.
 * `CategoryTheory.Sheaf.H.addEquiv₀_lerayEdge`, `CategoryTheory.Sheaf.H.lerayEdge_zero_bijective`:
   the edge map in degree zero.
 * `CategoryTheory.Sheaf.H.lerayEdge_one_injective`: the edge map is injective in degree one.
+* `CategoryTheory.Sheaf.H.lerayEdge_bijective`: the edge map is bijective in every degree when
+  `f_*` is exact.
 * `CategoryTheory.Sheaf.H.subsingleton_H_obj_of_injective`: `Hⁿ⁺¹(C, f_* I) = 0` for an
   injective sheaf `I`.
 -/
@@ -179,5 +182,43 @@ lemma lerayEdge_one_injective [IsIso c] [EnoughInjectives (Sheaf K AddCommGrpCat
   rw [← hy]
   change ((Ext.addEquiv₀.symm a).comp (Ext.mk₀ _) (add_zero 0)).comp hT.extClass (zero_add 1) = 0
   rw [Ext.comp_assoc_of_second_deg_zero, hT.comp_extClass, Ext.comp_zero]
+
+/-- When the comparison `c` of constant sheaves is an isomorphism and the pushforward `pf` is
+exact, so that all higher direct images vanish, the Leray spectral sequence degenerates and its
+edge map `Hⁿ(C, f_* F) ⟶ Hⁿ(D, F)` is bijective in every degree (Stacks, Lemma 21.14.6 (0733)
+for an exact `f_*`). By induction on `n`, embed `F` into an injective sheaf `I` with cokernel `Q`:
+the pushforward of `0 ⟶ F ⟶ I ⟶ Q ⟶ 0` is short exact, `Hⁿ⁺¹` of `I` and of `f_* I` vanishes,
+so on both sides `Hⁿ⁺¹(F)` is the cokernel of `Hⁿ(I) ⟶ Hⁿ(Q)`, compatibly with the edge maps. -/
+lemma lerayEdge_bijective [IsIso c] [EnoughInjectives (Sheaf K AddCommGrpCat.{w})]
+    [pf.PreservesEpimorphisms] (F : Sheaf K AddCommGrpCat.{w}) (n : ℕ) :
+    Function.Bijective (lerayEdge adj c F n) := by
+  have := adj.rightAdjoint_preservesLimits
+  have := adj.right_adjoint_additive
+  induction n generalizing F with
+  | zero => exact lerayEdge_zero_bijective adj c F
+  | succ n ih =>
+    let ι := Injective.ι F
+    let S := ShortComplex.mk ι (cokernel.π ι) (cokernel.condition ι)
+    have hS : S.ShortExact :=
+      { exact := ShortComplex.cokernelSequence_exact ι
+        mono_f := inferInstanceAs (Mono ι) }
+    have hT : (S.map pf).ShortExact :=
+      { exact := hS.exact.map_of_mono_of_preservesKernel pf hS.mono_f inferInstance
+        mono_f := inferInstanceAs (Mono (pf.map ι))
+        epi_g := inferInstanceAs (Epi (pf.map (cokernel.π ι))) }
+    have := subsingleton_H_obj_of_injective adj (Injective.under F) n
+    refine ⟨(injective_iff_map_eq_zero _).2 fun x hx ↦ ?_, fun x ↦ ?_⟩
+    · obtain ⟨y, rfl⟩ := longSequence_exact₁ hT x
+        (Subsingleton.elim (α := H (pf.obj _) (n + 1)) _ _) rfl
+      rw [lerayEdge_δ adj c hS hT] at hx
+      obtain ⟨z, hz⟩ := longSequence_exact₃ hS _ rfl hx
+      obtain ⟨z, rfl⟩ := (ih _).2 z
+      obtain rfl : H.map (pf.map (cokernel.π ι)) n z = y :=
+        (ih _).1 ((lerayEdge_naturality adj c _ z).trans hz)
+      exact congr($((longSequence_exact hT n (n + 1) rfl).zero 1) z)
+    · obtain ⟨y, rfl⟩ := longSequence_exact₁ hS x
+        (Subsingleton.elim (α := H (Injective.under F) (n + 1)) _ _) rfl
+      obtain ⟨y, rfl⟩ := (ih _).2 y
+      exact ⟨H.δ hT n (n + 1) rfl y, lerayEdge_δ adj c hS hT n (n + 1) rfl y⟩
 
 end CategoryTheory.Sheaf.H

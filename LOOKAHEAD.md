@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: the edge map of the Leray spectral sequence"},{"n":2,"after":[],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":3,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":4,"after":[1,2,3],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"ab1c5af023f864980704684df6008c9288ab4fcf","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: the edge map of the Leray spectral sequence"},{"n":2,"after":[],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":3,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":4,"after":[1,2,3],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial**.
+Built on `main` at `ab1c5af023f864980704684df6008c9288ab4fcf`. Status: **partial**.
 
 ## Stubbed declarations (supplier `sheaf-h-pullback`)
 
@@ -82,10 +82,10 @@ The spectral sequence itself. Concretely:
 ## Split plan
 
 1. **feat: the edge map of the Leray spectral sequence** — files:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (this branch, ~180 lines, importing
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (this branch, ~220 lines, importing
    the landed `Pullback.lean`). Adds `lerayEdge`, `lerayEdge_apply`, `lerayEdge_naturality`,
    `lerayEdge_δ`, `addEquiv₀_lerayEdge`, `lerayEdge_zero_bijective`,
-   `subsingleton_H_obj_of_injective`, `lerayEdge_one_injective`. After: none (needs #22647 on `main`).
+   `subsingleton_H_obj_of_injective`, `lerayEdge_one_injective`, `lerayEdge_bijective`. After: none (needs #22647 on `main`).
 2. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files under
    `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`: the double complex of resolutions,
    its `E₂` identification and convergence. After: none. (Not yet written.)
