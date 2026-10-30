@@ -9,8 +9,9 @@ Build projective morphisms". The target has no pinned forms in
 
 ## Stubbed declarations
 
-Rechecked 2026-10-30 against PR #22384 head `2a19d275c572`: its `relativeProjTwistingSheaf`
-signature is unchanged, and `main` (still `ea7e54cf96`) has none of the stubbed declarations.
+Rechecked 2026-10-30 (second session, 00:30 UTC) against PR #22384 head `2a19d275c572` (still
+open): its `relativeProjTwistingSheaf` signature is unchanged, and `main` (still `ea7e54cf96`)
+has none of the stubbed declarations.
 
 All stubs are in `TauCeti/Lookahead/RelativeAmpleness/Stubs.lean`, for the supplier
 `relative-proj-twisting-sheaf` (SchemeAndStackFoundations §0.3, open PR #22384).
@@ -101,8 +102,10 @@ Remains for the target:
 - The converse, `L` relatively ample ⇒ `L^{⊗m}` relatively ample for `m > 0` (needs that tensor
   powers of a relatively very ample bundle are relatively very ample: the Veronese re-embedding
   `Proj_S A ≅ Proj_S A^{(m)}` with `𝒪(m)` pulling back to `𝒪(1)`, which no supplier pins yet).
-- Global generation of tensor products and tensor powers of globally generated line bundles
-  (needs products of sections in the sheafified tensor product: `LineBundle/TensorProduct.lean`
+- Global generation of the trivial bundle, of pullbacks, of tensor products and of tensor powers
+  of globally generated line bundles (the trivial case first needs a rank-one trivialization of
+  `𝒪_X` over `⊤`, `free PUnit ≅ (free PUnit).over ⊤`, which `main` does not state;
+  the tensor cases need products of sections in the sheafified tensor product: `LineBundle/TensorProduct.lean`
   on `main` has only the structural isomorphisms, no map `Γ(L) × Γ(K) → Γ(L ⊗ K)`, so this is
   the next piece to build, together with `nonvanishingLocus (s ⊗ t) = nonvanishingLocus s ⊓
   nonvanishingLocus t`).
