@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-extension","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["qcoh-pushforward"],"splits":[{"n":1,"after":[],"title":"feat: extend quasi-coherent modules and submodules along quasi-compact open immersions"},{"n":2,"after":[],"title":"feat: finite type of sheaves of modules can be checked on an open cover"},{"n":3,"after":[2],"title":"feat: quasi-coherent modules on affine schemes are unions of finite-type submodules"},{"n":4,"after":[1,2,3],"title":"feat: extend finite-type and finitely presented quasi-coherent modules along quasi-compact open immersions"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-extension","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["qcoh-pushforward"],"splits":[{"n":1,"after":[],"title":"feat: extend quasi-coherent modules and submodules along quasi-compact open immersions"},{"n":2,"after":[],"title":"feat: finite type of sheaves of modules can be checked on an open cover"},{"n":3,"after":[2],"title":"feat: finite-type quasi-coherent submodules on affine schemes"},{"n":4,"after":[1,2,3],"title":"feat: extend finite-type and finitely presented quasi-coherent modules along quasi-compact open immersions"}]}-->
 
 # Lookahead: `qcoh-extension` (SchemeAndStackFoundations, Layer 0, §0.4)
 
-Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 7, 2026-10-30). Stacks
+Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 8, 2026-10-30). Stacks
 Lemma 28.23.1 (01PE), parts (1) and (2), is proved against a stub of the supplier. So is the
 first, supplier-free step of 01PG: finitely many global sections of a quasi-coherent module lie
 in a quasi-coherent submodule of finite type. So is the affine case of 01PG: on an affine scheme
@@ -10,7 +10,9 @@ a quasi-coherent module is the union of its finite-type quasi-coherent submodule
 directedness: finite-type quasi-coherent submodules form a directed family. So is the
 locality of finite type: a module whose restrictions to an open cover are of finite type is of
 finite type (session 6). So is the gluing step of the 01PF induction over `X = U ∪ W`
-(session 7). The qcqs case
+(session 7). So is the missing input of that induction (session 8): on an affine scheme, a
+quasi-coherent module of finite type over a quasi-compact open `V` has a finite-type
+quasi-coherent submodule that is everything over `V`. The qcqs case
 of 01PG and the finite-type and finitely presented parts (01PF, 0G41, 01PI) are not proved yet.
 
 ## Stubbed declarations (supplier `qcoh-pushforward`)
@@ -150,6 +152,36 @@ This gluing step replaces the kernel of `N ⟶ j_*(N|_U / F) ⊞ k_*(N|_W / F'')
 session 6 notes proposed. In Stacks' proof, the submodule over `U` is first extended to all of
 `X` with 01PE (2), as `G` here. So it suffices to extend the piece over `W`, inside `G`.
 
+Session 8 (2026-10-30) proved the missing input of the 01PF induction, without the stub.
+Appended to `FiniteTypeImage.lean`:
+
+- `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_basicOpen`: on an affine `X`, let
+  `N` be quasi-coherent, `f ∈ Γ(X, ⊤)`, and `s : I → Γ(N, V)` finitely many sections over
+  `V = X.basicOpen f`. Then there is a finite-type quasi-coherent submodule `i : N' ⟶ N` with
+  every `s k` in the image of `i.app V`. Each `f ^ n • s k` is the restriction of a global
+  section (`exists_pow_smul_eq_map` from `Modules/Localization.lean` on `main`), those lie in a
+  finite-type submodule (`exists_isFiniteType_mono_sections`), and `f` is a unit on `D(f)`.
+- `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_isIso_restrict_basicOpen`: on an
+  affine `X`, let `j : U ⟶ X` be an open immersion from an affine `U` with image `X.basicOpen f`,
+  and `N` quasi-coherent with `N|_U` of finite type. Then there is a finite-type quasi-coherent
+  submodule `i : N' ⟶ N` with `j^*(i)` an isomorphism. The sections of `N|_U` are a finite
+  `Γ(U, ⊤)`-module (`finite_sections_of_isAffineOpen` from `Modules/FinitePresentation.lean` on
+  `main`); its generators lie in such an `N'`, and `isIso_of_mono_of_surjective_sectionsFunctor_map_top`
+  concludes.
+
+New file `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeAffine.lean`:
+
+- `AlgebraicGeometry.Scheme.Modules.isIso_restrictFunctor_map_of_fac`: if `i₁ : N₁ ⟶ N` factors
+  through a mono `i : N' ⟶ N` and `j^*(i₁)` is an isomorphism, so is `j^*(i)`.
+- `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_isIso_restrict`: on an affine `X`,
+  let `N` be quasi-coherent and `V ⊆ X` a quasi-compact open with `N|_V` of finite type. Then
+  there is a finite-type quasi-coherent submodule `i : N' ⟶ N` that is an isomorphism over `V`.
+  `V` is a finite union of basic opens (`isCompact_and_isOpen_iff_finite_and_eq_biUnion_basicOpen`),
+  each seen as the open `V.ι ⁻¹ᵁ D(f)` of `V`; the submodules for the pieces are combined by
+  `Finset` induction with directedness (`exists_isFiniteType_mono_factors`), and the isomorphism
+  is checked on that cover of `V` (`isIso_iff_of_isOpenCover` from `Modules/Pullback/Basic.lean`).
+  This is item 1 of the session 7 notes, now done.
+
 The affine case of 01PG (added in session 3, 2026-10-29) does not use the stub either. New file
 `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean`:
 
@@ -190,18 +222,17 @@ quasi-coherent. Write `X = U ∪ W_1 ∪ … ∪ W_n` with the `W_k` affine, and
 (`exists_isFiniteType_mono_restrict_iso_of_sup_eq_top`) to get a finite-type `G' ⊆ G'' ⊆ F`
 that restricts to `G` over `U`.
 
-1. **The missing input: finding `H`.** On an affine `W`, let `N` be quasi-coherent and
-   `V ⊆ W` a quasi-compact open with `N|_V` of finite type. Find a finite-type quasi-coherent
-   submodule `H ⊆ N` that is an isomorphism over `V`. A suggested proof: refine the local
-   generators of `N|_V` to finitely many basic opens `D(f_k) ⊆ V`. Write each generator as
-   `m / f_k^r` with `m ∈ Γ(N, W)`. Take `H` to be the image of `𝒪_W^{m's}`
-   (`exists_isFiniteType_mono_sections`). Then `H ⟶ N` is an epimorphism on each `D(f_k)`, hence
-   an isomorphism over `V`. The tools are on `main`: `Quasicoherent/Affine.lean` (tildes),
-   `Quasicoherent/Colimits.lean` (sections over affines commute with colimits). Equivalently,
-   the finite-type quasi-coherent submodules of `N` form a directed family whose union is `N`
-   (the affine case is done: `isIso_of_mono_of_forall_isFiniteType_factors`), and a finite-type
-   module over a quasi-compact base lies in one member of such a family.
-2. **01PF (Lemma 28.23.2).** The induction on `n` above, given item 1. It carries the
+1. **The missing input: finding `H`.** Done in session 8: apply
+   `exists_isFiniteType_mono_isIso_restrict` on the affine `W` (as a scheme) to `N = G''|_W` and
+   the open `W.ι ⁻¹ᵁ U`, which is quasi-compact because `X` is quasi-separated and `U` is
+   quasi-compact. Its hypothesis, that `N` is of finite type over `W.ι ⁻¹ᵁ U`, comes from
+   `G''|_U ≅ G` and `isFiniteType_restrict`, through `restrictFunctorComp`, as in the proof of
+   `exists_isFiniteType_mono_isIso_restrict`.
+2. **01PF (Lemma 28.23.2).** The induction on `n` above, given item 1. The step works on the
+   open `U' = U ∪ W` (as a scheme): restrict `F` to `U'`, apply the gluing step there with the
+   opens `U'.ι ⁻¹ᵁ U` and `U'.ι ⁻¹ᵁ W`, and extend the result from `U'` to `X` by the induction
+   hypothesis. Transporting modules between opens of `U'` and of `X` uses `restrictFunctorComp`,
+   `restrictFunctorCongr` and `Scheme.Opens.isoOfLE`. It carries the
    statement: a finite-type quasi-coherent submodule of `j^* F` is `j^* G'` for a finite-type
    quasi-coherent `G' ⊆ F`. The qcqs case of 01PG follows from 01PF and the affine case.
 3. **0G41 (Lemma 28.23.5).** A finite-type `F` on `U` extends to a finite-type `G` on `X`: apply
@@ -209,7 +240,7 @@ that restricts to `G` over `U`.
 4. **01PI (Lemma 28.23.4).** A map from a finitely presented `F` to `j^* H` extends to a map from
    a finitely presented extension of `F` to `H`.
 
-Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-30, session 7).
+Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-30, session 8).
 PR #21787 is still open, at head `e9afd8375f3d`, so the stub stays. Mathlib provides
 `SheafOfModules.IsFiniteType` and `SheafOfModules.IsFinitePresentation`. `main` provides
 `restrictPushforwardIso` (`Modules/Pushforward.lean`): restricting `f_* M` to an open `V` of the
@@ -234,19 +265,21 @@ base is pushing forward `M|_{f⁻¹ V}` along `f ∣_ V`.
    `isFiniteType_of_isFiniteType_restrict_affineOpens`.
    Subject: `feat: finite type of sheaves of modules can be checked on an open cover`.
 3. **Split 3** (after: 2, independent of the supplier). Started. File
-   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (199 lines), with
+   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (255 lines), with
    `isFiniteType_of_generatingSections`, `epi_overFunctor_map`, `isFiniteType_of_epi`,
    `isFiniteType_restrict`,
    `isQuasicoherent_image`, `isFiniteType_image`, `exists_isFiniteType_mono_sections`,
+   `exists_isFiniteType_mono_basicOpen`, `exists_isFiniteType_mono_isIso_restrict_basicOpen`,
    `exists_isFiniteType_mono_factors` and `isIso_of_mono_of_forall_isFiniteType_factors`. Also
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean` (93 lines), with
    `isIso_of_isIso_restrictFunctor_map`, `isIso_of_bijective_sectionsFunctor_map_top` and
-   `isIso_of_mono_of_surjective_sectionsFunctor_map_top`. Still to write: item 1 of "What
-   remains" (on an affine scheme, a finite-type quasi-coherent submodule that is everything over
-   a given quasi-compact open of finite type), in a sibling file. If the split exceeds about 600
-   lines, the two existing files (the affine case and directedness, about 290 lines) can be
-   opened alone first. The qcqs case of 01PG moved to split 4, because it follows from 01PF.
-   Subject: `feat: quasi-coherent modules on affine schemes are unions of finite-type submodules`.
+   `isIso_of_mono_of_surjective_sectionsFunctor_map_top`. Session 8 added `exists_isFiniteType_mono_basicOpen` and
+   `exists_isFiniteType_mono_isIso_restrict_basicOpen` to `FiniteTypeImage.lean` (now 255
+   lines), and the sibling file
+   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeAffine.lean` (128 lines), with
+   `isIso_restrictFunctor_map_of_fac` and `exists_isFiniteType_mono_isIso_restrict`. Split 3 is
+   complete at about 476 lines. The qcqs case of 01PG moved to split 4, because it follows from 01PF.
+   Subject: `feat: finite-type quasi-coherent submodules on affine schemes`.
 4. **Split 4** (after: 1, 2, 3). Started. File
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/Extension/FiniteType.lean` (67 lines), with
    the gluing step `exists_isFiniteType_mono_restrict_iso_of_sup_eq_top`. Still to add: the

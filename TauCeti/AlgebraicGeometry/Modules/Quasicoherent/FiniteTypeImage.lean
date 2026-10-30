@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Modules.Biprod
+public import TauCeti.AlgebraicGeometry.Modules.FinitePresentation
 public import TauCeti.AlgebraicGeometry.Modules.Pullback.Basic
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.AffineGlobalSections
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Cokernels
@@ -23,7 +24,9 @@ global sections of a quasi-coherent module lies in a quasi-coherent submodule of
 any two finite-type quasi-coherent submodules lie in a third. These are the finite-type
 quasi-coherent submodules from which a quasi-coherent module on an affine scheme is built as a
 directed union: on an affine scheme, a quasi-coherent submodule through which every finite-type
-quasi-coherent submodule factors is everything.
+quasi-coherent submodule factors is everything. Over a basic open `D(f)` of an affine scheme,
+finitely many sections lie in a finite-type quasi-coherent submodule, because each of them times a
+power of `f` is the restriction of a global section.
 
 ## Main declarations
 
@@ -39,6 +42,11 @@ quasi-coherent submodule factors is everything.
   finite type is of finite type.
 * `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_sections`: finitely many global
   sections of a quasi-coherent module lie in a quasi-coherent submodule of finite type.
+* `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_basicOpen`: on an affine scheme,
+  finitely many sections over a basic open lie in a finite-type quasi-coherent submodule.
+* `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_isIso_restrict_basicOpen`: on an
+  affine scheme, a quasi-coherent module of finite type over a basic open has a finite-type
+  quasi-coherent submodule that is everything over it.
 * `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_factors`: the finite-type
   quasi-coherent submodules of a quasi-coherent module form a directed family.
 * `AlgebraicGeometry.Scheme.Modules.isIso_of_mono_of_forall_isFiniteType_factors`: on an affine
@@ -178,6 +186,54 @@ private theorem sectionsOfTop_val_top (N : X.Modules) (x : N.val.obj (Opposite.o
   change N.val.map (𝟙 _) x = x
   rw [PresheafOfModules.map_id]
   rfl
+
+/-- On an affine scheme `X`, finitely many sections of a quasi-coherent module `N` over a basic
+open `D(f)` lie in a finite-type quasi-coherent submodule of `N`. Each section times a power of
+`f` is the restriction of a global section, and `f` is invertible on `D(f)`. The open `V` is
+arbitrary up to the equality `X.basicOpen f = V`. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_basicOpen [IsAffine X]
+    {I : Type u} [Finite I] {N : X.Modules} [N.IsQuasicoherent] (f : Γ(X, ⊤)) {V : X.Opens}
+    (hV : X.basicOpen f = V) (s : I → Γ(N, V)) :
+    ∃ (N' : X.Modules) (_ : N'.IsQuasicoherent) (_ : N'.IsFiniteType) (i : N' ⟶ N) (_ : Mono i),
+      ∀ k, ∃ x : Γ(N', V), i.app V x = s k := by
+  subst hV
+  choose n y hy using fun k ↦
+    N.exists_pow_smul_eq_map (isAffineOpen_top X) f rfl (X.basicOpen_le f) (s k)
+  obtain ⟨N', _, _, i, _, t, ht⟩ :=
+    Scheme.Modules.exists_isFiniteType_mono_sections fun k ↦ sectionsOfTop N (y k)
+  refine ⟨N', inferInstance, inferInstance, i, inferInstance, fun k ↦ ?_⟩
+  obtain ⟨g, hg⟩ : IsUnit (X.presheaf.map (homOfLE (X.basicOpen_le f)).op f ^ n k) :=
+    (X.toRingedSpace.isUnit_res_basicOpen f).pow (n k)
+  let x : Γ(N', X.basicOpen f) := (t k).val (Opposite.op (X.basicOpen f))
+  refine ⟨(g⁻¹ : (Γ(X, X.basicOpen f))ˣ).1 • x, ?_⟩
+  have h : i.app _ x = N.presheaf.map (homOfLE (X.basicOpen_le f)).op (y k) :=
+    congrArg (fun σ : N.sections ↦ σ.val (Opposite.op (X.basicOpen f))) (ht k)
+  rw [Scheme.Modules.Hom.app_smul, h, ← hy k, ← hg, smul_smul, Units.inv_mul, one_smul]
+
+/-- On an affine scheme `X`, a quasi-coherent module `N` of finite type over a basic open `D(f)`
+has a finite-type quasi-coherent submodule that is all of `N` over `D(f)`: finitely many
+generators of the sections over `D(f)` lie in one, by
+`AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_basicOpen`. Here `D(f)` is the image of
+an open immersion `j : U ⟶ X`, so the statement is about the restriction along `j`. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_isIso_restrict_basicOpen
+    [IsAffine X] {U : Scheme.{u}} [IsAffine U] (j : U ⟶ X) [IsOpenImmersion j] (f : Γ(X, ⊤))
+    (hf : X.basicOpen f = j ''ᵁ ⊤) {N : X.Modules} [N.IsQuasicoherent]
+    [(N.restrict j).IsFiniteType] :
+    ∃ (N' : X.Modules) (_ : N'.IsQuasicoherent) (_ : N'.IsFiniteType) (i : N' ⟶ N) (_ : Mono i),
+      IsIso ((Scheme.Modules.restrictFunctor j).map i) := by
+  have := Scheme.Modules.finite_sections_of_isAffineOpen (N.restrict j) ⊤ (isAffineOpen_top _)
+  obtain ⟨S, hS⟩ := Module.Finite.fg_top (R := Γ(U, ⊤)) (M := Γ(N.restrict j, ⊤))
+  obtain ⟨N', _, _, i, _, hi⟩ := Scheme.Modules.exists_isFiniteType_mono_basicOpen f hf
+    fun k : S ↦ (k.1 : Γ(N, j ''ᵁ ⊤))
+  refine ⟨N', inferInstance, inferInstance, i, inferInstance, ?_⟩
+  let φ := (Scheme.Modules.restrictFunctor j).map i
+  -- `restrictFunctor` is a right adjoint, so it preserves monomorphisms.
+  have : Mono φ := Functor.map_mono (Scheme.Modules.restrictFunctor j) i
+  refine Scheme.Modules.isIso_of_mono_of_surjective_sectionsFunctor_map_top φ ?_
+  have h : Submodule.span Γ(U, ⊤) (S : Set Γ(N.restrict j, ⊤)) ≤
+      LinearMap.range ((Scheme.Modules.sectionsFunctor ⊤).map φ).hom :=
+    Submodule.span_le.mpr fun k hk ↦ hi ⟨k, hk⟩
+  exact fun y ↦ h (hS ▸ Submodule.mem_top)
 
 /-- On an affine scheme, a quasi-coherent module is the union of its finite-type quasi-coherent
 submodules: a quasi-coherent submodule `M` of a quasi-coherent `N` through which every finite-type
