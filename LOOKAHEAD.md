@@ -1,13 +1,15 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-extension","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["qcoh-pushforward"],"splits":[{"n":1,"after":[],"title":"feat: extend quasi-coherent modules and submodules along quasi-compact open immersions"},{"n":2,"after":[],"title":"feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules"},{"n":3,"after":[1,2],"title":"feat: extend finite-type and finitely presented quasi-coherent modules along quasi-compact open immersions"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"qcoh-extension","main":"ea7e54cf967c2ab502c7e69bf69501e5a3ae3130","status":"partial","suppliers":["qcoh-pushforward"],"splits":[{"n":1,"after":[],"title":"feat: extend quasi-coherent modules and submodules along quasi-compact open immersions"},{"n":2,"after":[],"title":"feat: finite type of sheaves of modules can be checked on an open cover"},{"n":3,"after":[2],"title":"feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules"},{"n":4,"after":[1,2,3],"title":"feat: extend finite-type and finitely presented quasi-coherent modules along quasi-compact open immersions"}]}-->
 
 # Lookahead: `qcoh-extension` (SchemeAndStackFoundations, Layer 0, §0.4)
 
-Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 5, 2026-10-30). Stacks
+Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 6, 2026-10-30). Stacks
 Lemma 28.23.1 (01PE), parts (1) and (2), is proved against a stub of the supplier. So is the
 first, supplier-free step of 01PG: finitely many global sections of a quasi-coherent module lie
 in a quasi-coherent submodule of finite type. So is the affine case of 01PG: on an affine scheme
 a quasi-coherent module is the union of its finite-type quasi-coherent submodules. So is
-directedness: finite-type quasi-coherent submodules form a directed family. The qcqs case
+directedness: finite-type quasi-coherent submodules form a directed family. So is the
+locality of finite type: a module whose restrictions to an open cover are of finite type is of
+finite type (session 6). The qcqs case
 of 01PG and the finite-type and finitely presented parts (01PF, 0G41, 01PI) are not proved yet.
 
 ## Stubbed declarations (supplier `qcoh-pushforward`)
@@ -96,6 +98,36 @@ Session 5 (2026-10-30) added to `FiniteTypeImage.lean`, without the stub:
   from `Modules/Pullback/Basic.lean`. The qcqs induction for 01PG needs it, to restrict a
   finite-type submodule to `U ∩ W`.
 
+Session 6 (2026-10-30) proved that finite type is local, without the stub. New file
+`TauCeti/Algebra/Category/ModuleCat/Sheaf/FiniteType.lean` (site level, in
+`namespace TauCeti.SheafOfModules` with `_root_` names, following `Sheaf/LocallyFree.lean`):
+
+- `SheafOfModules.IsFiniteType.of_iso`: finite type is invariant under isomorphism.
+- `SheafOfModules.IsFiniteType.of_coversTop`: finite type can be checked on a covering family.
+  It combines local generators with `SheafOfModules.LocalGeneratorsData.bind`, already on `main`
+  (`Sheaf/LocallyFree.lean`), as `IsLocallyFree.of_coversTop` does.
+- `SheafOfModules.LocalGeneratorsData.pushforward` and the instance
+  `SheafOfModules.LocalGeneratorsData.isFiniteType_pushforward`: local generators carried along a
+  continuous and cocontinuous functor. This copies Mathlib's
+  `SheafOfModules.QuasicoherentData.pushforward`, with generators in place of presentations.
+- `SheafOfModules.isFiniteType_pushforward_of_isLeftAdjoint`: the finite-type analogue of
+  Mathlib's `isQuasicoherent_pushforward_of_isLeftAdjoint`. Mathlib's proof sets
+  `backward.isDefEq.respectTransparency false`, which Tau Ceti forbids. Here the `IsIso` of the
+  restricted ring map is supplied by `Functor.map_isIso` instead.
+
+New file `TauCeti/AlgebraicGeometry/Modules/Restriction/FiniteType.lean` (scheme level, in
+`namespace TauCeti.AlgebraicGeometry`, following `Quasicoherent/Restriction.lean`):
+
+- `TauCeti.AlgebraicGeometry.isFiniteType_overEquiv_inverse` (instance): the inverse
+  open-subscheme equivalence preserves finite type.
+- `TauCeti.AlgebraicGeometry.isFiniteType_over_of_isFiniteType_restrict`: finite type of
+  `M.restrict U.ι` gives finite type of `M.over U`.
+- `TauCeti.AlgebraicGeometry.isFiniteType_of_isFiniteType_restrict`: finite type can be checked
+  on restrictions to an open cover. It is the analogue of
+  `isQuasicoherent_of_isQuasicoherent_restrict`.
+- `TauCeti.AlgebraicGeometry.isFiniteType_of_isFiniteType_restrict_affineOpens`: the same on
+  all affine opens.
+
 The affine case of 01PG (added in session 3, 2026-10-29) does not use the stub either. New file
 `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean`:
 
@@ -135,10 +167,11 @@ On a quasi-compact quasi-separated `X`:
    finite-type submodules from `W` to `X` with 01PE (2). Stating it in the same mono form as the
    affine case keeps the induction in one shape. Directedness is done
    (`exists_isFiniteType_mono_factors`), as is stability of finite type under quotients and
-   images. Still missing for the induction: gluing a finite-type submodule `F ⊆ N|_U` with a
-   finite-type `F'' ⊆ N|_W` agreeing on `U ∩ W` into a submodule of `N` (for instance as the
-   kernel of `N ⟶ j_*(N|_U / F) ⊞ k_*(N|_W / F'')`), and checking finite type of the result on
-   the cover `{U, W}`; and the fact that a finite-type `F|_{U ∩ W}` on the quasi-compact
+   images. Checking finite type on the cover `{U, W}` is done
+   (`isFiniteType_of_isFiniteType_restrict`, session 6). Still missing for the induction: gluing
+   a finite-type submodule `F ⊆ N|_U` with a finite-type `F'' ⊆ N|_W` agreeing on `U ∩ W` into
+   a submodule of `N` (for instance as the kernel of `N ⟶ j_*(N|_U / F) ⊞ k_*(N|_W / F'')`),
+   with restrictions `F` and `F''`; and the fact that a finite-type `F|_{U ∩ W}` on the quasi-compact
    `U ∩ W` lies in one member of a directed family of submodules whose union is everything.
 2. 01PF (Lemma 28.23.2): a finite-type quasi-coherent submodule of `j^* G` is `j^* G'` for a
    finite-type quasi-coherent `G' ⊆ G`. Apply 01PE (2), then 01PG to the extension, and use the
@@ -149,13 +182,12 @@ On a quasi-compact quasi-separated `X`:
    finitely presented extension of `F` to `H`.
 
 Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-30, session 5).
-Neither Mathlib nor `main` proves that finite type can be checked on an open cover. The
-quasi-coherent analogue is `isQuasicoherent_of_isQuasicoherent_restrict` in
-`Quasicoherent/Restriction.lean`, which goes through `SheafOfModules.IsQuasicoherent.of_coversTop`.
-A finite-type analogue (transport each `LocalGeneratorsData` of `M|_{U_i}` to the slice sites
-`X.Opens / U_i` with `overEquiv`, then concatenate over `i`) is the next prerequisite of the
-gluing step. PR #21787 is
-still open, so the stub stays. Mathlib provides `SheafOfModules.IsFiniteType` and
+Session 6 (checked against `main` at `ea7e54cf96`): finite type on an open cover is now
+proved on the branch (see above). The next prerequisite of the gluing step is the gluing itself:
+for opens `U`, `W` covering `X`, the kernel of `N ⟶ j_*(N|_U / F) ⊞ k_*(N|_W / F'')` restricts
+to `F` on `U` (and to `F''` on `W`) when `F` and `F''` agree on `U ∩ W`. This needs the
+restriction of `j_*` to `W` (flat base change for the open immersion, or a direct sections
+computation). PR #21787 is still open, so the stub stays. Mathlib provides `SheafOfModules.IsFiniteType` and
 `SheafOfModules.IsFinitePresentation`. `main` provides `isQuasicoherent_of_isColimit` and
 `isColimitMapCoconeSectionsFunctor` in `Quasicoherent/Colimits.lean`: on an affine open, sections
 of quasi-coherent modules commute with colimits. It also has `Quasicoherent/Affine.lean`
@@ -170,7 +202,18 @@ the cocone of their inclusions into `G` is a colimit, which matches the existing
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/Extension.lean` (83 lines now), with
    `exists_isQuasicoherent_restrict_iso` and `exists_mono_restrict_iso_of_isQuasicoherent`.
    Subject: `feat: extend quasi-coherent modules and submodules along quasi-compact open immersions`.
-2. **Split 2** (after: none, independent of the supplier). Started. File
+2. **Split 2** (after: none, independent of the supplier). Written. Files
+   `TauCeti/Algebra/Category/ModuleCat/Sheaf/FiniteType.lean` (167 lines), with
+   `SheafOfModules.IsFiniteType.of_iso`, `SheafOfModules.IsFiniteType.of_coversTop`,
+   `SheafOfModules.LocalGeneratorsData.pushforward`,
+   `SheafOfModules.LocalGeneratorsData.isFiniteType_pushforward` and
+   `SheafOfModules.isFiniteType_pushforward_of_isLeftAdjoint`, and
+   `TauCeti/AlgebraicGeometry/Modules/Restriction/FiniteType.lean` (70 lines), with
+   `isFiniteType_overEquiv_inverse`, `isFiniteType_over_of_isFiniteType_restrict`,
+   `isFiniteType_of_isFiniteType_restrict` and
+   `isFiniteType_of_isFiniteType_restrict_affineOpens`.
+   Subject: `feat: finite type of sheaves of modules can be checked on an open cover`.
+3. **Split 3** (after: 2, independent of the supplier). Started. File
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (199 lines), with
    `isFiniteType_of_generatingSections`, `epi_overFunctor_map`, `isFiniteType_of_epi`,
    `isFiniteType_restrict`,
@@ -182,7 +225,7 @@ the cocone of their inclusions into `G` is a colimit, which matches the existing
    in a sibling file proving 01PG. If the split exceeds about 600 lines, the two existing files
    (the affine case and directedness, about 290 lines) can be opened alone first.
    Subject: `feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules`.
-3. **Split 3** (after: 1, 2). Not yet written. It adds the finite-type submodule extension
+4. **Split 4** (after: 1, 2, 3). Not yet written. It adds the finite-type submodule extension
    (01PF), finite-type and finitely presented extension (0G41) and map extension (01PI), either
    in `Extension.lean` or in a sibling `Extension/FiniteType.lean`. It carries the exported
    finite-type extension theorem and is the only split that completes the target.
