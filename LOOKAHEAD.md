@@ -163,3 +163,9 @@ stub of the supplier would be needed. Items 3 and 4 also need the Čech comparis
   `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`. That is a
   multi-file job, not a step that fits into one round. Only its vanishing half
   (`Scheme.Hom.isZero_higherDirectImage_succ_of_isBasis`) is on `main`.
+- Round 8 (2026-10-30): `origin/main` was still `ea7e54cf96`, and PR #21787 is still open (head
+  `e9afd8375f`), so there was nothing to merge. `lake build` is green and `lookahead-check`
+  passes. Nothing was added. Items 1–4 under *What remains* still all start from the comparison
+  of `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`, which does not
+  fit into one round. Only its vanishing half
+  (`Scheme.Hom.isZero_higherDirectImage_succ_of_isBasis`) is on `main`.
