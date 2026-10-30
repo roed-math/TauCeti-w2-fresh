@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"ab1c5af023f864980704684df6008c9288ab4fcf","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: limits of schemes with affine transition maps are separated"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[1],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":4,"after":[3],"title":"feat: descent of finitely presented schemes and their properties to a finite stage"},{"n":5,"after":[2,3,4],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":6,"after":[1,2,3,4,5],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"ab1c5af023f864980704684df6008c9288ab4fcf","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation and affineness of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[1],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":4,"after":[3],"title":"feat: descent of finitely presented schemes and their properties to a finite stage"},{"n":5,"after":[2,3,4],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":6,"after":[1,2,3,4,5],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
 # Lookahead: `noetherian-approximation` (SchemeAndStackFoundations §0.9)
 
 Built on `main` at `ab1c5af023`. Status: **partial**.
@@ -40,12 +40,15 @@ of a finite-presentation model over an open, from `U` to `X`).
 
 ## Splits
 
-1. **feat: limits of schemes with affine transition maps are separated** (after: none) — *proved*.
-   File `TauCeti/AlgebraicGeometry/Limits/AffineTransition.lean` (57 lines):
-   `TauCeti.AlgebraicGeometry.Scheme.isSeparated_of_isLimit`,
+1. **feat: separation and affineness of limits of schemes with affine transition maps**
+   (after: none) — *proved*. File `TauCeti/AlgebraicGeometry/Limits/AffineTransition.lean`
+   (94 lines): `TauCeti.AlgebraicGeometry.Scheme.isSeparated_of_isLimit`,
    `TauCeti.AlgebraicGeometry.Scheme.quasiSeparatedSpace_of_isLimit` (the separatedness half of
    `affine_transition_limits`, 01YX + 01S7; quasi-compactness is Mathlib's
-   `Scheme.compactSpace_of_isLimit`).
+   `Scheme.compactSpace_of_isLimit`), `isAffine_of_isLimit`, `isQuasiAffine_of_isLimit` (a
+   member's (quasi-)affineness passes to the limit) and `isAffine_iff_exists_of_isLimit`,
+   `isQuasiAffine_iff_exists_of_isLimit` (for qcqs members, combined with Mathlib's 01Z6/01Z5
+   converses `Scheme.exists_isAffine_of_isLimit`, `Scheme.exists_isQuasiAffine_of_isLimit`).
 2. **feat: Noetherian approximation of affine schemes** (after: none) — *proved*.
    File `TauCeti/AlgebraicGeometry/Limits/NoetherianApproximation.lean` (105 lines):
    `finsetAdjoinDiagram`, `finsetAdjoinCocone`, `isColimitFinsetAdjoinCocone` (every ring is the
@@ -74,7 +77,8 @@ of a finite-presentation model over an open, from `U` to `X`).
 
 ## What remains
 
-Proved: the separatedness/quasi-separatedness of limits with affine transition maps and the full
+Proved: the separatedness/quasi-separatedness and (quasi-)affineness criteria of limits with affine
+transition maps and the full
 affine case of absolute Noetherian approximation. Remaining: splits 3–6 above — existence and
 topology of affine-transition limits, `finite_presentation_limits`, the extension step across an
 open (the only consumer of the `qcoh-extension` stub), and the qcqs induction for
