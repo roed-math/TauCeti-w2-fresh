@@ -5,32 +5,41 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.AlgebraicGeometry.Modules.Biprod
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.AffineGlobalSections
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Cokernels
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Kernels
 public import Mathlib.Algebra.Category.ModuleCat.Sheaf.LocallyFree
 
 /-!
-# Finite-type images of finite free modules
+# Finite-type quasi-coherent submodules
 
-An `𝒪_X`-module with finitely many global generating sections is of finite type. Consequently,
-the image of a morphism `𝒪_X^I ⟶ G` from a finite free module is a submodule of `G` of finite
-type, and it is quasi-coherent when `G` is. So every finite family of global sections of a
-quasi-coherent module lies in a quasi-coherent submodule of finite type. These images are the
-finite-type quasi-coherent submodules from which a quasi-coherent module on an affine scheme is
-built as a directed union: on an affine scheme, a quasi-coherent submodule through which every
-finite-type quasi-coherent submodule factors is everything.
+An `𝒪_X`-module with finitely many global generating sections is of finite type, and a quotient
+of a module of finite type is of finite type. Consequently, the image of a morphism `M ⟶ G` out
+of a module of finite type is a submodule of `G` of finite type, and it is quasi-coherent when
+`M` and `G` are. So every finite family of global sections of a quasi-coherent module lies in a
+quasi-coherent submodule of finite type, and any two finite-type quasi-coherent submodules lie
+in a third. These are the finite-type quasi-coherent submodules from which a quasi-coherent
+module on an affine scheme is built as a directed union: on an affine scheme, a quasi-coherent
+submodule through which every finite-type quasi-coherent submodule factors is everything.
 
 ## Main declarations
 
 * `AlgebraicGeometry.Scheme.Modules.isFiniteType_of_generatingSections`: finitely many global
   generating sections make a module of finite type.
-* `AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image`: the image of a morphism of
-  quasi-coherent modules is quasi-coherent.
-* `AlgebraicGeometry.Scheme.Modules.isFiniteType_image_of_generatingSections`: the image of a
-  morphism out of a module with finitely many generating sections is of finite type.
+* `AlgebraicGeometry.Scheme.Modules.isFiniteType_of_epi`: a quotient of a module of finite type
+  is of finite type.
+* `AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image`,
+  `AlgebraicGeometry.Scheme.Modules.isFiniteType_image`: the image of a morphism of
+  quasi-coherent modules is quasi-coherent, and the image of a morphism out of a module of
+  finite type is of finite type.
 * `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_sections`: finitely many global
   sections of a quasi-coherent module lie in a quasi-coherent submodule of finite type.
+* `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_factors`: the finite-type
+  quasi-coherent submodules of a quasi-coherent module form a directed family.
+* `AlgebraicGeometry.Scheme.Modules.isIso_of_mono_of_forall_isFiniteType_factors`: on an affine
+  scheme, a quasi-coherent submodule containing every finite-type quasi-coherent submodule is
+  everything.
 
 ## References
 
@@ -61,6 +70,45 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.isFiniteType_of_generatingSectio
     exact this
   exact SheafOfModules.IsFiniteType.mk (R := X.ringCatSheaf) ⟨q, hq⟩
 
+/-- Restriction to the slice site over an open preserves epimorphisms: up to the
+open-subscheme equivalence it is restriction to the open subscheme, a left adjoint. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.epi_overFunctor_map {M N : X.Modules}
+    (p : M ⟶ N) [Epi p] (U : X.Opens) :
+    Epi ((SheafOfModules.overFunctor.{u} X.ringCatSheaf U).map p) := by
+  have : (Scheme.Modules.restrictFunctor U.ι).PreservesEpimorphisms :=
+    Functor.preservesEpimorphisms_of_isLeftAdjoint _
+  -- `U.toScheme.Modules` and `SheafOfModules U.toScheme.ringCatSheaf` carry the same category
+  -- instance, but instance search does not unify across them, so the epimorphisms are passed
+  -- explicitly.
+  have h : Epi ((Scheme.Modules.restrictFunctor U.ι).map p ≫
+      (Scheme.Modules.overFunctorEquiv U).inv.app N) :=
+    @epi_comp _ _ _ _ _ _ inferInstance _
+      (@IsIso.epi_of_iso _ _ _ _ _ ((Scheme.Modules.overFunctorEquiv U).app N).isIso_inv)
+  rw [(Scheme.Modules.overFunctorEquiv U).inv.naturality p] at h
+  have : Epi ((Scheme.Modules.overEquiv U).functor.map
+      ((SheafOfModules.overFunctor.{u} X.ringCatSheaf U).map p)) :=
+    @epi_of_epi _ _ _ _ _ ((Scheme.Modules.overFunctorEquiv U).inv.app M) _ h
+  exact (Scheme.Modules.overEquiv U).functor.epi_of_epi_map this
+
+/-- A quotient of a module of finite type is of finite type: local generators of `M` map to
+local generators of `N`. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.isFiniteType_of_epi {M N : X.Modules}
+    (p : M ⟶ N) [Epi p] [M.IsFiniteType] : N.IsFiniteType := by
+  obtain ⟨q, hq⟩ := SheafOfModules.IsFiniteType.exists_localGeneratorsData.{u} M
+  let q' : SheafOfModules.LocalGeneratorsData.{u} N :=
+    { I := q.I
+      X := q.X
+      coversTop := q.coversTop
+      generators := fun i ↦
+        have := Scheme.Modules.epi_overFunctor_map p (q.X i)
+        (q.generators i).ofEpi ((SheafOfModules.overFunctor.{u} _ (q.X i)).map p) }
+  have hq' : q'.IsFiniteType := by
+    constructor
+    intro i
+    have := hq.isFiniteType i
+    exact ⟨SheafOfModules.GeneratingSections.IsFiniteType.finite (σ := q.generators i)⟩
+  exact SheafOfModules.IsFiniteType.mk (R := X.ringCatSheaf) ⟨q', hq'⟩
+
 /-- The image of a morphism of quasi-coherent modules is quasi-coherent. -/
 instance _root_.AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image {M N : X.Modules}
     (f : M ⟶ N) [M.IsQuasicoherent] [N.IsQuasicoherent] :
@@ -68,18 +116,10 @@ instance _root_.AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image {M N : X.
   (SheafOfModules.isQuasicoherent X.ringCatSheaf).prop_of_iso (Abelian.imageIsoImage f)
     (inferInstanceAs (kernel (cokernel.π f)).IsQuasicoherent)
 
-/-- The image of a morphism out of a module generated by finitely many global sections is of
-finite type. For instance, the image of a morphism `𝒪_X^I ⟶ N` with `I` finite. -/
-theorem _root_.AlgebraicGeometry.Scheme.Modules.isFiniteType_image_of_generatingSections
-    {M N : X.Modules} (f : M ⟶ N) (σ : M.GeneratingSections) [σ.IsFiniteType] :
-    (CategoryTheory.Limits.image f).IsFiniteType := by
-  -- `GeneratingSections.ofEpi` asks for an epimorphism of sheaves of modules, while instance
-  -- search finds `Epi (factorThruImage f)` in `X.Modules`.
-  have : Epi (C := SheafOfModules X.ringCatSheaf) (factorThruImage f) :=
-    inferInstanceAs (Epi (C := X.Modules) _)
-  let τ := σ.ofEpi (factorThruImage f)
-  have : τ.IsFiniteType := ⟨SheafOfModules.GeneratingSections.IsFiniteType.finite (σ := σ)⟩
-  exact Scheme.Modules.isFiniteType_of_generatingSections τ
+/-- The image of a morphism out of a module of finite type is of finite type. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.isFiniteType_image {M N : X.Modules} (f : M ⟶ N)
+    [M.IsFiniteType] : (CategoryTheory.Limits.image f).IsFiniteType :=
+  Scheme.Modules.isFiniteType_of_epi (factorThruImage f)
 
 /-- Every finite family of global sections of a quasi-coherent module `N` lies in a quasi-coherent
 submodule of `N` of finite type, namely the image of the corresponding morphism `𝒪_X^I ⟶ N`. -/
@@ -94,14 +134,26 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_section
   let φ : F ⟶ N := N.freeHomEquiv.symm s
   have : (_root_.SheafOfModules.free.generatingSections (R := X.ringCatSheaf) I).IsFiniteType :=
     ⟨inferInstanceAs (Finite I)⟩
-  refine ⟨image φ, inferInstance,
-    Scheme.Modules.isFiniteType_image_of_generatingSections φ
-      (_root_.SheafOfModules.free.generatingSections I), image.ι φ, inferInstance,
+  have : F.IsFiniteType := Scheme.Modules.isFiniteType_of_generatingSections
+    (_root_.SheafOfModules.free.generatingSections I)
+  refine ⟨image φ, inferInstance, Scheme.Modules.isFiniteType_image φ, image.ι φ,
+    inferInstance,
     fun k ↦ SheafOfModules.sectionsMap (factorThruImage φ) (SheafOfModules.freeSection k),
     fun k ↦ ?_⟩
   calc _ = N.freeHomEquiv (factorThruImage φ ≫ image.ι φ) k := rfl
     _ = N.freeHomEquiv φ k := congrArg (N.freeHomEquiv · k) (image.fac φ)
     _ = s k := congrFun (N.freeHomEquiv.apply_symm_apply s) k
+
+/-- The finite-type quasi-coherent submodules of a quasi-coherent module form a directed family:
+any two of them lie in a third, namely the image of their direct sum. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_factors
+    {N N₁ N₂ : X.Modules} [N.IsQuasicoherent] [N₁.IsQuasicoherent] [N₁.IsFiniteType]
+    [N₂.IsQuasicoherent] [N₂.IsFiniteType] (i₁ : N₁ ⟶ N) (i₂ : N₂ ⟶ N) :
+    ∃ (N' : X.Modules) (_ : N'.IsQuasicoherent) (_ : N'.IsFiniteType) (i : N' ⟶ N) (_ : Mono i)
+      (g₁ : N₁ ⟶ N') (g₂ : N₂ ⟶ N'), g₁ ≫ i = i₁ ∧ g₂ ≫ i = i₂ :=
+  ⟨image (biprod.desc i₁ i₂), inferInstance, Scheme.Modules.isFiniteType_image _,
+    image.ι _, inferInstance, biprod.inl ≫ factorThruImage _, biprod.inr ≫ factorThruImage _,
+    by simp, by simp⟩
 
 /-- The section of a module given by a section over `⊤` and its restrictions. -/
 private noncomputable def sectionsOfTop (N : X.Modules) (x : N.val.obj (Opposite.op ⊤)) :

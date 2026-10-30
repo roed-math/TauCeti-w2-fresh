@@ -2,11 +2,12 @@
 
 # Lookahead: `qcoh-extension` (SchemeAndStackFoundations, Layer 0, §0.4)
 
-Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial**. Stacks
+Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (last updated in session 4, 2026-10-30). Stacks
 Lemma 28.23.1 (01PE), parts (1) and (2), is proved against a stub of the supplier. So is the
 first, supplier-free step of 01PG: finitely many global sections of a quasi-coherent module lie
 in a quasi-coherent submodule of finite type. So is the affine case of 01PG: on an affine scheme
-a quasi-coherent module is the union of its finite-type quasi-coherent submodules. The qcqs case
+a quasi-coherent module is the union of its finite-type quasi-coherent submodules. So is
+directedness: finite-type quasi-coherent submodules form a directed family. The qcqs case
 of 01PG and the finite-type and finitely presented parts (01PF, 0G41, 01PI) are not proved yet.
 
 ## Stubbed declarations (supplier `qcoh-pushforward`)
@@ -68,12 +69,24 @@ The first step of 01PG is in `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/Fi
 - `AlgebraicGeometry.Scheme.Modules.isQuasicoherent_image` (instance): the image of a morphism of
   quasi-coherent modules is quasi-coherent. It is `kernel (cokernel.π f)` up to
   `Abelian.imageIsoImage`.
-- `AlgebraicGeometry.Scheme.Modules.isFiniteType_image_of_generatingSections`: the image of a
-  morphism out of a module with finitely many generating sections is of finite type.
 - `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_sections`: let `N` be
   quasi-coherent and `s : I → N.sections` with `I` finite. Then there is a quasi-coherent
   submodule `i : N' ⟶ N` of finite type and `t : I → N'.sections` with
   `sectionsMap i (t k) = s k`. Here `N'` is the image of `𝒪_X^I ⟶ N`.
+
+Session 4 (2026-10-30) added to `FiniteTypeImage.lean`, again without the stub:
+
+- `AlgebraicGeometry.Scheme.Modules.epi_overFunctor_map`: restriction to the slice site over an
+  open `U` (`SheafOfModules.overFunctor`) preserves epimorphisms. Up to Mathlib's
+  `overFunctorEquiv` it is `restrictFunctor U.ι`, a left adjoint, followed by an equivalence.
+- `AlgebraicGeometry.Scheme.Modules.isFiniteType_of_epi`: a quotient of a module of finite type
+  is of finite type (push local generators forward with `GeneratingSections.ofEpi`).
+- `AlgebraicGeometry.Scheme.Modules.isFiniteType_image`: the image of a morphism out of a module
+  of finite type is of finite type. It replaces session 2's
+  `isFiniteType_image_of_generatingSections`, which was its special case and is removed.
+- `AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_factors`: directedness. Any two
+  finite-type quasi-coherent submodules `N₁, N₂ ⟶ N` of a quasi-coherent `N` factor through a
+  third, the image of `N₁ ⊞ N₂ ⟶ N` (using `isFiniteType_biprod` from `Modules/Biprod.lean`).
 
 The affine case of 01PG (added in session 3, 2026-10-29) does not use the stub either. New file
 `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean`:
@@ -112,9 +125,13 @@ On a quasi-compact quasi-separated `X`:
    (`isIso_of_mono_of_forall_isFiniteType_factors`). The qcqs case still needs the induction on
    the number of affines in a finite affine cover (`X = U ∪ W`, `W` affine), extending
    finite-type submodules from `W` to `X` with 01PE (2). Stating it in the same mono form as the
-   affine case keeps the induction in one shape. Directedness (the sum of two finite-type
-   quasi-coherent submodules is one) is the image of the coproduct, using
-   `isQuasicoherent_sigma` and `isQuasicoherent_image`.
+   affine case keeps the induction in one shape. Directedness is done
+   (`exists_isFiniteType_mono_factors`), as is stability of finite type under quotients and
+   images. Still missing for the induction: gluing a finite-type submodule `F ⊆ N|_U` with a
+   finite-type `F'' ⊆ N|_W` agreeing on `U ∩ W` into a submodule of `N` (for instance as the
+   kernel of `N ⟶ j_*(N|_U / F) ⊞ k_*(N|_W / F'')`), and checking finite type of the result on
+   the cover `{U, W}`; and the fact that a finite-type `F|_{U ∩ W}` on the quasi-compact
+   `U ∩ W` lies in one member of a directed family of submodules whose union is everything.
 2. 01PF (Lemma 28.23.2): a finite-type quasi-coherent submodule of `j^* G` is `j^* G'` for a
    finite-type quasi-coherent `G' ⊆ G`. Apply 01PE (2), then 01PG to the extension, and use the
    quasi-compactness of `U`.
@@ -123,7 +140,7 @@ On a quasi-compact quasi-separated `X`:
 4. 01PI (Lemma 28.23.4): a map from a finitely presented `F` to `j^* H` extends to a map from a
    finitely presented extension of `F` to `H`.
 
-Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-29). PR #21787 is
+Notes for the next session (checked against `main` at `ea7e54cf96`, 2026-10-30). PR #21787 is
 still open, so the stub stays. Mathlib provides `SheafOfModules.IsFiniteType` and
 `SheafOfModules.IsFinitePresentation`. `main` provides `isQuasicoherent_of_isColimit` and
 `isColimitMapCoconeSectionsFunctor` in `Quasicoherent/Colimits.lean`: on an affine open, sections
@@ -140,15 +157,15 @@ the cocone of their inclusions into `G` is a colimit, which matches the existing
    `exists_isQuasicoherent_restrict_iso` and `exists_mono_restrict_iso_of_isQuasicoherent`.
    Subject: `feat: extend quasi-coherent modules and submodules along quasi-compact open immersions`.
 2. **Split 2** (after: none, independent of the supplier). Started. File
-   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (104 lines), with
-   `isFiniteType_of_generatingSections`, `isQuasicoherent_image`,
-   `isFiniteType_image_of_generatingSections`, `exists_isFiniteType_mono_sections` and
-   `isIso_of_mono_of_forall_isFiniteType_factors` (136 lines now). Also
+   `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/FiniteTypeImage.lean` (188 lines), with
+   `isFiniteType_of_generatingSections`, `epi_overFunctor_map`, `isFiniteType_of_epi`,
+   `isQuasicoherent_image`, `isFiniteType_image`, `exists_isFiniteType_mono_sections`,
+   `exists_isFiniteType_mono_factors` and `isIso_of_mono_of_forall_isFiniteType_factors`. Also
    `TauCeti/AlgebraicGeometry/Modules/Quasicoherent/AffineGlobalSections.lean` (93 lines), with
    `isIso_of_isIso_restrictFunctor_map`, `isIso_of_bijective_sectionsFunctor_map_top` and
    `isIso_of_mono_of_surjective_sectionsFunctor_map_top`. Still to write: the qcqs induction,
    in a sibling file proving 01PG. If the split exceeds about 600 lines, the two existing files
-   (the affine case, about 230 lines) can be opened alone first.
+   (the affine case and directedness, about 280 lines) can be opened alone first.
    Subject: `feat: quasi-coherent modules on qcqs schemes are directed unions of finite-type submodules`.
 3. **Split 3** (after: 1, 2). Not yet written. It adds the finite-type submodule extension
    (01PF), finite-type and finitely presented extension (0G41) and map extension (01PI), either
