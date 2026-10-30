@@ -7,7 +7,8 @@ map `Sym_{O_S} A_1 → A` is surjective in every positive degree and induces a c
 `relativeProj A → relativeProj (Sym_{O_S} A_1)` over `S` pulling `O(1)` back to `O(1)`
 (Stacks 01N0, 01N1), so `relativeProj A → S` is projective.
 
-Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (splits 1–3 proved, split 4 remains).
+Built on `main` at `ea7e54cf967c2ab502c7e69bf69501e5a3ae3130`. Status: **partial** (splits 1–3 proved, split 4 remains). Resumed from tip `43fa58e78a9b`; `main`
+had not moved, so the merge was a no-op.
 
 ## Stubbed declarations
 
@@ -47,11 +48,13 @@ here).
 
 1. **feat: functoriality of the relative Proj and closed immersions from graded maps surjective in
    positive degrees**. Needs nothing first. *Done.* File
-   `TauCeti/AlgebraicGeometry/RelativeProj/Map.lean` (new, 237 lines). Declarations (all in
+   `TauCeti/AlgebraicGeometry/RelativeProj/Map.lean` (new, 262 lines). Declarations (all in
    `CategoryTheory.CommMon`, inside `namespace TauCeti` as in `RelativeProj/Basic.lean`):
    `gradedSectionsGradedHom` (+ `_apply`,
    `gradedSectionsGradedHom_comp_restrictGradedSectionsGradedHom`), `relativeProjFunctorMap`
-   (+ `_app`, `_app_toSpecCoeff`), `relativeProjMap`, `relativeProjCover_f_relativeProjMap`,
+   (+ `_app`, `_app_toSpecCoeff`), `gradedSectionsMap_apply` (new in the third round: the map of
+   graded rings of sections acts componentwise; the port may move it next to
+   `CommMon.gradedSectionsMap_of` in `Modules/GradedAlgebra/Sections.lean`), `relativeProjMap`, `relativeProjCover_f_relativeProjMap`,
    `relativeProjMap_relativeProjToBase` (lies over `X`), `isPullback_relativeProjMap`,
    `irrelevant_le_map_gradedSectionsGradedHom_of_grade_subset_range`,
    `isClosedImmersion_relativeProjMap` (Stacks 01N0), and (new this round)
@@ -66,11 +69,13 @@ here).
    fold it into split 3 if a 200-line minimum is enforced.
 3. **feat: the relative Proj of an algebra generated in degree one is a closed subscheme of the
    relative Proj of Sym A₁**. Needs 1 and 2. *Done this round.* File
-   `TauCeti/AlgebraicGeometry/RelativeProj/ClosedImmersion.lean` (new, 121 lines). Declarations
+   `TauCeti/AlgebraicGeometry/RelativeProj/ClosedImmersion.lean` (new, 142 lines). Declarations
    (namespace `TauCeti.AlgebraicGeometry.GradedQuasicoherentAlgebra`):
    `epi_gradedSymmetricAlgebraLift_one` (`Sym A₁ ⟶ A` is epi in degree one),
    `grade_subset_range_gradedSymmetricAlgebraLift` (the README's "`Sym A_1 → A` is surjective in
-   every positive degree", on affine sections, under generation in degree one), and
+   every positive degree", on affine sections, under generation in degree one),
+   `epi_gradedSymmetricAlgebraLift` (new in the third round: the same at the sheaf level,
+   `Symⁿ A₁ ⟶ Aₙ` is an epimorphism of module sheaves for `n > 0`), and
    `isClosedImmersion_relativeProjMap_gradedSymmetricAlgebraLift` (the closed immersion
    `Proj_X(A) ⟶ Proj_X(Sym A₁)`; it lies over `X` by `relativeProjMap_relativeProjToBase`).
 4. **feat: relativeProj_closedImmersion pulls O(1) back to O(1)**. Needs 1, 2, 3 and the supplier
@@ -81,7 +86,8 @@ here).
 ## What is proved and what remains
 
 Proved (no `sorry`, no stubs): for `A` a graded quasicoherent algebra on `X` generated in degree
-one on affine charts, `Sym A₁ ⟶ A` is surjective in every positive degree on affine sections and
+one on affine charts, `Sym A₁ ⟶ A` is surjective in every positive degree on affine sections, is an
+epimorphism of module sheaves in every positive degree, and
 induces a closed immersion `Proj_X(A) ⟶ Proj_X(Sym A₁)` over `X`.
 
 Remains (split 4):
@@ -92,8 +98,14 @@ Remains (split 4):
   and "so `relativeProj A → S` is projective" with `A_1` of finite type: Tau Ceti has no
   projective-morphism predicate on `main`, so this conclusion is stated as the closed immersion into
   `Proj_X(Sym A₁)` over `S` with `A₁` of finite type, plus the `O(1)` pullback;
-- optionally the sheaf-level form: `Symⁿ A₁ ⟶ Aₙ` is an epimorphism for `n > 0` (via
-  `Scheme.Modules.Hom.epi_of_surjective_on_affineOpens` and a lemma computing components of
-  `CommMon.gradedSectionsMap`; this round's attempt hit a `ModuleCat`/`AddCommGrpCat` carrier
-  mismatch in that component lemma), after which `isClosedImmersion_relativeProjMap_of_epi`
-  applies directly.
+- (done in the third round) the sheaf-level form `Symⁿ A₁ ⟶ Aₙ` epi for `n > 0`:
+  `epi_gradedSymmetricAlgebraLift`, via `CommMon.gradedSectionsMap_apply`.
+
+Mathematical route for split 4 (none of it is on `main` or in PR #22384): for a graded ring
+homomorphism `g : ℬ →+*ᵍ 𝒜` surjective in positive degrees with `ℬ` generated in degree one (as
+`Sym A₁` is on affine charts), the adjoint `(Proj.map g)^* 𝒪_ℬ(n) ⟶ 𝒪_𝒜(n)` of
+`Proj.twistingSheafMap g _ n` is an isomorphism, checked on the cover by `D₊(f)`, `f ∈ ℬ₁`, where
+`𝒪(n)|D₊(f)` is free on `fⁿ` (`ProjectiveSpectrum/TwistingSheaf/LocalTriviality.lean`); then glue
+the chart isomorphisms along `restrictRelativeProjTwistingSheafIso` (which needs, from PR #22384's
+`TauCeti/AlgebraicGeometry/Modules/Gluing.lean`, the universal property of `ModulesGlueData.glued`
+for morphisms, to be stubbed then).

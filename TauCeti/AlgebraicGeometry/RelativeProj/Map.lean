@@ -32,6 +32,8 @@ of `AlgebraicGeometry.Proj.isClosedImmersion_map_of_grade_subset_range`.
 
 ## Main results
 
+* `CategoryTheory.CommMon.gradedSectionsMap_apply`: the map of graded rings of sections induced by
+  a morphism of graded algebras acts componentwise.
 * `CategoryTheory.CommMon.relativeProjMap_relativeProjToBase`: the morphism lies over `X`.
 * `CategoryTheory.CommMon.isPullback_relativeProjMap`: over the chart of `Proj_X(B)` above an
   affine open `U`, the morphism is `Proj (⨁ n, Γ(Aₙ, U)) ⟶ Proj (⨁ n, Γ(Bₙ, U))`.
@@ -59,6 +61,29 @@ universe u
 noncomputable section
 
 variable {X : Scheme.{u}} {A B : CommMon (GradedObject ℕ X.Modules)}
+
+/-- The map induced on graded rings of sections applies the morphism to each homogeneous
+component. -/
+theorem _root_.CategoryTheory.CommMon.gradedSectionsMap_apply (φ : B ⟶ A) (U : X.Opens)
+    (x : ⨁ n, Γ(B.X n, U)) (i : ℕ) :
+    CommMon.gradedSectionsMap φ U x i = (φ.hom.hom i).app U (x i) := by
+  induction x using DirectSum.induction_on with
+  | zero =>
+    rw [map_zero, DirectSum.zero_apply, DirectSum.zero_apply]
+    exact (AddMonoidHom.map_zero _).symm
+  | of n y =>
+    rw [CommMon.gradedSectionsMap_of]
+    -- the sections of the components are stated with explicit families, since `B.X` and
+    -- `B.toMon.X` are only unfolded to each other by elaboration
+    obtain rfl | hn := eq_or_ne n i
+    · exact (DirectSum.of_eq_same (β := fun i ↦ Γ(A.X i, U)) n _).trans
+        (congrArg _ (DirectSum.of_eq_same (β := fun i ↦ Γ(B.X i, U)) n y).symm)
+    · exact (DirectSum.of_eq_of_ne (β := fun i ↦ Γ(A.X i, U)) n i _ hn.symm).trans
+        ((congrArg _ (DirectSum.of_eq_of_ne (β := fun i ↦ Γ(B.X i, U)) n i y hn.symm)).trans
+          (AddMonoidHom.map_zero _)).symm
+  | add x y hx hy =>
+    rw [map_add, DirectSum.add_apply, DirectSum.add_apply, hx, hy]
+    exact (AddMonoidHom.map_add _ _ _).symm
 
 /-- The graded ring homomorphism between graded rings of sections induced by a morphism of graded
 algebras. Its underlying algebra homomorphism is `CategoryTheory.CommMon.gradedSectionsMap`. -/
