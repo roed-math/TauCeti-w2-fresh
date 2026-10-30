@@ -147,3 +147,13 @@ stub of the supplier would be needed. Items 3 and 4 also need the Čech comparis
   so the file no longer imports `Cohomology/OpenImmersion.lean`. No stub is needed. Items 1–4
   under *What remains* are still open. Their first missing step is still a comparison of
   `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`.
+- Round 6 (2026-10-30): `origin/main` was still `ea7e54cf96`, and PR #21787 is still open (head
+  `e9afd8375f`), so there was nothing to merge. `lake build` is green and `lookahead-check`
+  passes. Rechecked the proof file against the rubrics (docstrings, Stacks references, placement,
+  pinned name and signature) and found nothing to change. Considered adding the degree-zero case
+  of item 1 through a stub of PR #21787's `isQuasicoherent_pushforward` and
+  `Scheme.Hom.higherDirectImageZeroIso`, but rejected it: it would only restate the supplier's
+  instance, not advance the target. Items 1–4 under *What remains* are still open. Their first
+  missing step is still the comparison of `Scheme.Hom.higherDirectImage` with the sheafification
+  of `V ↦ Hᵖ(f⁻¹V, F)`. Only the vanishing half of that comparison
+  (`Scheme.Hom.isZero_higherDirectImage_succ_of_isBasis`) is on `main`.
