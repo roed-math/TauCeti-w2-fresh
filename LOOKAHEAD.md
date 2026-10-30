@@ -55,7 +55,11 @@ for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for
 - `lerayEdge_δ` — commutes with connecting homomorphisms when `S` and `f_* S` are short exact;
 - `addEquiv₀_lerayEdge` — in degree 0 it is `g ↦ c ≫ adj.homEquiv.symm g`;
 - `lerayEdge_zero_bijective` — bijective in degree 0 when `c` is an isomorphism;
-- `subsingleton_H_obj_of_injective` — `Hⁿ⁺¹(C, f_* I) = 0` for injective `I` (Stacks 072Z input).
+- `subsingleton_H_obj_of_injective` — `Hⁿ⁺¹(C, f_* I) = 0` for injective `I` (Stacks 072Z input);
+- `lerayEdge_one_injective` — when `c` is an isomorphism and `Sheaf K Ab` has enough injectives,
+  the edge map `H¹(C, f_* F) → H¹(D, F)` is injective: the first map of the five-term exact
+  sequence, proved directly by embedding `F` into an injective and chasing the two long exact
+  sequences (uses `pullback_δ` and `addEquiv₀_pullback` of the stubs).
 
 ## What remains
 
@@ -78,10 +82,10 @@ The spectral sequence itself. Concretely:
 ## Split plan
 
 1. **feat: the edge map of the Leray spectral sequence** — files:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (this branch, ~125 lines, importing
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (this branch, ~180 lines, importing
    the landed `Pullback.lean`). Adds `lerayEdge`, `lerayEdge_apply`, `lerayEdge_naturality`,
    `lerayEdge_δ`, `addEquiv₀_lerayEdge`, `lerayEdge_zero_bijective`,
-   `subsingleton_H_obj_of_injective`. After: none (needs #22647 on `main`).
+   `subsingleton_H_obj_of_injective`, `lerayEdge_one_injective`. After: none (needs #22647 on `main`).
 2. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files under
    `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`: the double complex of resolutions,
    its `E₂` identification and convergence. After: none. (Not yet written.)

@@ -22,7 +22,8 @@ Leray spectral sequence is the pullback `Sheaf.H.pullback pb c` of cohomology to
 (Stacks, Lemma 21.14.5 (0732) and Remark 21.14.4 (08J6)). This file defines it
 (`Sheaf.H.lerayEdge`) and proves that it is natural in `F`, compatible with the connecting
 homomorphisms of short exact sequences that stay exact after pushforward, and in degree zero
-given by the adjunction, hence bijective when `c` is an isomorphism. It also records the input
+given by the adjunction, hence bijective when `c` is an isomorphism, and injective in degree one,
+the first map of the five-term exact sequence. It also records the input
 on which the Leray spectral sequence rests: `f_*` sends injective sheaves to injective sheaves,
 whose higher cohomology vanishes.
 
@@ -33,6 +34,7 @@ whose higher cohomology vanishes.
 * `CategoryTheory.Sheaf.H.lerayEdge_δ`: compatibility with connecting homomorphisms.
 * `CategoryTheory.Sheaf.H.addEquiv₀_lerayEdge`, `CategoryTheory.Sheaf.H.lerayEdge_zero_bijective`:
   the edge map in degree zero.
+* `CategoryTheory.Sheaf.H.lerayEdge_one_injective`: the edge map is injective in degree one.
 * `CategoryTheory.Sheaf.H.subsingleton_H_obj_of_injective`: `Hⁿ⁺¹(C, f_* I) = 0` for an
   injective sheaf `I`.
 -/
@@ -119,5 +121,63 @@ lemma subsingleton_H_obj_of_injective (I : Sheaf K AddCommGrpCat.{w}) [Injective
     Subsingleton (H (pf.obj I) (n + 1)) :=
   have := Injective.injective_of_adjoint adj I
   inferInstance
+
+/-- When the comparison `c` of constant sheaves is an isomorphism, the edge map is injective in
+degree one: `H¹(C, f_* F) ⟶ H¹(D, F)` is the first map of the five-term exact sequence of the
+Leray spectral sequence (Stacks, Lemma 21.14.5 (0732)). Embed `F` into an injective sheaf `I`. As
+`H¹(C, f_* I) = 0`, a class of `H¹(C, f_* F)` is the connecting image of a section `y` of the
+cokernel `Q` of `f_* F ⟶ f_* I`. If its edge image vanishes, the adjoint of `y` lifts along
+`I ⟶ I / F`, so `y` lifts to `f_* I`, because `Q` embeds into `f_* (I / F)`. -/
+lemma lerayEdge_one_injective [IsIso c] [EnoughInjectives (Sheaf K AddCommGrpCat.{w})]
+    (F : Sheaf K AddCommGrpCat.{w}) : Function.Injective (lerayEdge adj c F 1) := by
+  have := adj.rightAdjoint_preservesLimits
+  have := adj.right_adjoint_additive
+  let ι := Injective.ι F
+  have hS : (ShortComplex.mk ι (cokernel.π ι) (cokernel.condition ι)).ShortExact :=
+    { exact := ShortComplex.cokernelSequence_exact ι
+      mono_f := inferInstanceAs (Mono ι) }
+  have hT : (ShortComplex.mk (pf.map ι) (cokernel.π (pf.map ι))
+      (cokernel.condition (pf.map ι))).ShortExact :=
+    { exact := ShortComplex.cokernelSequence_exact (pf.map ι)
+      mono_f := inferInstanceAs (Mono (pf.map ι)) }
+  -- The comparison `Q ⟶ f_* (I / F)` is a monomorphism, as `f_*` is left exact.
+  let g₃ : cokernel (pf.map ι) ⟶ pf.obj (cokernel ι) :=
+    cokernel.desc (pf.map ι) (pf.map (cokernel.π ι)) (by
+      rw [← pf.map_comp, cokernel.condition, pf.map_zero])
+  have : Mono g₃ :=
+    (hS.exact.map_of_mono_of_preservesKernel pf hS.mono_f inferInstance).mono_cokernelDesc
+  let φ : (ShortComplex.mk (pf.map ι) (cokernel.π (pf.map ι)) (cokernel.condition _)).map pb ⟶
+      ShortComplex.mk ι (cokernel.π ι) (cokernel.condition ι) :=
+    { τ₁ := adj.counit.app F
+      τ₂ := adj.counit.app (Injective.under F)
+      τ₃ := pb.map g₃ ≫ adj.counit.app (cokernel ι)
+      comm₁₂ := (adj.counit.naturality ι).symm
+      comm₂₃ := by
+        change _ = pb.map (cokernel.π (pf.map ι)) ≫ pb.map g₃ ≫ _
+        rw [← pb.map_comp_assoc, cokernel.π_desc]
+        exact (adj.counit.naturality (cokernel.π ι)).symm }
+  refine (injective_iff_map_eq_zero _).2 fun x hx ↦ ?_
+  have := subsingleton_H_obj_of_injective adj (Injective.under F) 0
+  obtain ⟨y, hy⟩ := longSequence_exact₁ hT x (Subsingleton.elim (α := H (pf.obj _) 1) _ _) rfl
+  have hx' : H.δ hS 0 1 rfl (H.map φ.τ₃ 0 (pullback pb c _ 0 y)) = 0 :=
+    (H.δ_naturality 0 1 rfl (hT.map_of_exact pb) hS φ _).trans
+      ((congrArg (H.map φ.τ₁ 1) (pullback_δ pb c hT 0 1 rfl y)).symm.trans
+        ((congrArg (lerayEdge adj c F 1) hy).trans hx))
+  obtain ⟨z, hz⟩ := longSequence_exact₃ hS _ rfl hx'
+  have hz' := congrArg Ext.addEquiv₀ hz
+  rw [H.addEquiv₀_map, H.addEquiv₀_map, addEquiv₀_pullback] at hz'
+  -- The adjoint of the lift of `y` to `I / F`.
+  let a : _ ⟶ pf.obj (Injective.under F) := (adj.homEquiv _ _) (inv c ≫ Ext.addEquiv₀ z)
+  have ha : a ≫ cokernel.π (pf.map ι) = Ext.addEquiv₀ y := by
+    rw [← cancel_mono g₃, Category.assoc, cokernel.π_desc, ← adj.homEquiv_naturality_right]
+    change (adj.homEquiv _ _) (inv c ≫ Ext.addEquiv₀ z ≫ cokernel.π ι) = _
+    rw [hz', Category.assoc, IsIso.inv_hom_id_assoc]
+    change (adj.homEquiv _ _) (pb.map _ ≫ pb.map g₃ ≫ _) = _
+    rw [← pb.map_comp_assoc, ← Adjunction.homEquiv_counit, Equiv.apply_symm_apply]
+  obtain rfl : y = H.map (cokernel.π (pf.map ι)) 0 (Ext.addEquiv₀.symm a) :=
+    Ext.addEquiv₀.injective (by rw [H.addEquiv₀_map, AddEquiv.apply_symm_apply, ha])
+  rw [← hy]
+  change ((Ext.addEquiv₀.symm a).comp (Ext.mk₀ _) (add_zero 0)).comp hT.extClass (zero_add 1) = 0
+  rw [Ext.comp_assoc_of_second_deg_zero, hT.comp_extClass, Ext.comp_zero]
 
 end CategoryTheory.Sheaf.H
