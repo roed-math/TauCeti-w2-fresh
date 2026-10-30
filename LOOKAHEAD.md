@@ -97,7 +97,7 @@ This is the only split. It carries the target's exported theorem. The PR would u
 The target sentence in the README (§2.6, `qcoh_higherDirectImages`) also asks for the following.
 For `f : X → S` qcqs and `F` quasi-coherent:
 
-1. `R^p f_* F` (`TauCeti.AlgebraicGeometry.Scheme.Modules.higherDirectImage f p`, on `main`) is
+1. `R^p f_* F` (`AlgebraicGeometry.Scheme.Hom.higherDirectImage f p`, on `main`) is
    quasi-coherent;
 2. on an affine open `U ⊆ S`, its sections are `H^p(f⁻¹U, F)`;
 3. it commutes with flat base change;
@@ -156,4 +156,10 @@ stub of the supplier would be needed. Items 3 and 4 also need the Čech comparis
   instance, not advance the target. Items 1–4 under *What remains* are still open. Their first
   missing step is still the comparison of `Scheme.Hom.higherDirectImage` with the sheafification
   of `V ↦ Hᵖ(f⁻¹V, F)`. Only the vanishing half of that comparison
+  (`Scheme.Hom.isZero_higherDirectImage_succ_of_isBasis`) is on `main`.
+- Round 7 (2026-10-30): `origin/main` was still `ea7e54cf96`, and PR #21787 is still open (head
+  `e9afd8375f`), so there was nothing to merge. `lake build` is green and `lookahead-check`
+  passes. Nothing was added: items 1–4 under *What remains* still all start from the comparison of
+  `Scheme.Hom.higherDirectImage` with the sheafification of `V ↦ Hᵖ(f⁻¹V, F)`. That is a
+  multi-file job, not a step that fits into one round. Only its vanishing half
   (`Scheme.Hom.isZero_higherDirectImage_succ_of_isBasis`) is on `main`.
