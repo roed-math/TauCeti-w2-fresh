@@ -31,7 +31,9 @@ supports in `Z = ∅` it vanishes.
 * `Scheme.Modules.cohomologyWithSupportModule`: the `Γ(X, ⊤)`-module structure;
 * `Scheme.Modules.sectionsWithSupport Z M`: the `Γ(X, ⊤)`-submodule `Γ_Z(X, M)` of `Γ(M, ⊤)`,
   all of `Γ(M, ⊤)` for `Z = X` (`Scheme.Modules.sectionsWithSupport_top`);
-* `Scheme.Modules.cohomologyWithSupportZeroLinearEquiv`: `H_Z^0(X, M) ≃ₗ[Γ(X, ⊤)] Γ_Z(X, M)`;
+* `Scheme.Modules.cohomologyWithSupportZeroLinearEquiv`: `H_Z^0(X, M) ≃ₗ[Γ(X, ⊤)] Γ_Z(X, M)`,
+  and `Scheme.Modules.cohomologyWithSupportZeroLinearEquivOfEqTop`:
+  `H_Z^0(X, M) ≃ₗ[Γ(X, ⊤)] Γ(M, ⊤)` when `Z = X`;
 * `Scheme.Modules.cohomologyWithSupportTopEquiv`: `H_X^q(X, M) ≃+ H^q(X, M)`, natural in `M`,
   and `Scheme.Modules.cohomologyWithSupportTopLinearEquiv`, the same identification as a
   `Γ(X, ⊤)`-linear equivalence;
@@ -201,6 +203,22 @@ lemma coe_cohomologyWithSupportZeroLinearEquiv_apply (M : X.Modules)
     (x : cohomologyWithSupport Z M 0) :
     (cohomologyWithSupportZeroLinearEquiv Z M x).1 =
       (((SheafOfModules.toSheaf X.ringCatSheaf).obj M).supportedHZeroEquiv Z ⊤ x).1 :=
+  (rfl)
+
+variable {Z} in
+/-- With supports in a closed subset equal to the whole space, degree-zero cohomology with
+supports is the module of all global sections. -/
+def cohomologyWithSupportZeroLinearEquivOfEqTop (hZ : Z = ⊤) (M : X.Modules) :
+    cohomologyWithSupport Z M 0 ≃ₗ[Γ(X, ⊤)] Γ(M, ⊤) :=
+  (cohomologyWithSupportZeroLinearEquiv Z M).trans
+    (LinearEquiv.ofTop _ (by rw [hZ]; exact sectionsWithSupport_top M))
+
+variable {Z} in
+@[simp]
+lemma cohomologyWithSupportZeroLinearEquivOfEqTop_apply (hZ : Z = ⊤) (M : X.Modules)
+    (x : cohomologyWithSupport Z M 0) :
+    cohomologyWithSupportZeroLinearEquivOfEqTop hZ M x =
+      (cohomologyWithSupportZeroLinearEquiv Z M x).1 :=
   (rfl)
 
 /-- With supports in the whole space, cohomology with supports is ordinary cohomology:

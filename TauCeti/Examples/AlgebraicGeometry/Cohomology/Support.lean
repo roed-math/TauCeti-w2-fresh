@@ -76,20 +76,6 @@ theorem subsingleton_cohomologyWithSupport_origin_zero :
       (coordinate k)).compl (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf) 0) :=
   subsingleton_cohomologyWithSupport_basicOpen_zero _ (coordinate_mem_nonZeroDivisors k)
 
-/-- The functions on `D(t)` are the Laurent polynomials, compatibly with the inclusion of
-polynomials. -/
-private def basicOpenRingEquiv :
-    Γ(Spec (CommRingCat.of k[X]), (Spec (CommRingCat.of k[X])).basicOpen (coordinate k)) ≃+*
-      k[T;T⁻¹] :=
-  IsLocalization.ringEquivOfRingEquiv (M := Submonoid.powers (coordinate k))
-    (T := Submonoid.powers X) _ _ (globalSectionsEquiv k) (by
-      rw [Submonoid.map_powers]
-      exact congrArg _ (globalSectionsEquiv_coordinate k))
-
-private lemma basicOpenRingEquiv_algebraMap (s : Γ(Spec (CommRingCat.of k[X]), ⊤)) :
-    basicOpenRingEquiv k (algebraMap _ _ s) = toLaurent (globalSectionsEquiv k s) := by
-  rw [basicOpenRingEquiv, IsLocalization.ringEquivOfRingEquiv_eq, algebraMap_eq_toLaurent]
-
 /-- Degree-one cohomology of the structure sheaf of the affine line with supports at the origin
 is the group of Laurent polynomials modulo polynomials:
 `H¹_{V(t)}(𝔸¹, 𝒪) ≅ k[t, t⁻¹] / k[t]`. -/
@@ -97,17 +83,7 @@ def cohomologyWithSupportOriginOneEquiv :
     cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen (coordinate k)).compl
         (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf) 1 ≃+
       k[T;T⁻¹] ⧸ (toLaurent : k[X] →+* k[T;T⁻¹]).range.toAddSubgroup :=
-  (cohomologyWithSupportBasicOpenOneEquiv (coordinate k)).symm.trans
-    (QuotientAddGroup.congr _ _ (basicOpenRingEquiv k).toAddEquiv (by
-      ext y
-      simp only [AddSubgroup.mem_map, Subring.mem_toAddSubgroup, RingHom.mem_range]
-      constructor
-      · rintro ⟨_, ⟨s, rfl⟩, rfl⟩
-        exact ⟨globalSectionsEquiv k s, (basicOpenRingEquiv_algebraMap k s).symm⟩
-      · rintro ⟨p, rfl⟩
-        refine ⟨_, ⟨(globalSectionsEquiv k).symm p, rfl⟩, ?_⟩
-        exact (basicOpenRingEquiv_algebraMap k _).trans
-          (congrArg _ (RingEquiv.apply_symm_apply _ p))))
+  cohomologyWithSupportSpecOneEquiv X k[T;T⁻¹]
 
 /-- The structure sheaf of the affine line has no cohomology with supports at the origin in
 degrees at least two. -/

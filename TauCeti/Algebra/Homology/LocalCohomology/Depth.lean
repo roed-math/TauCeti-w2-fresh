@@ -11,6 +11,7 @@ import TauCeti.Algebra.Category.ModuleCat.Ext.Basic
 import TauCeti.Algebra.Homology.Ext.ProjectiveResolution
 import TauCeti.RingTheory.Depth.WeaklyRegular
 import TauCeti.RingTheory.Finiteness.Nakayama
+import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughInjectives
 import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 import Mathlib.CategoryTheory.Limits.ConcreteCategory.WithAlgebraicStructures
 
@@ -34,7 +35,8 @@ injective. So the nonzero group `Ext^d(A/I, M)` injects into the colimit.
 * `TauCeti.Supports.isZero_Ext_iff_subsingleton`: the derived-functor `Ext` of modules vanishes
   exactly when the derived-category `Ext` does.
 * `TauCeti.Supports.isZero_localCohomology_of_subsingleton_ext`: `H^q_I(M) = 0` once every
-  `Ext^q(A/Iⁿ, M)` vanishes.
+  `Ext^q(A/Iⁿ, M)` vanishes, and `TauCeti.Supports.isZero_localCohomology_succ_of_injective`:
+  in positive degrees it vanishes on injective modules.
 * `TauCeti.Supports.depth_localCohomology_vanishing`: `H^q_I(M) = 0` for `q < depth_I M`.
 * `TauCeti.Supports.depth_localCohomology_nonvanishing`: `H^d_I(M) ≠ 0` for `depth_I M = d`.
 * `TauCeti.Supports.depth_localCohomology_zero_guard`: the zero module has depth `⊤` and all of
@@ -70,6 +72,13 @@ theorem isZero_localCohomology_of_subsingleton_ext (I : Ideal A) (M : ModuleCat.
   refine IsZero.of_iso ?_ (colimitObjIsoColimitCompEvaluation _ M)
   refine (IsZero.iff_id_eq_zero _).2 (colimit.hom_ext fun n => ?_)
   exact ((isZero_Ext_iff_subsingleton _ M q).2 (h n.unop.unop)).eq_of_src _ _
+
+/-- Local cohomology of an injective module vanishes in positive degrees, since every
+`Ext^{q+1}(A/Iⁿ, J)` does. -/
+theorem isZero_localCohomology_succ_of_injective (I : Ideal A) (J : ModuleCat.{u} A) [Injective J]
+    (q : ℕ) : IsZero ((localCohomology I (q + 1)).obj J) :=
+  isZero_localCohomology_of_subsingleton_ext I J (q + 1) fun _ =>
+    ⟨fun x y => (Ext.eq_zero_of_injective x).trans (Ext.eq_zero_of_injective y).symm⟩
 
 /-- Below the `I`-depth of a finite module `M` with `I M ≠ M` over a Noetherian ring, `Ext^q(N, M)`
 vanishes for every finite module `N` supported in `V(I)`: this is Rees' theorem

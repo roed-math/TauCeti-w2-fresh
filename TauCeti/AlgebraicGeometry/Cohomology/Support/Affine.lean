@@ -25,10 +25,16 @@ a global function, then `H_Z^q(X, M)` vanishes for `q ≥ 2`.
 
 ## Main declarations
 
-* `Scheme.Modules.cohomologyWithSupportOneEquiv`: `M(X ∖ Z) / M(X) ≃+ H_Z^1(X, M)` for affine `X`;
+* `Scheme.Modules.cohomologyWithSupportOneEquiv`: `M(X ∖ Z) / M(X) ≃+ H_Z^1(X, M)` for affine `X`,
+  compatible with multiplication by global functions
+  (`Scheme.Modules.cohomologyWithSupportOneEquiv_globalSectionsSmul`);
 * `Scheme.Modules.subsingleton_cohomologyWithSupport_add_two`: `H_Z^{n+2}(X, M) = 0` when `X` and
   `X ∖ Z` are affine, and `Scheme.Modules.subsingleton_cohomologyWithSupport_basicOpen_add_two`,
-  its case `Z = V(f)`.
+  its case `Z = V(f)`;
+* `Scheme.Modules.cohomologyWithSupportBasicOpenOneLinearEquiv`:
+  `H_{V(r)}^1(X, 𝒪) ≃ₗ[Γ(X, ⊤)] Γ(X, ⊤)_r / Γ(X, ⊤)` for affine `X` and `r : Γ(X, ⊤)`;
+* `Scheme.Modules.cohomologyWithSupportSpecOneEquiv`: `H_{V(a)}^1(Spec A, 𝒪) ≃+ L / A` for a
+  localization `L` of `A` away from `a`.
 -/
 
 public section
@@ -65,6 +71,28 @@ lemma cohomologyWithSupportOneEquiv_mk [IsAffine X]
       CategoryTheory.Sheaf.relativeH'.δ _ (Z.complInclusion ⊤) (add_zero 1)
         ((TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv _ _).symm s) :=
   CategoryTheory.Sheaf.supportedHOneEquiv_mk _ Z ⊤ _ s
+
+/-- The degree-one identification `cohomologyWithSupportOneEquiv` is linear over global functions:
+multiplying a section over `X ∖ Z` by a global function `r` multiplies its class by `r`. -/
+lemma cohomologyWithSupportOneEquiv_globalSectionsSmul [IsAffine X] (r : Γ(X, ⊤))
+    (s : ((SheafOfModules.toSheaf X.ringCatSheaf).obj M).obj.obj (op (⊤ ⊓ Z.compl))) :
+    cohomologyWithSupportOneEquiv Z M
+        (((SheafOfModules.toSheaf X.ringCatSheaf).map (M.globalSectionsSmul r)).hom.app _ s) =
+      r • cohomologyWithSupportOneEquiv Z M s := by
+  have h : (TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv _ _).symm
+      (((SheafOfModules.toSheaf X.ringCatSheaf).map (M.globalSectionsSmul r)).hom.app _ s) =
+      ((CategoryTheory.Sheaf.cohomologyPresheafFunctor _ 0).map
+        ((SheafOfModules.toSheaf X.ringCatSheaf).map (M.globalSectionsSmul r))).app _
+        ((TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv _ _).symm s) := by
+    apply (TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv _ _).injective
+    rw [AddEquiv.apply_symm_apply,
+      TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv_naturality_right,
+      AddEquiv.apply_symm_apply]
+  rw [cohomologyWithSupportOneEquiv_mk, cohomologyWithSupportOneEquiv_mk, h,
+    smul_cohomologyWithSupport, cohomologyWithSupportMap_apply,
+    CategoryTheory.Sheaf.relativeH'.δ_apply, CategoryTheory.Sheaf.relativeH'.δ_apply,
+    CategoryTheory.Sheaf.H'AddEquivExt_cohomologyPresheafFunctor_map_app]
+  exact (Abelian.Ext.comp_assoc_of_third_deg_zero _ _ _ _).symm
 
 /-- If both `X` and the complement `X ∖ Z` are affine, a quasi-coherent sheaf has no cohomology
 with supports in `Z` in degrees at least two. -/
@@ -106,6 +134,28 @@ private lemma basicOpenSectionsAddEquiv_algebraMap (s : Γ(X, ⊤)) :
   -- the two inclusions of opens agree, because `X.Opens` is a thin category
   rfl
 
+/-- Under `basicOpenSectionsAddEquiv`, multiplication by a global function `a` is the action of
+`a` on the structure sheaf by a scalar endomorphism. -/
+private lemma basicOpenSectionsAddEquiv_algebraMap_mul (a : Γ(X, ⊤)) (t : Γ(X, X.basicOpen r)) :
+    basicOpenSectionsAddEquiv r (algebraMap Γ(X, ⊤) Γ(X, X.basicOpen r) a * t) =
+      ((SheafOfModules.toSheaf X.ringCatSheaf).map (Scheme.Modules.globalSectionsSmul
+        (SheafOfModules.unit X.ringCatSheaf) a)).hom.app _ (basicOpenSectionsAddEquiv r t) := by
+  have h (U : X.Opens) (y : Γ(X, U)) :
+      @Eq Γ(X, U) (((SheafOfModules.toSheaf X.ringCatSheaf).map (Scheme.Modules.globalSectionsSmul
+        (SheafOfModules.unit X.ringCatSheaf) a)).hom.app (op U) y)
+        (X.presheaf.map U.leTop.op a * y) := by
+    let 𝒪 : X.Modules := SheafOfModules.unit X.ringCatSheaf
+    change ((𝒪.globalSectionsSmul a).app U).hom y = _
+    rw [globalSectionsSmul_app]
+    exact 𝒪.smul_apply _ y
+  have e (y : Γ(X, X.basicOpen r)) :
+      @Eq Γ(X, ⊤ ⊓ (X.basicOpen r).compl.compl) (basicOpenSectionsAddEquiv r y)
+        ((X.presheaf.mapIso
+          (eqToIso (top_inf_compl_compl_basicOpen r)).op).commRingCatIsoToRingEquiv y) :=
+    rfl
+  refine ((e _).trans ((map_mul _ _ _).trans ?_)).trans (h _ (basicOpenSectionsAddEquiv r t)).symm
+  exact congrArg (· * _) ((e _).symm.trans (basicOpenSectionsAddEquiv_algebraMap r a))
+
 variable [IsAffine X]
 
 /-- On an affine scheme, the degree-one cohomology of the structure sheaf with supports in the
@@ -127,6 +177,25 @@ def cohomologyWithSupportBasicOpenOneEquiv :
       exact ⟨_, ⟨s, rfl⟩, basicOpenSectionsAddEquiv_algebraMap r s⟩)).trans
     (cohomologyWithSupportOneEquiv _ _)
 
+/-- `cohomologyWithSupportBasicOpenOneEquiv` is linear over global functions: on an affine scheme,
+`H_{V(r)}^1(X, 𝒪) ≅ Γ(X, ⊤)_r / Γ(X, ⊤)` as `Γ(X, ⊤)`-modules. -/
+def cohomologyWithSupportBasicOpenOneLinearEquiv :
+    let 𝒪 : X.Modules := SheafOfModules.unit X.ringCatSheaf
+    (Γ(X, X.basicOpen r) ⧸ LinearMap.range (Algebra.linearMap Γ(X, ⊤) Γ(X, X.basicOpen r)))
+      ≃ₗ[Γ(X, ⊤)] cohomologyWithSupport (X.basicOpen r).compl 𝒪 1 := by
+  intro 𝒪
+  exact
+    { (QuotientAddGroup.quotientAddEquivOfEq
+        (M := (LinearMap.range (Algebra.linearMap Γ(X, ⊤) Γ(X, X.basicOpen r))).toAddSubgroup)
+        (N := (algebraMap Γ(X, ⊤) Γ(X, X.basicOpen r)).range.toAddSubgroup)
+        (by ext; simp)).trans (cohomologyWithSupportBasicOpenOneEquiv r) with
+      map_smul' a x := by
+        obtain ⟨t, rfl⟩ := Submodule.Quotient.mk_surjective _ x
+        rw [← Submodule.Quotient.mk_smul, Algebra.smul_def]
+        exact (congrArg (cohomologyWithSupportOneEquiv _ _)
+          (congrArg QuotientAddGroup.mk (basicOpenSectionsAddEquiv_algebraMap_mul r a t))).trans
+            (cohomologyWithSupportOneEquiv_globalSectionsSmul _ 𝒪 a _) }
+
 /-- On an affine scheme, the structure sheaf has no sections supported in the zero locus `V(r)`
 of a nonzerodivisor `r`, so its degree-zero cohomology with supports in `V(r)` vanishes. -/
 theorem subsingleton_cohomologyWithSupport_basicOpen_zero (hr : r ∈ nonZeroDivisors Γ(X, ⊤)) :
@@ -147,6 +216,31 @@ theorem subsingleton_cohomologyWithSupport_basicOpen_zero (hr : r ∈ nonZeroDiv
   exact (h' a).trans (h' b).symm
 
 end structureSheaf
+
+/-- On `Spec A`, the degree-one cohomology of the structure sheaf with supports in the zero locus
+`V(a)` of `a : A` is `L / A` for any localization `L` of `A` away from `a`. -/
+def cohomologyWithSupportSpecOneEquiv {A : Type u} [CommRing A] (a : A) (L : Type*) [CommRing L]
+    [Algebra A L] [IsLocalization.Away a L] :
+    cohomologyWithSupport ((Spec (CommRingCat.of A)).basicOpen
+        ((Scheme.ΓSpecIso (CommRingCat.of A)).inv a)).compl
+        (SheafOfModules.unit (Spec (CommRingCat.of A)).ringCatSheaf) 1 ≃+
+      L ⧸ (algebraMap A L).range.toAddSubgroup :=
+  have H : (Submonoid.powers ((Scheme.ΓSpecIso (CommRingCat.of A)).inv a)).map
+      (Scheme.ΓSpecIso (CommRingCat.of A)).commRingCatIsoToRingEquiv.toMonoidHom =
+        Submonoid.powers a := by
+    rw [Submonoid.map_powers]
+    exact congrArg _ (Iso.inv_hom_id_apply (Scheme.ΓSpecIso (CommRingCat.of A)) a)
+  (cohomologyWithSupportBasicOpenOneEquiv _).symm.trans
+    (QuotientAddGroup.congr _ _ (IsLocalization.ringEquivOfRingEquiv _ L _ H).toAddEquiv (by
+    ext y
+    simp only [AddSubgroup.mem_map, Subring.mem_toAddSubgroup, RingHom.mem_range]
+    constructor
+    · rintro ⟨_, ⟨s, rfl⟩, rfl⟩
+      exact ⟨_, (IsLocalization.ringEquivOfRingEquiv_eq H s).symm⟩
+    · rintro ⟨b, rfl⟩
+      refine ⟨_, ⟨(Scheme.ΓSpecIso (CommRingCat.of A)).inv b, rfl⟩, ?_⟩
+      exact (IsLocalization.ringEquivOfRingEquiv_eq H _).trans
+        (congrArg _ (Iso.inv_hom_id_apply (Scheme.ΓSpecIso (CommRingCat.of A)) b))))
 
 end Scheme.Modules
 
