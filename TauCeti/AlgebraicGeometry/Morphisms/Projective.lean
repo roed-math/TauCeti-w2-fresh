@@ -54,6 +54,10 @@ Project defined through `ℙ(ℰ)`.
   projective, and `𝒪(1)` on it is relatively ample
   (`LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra`).
 
+Closed immersions, in particular isomorphisms, are projective
+(`TauCeti.AlgebraicGeometry.isProjective_of_isClosedImmersion`); this is proved in
+`TauCeti.AlgebraicGeometry.Blowup.Projective`, through the blowup along the unit ideal sheaf.
+
 ## References
 
 * The Stacks Project, Chapter *Morphisms of Schemes*, sections *Very ample sheaves* and
