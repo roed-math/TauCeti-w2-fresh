@@ -62,8 +62,8 @@ Closed immersions, in particular isomorphisms, are projective
 A scheme over `Spec R` is projective over the ring `R` in the sense of
 `AlgebraicGeometry.Scheme.IsProjectiveOver` exactly when its structure morphism is projective
 (`AlgebraicGeometry.Scheme.isProjectiveOver_iff_isProjective`, in
-`TauCeti.AlgebraicGeometry.Morphisms.ProjectiveOver`). That file also shows that projectivity over
-an affine base is stable under affine base change.
+`TauCeti.AlgebraicGeometry.Morphisms.ProjectiveOver`). That file also shows that projectivity is
+stable under base change along morphisms from spectra of rings into affine opens of the base.
 
 ## References
 
