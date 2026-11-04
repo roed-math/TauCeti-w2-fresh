@@ -10,7 +10,7 @@ public import Mathlib.CategoryTheory.Adjunction.Unique
 /-!
 # Transposes along composite and isomorphic adjunctions
 
-Two facts about the transpose `(adj.homEquiv _ _).symm` of a morphism `M ⟶ G P` along an
+Facts about the transpose `(adj.homEquiv _ _).symm` of a morphism `M ⟶ G P` along an
 adjunction `adj : F ⊣ G`:
 
 * along a composite adjunction `adj₁.comp adj₂`, the transpose of `θ ≫ G₁.map ψ` is the image under
@@ -18,7 +18,9 @@ adjunction `adj : F ⊣ G`:
   (`CategoryTheory.Adjunction.comp_homEquiv_symm_comp_map`);
 * if the right adjoints of `adj₁ : F₁ ⊣ R₁` and `adj₂ : F₂ ⊣ R₂` are identified by `e : R₂ ≅ R₁`,
   then the transpose of `χ ≫ e.hom.app P` along `adj₁` is an isomorphism as soon as the transpose of
-  `χ` along `adj₂` is one (`CategoryTheory.Adjunction.isIso_homEquiv_symm_comp_hom_app`).
+  `χ` along `adj₂` is one (`CategoryTheory.Adjunction.isIso_homEquiv_symm_comp_hom_app`);
+* transposes of morphisms that agree up to equalities of their source and target objects are
+  isomorphisms simultaneously (`CategoryTheory.Adjunction.isIso_homEquiv_symm_of_eq`).
 
 Together they show that the transposes of a morphism along two factorizations of a pushforward
 functor are isomorphisms simultaneously, as for the comparison maps of sheaves along a commutative
@@ -60,6 +62,19 @@ theorem isIso_homEquiv_symm_comp_hom_app {F₁ F₂ : C ⥤ D} {R₁ R₂ : D �
   rw [hχ, adj₁.homEquiv_naturality_right_symm, hγ]
   infer_instance
 
+/-- The transpose of `χ' : M' ⟶ G P'` is an isomorphism when the transpose of `χ : M ⟶ G P` is
+one, `M = M'`, `P = P'`, and `χ'` is `χ` up to these equalities.
+
+This lets a fact about a transpose be restated with its objects spelled differently, for instance
+with a definition unfolded, without having to compare the two transposes by unfolding the
+adjunction. -/
+theorem isIso_homEquiv_symm_of_eq {F : C ⥤ D} {G : D ⥤ C} (adj : F ⊣ G) {M M' : C} {P P' : D}
+    (hM : M = M') (hP : P = P') (χ : M ⟶ G.obj P) (χ' : M' ⟶ G.obj P') (h : HEq χ χ')
+    [hχ : IsIso ((adj.homEquiv _ _).symm χ)] : IsIso ((adj.homEquiv _ _).symm χ') := by
+  subst hM hP
+  cases eq_of_heq h
+  exact hχ
+
 /-- Let `adjU : Lu ⊣ Ru`, `adjM : Lm ⊣ Rm`, `adjH : Lh ⊣ Rh` and `adjV : Lv ⊣ Rv` be adjunctions
 whose right adjoints form a square `e : Rm ⋙ Ru ≅ Rv ⋙ Rh`. Let `φ : Lh M ⟶ N` be such that
 `φ ≫ πV` is the transpose along `adjH` of `(πU ≫ Ru.map t) ≫ e.hom.app P`. If the transposes of
@@ -76,7 +91,9 @@ theorem isIso_map_of_comp_eq_homEquiv_symm {C₁ C₂ C₃ C₄ : Type*} [Catego
     {Q : C₂} {P : C₃} {N : C₄} (πU : M ⟶ Ru.obj Q) (t : Q ⟶ Rm.obj P) (πV : N ⟶ Rv.obj P)
     (φ : Lh.obj M ⟶ N) [hπU : IsIso ((adjU.homEquiv _ _).symm πU)]
     [ht : IsIso ((adjM.homEquiv _ _).symm t)] [hπV : IsIso ((adjV.homEquiv _ _).symm πV)]
-    (h : φ ≫ πV = (adjH.homEquiv _ _).symm ((πU ≫ Ru.map t) ≫ e.hom.app P)) :
+    (h : φ ≫ πV = (adjH.homEquiv M (Rv.obj P)).symm
+      (CategoryStruct.comp (X := M) (Y := Ru.obj (Rm.obj P)) (Z := Rh.obj (Rv.obj P))
+        (πU ≫ Ru.map t) (e.hom.app P))) :
     IsIso (Lv.map φ) := by
   have h₁ : IsIso (((adjU.comp adjM).homEquiv _ _).symm (πU ≫ Ru.map t)) := by
     rw [comp_homEquiv_symm_comp_map]

@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-base-change","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat: pullback of sections of a graded quasicoherent algebra as a graded ring map"},{"n":2,"after":[1],"title":"feat: affine base change of the graded sections of a pulled-back graded algebra"},{"n":3,"after":[2],"title":"feat: the relative Proj of a pulled-back graded algebra is the base change"},{"n":4,"after":[],"title":"feat: lift into a glued module from a covering family of charts"},{"n":5,"after":[3,4],"title":"feat: compare the twisting sheaves of the relative Proj of a pulled-back graded algebra"},{"n":6,"after":[],"title":"feat: base change of the sections of twisting sheaves over standard opens"},{"n":7,"after":[6],"title":"feat: twisting sheaves pull back along base changes of graded rings"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: base change of the relative Proj, compatibly with O(n)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-base-change","main":"57ab0f657d7fb33d7c9425bf696bec3045b0fd75","status":"complete","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat: pullback of sections of a graded quasicoherent algebra as a graded ring map"},{"n":2,"after":[1],"title":"feat: affine base change of the graded sections of a pulled-back graded algebra"},{"n":3,"after":[2],"title":"feat: the relative Proj of a pulled-back graded algebra is the base change"},{"n":4,"after":[],"title":"feat: lift into a glued module from a covering family of charts"},{"n":5,"after":[3,4],"title":"feat: compare the twisting sheaves of the relative Proj of a pulled-back graded algebra"},{"n":6,"after":[],"title":"feat: base change of the sections of twisting sheaves over standard opens"},{"n":7,"after":[6],"title":"feat: twisting sheaves pull back along base changes of graded rings"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: base change of the relative Proj, compatibly with O(n)"}]}-->
 
 # Lookahead: `relative-proj-base-change` (SchemeAndStackFoundations, Layer 0, §0.3)
 
@@ -15,11 +15,31 @@ Status: **partial** — splits 1–7 proved, sorry-free; split 8 has every input
 proved and checked, and the abstract criterion that combines them, but the kernel times out on the
 single application of that criterion (see *What remains*).
 
-## Changes since the previous session (tip `e615e1f23491`)
+## Changes since the previous session (tip `4a8386361159`)
 
-No new Lean on the branch: `origin/main` was merged (clean) and the remaining kernel timeout of
-split 8 was **located** by staged scratch experiments; see *What remains* for the diagnosis and the
-fix that is half-way validated.
+`origin/main` (`57ab0f657d7`) was merged (clean; no stub had to give way). The kernel timeout of
+split 8 is fixed and the target is now **complete**:
+
+* A per-argument kernel diagnostic located the cost: the kernel converts `D.obj W` (a projection of
+  the gluing datum of twisting sheaves) to `Proj.twistingSheaf (… W) n` cheaply as a bare object
+  or inside a `Quiver.Hom` type, but not inside a transpose `(adj.homEquiv _ _).symm _`, where it
+  unfolds the adjunction instead. The abstract lemma's implicit objects were previously fixed by
+  unification, so its instance arguments disagreed with the supplied facts on exactly such
+  objects.
+* Every object of `Adjunction.isIso_map_of_comp_eq_homEquiv_symm` is now pinned to one spelling
+  (the twisting sheaves `relativeProjTwistingSheaf n` and `Proj.twistingSheaf (…) n`), its
+  hypothesis `h` names its composite's objects explicitly, and each input is stated with exactly
+  those spellings. The one change of spelling under a transpose (the chart identification, stated
+  on `main` with `D.glued` and `D.obj W`) goes through the new transport lemma
+  `Adjunction.isIso_homEquiv_symm_of_eq`, which substitutes along `rfl` equalities of objects and
+  takes the morphisms as `HEq` (proved by `HEq.rfl`), so the kernel only compares bare objects and
+  `Quiver.Hom` types. (An `eqToHom` form of that hypothesis, proved by `erw [eqToHom_refl, …]`,
+  timed out in the kernel; so did the old application.)
+* With that, `isIso_restrictFunctor_map_relativeProjPullbackTwistingSheafHom`, the instance
+  `isIso_relativeProjPullbackTwistingSheafHom`, `relativeProjPullbackTwistingSheafIso` (+ `_hom`)
+  and the export `relativeProj_baseChange` (`@[stacks 01O3]`) are proved; the whole split-8 file
+  elaborates and passes the kernel in about 6–14 minutes on a loaded machine (the old-spelling chart
+  identification alone costs about 200 s of kernel time).
 
 ## Stubs
 
@@ -123,153 +143,33 @@ its copies of these four declarations and reuse #27468's, keeping
    `TauCeti.ModulesGlueData.restrictGluedHom_eq`;
    `TauCeti/AlgebraicGeometry/Modules/Restriction/Cover.lean` (new, 64 lines):
    `Scheme.Modules.Hom.isIso_of_isIso_restrictFunctor_map`;
-   `TauCeti/CategoryTheory/Adjunction/HomEquiv.lean` (new, 89 lines):
+   `TauCeti/CategoryTheory/Adjunction/HomEquiv.lean` (new, 106 lines):
    `Adjunction.comp_homEquiv_symm_comp_map`, `Adjunction.isIso_homEquiv_symm_comp_hom_app`,
-   `Adjunction.isIso_map_of_comp_eq_homEquiv_symm`;
-   `TauCeti/AlgebraicGeometry/RelativeProj/BaseChangeTwistingSheafIso.lean` (new, 143 lines):
+   `Adjunction.isIso_homEquiv_symm_of_eq`, `Adjunction.isIso_map_of_comp_eq_homEquiv_symm`;
+   `TauCeti/AlgebraicGeometry/RelativeProj/BaseChangeTwistingSheafIso.lean` (new, 280 lines):
    `GradedQuasicoherentAlgebra.isIso_pullbackTwistingSheafMap_pullbackGradedSectionsGradedHom`,
    private `chartPushforwardIso`, `relativeProjTwistingSheafChartHom_eq_comp`,
-   `isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π`,
-   `isIso_homEquiv_symm_twistingSheafMap`, `relativeProjPullbackTwistingSheafHom_comp_π`; still to add:
+   `isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π`, `isIso_homEquiv_symm_π_twistingSheaf`,
+   `isIso_homEquiv_symm_twistingSheafMap`, `relativeProjPullbackTwistingSheafHom_comp_π`; public
    `isIso_restrictFunctor_map_relativeProjPullbackTwistingSheafHom`, the instance
    `isIso_relativeProjPullbackTwistingSheafHom`, `relativeProjPullbackTwistingSheafIso` (+ `_hom`)
-   and the export `GradedQuasicoherentAlgebra.relativeProj_baseChange` (`@[stacks 01O3]`).
+   and the export `GradedQuasicoherentAlgebra.relativeProj_baseChange` (`@[stacks 01O3]`):
+   the square `Proj_X(g^* A) → Proj_Y(A)` over `g` is cartesian, `(g^* A)ₖ = g^* Aₖ` for every
+   `k` (degree zero included), and `h^* 𝒪_A(n) ⟶ 𝒪_{g^* A}(n)` is an isomorphism for every `n`.
 
-## What is proved and what remains
+## What is proved
 
-Proved (sorry-free, building on `main`): graded maps of sections into `(pullback g).obj A`
-(split 1); affine base change of sections and the cartesian chart squares (2); the cartesian square
-`isPullback_relativeProjPullbackHom` (3), whose degree-zero part is `g^* A₀` by `main`'s
-`pullback_obj_obj_X`; gluing into a glued module (4); the comparison
-`relativeProjPullbackTwistingSheafHom g A n : h^* 𝒪_A(n) ⟶ 𝒪_{g^* A}(n)` (5); the degree-`n`
-affine base change of sections of twisting sheaves (6); the isomorphism `(Proj.map f)^* 𝒪(n) ≅ 𝒪(n)`
-for any base change of graded rings, in all degrees, without degree-one generation (7); and, in
-split 8, the abstract criterion `Adjunction.isIso_map_of_comp_eq_homEquiv_symm` together with
-every concrete input it needs, each checked by the kernel:
-`isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π` (for `A` over `U` and for `g^* A`
-over `V`), `isIso_homEquiv_symm_twistingSheafMap` and the equation
-`relativeProjPullbackTwistingSheafHom_comp_π`.
+Everything: the target is **complete** and sorry-free (the stub module is empty).
+`TauCeti.AlgebraicGeometry.GradedQuasicoherentAlgebra.relativeProj_baseChange g A` states, for a
+morphism of schemes `g : X ⟶ Y` and a graded quasicoherent algebra `A` on `Y`:
 
-Remains (split 8 only): **one application**, then the export. The elaborator accepts
+* `IsPullback ((pullback g).obj A).obj.relativeProjToBase (relativeProjPullbackHom g A) g
+  A.obj.relativeProjToBase`: formation of `relativeProj` commutes with arbitrary base change;
+* `∀ k, ((pullback g).obj A).obj.X k = (Scheme.Modules.pullback g).obj (A.obj.X k)`: the
+  homogeneous components of the pulled-back algebra, in particular its degree-zero part `g^* A₀`;
+* `∀ n : ℤ, IsIso (relativeProjPullbackTwistingSheafHom g A n)`: compatibility with `O(n)`. The
+  isomorphism is `relativeProjPullbackTwistingSheafIso g A n : h^* 𝒪_A(n) ≅ 𝒪_{g^* A}(n)`.
 
-```lean
-theorem isIso_restrictFunctor_map_relativeProjPullbackTwistingSheafHom {V : X.AffineZariskiSite}
-    {U : Y.AffineZariskiSite} (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
-    IsIso ((Scheme.Modules.restrictFunctor (((pullback g).obj A).obj.relativeProjCover.f V)).map
-      (relativeProjPullbackTwistingSheafHom g A n)) :=
-  Adjunction.isIso_map_of_comp_eq_homEquiv_symm
-    (Scheme.Modules.restrictAdjunction (A.obj.relativeProjCover.f U))
-    (Scheme.Modules.pullbackPushforwardAdjunction (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
-      (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2)))
-    (Scheme.Modules.pullbackPushforwardAdjunction (relativeProjPullbackHom g A))
-    (Scheme.Modules.restrictAdjunction (((pullback g).obj A).obj.relativeProjCover.f V))
-    (chartPushforwardIso hV) _ _ _ (relativeProjPullbackTwistingSheafHom g A n)
-    (hπU := isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π n A U)
-    (ht := isIso_homEquiv_symm_twistingSheafMap g A n hV)
-    (hπV := isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π n ((pullback g).obj A) V)
-    (relativeProjPullbackTwistingSheafHom_comp_π g A n hV)
-```
-
-but the kernel times out on it (`(kernel) deterministic timeout`, about 4–5 minutes).
-
-**Diagnosis (session of 2026-11-04 evening).** Replacing the instance arguments one at a time by
-`sorry` (scratch copies of the split-8 file, `set_option profiler true`): with `hπU` and `ht` real
-and `hπV`, `h` sorried the kernel checks the application in about 1 s; adding the real `hπV` alone
-makes it time out. The implicit `P` of the abstract lemma is fixed by `t`
-(`Proj.twistingSheafMap … : _ ⟶ (Proj.map _)_* (Proj.twistingSheaf ℬ n)`), so `P` is spelled
-`Proj.twistingSheaf (gradedSectionsGrading …) n`, while
-`isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π` is stated with
-`homEquiv D'.glued (D'.obj V)`. The kernel converts `D'.obj V ≡ Proj.twistingSheaf … n`
-cheaply as bare objects or inside `Quiver.Hom`/`Eq` types (that is why `hπU`, whose `Q` is fixed
-by `πU` itself, and the `D.obj U` in `ht` are fine), but **inside the second argument of
-`(restrictAdjunction _).homEquiv`** (under `IsIso (DFunLike.coe …)`) the same conversion times out,
-even for a generic graded algebra `B` (a lemma `IsIso (homEquiv D.glued (Proj.twistingSheaf …)).symm
-(D.π W)` proved by `exact` of the `D.obj W` form times out too). Fixing `P := D'.obj V` instead
-moves the cost to `h`: a restatement of `relativeProjPullbackTwistingSheafHom_comp_π` with
-`(chartPushforwardIso hV).hom.app (D'.obj V)` and `homEquiv _ (Rv.obj (D'.obj V))` times out, while
-the analogous restatement of `ht` with a `D'.obj V`-typed copy of `Proj.twistingSheafMap` passes
-(80–140 s, too slow to keep). So every input must reach the application with `P` spelled exactly
-as the other inputs spell it, and no `D'.obj V`/`Proj.twistingSheaf` conversion may happen under
-`homEquiv`.
-
-**Fix in progress.** A variant of the abstract lemma that takes `hP : P = P'`, `t : Q ⟶ Rm.obj P'`,
-`πV : N ⟶ Rv.obj P` and `h : φ ≫ πV ≫ eqToHom (congrArg Rv.obj hP) = (adjH.homEquiv _ _).symm
-((πU ≫ Ru.map t) ≫ e.hom.app P')`, proved by `subst hP; rw [eqToHom_refl, Category.comp_id] at h`
-and the existing lemma, **passes the kernel instantly**:
-
-```lean
-theorem isIso_map_of_comp_eq_homEquiv_symm_of_eq {C₁ C₂ C₃ C₄ : Type*} [Category C₁] [Category C₂]
-    [Category C₃] [Category C₄] {Lu : C₁ ⥤ C₂} {Ru : C₂ ⥤ C₁} {Lm : C₂ ⥤ C₃} {Rm : C₃ ⥤ C₂}
-    {Lh : C₁ ⥤ C₄} {Rh : C₄ ⥤ C₁} {Lv : C₄ ⥤ C₃} {Rv : C₃ ⥤ C₄} (adjU : Lu ⊣ Ru)
-    (adjM : Lm ⊣ Rm) (adjH : Lh ⊣ Rh) (adjV : Lv ⊣ Rv) (e : Rm ⋙ Ru ≅ Rv ⋙ Rh) {M : C₁}
-    {Q : C₂} {P P' : C₃} {N : C₄} (hP : P = P') (πU : M ⟶ Ru.obj Q) (t : Q ⟶ Rm.obj P')
-    (πV : N ⟶ Rv.obj P) (φ : Lh.obj M ⟶ N) [hπU : IsIso ((adjU.homEquiv _ _).symm πU)]
-    [ht : IsIso ((adjM.homEquiv _ _).symm t)] [hπV : IsIso ((adjV.homEquiv _ _).symm πV)]
-    (h : φ ≫ πV ≫ eqToHom (congrArg Rv.obj hP) =
-      (adjH.homEquiv _ _).symm ((πU ≫ Ru.map t) ≫ e.hom.app P')) :
-    IsIso (Lv.map φ) := by
-  subst hP
-  rw [eqToHom_refl, Category.comp_id] at h
-  exact isIso_map_of_comp_eq_homEquiv_symm adjU adjM adjH adjV e πU t πV φ h
-```
-
-It is to be applied with `hP := CommMon.relativeProjTwistingSheafGlueData_obj _ n V` (the `simps`
-lemma `D'.obj V = Proj.twistingSheaf (gradedSectionsGrading V) n`), so that `hπV` keeps its
-`D'.obj V` form and `ht`, `h` keep their `Proj.twistingSheaf` form. The input `h` is
-`relativeProjPullbackTwistingSheafHom_comp_π` with `≫ eqToHom (congrArg (pushforward _).obj hP)`
-appended to the left side; prove it by rewriting with
-`show eqToHom (congrArg _ hP) = 𝟙 _ from eqToHom_refl _ _` and `Category.comp_id` (a plain
-`rw [eqToHom_refl]` does not match). **This did not yet close the gap**: the application of the `_of_eq` variant still times out in
-the kernel (about 5 minutes), whether `hP` is passed directly or as `(by exact …)` (elaborated
-after `t`), and even with `h` stated with fully explicit objects
-(`homEquiv (A.obj.relativeProjTwistingSheafGlueData n).glued ((pushforward ι_V).obj P')` and
-`(chartPushforwardIso hV).hom.app P'`, `P' = Proj.twistingSheaf
-(((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n`, which is also the spelling `t`
-produces, since `pullbackGradedSectionsGradedHom : A.obj.gradedSectionsGrading U →+*ᵍ
-((pullback g).obj A).obj.gradedSectionsGrading V`). So some other argument of that application is
-expensive; the next session should profile it argument by argument exactly as above (replace
-`hπU`, `ht`, `hπV`, `h` by `sorry` one at a time, in the `_of_eq` application, with `hP` real).
-Also: proving the eqToHom form of `h` by `rw [eqToHom_refl]` (or
-`rw [show eqToHom _ = 𝟙 _ from eqToHom_refl _ _]`, or `erw` after `rw [← h0]`) fails to find the
-pattern; a working proof is still to be found (e.g. a general lemma
-`f ≫ eqToHom p = f` for `p : X = X` applied with `exact`). Kernel
-experiments: use `lean` with `LEAN_PATH` from `lake env printenv LEAN_PATH` directly (parallel
-`lake env` calls contend for `.git/config` locks), and make the split-8 helpers temporarily
-non-private so a small scratch module can import them (the split-8 file itself takes ~5 minutes).
-
-After that, the rest is written and was accepted by the elaborator in the previous session:
-
-```lean
-instance isIso_relativeProjPullbackTwistingSheafHom :
-    IsIso (relativeProjPullbackTwistingSheafHom g A n) :=
-  Scheme.Modules.Hom.isIso_of_isIso_restrictFunctor_map _
-    (ι := {V : X.AffineZariskiSite // ∃ U : Y.AffineZariskiSite, V.toOpens ≤ g ⁻¹ᵁ U.toOpens})
-    (fun V ↦ ((pullback g).obj A).obj.relativeProjCover.f V.1)
-    (fun x ↦ (exists_mem_opensRange_relativeProjCover_f g A x).elim fun V ⟨hV, hx⟩ ↦
-      ⟨⟨V, hV⟩, hx⟩)
-    fun ⟨_, _, hV⟩ ↦ isIso_restrictFunctor_map_relativeProjPullbackTwistingSheafHom g A n hV
-
-noncomputable def relativeProjPullbackTwistingSheafIso :
-    (Scheme.Modules.pullback (relativeProjPullbackHom g A)).obj
-        (A.obj.relativeProjTwistingSheaf n) ≅
-      ((pullback g).obj A).obj.relativeProjTwistingSheaf n :=
-  asIso (relativeProjPullbackTwistingSheafHom g A n)
-
-@[simp]
-theorem relativeProjPullbackTwistingSheafIso_hom :
-    (relativeProjPullbackTwistingSheafIso g A n).hom =
-      relativeProjPullbackTwistingSheafHom g A n :=
-  (rfl)
-
-@[stacks 01O3]
-theorem relativeProj_baseChange :
-    IsPullback ((pullback g).obj A).obj.relativeProjToBase (relativeProjPullbackHom g A) g
-        A.obj.relativeProjToBase ∧
-      (∀ k, ((pullback g).obj A).obj.X k = (Scheme.Modules.pullback g).obj (A.obj.X k)) ∧
-      ∀ n : ℤ, IsIso (relativeProjPullbackTwistingSheafHom g A n) :=
-  ⟨isPullback_relativeProjPullbackHom g A, pullback_obj_obj_X g A, fun _ ↦ inferInstance⟩
-```
-
-(docstrings as in the `LOOKAHEAD.md` of the previous tip `7196e72258f2`; the instance needs
-`public import TauCeti.AlgebraicGeometry.Modules.Restriction.Cover`). Expected size of the
-finished split-8 file: about 250 lines.
+No degree-one generation hypothesis is needed anywhere. Compatibility with the multiplication
+maps `𝒪(m) ⊗ 𝒪(n) ⟶ 𝒪(m + n)` of the open supplier PR #27145 is not part of the statement; see
+*Stubs* for how a later session would add it if review asks for it.
