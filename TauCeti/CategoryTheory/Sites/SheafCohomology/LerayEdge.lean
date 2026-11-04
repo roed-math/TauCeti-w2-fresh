@@ -5,7 +5,10 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.CategoryTheory.Abelian.Exact
 public import Mathlib.CategoryTheory.Preadditive.Injective.Basic
+public import TauCeti.CategoryTheory.Abelian.RightDerived
+public import TauCeti.CategoryTheory.Sites.SheafCohomology.Pullback
 public import TauCeti.Lookahead.LeraySpectralSequence.Stubs
 
 /-!
@@ -22,11 +25,15 @@ Leray spectral sequence is the pullback `Sheaf.H.pullback pb c` of cohomology to
 (Stacks, Lemma 21.14.5 (0732) and Remark 21.14.4 (08J6)). This file defines it
 (`Sheaf.H.lerayEdge`) and proves that it is natural in `F`, compatible with the connecting
 homomorphisms of short exact sequences that stay exact after pushforward, and in degree zero
-given by the adjunction, hence bijective when `c` is an isomorphism, injective in degree one,
-the first map of the five-term exact sequence, and bijective in every degree when `f_*` is exact,
-the degenerate case of the spectral sequence. It also records the input
-on which the Leray spectral sequence rests: `f_*` sends injective sheaves to injective sheaves,
-whose higher cohomology vanishes.
+given by the adjunction, hence bijective when `c` is an isomorphism, and injective in degree one,
+the first map of the five-term exact sequence. By dimension shifting along the injective
+embeddings of `F`, if the higher direct images `Rᵠ f_* F` vanish for `0 < q < n`, the edge map is
+injective in degree `n`, and bijective if moreover `Rⁿ f_* F = 0`: in the Leray spectral sequence
+no differential reaches `E₂^{n,0}`. When all higher direct images of `F` vanish, for instance when
+`f_*` is exact, it is bijective in every degree: this is Leray's acyclicity theorem, also stated
+for a morphism of sites (`Sheaf.H.lerayEdge_sheafAdjunctionContinuous_bijective`). It also
+records the input on which the Leray spectral sequence rests: `f_*` sends injective sheaves to
+injective sheaves, whose higher cohomology vanishes.
 
 ## Main declarations
 
@@ -36,8 +43,15 @@ whose higher cohomology vanishes.
 * `CategoryTheory.Sheaf.H.addEquiv₀_lerayEdge`, `CategoryTheory.Sheaf.H.lerayEdge_zero_bijective`:
   the edge map in degree zero.
 * `CategoryTheory.Sheaf.H.lerayEdge_one_injective`: the edge map is injective in degree one.
+* `CategoryTheory.Sheaf.H.lerayEdge_succ_injective`,
+  `CategoryTheory.Sheaf.H.lerayEdge_succ_surjective`: dimension shifting for the edge map.
+* `CategoryTheory.Sheaf.H.lerayEdge_injective_of_isZero_rightDerived`,
+  `CategoryTheory.Sheaf.H.lerayEdge_bijective_of_isZero_rightDerived`: the edge map in degree `n`
+  when the higher direct images vanish below degree `n`, respectively up to degree `n`.
 * `CategoryTheory.Sheaf.H.lerayEdge_bijective`: the edge map is bijective in every degree when
   `f_*` is exact.
+* `CategoryTheory.Sheaf.H.lerayEdge_sheafAdjunctionContinuous_bijective`: Leray's acyclicity
+  theorem for a morphism of sites.
 * `CategoryTheory.Sheaf.H.subsingleton_H_obj_of_injective`: `Hⁿ⁺¹(C, f_* I) = 0` for an
   injective sheaf `I`.
 -/
@@ -183,42 +197,124 @@ lemma lerayEdge_one_injective [IsIso c] [EnoughInjectives (Sheaf K AddCommGrpCat
   change ((Ext.addEquiv₀.symm a).comp (Ext.mk₀ _) (add_zero 0)).comp hT.extClass (zero_add 1) = 0
   rw [Ext.comp_assoc_of_second_deg_zero, hT.comp_extClass, Ext.comp_zero]
 
+/-- Dimension shifting for the edge map, surjectivity: for a short exact sequence
+`0 ⟶ F ⟶ I ⟶ Q ⟶ 0` with `I` injective whose pushforward is short exact, if the edge map of `Q`
+is surjective in degree `n`, that of `F` is surjective in degree `n + 1`, as `Hⁿ⁺¹(I) = 0`. -/
+lemma lerayEdge_succ_surjective [pf.PreservesZeroMorphisms]
+    {S : ShortComplex (Sheaf K AddCommGrpCat.{w})} (hS : S.ShortExact) (hT : (S.map pf).ShortExact)
+    [Injective S.X₂] {n : ℕ} (hQ : Function.Surjective (lerayEdge adj c S.X₃ n)) :
+    Function.Surjective (lerayEdge adj c S.X₁ (n + 1)) := by
+  intro x
+  obtain ⟨y, rfl⟩ := longSequence_exact₁ hS x (Subsingleton.elim (α := H S.X₂ (n + 1)) _ _) rfl
+  obtain ⟨y, rfl⟩ := hQ y
+  exact ⟨H.δ hT n (n + 1) rfl y, lerayEdge_δ adj c hS hT n (n + 1) rfl y⟩
+
+/-- Dimension shifting for the edge map, injectivity: for a short exact sequence
+`0 ⟶ F ⟶ I ⟶ Q ⟶ 0` with `I` injective whose pushforward is short exact, if the edge map of `I`
+is surjective and that of `Q` injective in degree `n`, the edge map of `F` is injective in degree
+`n + 1`, as `Hⁿ⁺¹(C, f_* I) = 0`. -/
+lemma lerayEdge_succ_injective [pf.PreservesZeroMorphisms]
+    {S : ShortComplex (Sheaf K AddCommGrpCat.{w})} (hS : S.ShortExact) (hT : (S.map pf).ShortExact)
+    [Injective S.X₂] {n : ℕ} (hI : Function.Surjective (lerayEdge adj c S.X₂ n))
+    (hQ : Function.Injective (lerayEdge adj c S.X₃ n)) :
+    Function.Injective (lerayEdge adj c S.X₁ (n + 1)) := by
+  have := subsingleton_H_obj_of_injective adj S.X₂ n
+  refine (injective_iff_map_eq_zero _).2 fun x hx ↦ ?_
+  obtain ⟨y, rfl⟩ := longSequence_exact₁ hT x
+    (Subsingleton.elim (α := H (pf.obj S.X₂) (n + 1)) _ _) rfl
+  rw [lerayEdge_δ adj c hS hT] at hx
+  obtain ⟨z, hz⟩ := longSequence_exact₃ hS _ rfl hx
+  obtain ⟨z, rfl⟩ := hI z
+  obtain rfl : H.map (pf.map S.g) n z = y := hQ ((lerayEdge_naturality adj c _ z).trans hz)
+  exact congr($((longSequence_exact hT n (n + 1) rfl).zero 1) z)
+
+/-- When the comparison `c` of constant sheaves is an isomorphism and the higher direct images of
+`F` vanish in degrees `1, …, n`, the edge map `Hⁿ(C, f_* F) ⟶ Hⁿ(D, F)` is bijective
+(Stacks, Lemma 21.14.6 (0733) when all of them vanish). By induction on `n`, embed `F` into an
+injective sheaf `I` with cokernel `Q`: as `R¹ f_* F = 0`, the pushforward of
+`0 ⟶ F ⟶ I ⟶ Q ⟶ 0` is short exact, the higher direct images of `Q` vanish in degrees
+`1, …, n - 1`, and `Hⁿ` of `I` and of `f_* I` vanishes, so on both sides `Hⁿ(F)` is the cokernel
+of `Hⁿ⁻¹(I) ⟶ Hⁿ⁻¹(Q)`, compatibly with the edge maps. -/
+lemma lerayEdge_bijective_of_isZero_rightDerived [IsIso c]
+    [EnoughInjectives (Sheaf K AddCommGrpCat.{w})] [pf.Additive] {F : Sheaf K AddCommGrpCat.{w}}
+    {n : ℕ} (hF : ∀ q < n, IsZero ((pf.rightDerived (q + 1)).obj F)) :
+    Function.Bijective (lerayEdge adj c F n) := by
+  have := adj.rightAdjoint_preservesLimits
+  induction n generalizing F with
+  | zero => exact lerayEdge_zero_bijective adj c F
+  | succ n ih =>
+    let S := (EnoughInjectives.presentation F).some.shortComplex
+    have hS : S.ShortExact := InjectivePresentation.shortExact_shortComplex _
+    have hT := pf.shortExact_map_of_isZero_rightDerived_one hS (hF 0 n.succ_pos)
+    have hQ := ih fun q hq ↦ pf.isZero_rightDerived_obj_X₃_of_isZero hS q (hF (q + 1) (by lia))
+    have hI := ih fun q _ ↦ pf.isZero_rightDerived_obj_injective_succ q S.X₂
+    exact ⟨lerayEdge_succ_injective adj c hS hT hI.2 hQ.1,
+      lerayEdge_succ_surjective adj c hS hT hQ.2⟩
+
+/-- When the comparison `c` of constant sheaves is an isomorphism and the higher direct images of
+`F` vanish in degrees `1, …, n - 1`, the edge map `Hⁿ(C, f_* F) ⟶ Hⁿ(D, F)` is injective: in the
+Leray spectral sequence, no differential reaches `E₂^{n,0}`. For `n = 1` this is
+`lerayEdge_one_injective`, and the inductive step is that of
+`lerayEdge_bijective_of_isZero_rightDerived`. -/
+lemma lerayEdge_injective_of_isZero_rightDerived [IsIso c]
+    [EnoughInjectives (Sheaf K AddCommGrpCat.{w})] [pf.Additive] {F : Sheaf K AddCommGrpCat.{w}}
+    {n : ℕ} (hF : ∀ q, q + 1 < n → IsZero ((pf.rightDerived (q + 1)).obj F)) :
+    Function.Injective (lerayEdge adj c F n) := by
+  induction n generalizing F with
+  | zero => exact (lerayEdge_zero_bijective adj c F).1
+  | succ n ih =>
+    rcases n with _ | n
+    · exact lerayEdge_one_injective adj c F
+    have := adj.rightAdjoint_preservesLimits
+    let S := (EnoughInjectives.presentation F).some.shortComplex
+    have hS : S.ShortExact := InjectivePresentation.shortExact_shortComplex _
+    exact lerayEdge_succ_injective adj c hS
+      (pf.shortExact_map_of_isZero_rightDerived_one hS (hF 0 (by lia)))
+      (lerayEdge_bijective_of_isZero_rightDerived adj c
+        fun q _ ↦ pf.isZero_rightDerived_obj_injective_succ q S.X₂).2
+      (ih fun q hq ↦ pf.isZero_rightDerived_obj_X₃_of_isZero hS q (hF (q + 1) (by lia)))
+
 /-- When the comparison `c` of constant sheaves is an isomorphism and the pushforward `pf` is
 exact, so that all higher direct images vanish, the Leray spectral sequence degenerates and its
-edge map `Hⁿ(C, f_* F) ⟶ Hⁿ(D, F)` is bijective in every degree (Stacks, Lemma 21.14.6 (0733)
-for an exact `f_*`). By induction on `n`, embed `F` into an injective sheaf `I` with cokernel `Q`:
-the pushforward of `0 ⟶ F ⟶ I ⟶ Q ⟶ 0` is short exact, `Hⁿ⁺¹` of `I` and of `f_* I` vanishes,
-so on both sides `Hⁿ⁺¹(F)` is the cokernel of `Hⁿ(I) ⟶ Hⁿ(Q)`, compatibly with the edge maps. -/
+edge map `Hⁿ(C, f_* F) ⟶ Hⁿ(D, F)` is bijective in every degree. -/
 lemma lerayEdge_bijective [IsIso c] [EnoughInjectives (Sheaf K AddCommGrpCat.{w})]
     [pf.PreservesEpimorphisms] (F : Sheaf K AddCommGrpCat.{w}) (n : ℕ) :
     Function.Bijective (lerayEdge adj c F n) := by
   have := adj.rightAdjoint_preservesLimits
   have := adj.right_adjoint_additive
-  induction n generalizing F with
-  | zero => exact lerayEdge_zero_bijective adj c F
-  | succ n ih =>
-    let ι := Injective.ι F
-    let S := ShortComplex.mk ι (cokernel.π ι) (cokernel.condition ι)
-    have hS : S.ShortExact :=
-      { exact := ShortComplex.cokernelSequence_exact ι
-        mono_f := inferInstanceAs (Mono ι) }
-    have hT : (S.map pf).ShortExact :=
-      { exact := hS.exact.map_of_mono_of_preservesKernel pf hS.mono_f inferInstance
-        mono_f := inferInstanceAs (Mono (pf.map ι))
-        epi_g := inferInstanceAs (Epi (pf.map (cokernel.π ι))) }
-    have := subsingleton_H_obj_of_injective adj (Injective.under F) n
-    refine ⟨(injective_iff_map_eq_zero _).2 fun x hx ↦ ?_, fun x ↦ ?_⟩
-    · obtain ⟨y, rfl⟩ := longSequence_exact₁ hT x
-        (Subsingleton.elim (α := H (pf.obj _) (n + 1)) _ _) rfl
-      rw [lerayEdge_δ adj c hS hT] at hx
-      obtain ⟨z, hz⟩ := longSequence_exact₃ hS _ rfl hx
-      obtain ⟨z, rfl⟩ := (ih _).2 z
-      obtain rfl : H.map (pf.map (cokernel.π ι)) n z = y :=
-        (ih _).1 ((lerayEdge_naturality adj c _ z).trans hz)
-      exact congr($((longSequence_exact hT n (n + 1) rfl).zero 1) z)
-    · obtain ⟨y, rfl⟩ := longSequence_exact₁ hS x
-        (Subsingleton.elim (α := H (Injective.under F) (n + 1)) _ _) rfl
-      obtain ⟨y, rfl⟩ := (ih _).2 y
-      exact ⟨H.δ hT n (n + 1) rfl y, lerayEdge_δ adj c hS hT n (n + 1) rfl y⟩
+  have := Functor.preservesHomology_of_preservesEpis_and_kernels pf
+  exact lerayEdge_bijective_of_isZero_rightDerived adj c fun q _ ↦ pf.isZero_rightDerived_succ F q
+
+end CategoryTheory.Sheaf.H
+
+namespace CategoryTheory.Sheaf.H
+
+variable {C : Type*} [Category* C] {J : GrothendieckTopology C}
+  {D : Type*} [Category* D] {K : GrothendieckTopology D}
+  [HasSheafify J AddCommGrpCat.{w}] [HasSheafify K AddCommGrpCat.{w}]
+  [HasExt.{w₁} (Sheaf J AddCommGrpCat.{w})] [HasExt.{w₂} (Sheaf K AddCommGrpCat.{w})]
+  (u : C ⥤ D) [u.IsContinuous J K]
+  [(u.sheafPushforwardContinuous AddCommGrpCat.{w} J K).IsRightAdjoint] [u.Final]
+  [PreservesFiniteLimits (u.sheafPullback AddCommGrpCat.{w} J K)]
+
+local instance : (u.sheafPullback AddCommGrpCat.{w} J K).Additive :=
+  Functor.additive_of_preserves_binary_products _
+
+local instance : PreservesFiniteColimits (u.sheafPullback AddCommGrpCat.{w} J K) :=
+  letI := (u.sheafAdjunctionContinuous AddCommGrpCat.{w} J K).leftAdjoint_preservesColimits.{0, 0}
+  inferInstance
+
+/-- **Leray acyclicity for a morphism of sites.** For a morphism of sites given by `u : C ⥤ D`,
+with pushforward `f_* = u.sheafPushforwardContinuous` and exact inverse image
+`f⁻¹ = u.sheafPullback`, if an abelian sheaf `F` on `D` has no higher direct images,
+`Rᵠ f_* F = 0` for `q > 0`, then the edge map `Hⁿ(C, f_* F) ⟶ Hⁿ(D, F)` is bijective in every
+degree (Stacks, Lemma 21.14.6 (0733)). -/
+theorem lerayEdge_sheafAdjunctionContinuous_bijective
+    [EnoughInjectives (Sheaf K AddCommGrpCat.{w})] {F : Sheaf K AddCommGrpCat.{w}}
+    (hF : ∀ q, IsZero (((u.sheafPushforwardContinuous AddCommGrpCat.{w} J K).rightDerived
+      (q + 1)).obj F)) (n : ℕ) :
+    Function.Bijective (lerayEdge (u.sheafAdjunctionContinuous AddCommGrpCat.{w} J K)
+      (u.sheafPullbackConstantSheafIso AddCommGrpCat.{w} J K (of (ULift ℤ))).inv F n) :=
+  lerayEdge_bijective_of_isZero_rightDerived _ _ fun q _ ↦ hF q
 
 end CategoryTheory.Sheaf.H

@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.Algebra.Homology.Augment
 public import Mathlib.CategoryTheory.Abelian.RightDerived
 public import TauCeti.Algebra.Homology.HomotopyCategory.PreservesHomology
 public import TauCeti.CategoryTheory.Abelian.Injective.Resolution
@@ -23,6 +24,18 @@ homology and `H` preserves homology and injective objects, then `RⁿF ⋙ G ≅
 
 The proof uses Mathlib's `InjectiveResolution.descHomotopy`, the uniqueness theorem for
 lifts between injective resolutions.
+
+For a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective, an injective resolution of `Q`
+extends to one of `X` (`CategoryTheory.InjectiveResolution.ofShortExact`), which shifts the
+right derived functors by one degree:
+
+* if `R^{n+2} G (X)` vanishes, so does `R^{n+1} G (Q)`
+  (`CategoryTheory.Functor.isZero_rightDerived_obj_X₃_of_isZero`);
+* if `G` is left exact and `R¹ G (X)` vanishes, then `0 ⟶ G X ⟶ G I ⟶ G Q ⟶ 0` is short exact
+  (`CategoryTheory.Functor.shortExact_map_of_isZero_rightDerived_one`).
+
+These are the dimension-shifting steps of inductive arguments on vanishing derived functors,
+such as Leray's acyclicity theorem.
 -/
 
 public section
@@ -92,5 +105,136 @@ noncomputable def Functor.rightDerivedCompIso {C' : Type*} [Category* C'] [Abeli
     isoWhiskerRight H.injectiveResolutionsCompIso _ ≪≫
     Functor.associator _ _ _ ≪≫
     isoWhiskerLeft H (Functor.associator _ _ _).symm
+
+/-! ### Dimension shifting
+
+Let `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` be a short exact sequence with `I` injective. An injective resolution
+`Q ⟶ R⁰ ⟶ R¹ ⟶ ⋯` of `Q` extends to the injective resolution `X ⟶ I ⟶ R⁰ ⟶ R¹ ⟶ ⋯` of `X`
+(`InjectiveResolution.ofShortExact`). Computing the right derived functors of `G` with these two
+resolutions shifts degrees by one, without the long exact sequence of right derived functors. -/
+
+section DimensionShift
+
+open Limits
+
+namespace InjectiveResolution
+
+variable {S : ShortComplex C} (hS : S.ShortExact) [Injective S.X₂]
+  (R : InjectiveResolution S.X₃)
+
+omit [HasInjectiveResolutions C] in
+/-- For a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective, the injective resolution
+`X ⟶ I ⟶ R⁰ ⟶ R¹ ⟶ ⋯` of `X` obtained from an injective resolution `R` of `Q`. -/
+noncomputable def ofShortExact : InjectiveResolution S.X₁ where
+  -- The augmentation `Q ⟶ R⁰` is taken through `fromSingle₀Equiv`, whose source is `Q` itself
+  -- rather than the degree `0` object of the single complex on `Q`, as for `R.ι.f 0`.
+  cocomplex := R.cocomplex.augment (S.g ≫ (CochainComplex.fromSingle₀Equiv _ _ R.ι).1)
+    (by rw [Category.assoc, (CochainComplex.fromSingle₀Equiv _ _ R.ι).2, Limits.comp_zero])
+  injective n := by cases n <;> dsimp <;> infer_instance
+  ι := HomologicalComplex.mkHomFromSingle S.f (fun k hk => by
+    obtain rfl : k = 1 := by simpa using hk.symm
+    exact (S.zero_assoc _).trans zero_comp)
+  quasiIso := ⟨fun n => by
+    rcases n with _ | _ | n
+    · have : Mono (CochainComplex.fromSingle₀Equiv _ _ R.ι).1 := inferInstanceAs (Mono (R.ι.f 0))
+      rw [CochainComplex.quasiIsoAt₀_iff, ShortComplex.quasiIso_iff_of_zeros]
+      · refine (ShortComplex.exact_and_mono_f_iff_of_iso ?_).2
+          ⟨(ShortComplex.exact_iff_of_epi_of_isIso_of_mono
+            ({ τ₁ := 𝟙 _, τ₂ := 𝟙 _, τ₃ := (CochainComplex.fromSingle₀Equiv _ _ R.ι).1 } :
+              S ⟶ ShortComplex.mk S.f (S.g ≫ (CochainComplex.fromSingle₀Equiv _ _ R.ι).1)
+                ((S.zero_assoc _).trans zero_comp))).1 hS.exact, hS.mono_f⟩
+        exact ShortComplex.isoMk (Iso.refl _) (Iso.refl _) (Iso.refl _)
+          (by
+            simp only [HomologicalComplex.shortComplexFunctor'_obj_X₂,
+              CochainComplex.single₀_obj_zero, CochainComplex.augment_X_zero,
+              HomologicalComplex.shortComplexFunctor'_map_τ₂, Iso.refl_hom, Category.id_comp]
+            -- the source of the degree `0` component is the single complex on `S.X₁`, which is
+            -- `S.X₁` only up to definitional unfolding, so `rw` cannot match it
+            erw [HomologicalComplex.mkHomFromSingle_f]
+            simp) (by simp)
+      all_goals rfl
+    · rw [quasiIsoAt_iff_exactAt _ _ (CochainComplex.exactAt_succ_single_obj _ _),
+        HomologicalComplex.exactAt_iff' _ 0 1 2 (by simp) (by simp)]
+      have : Epi S.g := hS.epi_g
+      exact (ShortComplex.exact_iff_of_epi_of_isIso_of_mono
+        ({ τ₁ := S.g, τ₂ := 𝟙 _, τ₃ := 𝟙 _ } :
+          ShortComplex.mk (S.g ≫ (CochainComplex.fromSingle₀Equiv _ _ R.ι).1)
+              (R.cocomplex.d 0 1) (by rw [Category.assoc,
+                (CochainComplex.fromSingle₀Equiv _ _ R.ι).2, Limits.comp_zero]) ⟶
+            ShortComplex.mk (CochainComplex.fromSingle₀Equiv _ _ R.ι).1 (R.cocomplex.d 0 1)
+              (CochainComplex.fromSingle₀Equiv _ _ R.ι).2)).2 R.exact₀
+    · rw [quasiIsoAt_iff_exactAt _ _ (CochainComplex.exactAt_succ_single_obj _ _),
+        HomologicalComplex.exactAt_iff' _ (n + 1) (n + 2) (n + 3) (by simp) (by simp)]
+      exact R.exact_succ n⟩
+
+end InjectiveResolution
+
+namespace Functor
+
+variable (G : C ⥤ D) [G.Additive] {S : ShortComplex C} (hS : S.ShortExact) [Injective S.X₂]
+
+include hS in
+/-- **Dimension shifting.** For a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective,
+if `R^{n+2} G (X)` vanishes, so does `R^{n+1} G (Q)`. -/
+theorem isZero_rightDerived_obj_X₃_of_isZero (n : ℕ)
+    (h : IsZero ((G.rightDerived (n + 2)).obj S.X₁)) :
+    IsZero ((G.rightDerived (n + 1)).obj S.X₃) := by
+  let R := injectiveResolution S.X₃
+  have h' := h.of_iso ((R.ofShortExact hS).isoRightDerivedObj G (n + 2)).symm
+  refine IsZero.of_iso ?_ (R.isoRightDerivedObj G (n + 1))
+  rw [HomologicalComplex.homologyFunctor_obj,
+    ← HomologicalComplex.exactAt_iff_isZero_homology,
+    HomologicalComplex.exactAt_iff' _ n (n + 1) (n + 2) (by simp) (by simp)]
+  rw [HomologicalComplex.homologyFunctor_obj,
+    ← HomologicalComplex.exactAt_iff_isZero_homology,
+    HomologicalComplex.exactAt_iff' _ (n + 1) (n + 2) (n + 3) (by simp) (by simp)] at h'
+  exact h'
+
+include hS in
+/-- **Dimension shifting in degree one.** For a left exact functor `G` and a short exact sequence
+`0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective, if `R¹ G (X)` vanishes, then `G I ⟶ G Q` is an
+epimorphism. -/
+theorem epi_map_g_of_isZero_rightDerived_one [PreservesFiniteLimits G]
+    (h : IsZero ((G.rightDerived 1).obj S.X₁)) : Epi (G.map S.g) := by
+  let R := injectiveResolution S.X₃
+  have h' := h.of_iso ((R.ofShortExact hS).isoRightDerivedObj G 1).symm
+  rw [HomologicalComplex.homologyFunctor_obj,
+    ← HomologicalComplex.exactAt_iff_isZero_homology,
+    HomologicalComplex.exactAt_iff' _ 0 1 2 (by simp) (by simp)] at h'
+  -- `G (R⁰)` has kernel `G Q` along `G (R⁰ ⟶ R¹)`, as `G` is left exact.
+  let ι₀ := (CochainComplex.fromSingle₀Equiv _ _ R.ι).1
+  let T := ShortComplex.mk (G.map ι₀) (G.map (R.cocomplex.d 0 1))
+    (by rw [← G.map_comp, (CochainComplex.fromSingle₀Equiv _ _ R.ι).2, G.map_zero])
+  have : Mono ι₀ := inferInstanceAs (Mono (R.ι.f 0))
+  have hT : T.Exact := R.exact₀.map_of_mono_of_preservesKernel G this inferInstance
+  have : Mono T.f := inferInstanceAs (Mono (G.map ι₀))
+  have : Epi (kernel.lift T.g T.f T.zero) := hT.epi_kernelLift
+  have : IsIso (kernel.lift T.g T.f T.zero) := isIso_of_mono_of_epi _
+  rw [ShortComplex.exact_iff_epi_kernel_lift] at h'
+  have h'' : Epi (kernel.lift T.g (G.map (S.g ≫ ι₀))
+      (by rw [← G.map_comp, Category.assoc, (CochainComplex.fromSingle₀Equiv _ _ R.ι).2,
+        Limits.comp_zero, G.map_zero])) := h'
+  have e : kernel.lift T.g (G.map (S.g ≫ ι₀)) (by rw [← G.map_comp, Category.assoc,
+      (CochainComplex.fromSingle₀Equiv _ _ R.ι).2, Limits.comp_zero, G.map_zero]) =
+      G.map S.g ≫ kernel.lift T.g T.f T.zero := by
+    ext
+    simp [T]
+  rw [e] at h''
+  rw [show G.map S.g = (G.map S.g ≫ kernel.lift T.g T.f T.zero) ≫
+    CategoryTheory.inv (kernel.lift T.g T.f T.zero) by simp]
+  infer_instance
+
+include hS in
+/-- For a left exact functor `G` and a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I`
+injective, if `R¹ G (X)` vanishes, then `0 ⟶ G X ⟶ G I ⟶ G Q ⟶ 0` is short exact. -/
+theorem shortExact_map_of_isZero_rightDerived_one [PreservesFiniteLimits G]
+    (h : IsZero ((G.rightDerived 1).obj S.X₁)) : (S.map G).ShortExact :=
+  { exact := hS.exact.map_of_mono_of_preservesKernel G hS.mono_f inferInstance
+    mono_f := have := hS.mono_f; inferInstanceAs (Mono (G.map S.f))
+    epi_g := G.epi_map_g_of_isZero_rightDerived_one hS h }
+
+end Functor
+
+end DimensionShift
 
 end CategoryTheory

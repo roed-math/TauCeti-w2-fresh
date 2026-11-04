@@ -5,70 +5,35 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import Mathlib.Algebra.Homology.DerivedCategory.Ext.Map
-public import Mathlib.CategoryTheory.Sites.SheafCohomology.ExactSequences
+public import Mathlib.CategoryTheory.Preadditive.AdditiveFunctor
+public import Mathlib.CategoryTheory.Sites.Continuous
 
 set_option warningAsError false
 
 /-!
 # Lookahead stubs for `sheaf-h-pullback`
 
-These are lookahead stubs for the supplier `sheaf-h-pullback` (SchemeAndStackFoundations §2.1,
-open pull request 22647), stated as that pull request states them in
-`TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean`. They are to be replaced by the
-landed declarations. Only the declarations consumed by the Leray target are restated: the
-pullback `Sheaf.H.pullback` itself, together with its degree-zero description, its naturality in
-the coefficient sheaf, and its compatibility with connecting homomorphisms.
+These are lookahead stubs for the supplier `sheaf-h-pullback` (SchemeAndStackFoundations §2.1),
+whose pullback `Sheaf.H.pullback` has landed and whose higher direct images are in the open pull
+request 27242. They are stated as that pull request states them, in
+`TauCeti/CategoryTheory/Sites/Continuous.lean`, and are to be replaced by the landed declarations.
+Only the declaration consumed by the Leray target is restated: the additivity of the pushforward
+of sheaves along a continuous functor, without which its right derived functors, the higher
+direct images, are not defined.
 -/
 
 public section
 
-open CategoryTheory Abelian Limits AddCommGrpCat
+open CategoryTheory Limits
 
-universe w w₁ w₂
+namespace CategoryTheory.Functor
 
-namespace CategoryTheory.Sheaf.H
+variable {C : Type*} [Category* C] {D : Type*} [Category* D] (u : C ⥤ D)
+  (A : Type*) [Category* A] (J : GrothendieckTopology C) (K : GrothendieckTopology D)
+  [u.IsContinuous J K]
 
-variable {C : Type*} [Category* C] {J : GrothendieckTopology C}
-  {D : Type*} [Category* D] {K : GrothendieckTopology D}
-  [HasSheafify J AddCommGrpCat.{w}] [HasSheafify K AddCommGrpCat.{w}]
-  [HasExt.{w₁} (Sheaf J AddCommGrpCat.{w})] [HasExt.{w₂} (Sheaf K AddCommGrpCat.{w})]
-
-/-- Stub: the pullback `Hⁿ(C, G) →+ Hⁿ(D, pb G)` of sheaf cohomology along an exact additive
-functor `pb`, given a map `c : ℤ_K ⟶ pb ℤ_J` between constant sheaves. Its binders are written
-out because a definition with a `sorry` body would otherwise omit the unused section variables. -/
-@[nolint unusedArguments]
-noncomputable def pullback (pb : Sheaf J AddCommGrpCat.{w} ⥤ Sheaf K AddCommGrpCat.{w})
-    [pb.Additive] [PreservesFiniteLimits pb] [PreservesFiniteColimits pb]
-    (c : (constantSheaf K AddCommGrpCat.{w}).obj (of (ULift ℤ)) ⟶
-      pb.obj ((constantSheaf J AddCommGrpCat.{w}).obj (of (ULift ℤ))))
-    (G : Sheaf J AddCommGrpCat.{w}) (n : ℕ) : H G n →+ H (pb.obj G) n :=
+/-- Stub: the pushforward of sheaves along a continuous functor is additive. -/
+instance [Preadditive A] : (u.sheafPushforwardContinuous A J K).Additive :=
   sorry
 
-variable (pb : Sheaf J AddCommGrpCat.{w} ⥤ Sheaf K AddCommGrpCat.{w}) [pb.Additive]
-  [PreservesFiniteLimits pb] [PreservesFiniteColimits pb]
-  (c : (constantSheaf K AddCommGrpCat.{w}).obj (of (ULift ℤ)) ⟶
-    pb.obj ((constantSheaf J AddCommGrpCat.{w}).obj (of (ULift ℤ))))
-
-/-- Stub: in degree zero, the pullback sends the class of a map `f : ℤ_J ⟶ G` to
-`c ≫ pb.map f`. -/
-@[simp]
-lemma addEquiv₀_pullback {G : Sheaf J AddCommGrpCat.{w}} (x : H G 0) :
-    Ext.addEquiv₀ (pullback pb c G 0 x) = c ≫ pb.map (Ext.addEquiv₀ x) := by
-  sorry
-
-/-- Stub: the pullback is natural in the coefficient sheaf. -/
-lemma pullback_naturality {G₁ G₂ : Sheaf J AddCommGrpCat.{w}} (f : G₁ ⟶ G₂) {n : ℕ}
-    (x : H G₁ n) :
-    pullback pb c G₂ n (H.map f n x) = H.map (pb.map f) n (pullback pb c G₁ n x) := by
-  sorry
-
-/-- Stub: the pullback commutes with the connecting homomorphisms of a short exact sequence of
-abelian sheaves and of its image under `pb`. -/
-lemma pullback_δ {S : ShortComplex (Sheaf J AddCommGrpCat.{w})} (hS : S.ShortExact)
-    (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁) (x : H S.X₃ n₀) :
-    pullback pb c S.X₁ n₁ (H.δ hS n₀ n₁ h x) =
-      H.δ (hS.map_of_exact pb) n₀ n₁ h (pullback pb c S.X₃ n₀ x) := by
-  sorry
-
-end CategoryTheory.Sheaf.H
+end CategoryTheory.Functor

@@ -1,97 +1,109 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"ab1c5af023f864980704684df6008c9288ab4fcf","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: the edge map of the Leray spectral sequence"},{"n":2,"after":[],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":3,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":4,"after":[1,2,3],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":3,"after":[1],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":4,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":5,"after":[1,2,3,4],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `ab1c5af023f864980704684df6008c9288ab4fcf`. Status: **partial**.
+Built on `main` at `333c9e49143de812ed1452b412193ee9c05501e7`. Status: **partial**.
 
-## Stubbed declarations (supplier `sheaf-h-pullback`)
+## Supplier state
 
-`Suggested.lean` of SchemeAndStackFoundations pins **no** Lean form for `Sheaf.H.pullback`
-(`grep -n 'H.pullback\|sheafPullback' Suggested.lean` finds nothing); the README §2.1 states it in
-prose as `Sheaf.H.pullback pb G n : G.H n →+ (pb.obj G).H n`. The stubs therefore follow the
-supplier's open PR #22647 (head `5d57f8bdf236594622909312be1bf9cd967b880d`), file
-`TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean`, which is what will land. All live in
-`TauCeti/Lookahead/LeraySpectralSequence/Stubs.lean`, namespace `CategoryTheory.Sheaf.H` (as in the
-PR and the neighbouring `TauCeti/CategoryTheory/Sites/SheafCohomology/` files on `main`), under the
-section variables of the PR:
-`{C} [Category* C] {J} {D} [Category* D] {K} [HasSheafify J Ab.{w}] [HasSheafify K Ab.{w}]
-[HasExt.{w₁} (Sheaf J Ab.{w})] [HasExt.{w₂} (Sheaf K Ab.{w})]`.
+The supplier `sheaf-h-pullback` (§2.1) has partly landed: `Sheaf.H.pullback` with
+`addEquiv₀_pullback`, `pullback_naturality` and `pullback_δ` is on `main`
+(`TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean`, from #22647). The stubs of those four
+declarations that the previous round of this branch carried are deleted, and
+`LerayEdge.lean` now imports the landed module. The higher direct images of §2.1 are in the open
+pull request #27242 (head `fc88ca0a5dc24100b268478d2ad74bb1f0259ca8`).
 
-1. `Sheaf.H.pullback`
-   - README (no `Suggested.lean` signature): `Sheaf.H.pullback pb G n : G.H n →+ (pb.obj G).H n`.
-   - PR #22647: `def pullback (G : Sheaf J AddCommGrpCat.{w}) (n : ℕ) : H G n →+ H (pb.obj G) n`
-     with section variables `(pb : Sheaf J Ab ⥤ Sheaf K Ab) [pb.Additive] [PreservesFiniteLimits pb]
-     [PreservesFiniteColimits pb] (c : (constantSheaf K Ab).obj (of (ULift ℤ)) ⟶
-     pb.obj ((constantSheaf J Ab).obj (of (ULift ℤ))))`.
-   - Stub: the same, with `pb`, its three instances and `c` written as explicit binders of the
-     `def` (a `sorry` body would otherwise drop the unused section variables, changing the arity),
-     body `sorry`, `@[nolint unusedArguments]`.
-   - Difference from the README: the extra comparison argument `c : ℤ_K ⟶ pb ℤ_J`. The README
-     itself (§2.1 opening paragraph) requires it; the PR follows that. No difference from the PR.
-2. `Sheaf.H.addEquiv₀_pullback` (PR, `@[simp]`):
-   `Ext.addEquiv₀ (pullback pb c G 0 x) = c ≫ pb.map (Ext.addEquiv₀ x)`. Stub identical, `sorry`.
-   This is the README's `pullback_zero` in Ext form.
-3. `Sheaf.H.pullback_naturality` (PR):
-   `pullback pb c G₂ n (H.map f n x) = H.map (pb.map f) n (pullback pb c G₁ n x)`. Stub identical.
-4. `Sheaf.H.pullback_δ` (PR): for `hS : S.ShortExact`,
-   `pullback pb c S.X₁ n₁ (H.δ hS n₀ n₁ h x) = H.δ (hS.map_of_exact pb) n₀ n₁ h (pullback pb c S.X₃ n₀ x)`.
-   Stub identical.
+## Stubbed declarations (supplier `sheaf-h-pullback`, PR #27242)
 
-The proof uses only these four statements, never the body of `pullback`. The PR's other
-declarations (`pullback_apply`, `pullback_id`, `pullback_comp_apply`, `equiv₀_pullback_sheafPullback`,
-`Functor.sheafPullbackConstantSheafIso`, `Functor.Initial.constHomEquiv`) are not consumed and not
-stubbed. When #22647 lands: delete `Stubs.lean` and replace its import by
-`TauCeti.CategoryTheory.Sites.SheafCohomology.Pullback`.
+`TauCeti/Lookahead/LeraySpectralSequence/Stubs.lean` holds exactly one declaration.
+
+1. The additivity of the sheaf pushforward along a continuous functor.
+   - `Suggested.lean` (SchemeAndStackFoundations): no signature. `grep -n 'higherDirectImage\|sheafPushforwardContinuous' Suggested.lean`
+     finds only the unrelated `higherDirectImage_vanishing` for quasi-coherent sheaves on schemes.
+     The README §2.1 states in prose: "Define `Sheaf.higherDirectImage pf i := pf.rightDerived i`
+     for the sheaf pushforward `pf` of a morphism of sites", which needs `pf` to be additive.
+   - PR #27242, file `TauCeti/CategoryTheory/Sites/Continuous.lean`, namespace
+     `CategoryTheory.Functor`, section variables
+     `{C} [Category* C] {D} [Category* D] (u : C ⥤ D) (A) [Category* A] (J) (K) [u.IsContinuous J K]`:
+     `instance [Preadditive A] : (u.sheafPushforwardContinuous A J K).Additive where map_add := rfl`.
+   - Stub: the same anonymous instance with the same section variables, body `sorry`.
+   - Differences: none from the PR. From the README: the README writes `Sheaf.higherDirectImage pf i`;
+     the PR defines it as `Functor.sheafHigherDirectImage u A J K i`, a reducible abbreviation of
+     `(u.sheafPushforwardContinuous A J K).rightDerived i`. The branch states its site-level
+     hypothesis with `(u.sheafPushforwardContinuous AddCommGrpCat J K).rightDerived (q + 1)`
+     directly, which needs nothing from the PR but this instance; once #27242 lands it may be
+     written `u.sheafHigherDirectImage AddCommGrpCat J K (q + 1)` with no change of meaning.
+
+The proof uses only the statement of this instance. When #27242 lands: delete `Stubs.lean` and
+replace its import in `LerayEdge.lean` by `TauCeti.CategoryTheory.Sites.Continuous`.
 
 ## What is proved
 
+`TauCeti/CategoryTheory/Abelian/RightDerived.lean` (existing file on `main`, new section
+`DimensionShift`, namespace `CategoryTheory`):
+
+- `InjectiveResolution.ofShortExact hS R` — for `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` short exact with `I`
+  injective and an injective resolution `R` of `Q`, the injective resolution `X ⟶ I ⟶ R⁰ ⟶ R¹ ⟶ ⋯`;
+- `Functor.isZero_rightDerived_obj_X₃_of_isZero` — `R^{n+2}G(X) = 0 → R^{n+1}G(Q) = 0`;
+- `Functor.epi_map_g_of_isZero_rightDerived_one`,
+  `Functor.shortExact_map_of_isZero_rightDerived_one` — for left exact `G`, `R¹G(X) = 0` makes
+  `0 ⟶ GX ⟶ GI ⟶ GQ ⟶ 0` short exact.
+
 `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (namespace `CategoryTheory.Sheaf.H`),
-for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for a morphism of sites `f`:
+for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for a morphism of sites:
 `pb = f⁻¹ = u.sheafPullback`, `pf = f_*`, `c` the inverse of `sheafPullbackConstantSheafIso`):
 
-- `lerayEdge adj c F n : H (pf.obj F) n →+ H F n` — the edge map `E₂^{n,0} = Hⁿ(C, f_*F) → Hⁿ(D, F)`
-  (pullback, then the counit), with `lerayEdge_apply`;
-- `lerayEdge_naturality` — natural in `F`;
-- `lerayEdge_δ` — commutes with connecting homomorphisms when `S` and `f_* S` are short exact;
-- `addEquiv₀_lerayEdge` — in degree 0 it is `g ↦ c ≫ adj.homEquiv.symm g`;
-- `lerayEdge_zero_bijective` — bijective in degree 0 when `c` is an isomorphism;
-- `subsingleton_H_obj_of_injective` — `Hⁿ⁺¹(C, f_* I) = 0` for injective `I` (Stacks 072Z input);
-- `lerayEdge_one_injective` — when `c` is an isomorphism and `Sheaf K Ab` has enough injectives,
-  the edge map `H¹(C, f_* F) → H¹(D, F)` is injective: the first map of the five-term exact
-  sequence, proved directly by embedding `F` into an injective and chasing the two long exact
-  sequences (uses `pullback_δ` and `addEquiv₀_pullback` of the stubs).
+- `lerayEdge adj c F n : H (pf.obj F) n →+ H F n` — the edge map `E₂^{n,0} = Hⁿ(C, f_*F) → Hⁿ(D, F)`,
+  with `lerayEdge_apply`, `lerayEdge_naturality`, `lerayEdge_δ`, `addEquiv₀_lerayEdge`,
+  `lerayEdge_zero_bijective`, `subsingleton_H_obj_of_injective` (Stacks 072Z input),
+  `lerayEdge_one_injective` (first map of the five-term exact sequence) — from the previous round;
+- new: `lerayEdge_succ_surjective`, `lerayEdge_succ_injective` — dimension shifting for the edge
+  map along `0 ⟶ F ⟶ I ⟶ Q ⟶ 0` with `I` injective and `f_*` of it short exact;
+- new: `lerayEdge_bijective_of_isZero_rightDerived` — if `Rᵠ f_* F = 0` for `0 < q ≤ n`, the edge map is
+  bijective in degree `n` (for all `n`: Leray's acyclicity theorem, Stacks 0733);
+- new: `lerayEdge_injective_of_isZero_rightDerived` — if `Rᵠ f_* F = 0` for `0 < q < n`, it is
+  injective in degree `n` (no differential reaches `E₂^{n,0}`);
+- `lerayEdge_bijective` — the exact-`f_*` case, now a corollary instead of a separate induction;
+- new: `lerayEdge_sheafAdjunctionContinuous_bijective` — Leray acyclicity for a morphism of sites
+  `u : C ⥤ D` (uses the stubbed additivity instance).
 
 ## What remains
 
-The spectral sequence itself. Concretely:
+The spectral sequence itself:
 1. A Grothendieck spectral sequence for `G ∘ F` with `F` sending injectives to `G`-acyclics, in
    Mathlib's `Abelian.SpectralObject`/`HasSpectralSequence` language: Cartan–Eilenberg (or
-   injective) resolutions of `F` applied to an injective resolution, the double complex, and the
-   identification of its `E₂` page `R^p G (R^q F)`. `main` has the row-filtration spectral sequence
-   of a first-quadrant (homological) bicomplex, `TauCeti/Algebra/Homology/SpectralSequence/Bicomplex.lean`,
-   and finite-filtration convergence, `.../Filtered/Convergence.lean`, to build on; the `E₂`
-   identification and the cohomological reindexing are not there.
-2. `R^q f_*` on sites. The README assigns `Sheaf.higherDirectImage` to §2.1, but the listed supplier
-   `sheaf-h-pullback` covers only `Sheaf.H.pullback`; the statement can use Mathlib's
-   `(u.sheafPushforwardContinuous Ab J K).rightDerived q` directly, which is what
-   `Sheaf.higherDirectImage pf q` unfolds to.
-3. `leray_spectral_sequence` (with naturality in `F`, the relative form for `g ∘ f` and the
+   injective) resolutions, the double complex, and the identification of its `E₂` page
+   `R^p G (R^q F)`. `main` has the row-filtration spectral sequence of a first-quadrant
+   (homological) bicomplex, `TauCeti/Algebra/Homology/SpectralSequence/Bicomplex.lean`, and
+   finite/exhaustive-filtration convergence under `.../SpectralSequence/Filtered/`; the `E₂`
+   identification and the cohomological reindexing are not there. The lemma that `G`-acyclic
+   resolutions compute `R•G` is the first missing input; `ofShortExact` and the dimension-shift
+   lemmas of split 1 are its inductive step.
+2. `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
    identification of its `E₂^{n,0}` edge with `lerayEdge`), `cech_to_cohomology` and Leray's
-   acyclicity theorem, from the Čech double complex `Ȟ^p(U, I^q)` of an injective resolution `I`.
+   acyclicity theorem for coverings, from the Čech double complex `Ȟ^p(U, I^q)` of an injective
+   resolution `I` (TauCeti's `Cech/` directory has the Čech complex, its augmentation and long
+   exact sequence).
 
 ## Split plan
 
-1. **feat: the edge map of the Leray spectral sequence** — files:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (this branch, ~220 lines, importing
-   the landed `Pullback.lean`). Adds `lerayEdge`, `lerayEdge_apply`, `lerayEdge_naturality`,
-   `lerayEdge_δ`, `addEquiv₀_lerayEdge`, `lerayEdge_zero_bijective`,
-   `subsingleton_H_obj_of_injective`, `lerayEdge_one_injective`, `lerayEdge_bijective`. After: none (needs #22647 on `main`).
-2. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files under
-   `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`: the double complex of resolutions,
-   its `E₂` identification and convergence. After: none. (Not yet written.)
-3. **feat: the Čech double complex of a covering with coefficients in an injective resolution** —
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean`. After: none. (Not yet written.)
-4. **feat: the Leray and Čech-to-cohomology spectral sequences** —
+1. **feat: dimension shifting for right derived functors** — file:
+   `TauCeti/CategoryTheory/Abelian/RightDerived.lean` (+~145 lines in the existing file). Adds
+   `InjectiveResolution.ofShortExact`, `Functor.isZero_rightDerived_obj_X₃_of_isZero`,
+   `Functor.epi_map_g_of_isZero_rightDerived_one`,
+   `Functor.shortExact_map_of_isZero_rightDerived_one`. After: none. Can be opened now.
+2. **feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem** — file:
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (new, ~320 lines). Adds every
+   `lerayEdge*` declaration above and `subsingleton_H_obj_of_injective`. After: 1, and #27242 on
+   `main` for its last theorem (`lerayEdge_sheafAdjunctionContinuous_bijective`); without #27242
+   that theorem can be held back and everything else opened.
+3. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files
+   under `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`. After: 1 (its acyclic
+   resolution lemma is proved by the dimension shifting of split 1). Not yet written.
+4. **feat: the Čech double complex of a covering with coefficients in an injective resolution** —
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean`. After: none. Not yet
+   written.
+5. **feat: the Leray and Čech-to-cohomology spectral sequences** —
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
-   naturality, relative form and edge maps, `cech_to_cohomology`, Leray's acyclicity theorem. After:
-   1, 2, 3. The only split that completes the target. (Not yet written.)
+   naturality, relative form and edge maps, `cech_to_cohomology`, Leray's acyclicity theorem for
+   coverings. After: 1, 2, 3, 4. The only split that completes the target. Not yet written.
