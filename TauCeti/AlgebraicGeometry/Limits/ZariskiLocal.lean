@@ -14,8 +14,9 @@ Let `S = lim Sⱼ` be a cofiltered limit of quasi-compact schemes with affine tr
 `P` a property of morphisms that is local at the target and stable under base change. If `P` is
 inherited from a finite stage over cofiltered limits of affine schemes, then it is inherited over
 `S`: for `Y` over a member `Sᵢ`, if `Y ×_{Sᵢ} S ⟶ S` has `P`, then so does `Y ×_{Sᵢ} Sⱼ ⟶ Sⱼ` for
-some `j`. Indeed, over an affine open `U ⊆ Sᵢ` the preimages of `U` form a
-cofiltered diagram of affine schemes with limit the preimage of `U` in `S`
+some `j`. The structure morphism of `Y` may be required to have any property `Q` stable under base
+change, such as finite type or finite presentation. Indeed, over an affine open `U ⊆ Sᵢ` the
+preimages of `U` form a cofiltered diagram of affine schemes with limit the preimage of `U` in `S`
 (`AlgebraicGeometry.isLimitOpensCone`), and finitely many affine opens cover `Sᵢ`.
 
 ## Main declarations
@@ -42,42 +43,44 @@ variable {I : Type u} [Category.{u} I] [IsCofiltered I] {D : I ⥤ Scheme.{u}}
 
 include hc in
 /-- Let `S = lim Sⱼ` be a cofiltered limit of quasi-compact schemes with affine transition maps,
-and `P` a property of morphisms local at the target and stable under base change, which is
-inherited from a finite stage over every cofiltered limit of affine schemes by base changes of
-schemes of finite type, quasi-compact and quasi-separated over a member. Then the same holds over
-`S`: if `Y ×_{Sᵢ} S ⟶ S` has `P`, then so does `Y ×_{Sᵢ} Sⱼ ⟶ Sⱼ` for some `j`. -/
-theorem exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget (P : MorphismProperty Scheme.{u})
-    [IsZariskiLocalAtTarget P] [P.IsStableUnderBaseChange]
+`P` a property of morphisms local at the target and stable under base change, and `Q` a property
+stable under base change. Suppose that `P` is inherited from a finite stage over every cofiltered
+limit of affine schemes by base changes of quasi-compact quasi-separated morphisms `q` to a member
+with `Q q`. Then the same holds over `S`: if `Y ×_{Sᵢ} S ⟶ S` has `P`, then so does
+`Y ×_{Sᵢ} Sⱼ ⟶ Sⱼ` for some `j`. -/
+theorem exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget
+    (P Q : MorphismProperty Scheme.{u}) [IsZariskiLocalAtTarget P] [P.IsStableUnderBaseChange]
+    [Q.IsStableUnderBaseChange]
     (H : ∀ {J : Type u} [Category.{u} J] [IsCofiltered J] (E : J ⥤ Scheme.{u})
       [∀ j, IsAffine (E.obj j)] (e : Cone E), IsLimit e → ∀ {j : J} {Y : Scheme.{u}}
-      (q : Y ⟶ E.obj j) [QuasiCompact q] [QuasiSeparated q] [LocallyOfFiniteType q],
+      (q : Y ⟶ E.obj j) [QuasiCompact q] [QuasiSeparated q], Q q →
       P (pullback.fst (e.π.app j) q) → ∃ (k : J) (hkj : k ⟶ j), P (pullback.fst (E.map hkj) q))
-    {i : I} {Y : Scheme.{u}} (q : Y ⟶ D.obj i) [QuasiCompact q] [QuasiSeparated q]
-    [LocallyOfFiniteType q] (hq : P (pullback.fst (c.π.app i) q)) :
+    {i : I} {Y : Scheme.{u}} (q : Y ⟶ D.obj i) [QuasiCompact q] [QuasiSeparated q] (hQ : Q q)
+    (hq : P (pullback.fst (c.π.app i) q)) :
     ∃ (j : I) (hji : j ⟶ i), P (pullback.fst (D.map hji) q) := by
-  -- `Q l U`: the base change of `Y` to the preimage of `U` in `Sₗ` has `P`.
-  let Q (l : Over i) (U : (D.obj i).Opens) : Prop :=
+  -- `good l U`: the base change of `Y` to the preimage of `U` in `Sₗ` has `P`.
+  let good (l : Over i) (U : (D.obj i).Opens) : Prop :=
     P (pullback.fst ((opensDiagramι D i U).app l ≫ D.map l.hom) q)
   have ι_comp {l m : Over i} (f : m ⟶ l) (U : (D.obj i).Opens) :
       (opensDiagram D i U).map f ≫ (opensDiagramι D i U).app l =
         (opensDiagramι D i U).app m ≫ D.map f.left :=
     (opensDiagramι D i U).naturality f
-  have mono {l m : Over i} (f : m ⟶ l) (U : (D.obj i).Opens) : Q l U → Q m U :=
+  have mono {l m : Over i} (f : m ⟶ l) (U : (D.obj i).Opens) : good l U → good m U :=
     P.pullback_fst_of_comp_eq _ _ ((opensDiagram D i U).map f) (by
       rw [reassoc_of% ι_comp f U, ← D.map_comp, Over.w f])
-  have one (U : (D.obj i).Opens) (hU : IsAffineOpen U) : ∃ l, Q l U := by
+  have one (U : (D.obj i).Opens) (hU : IsAffineOpen U) : ∃ l, good l U := by
     have (l : Over i) : IsAffine ((opensDiagram D i U).obj l) := hU.preimage _
     let b : Over i := Over.mk (𝟙 i)
     obtain ⟨k, hkb, hk⟩ := H (opensDiagram D i U) (opensCone D c i U) (isLimitOpensCone D c hc i U)
-      (j := b) (pullback.fst ((opensDiagramι D i U).app b) q) <| by
+      (j := b) (pullback.fst ((opensDiagramι D i U).app b) q) (Q.pullback_fst _ _ hQ) <| by
         refine (P.pullback_fst_pullback_fst_iff _ _ _ (a := (c.π.app i ⁻¹ᵁ U).ι ≫ c.π.app i)
           ?_).mpr ((P.pullback_fst_pullback_fst_iff _ _ _ rfl).mp (P.pullback_fst _ _ hq))
         exact Scheme.Hom.resLE_comp_ι _ _
     refine ⟨k, (P.pullback_fst_pullback_fst_iff _ _ _ ?_).mp hk⟩
     rw [ι_comp hkb U, ← Over.w hkb]
     simp [b]
-  -- Finitely many affine opens lie in a common `Q l`.
-  have fin (t : Finset (D.obj i).Opens) : (∀ U ∈ t, IsAffineOpen U) → ∃ l, ∀ U ∈ t, Q l U := by
+  -- Finitely many affine opens lie in a common `good l`.
+  have fin (t : Finset (D.obj i).Opens) : (∀ U ∈ t, IsAffineOpen U) → ∃ l, ∀ U ∈ t, good l U := by
     classical
     induction t using Finset.induction_on with
     | empty => exact fun _ ↦ ⟨Over.mk (𝟙 i), by simp⟩
@@ -110,10 +113,12 @@ theorem exists_isClosedImmersion_pullback_fst_of_isLimit {i : I} {Y : Scheme.{u}
     [IsClosedImmersion (pullback.fst (c.π.app i) q)] :
     ∃ (j : I) (hji : j ⟶ i), IsClosedImmersion (pullback.fst (D.map hji) q) :=
   exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget hc @IsClosedImmersion
+    @LocallyOfFiniteType
     (by
-      intro _ _ _ _ _ _ he _ _ q _ _ _ hq
+      intro _ _ _ _ _ _ he _ _ q _ _ hq' hq
       have := hq
-      exact exists_isClosedImmersion_pullback_fst_of_isLimit_of_forall_isAffine he q) q ‹_›
+      have := hq'
+      exact exists_isClosedImmersion_pullback_fst_of_isLimit_of_forall_isAffine he q) q ‹_› ‹_›
 
 include hc in
 /-- Let `S = lim Sⱼ` be a cofiltered limit of quasi-compact schemes with affine transition maps,
@@ -127,10 +132,11 @@ theorem exists_isFinite_pullback_fst_of_isLimit {i : I} {Y : Scheme.{u}}
   observe h : HasAffineProperty @IsFinite.{u}
     (fun X _ f _ ↦ IsAffine X ∧ RingHom.Finite (f.appTop).hom)
   have : IsZariskiLocalAtTarget @IsFinite.{u} := @HasAffineProperty.instIsZariskiLocalAtTarget _ _ h
-  exact exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget hc @IsFinite
+  exact exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget hc @IsFinite @LocallyOfFiniteType
     (by
-      intro _ _ _ _ _ _ he _ _ q _ _ _ hq
+      intro _ _ _ _ _ _ he _ _ q _ _ hq' hq
       have := hq
-      exact exists_isFinite_pullback_fst_of_isLimit_of_forall_isAffine he q) q ‹_›
+      have := hq'
+      exact exists_isFinite_pullback_fst_of_isLimit_of_forall_isAffine he q) q ‹_› ‹_›
 
 end TauCeti.AlgebraicGeometry.Scheme
