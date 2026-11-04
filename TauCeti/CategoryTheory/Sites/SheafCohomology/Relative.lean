@@ -55,7 +55,9 @@ morphism `W ∖ S ⟶ W` gives the cohomology of `F` on `W` with supports in `S`
 * `CategoryTheory.Sheaf.relativeH'.zeroEquiv`: `H⁰(V, U; F)` is the group of sections over `V`
   restricting to zero along `i`, naturally in `F` (`relativeH'.coe_zeroEquiv_naturality_right`);
 * `CategoryTheory.Sheaf.relativeH'.subsingleton_one` and `relativeH'.subsingleton_add_two`:
-  vanishing of relative cohomology from vanishing of absolute cohomology.
+  vanishing of relative cohomology from vanishing of absolute cohomology, and
+  `CategoryTheory.Sheaf.relativeH'.oneAddEquivOfSubsingleton`: if `H¹(V, F)` vanishes,
+  `H¹(V, U; F)` is the cokernel of `H⁰(V, F) ⟶ H⁰(U, F)`;
 * `TauCeti.CategoryTheory.relativeFreeYonedaSheafMap`: the map `ℤ_{V',U'} ⟶ ℤ_{V,U}` induced by a
   commutative square from `i' : U' ⟶ V'` to `i : U ⟶ V`, and
   `TauCeti.CategoryTheory.isIso_relativeFreeYonedaSheafMap_iff`, its Yoneda criterion for being an
@@ -448,6 +450,21 @@ theorem subsingleton_add_two {n : ℕ} (hU : Subsingleton (F.H' (n + 1) U))
   obtain ⟨y, rfl⟩ :=
     (exact_δ_toH' F i (show 1 + (n + 1) = n + 2 by omega) x).1 (Subsingleton.elim _ _)
   rw [Subsingleton.elim y 0, map_zero]
+
+/-- If `H¹(V, F)` vanishes, the connecting map identifies `H¹(V, U; F)` with the cokernel of the
+restriction map `H⁰(V, F) ⟶ H⁰(U, F)`. -/
+noncomputable def oneAddEquivOfSubsingleton (hV : Subsingleton (F.H' 1 V)) :
+    F.H' 0 U ⧸ ((F.cohomologyPresheaf 0).map i.op).hom.range ≃+ F.relativeH' i 1 :=
+  (QuotientAddGroup.quotientAddEquivOfEq (Function.Exact.addMonoidHom_ker_eq
+      (f := ((F.cohomologyPresheaf 0).map i.op).hom) (g := δ F i (add_zero 1))
+      (exact_cohomologyPresheaf_map_δ F i (add_zero 1))).symm).trans
+    (QuotientAddGroup.quotientKerEquivOfSurjective _ fun x ↦
+      (exact_δ_toH' F i (add_zero 1) x).1 (Subsingleton.elim _ _))
+
+@[simp]
+lemma oneAddEquivOfSubsingleton_mk (hV : Subsingleton (F.H' 1 V)) (x : F.H' 0 U) :
+    oneAddEquivOfSubsingleton F i hV x = δ F i (add_zero 1) x :=
+  (rfl)
 
 end vanishing
 

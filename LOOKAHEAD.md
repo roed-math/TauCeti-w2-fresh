@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":8,"after":[2],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":8,"after":[2],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":9,"after":[8],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
@@ -31,7 +31,7 @@ imported it, and `main` now carries every declaration it stubbed:
   landed with exactly this statement, under the name
   `AlgebraicGeometry.Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`
   (`TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean`, PR #22975, merged by Bors). The
-  earlier stub `TauCeti.QCoh.higherDirectImage_vanishing` therefore had to go. Split 9 should use
+  earlier stub `TauCeti.QCoh.higherDirectImage_vanishing` therefore had to go. Split 10 should use
   the landed name. PR #27295 (localization of quasi-coherent cohomology) is still open, and nothing
   here needs it.
 
@@ -150,7 +150,7 @@ These lemmas compare them in positive degrees, for both vanishing and injectivit
 
   These are the native half of `localCohomology_module_comparison_nil_ideal`. The geometric half
   (`H⁰_{V(I)}(Spec A, 𝒪) = A ≠ 0`) follows from `V(I) = Spec A`, `sectionsWithSupport_top` and
-  `cohomologyWithSupportZeroLinearEquiv` below, and goes in split 9.
+  `cohomologyWithSupportZeroLinearEquiv` below, and goes in split 10.
 
 `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines, new), in namespace
 `TauCeti.AlgebraicGeometry.Scheme.Modules` (beside `Scheme.Modules.Cohomology`). This is the
@@ -178,6 +178,52 @@ README's `cohomologyWithSupport Z F q` with its `O(X)`-module structure, and
 linearity need. It sits beside `globalSectionsSmul_naturality`. `Support.lean` takes about 150–200 s
 to compile, comparable to `Cohomology/Module/Basic.lean` (120 s).
 
+### Session 5: degree one on affine schemes and the affine line at the origin
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Relative.lean` (a `main` file) gains 18 lines:
+
+- `CategoryTheory.Sheaf.relativeH'.oneAddEquivOfSubsingleton`: if `H¹(V, F) = 0`, the
+  connecting map gives `H⁰(U, F) ⧸ range(H⁰(V, F) ⟶ H⁰(U, F)) ≃+ H¹(V, U; F)`; with
+  `oneAddEquivOfSubsingleton_mk` (`@[simp]`).
+
+`TauCeti/Topology/Sheaves/SupportedCohomology.lean` (a `main` file) gains 28 lines:
+
+- `CategoryTheory.Sheaf.supportedHOneEquiv S W hW`: if `H¹(W, F) = 0`, then
+  `F(W ∖ S) ⧸ range(F(W) ⟶ F(W ∖ S)) ≃+ H_S¹(W, F)`, through
+  `TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv`; with `supportedHOneEquiv_mk`.
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support/Affine.lean` (157 lines, new), in namespace
+`TauCeti.AlgebraicGeometry.Scheme.Modules`, using `main`'s Serre vanishing
+`AlgebraicGeometry.Scheme.Modules.subsingleton_cohomologyOn_succ_of_isAffineOpen`:
+
+- `cohomologyWithSupportOneEquiv Z M` (`[IsAffine X]`, `[M.IsQuasicoherent]`):
+  `M(X ∖ Z) ⧸ M(X) ≃+ H_Z^1(X, M)`, and `cohomologyWithSupportOneEquiv_mk`;
+- `subsingleton_cohomologyWithSupport_add_two`: `H_Z^{n+2}(X, M) = 0` when `X` and `X ∖ Z` are
+  affine, and `subsingleton_cohomologyWithSupport_basicOpen_add_two` for `Z = V(r)`;
+- for the structure sheaf `SheafOfModules.unit X.ringCatSheaf` and `r : Γ(X, ⊤)`:
+  `cohomologyWithSupportBasicOpenOneEquiv r :
+  Γ(X, D(r)) ⧸ (algebraMap Γ(X, ⊤) Γ(X, D(r))).range ≃+ H_{V(r)}^1(X, 𝒪)` (that is,
+  `Γ(X, ⊤)_r / Γ(X, ⊤)`, by Mathlib's `isLocalization_away_of_isAffine`) and
+  `subsingleton_cohomologyWithSupport_basicOpen_zero` (`H_{V(r)}^0(X, 𝒪) = 0` for a
+  nonzerodivisor `r`); private helpers `top_inf_compl_compl_basicOpen`,
+  `basicOpenSectionsAddEquiv`, `basicOpenSectionsAddEquiv_algebraMap`.
+
+`TauCeti/Examples/AlgebraicGeometry/Cohomology/Support.lean` (116 lines, new), in namespace
+`TauCeti.AlgebraicGeometry.Scheme.Modules.AffineLineExample`: the README check
+`test_support_affine_line_origin` for a field `k`, `X = Spec k[t]` and `Z = V(t)`:
+
+- `coordinate k` (`t` as a global function), `coordinate_mem_nonZeroDivisors`;
+- `subsingleton_cohomologyWithSupport_origin_zero`: `H⁰_Z(X, 𝒪) = 0`;
+- `cohomologyWithSupportOriginOneEquiv`: `H¹_Z(X, 𝒪) ≃+ k[T;T⁻¹] ⧸ toLaurent.range`
+  (`k[t, t⁻¹]/k[t]`, via `IsLocalization.ringEquivOfRingEquiv` and Mathlib's
+  `LaurentPolynomial.isLocalization`);
+- `subsingleton_cohomologyWithSupport_origin_add_two`: `H^{n+2}_Z(X, 𝒪) = 0`.
+
+The README states the affine-line check with `Z = {0}`; the branch uses `Z = V(t)`, which is that
+point. The `H⁰_Z = 0` half of `test_support_not_restriction` is
+`subsingleton_cohomologyWithSupport_origin_zero`; the other half (the restriction to `Z` has
+sections `k`) is not done.
+
 ## What `main` already has (found in session 2)
 
 `sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
@@ -196,10 +242,16 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
 - `localCohomology_colimit_ext_comparison` (split 5); `Supports.localCohomology_flat_baseChange`
   and flat excision (split 6).
 - `cohomologyWithSupportTopEquiv` is only additive. `Γ(X, ⊤)`-linearity needs the naturality in
-  `M` of `supportedHTopEquiv` and of `cohomologyOnTopIso`; it can be added to split 8 or 9.
+  `M` of `supportedHTopEquiv` and of `cohomologyOnTopIso`; it can be added to split 8 or 10.
 - `localCohomologySheaf Z F q` as a sheaf of `𝒪_X`-modules: `main` has the abelian
   `supportedHSheaf` and the `R`-linear `supportedModuleHPresheaf`, but no scheme wrapper yet.
-- Split 9:
+- `test_support_affine_line_origin` is done (session 5, split 9). For
+  `test_depth_dvr`/`localCohomology_module_comparison_dvr`, the geometric
+  `H¹_{V(π)}(Spec R, 𝒪) ≅ K/R` now follows from `cohomologyWithSupportBasicOpenOneEquiv` with
+  `r = π` (`R_π = K`); the native `H¹_m(R) ≅ K/R` is still open.
+- `cohomologyWithSupportOneEquiv` and `supportedHOneEquiv` are only additive; `Γ(X, ⊤)`-linearity
+  needs naturality of the connecting map in the coefficients.
+- Split 10:
   - `localCohomology_module_comparison`, using
     `Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`;
   - the checks `test_support_all` and `test_support_empty` (now one line each, from
@@ -247,6 +299,13 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
    235 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines) plus
    `globalSectionsSmul_app_top_apply` in `TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean`;
    the declarations listed under session 4.
-9. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–8 (not
+9. **feat: cohomology with supports on affine schemes and at the origin of the affine line**.
+   After: 8 (done, about 320 lines). `oneAddEquivOfSubsingleton` (+18 lines in
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative.lean`), `supportedHOneEquiv` (+28 lines
+   in `TauCeti/Topology/Sheaves/SupportedCohomology.lean`),
+   `TauCeti/AlgebraicGeometry/Cohomology/Support/Affine.lean` (157 lines) and
+   `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support.lean` (116 lines); the declarations
+   listed under session 5.
+10. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–9 (not
    yet written). `localCohomology_module_comparison`, the remaining scheme wrappers and the
    remaining §2.7 checks. This is the only split that completes the target.

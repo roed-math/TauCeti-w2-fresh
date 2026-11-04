@@ -56,6 +56,8 @@ supported in `S` glues with zero on `W ∖ S` to a unique section over `W` suppo
 * `CategoryTheory.Sheaf.supportedHZeroEquiv`: `H_S⁰(W, F) ≃+ Γ_S(W, F)`;
 * `CategoryTheory.Sheaf.subsingleton_supportedH_of_le_compl`: `H_Sⁿ(W, F) = 0` when `W` is disjoint
   from `S`;
+* `CategoryTheory.Sheaf.supportedHOneEquiv`: if `H¹(W, F) = 0`, then `H_S¹(W, F)` is
+  `F(W ∖ S) / F(W)`;
 * `CategoryTheory.Sheaf.relativeH'.subsingleton_succ_of_isFlasque`: a flasque sheaf has no relative
   cohomology in positive degrees for an inclusion of opens; in particular it has no cohomology with
   supports in positive degrees.
@@ -220,6 +222,32 @@ theorem subsingleton_supportedH_of_le_compl (S : Closeds X) {W : Opens X} (hW : 
   haveI : IsIso (S.complInclusion W) :=
     ⟨homOfLE (le_inf le_rfl hW), Subsingleton.elim _ _, Subsingleton.elim _ _⟩
   relativeH'.subsingleton_of_isIso F _ n
+
+/-- If `H¹(W, F)` vanishes, the connecting map identifies `H_S¹(W, F)` with the group of sections
+of `F` over `W ∖ S` modulo restrictions of sections over `W`. -/
+def supportedHOneEquiv (S : Closeds X) (W : Opens X) (hW : Subsingleton (F.H' 1 W)) :
+    F.obj.obj (op (W ⊓ S.compl)) ⧸ (F.obj.map (S.complInclusion W).op).hom.range ≃+
+      F.supportedH S W 1 :=
+  (QuotientAddGroup.congr _ _ (TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv F _).symm (by
+    ext x
+    simp only [AddSubgroup.mem_map, AddMonoidHom.mem_range]
+    constructor
+    · rintro ⟨_, ⟨s, rfl⟩, rfl⟩
+      refine ⟨(TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv F W).symm s, ?_⟩
+      apply (TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv F _).injective
+      simp
+    · rintro ⟨y, rfl⟩
+      refine ⟨_, ⟨TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv F W y, rfl⟩, ?_⟩
+      apply (TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv F _).injective
+      simp)).trans
+    (relativeH'.oneAddEquivOfSubsingleton F (S.complInclusion W) hW)
+
+lemma supportedHOneEquiv_mk (S : Closeds X) (W : Opens X) (hW : Subsingleton (F.H' 1 W))
+    (s : F.obj.obj (op (W ⊓ S.compl))) :
+    F.supportedHOneEquiv S W hW s = relativeH'.δ F (S.complInclusion W) (add_zero 1)
+      ((TauCeti.CategoryTheory.cohomologyZeroSectionsEquiv F _).symm s) := by
+  rw [supportedHOneEquiv, AddEquiv.trans_apply]
+  exact relativeH'.oneAddEquivOfSubsingleton_mk F _ hW _
 
 /-- Excision for sections with supports: if `W' ≤ W` and `S ∩ W ⊆ W'` (that is,
 `W ≤ W' ⊔ (X ∖ S)`), then every section over `W'` supported in `S` is the restriction of a unique
