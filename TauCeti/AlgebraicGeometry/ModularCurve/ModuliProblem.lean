@@ -170,6 +170,16 @@ theorem representableBy_homEquiv_id (X : EllObj B) :
     (D.representableBy X).homEquiv (𝟙 (D.rep X)) = D.universal X :=
   (rfl)
 
+/-- The level structure classified by the composite of `z : T' ⟶ T` with the point of `𝒫_{E/S}`
+classifying a level structure `β` on `E_T` is the pull-back of `β` to `E_{T'}`. -/
+theorem homEquiv_comp_homEquiv_symm (X : EllObj B) {T T' : Over X.base} (z : T' ⟶ T)
+    (β : P.obj (op (X.baseChangeFunctor.obj T))) :
+    (D.representableBy X).homEquiv (z ≫ (D.representableBy X).homEquiv.symm β) =
+      P.map (X.baseChangeFunctor.map z).op β :=
+  -- `P.fibre X` is `X.baseChangeFunctor.op ⋙ P`, so its values and maps are those of `P`.
+  ((D.representableBy X).homEquiv_comp _ _).trans
+    (congrArg _ ((D.representableBy X).homEquiv.apply_symm_apply β))
+
 /-- Along an arrow `f : X ⟶ Y` of `Ell/B`, the base change of the representing scheme over `Y`
 along `f.base` represents the fibre of the problem over `X`. -/
 noncomputable def representableByPullback (f : X ⟶ Y) :
