@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[3],"title":"feat: descent of finitely presented schemes and their properties to a finite stage"},{"n":6,"after":[2,4,5],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,5,6],"title":"feat: descent of finitely presented schemes and of flatness, smoothness, properness and open immersions to a finite stage"},{"n":8,"after":[2,4,7],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
 # Lookahead: `noetherian-approximation` (SchemeAndStackFoundations §0.9)
 
 Built on `main` at `333c9e4914`. Status: **partial**.
@@ -38,7 +38,7 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_restric
 `exists_mono_restrict_iso_of_isQuasicoherent`: the added
 `[CompactSpace X] [QuasiSeparatedSpace X] [F.IsFiniteType]` hypotheses and `G'.IsFiniteType`
 conclusion (the content of 01PF); the "isomorphism over `V`" clause is dropped since split 6 does
-not consume it. No proved declaration on this branch uses the stub yet: it is consumed by split 6
+not consume it. No proved declaration on this branch uses the stub yet: it is consumed by split 8
 (extending a finite-type quasi-coherent ideal sheaf, cutting out the closure of a
 finite-presentation model over an open, from `U` to `X`).
 
@@ -51,71 +51,98 @@ finite-presentation model over an open, from `U` to `X`).
    (the separatedness half of `affine_transition_limits`, 01YX + 01S7; quasi-compactness is
    Mathlib's `Scheme.compactSpace_of_isLimit`), `isAffine_of_isLimit`, `isQuasiAffine_of_isLimit`,
    `isAffine_iff_exists_of_isLimit`, `isQuasiAffine_iff_exists_of_isLimit` (with Mathlib's 01Z6/01Z5
-   converses); and `|lim Xᵢ| = lim |Xᵢ|` (0CUF): `exists_π_app_eq_of_isLimit` (every compatible
-   family of points comes from a point of the limit, via the spectrum of the colimit of the residue
-   fields; for any cofiltered diagram), `specializes_of_isLimit`, `ext_of_isLimit`,
-   `topologicalSpace_eq_iInf_induced_of_isLimit`, and the instance `preservesLimit_forgetToTop :
-   PreservesLimit D Scheme.forgetToTop`.
+   converses); and `|lim Xᵢ| = lim |Xᵢ|` (0CUF): `exists_π_app_eq_of_isLimit`,
+   `specializes_of_isLimit`, `ext_of_isLimit`, `topologicalSpace_eq_iInf_induced_of_isLimit`, and the
+   instance `preservesLimit_forgetToTop : PreservesLimit D Scheme.forgetToTop`.
 2. **feat: Noetherian approximation of affine schemes** (after: none) — *proved*.
    File `TauCeti/AlgebraicGeometry/Limits/NoetherianApproximation.lean` (105 lines):
-   `finsetAdjoinDiagram`, `finsetAdjoinCocone`, `isColimitFinsetAdjoinCocone` (every ring is the
-   filtered colimit of its finitely generated `ℤ`-subalgebras), the instance
+   `finsetAdjoinDiagram`, `finsetAdjoinCocone`, `isColimitFinsetAdjoinCocone`, the instance
    `Algebra.FinitePresentation ℤ ((finsetAdjoinDiagram A).obj s)`,
    `locallyOfFinitePresentation_terminal_from_Spec`, and
    `Scheme.exists_isLimit_finitePresentation_of_isAffine` (the affine case of 01ZA).
 3. **feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered
    limits** (after: none) — *proved*. Files:
-   - `TauCeti/CategoryTheory/Limits/Shapes/Pullback/Cofiltered.lean` (123 lines), in any category
-     with pullbacks: `CategoryTheory.Functor.pullbackOver` (`j ↦ Dⱼ ×_{Dᵢ} Z` over `Over i`),
-     `CategoryTheory.Limits.Cone.pullbackOver`, `CategoryTheory.Limits.IsLimit.pullbackOver` (the
-     base change of a cofiltered limit cone is a limit cone), and their `_map_fst/_map_snd`,
+   - `TauCeti/CategoryTheory/Limits/Shapes/Pullback/Cofiltered.lean` (123 lines):
+     `CategoryTheory.Functor.pullbackOver`, `CategoryTheory.Limits.Cone.pullbackOver`,
+     `CategoryTheory.Limits.IsLimit.pullbackOver` and their `_map_fst/_map_snd`,
      `_π_app_fst/_π_app_snd` lemmas;
    - `TauCeti/AlgebraicGeometry/Limits/BaseChange.lean` (50 lines): instances passing affine
      transition maps, quasi-compactness and quasi-separation to `D.pullbackOver r`;
-   - `TauCeti/AlgebraicGeometry/Limits/FinitePresentation.lean` (193 lines), namespace
-     `TauCeti.AlgebraicGeometry.Scheme`: the absolute (over `ℤ`) 01ZC statements
-     `exists_map_comp_eq_of_isLimit`, `exists_π_app_comp_eq_of_isLimit`;
-     `exists_pullbackMap_comp_eq_of_isLimit` (01ZM, descent of morphisms: a morphism over the limit
-     between base changes of schemes over `Dᵢ`, the target locally of finite presentation, is the
-     base change of one over some `Dⱼ`); `exists_isIso_pullbackMap_of_isLimit` (081E, the
-     "isomorphism" case of the inherited properties of `finite_presentation_limits`).
+   - `TauCeti/AlgebraicGeometry/Limits/FinitePresentation.lean` (193 lines):
+     `exists_map_comp_eq_of_isLimit`, `exists_π_app_comp_eq_of_isLimit` (01ZC over `ℤ`),
+     `exists_pullbackMap_comp_eq_of_isLimit` (01ZM, descent of morphisms),
+     `exists_isIso_pullbackMap_of_isLimit` (081E, isomorphisms).
 4. **feat: existence of cofiltered limits of schemes with affine transition maps** (after: 3) —
-   *proved*. File `TauCeti/AlgebraicGeometry/Limits/Existence.lean` (303 lines), namespace
-   `TauCeti.AlgebraicGeometry.Scheme`: `hasLimit_of_isAffine` (a small diagram of affine schemes
-   has a limit, `Spec` of the colimit of global sections) and the instance
-   `hasLimit_of_isAffineHom : HasLimit D` for every cofiltered `D : I ⥤ Scheme` with affine
-   transition maps, the existence half of `affine_transition_limits` (01YW). Proof: over a member
-   `Dᵢ`, the affine limits `lim_j Dⱼ ×_{Dᵢ} U` (`U` running over the affine opens of `Dᵢ`, via
-   `Functor.pullbackOver` from split 3) form a Mathlib `RelativeGluingData` over
-   `Dᵢ.directedAffineCover` (base change along `U ⊆ V` is a pullback square); the glued scheme
-   carries the cone, cones lift on the preimages of the `U` and are glued by
-   `Scheme.Cover.glueMorphisms`, and `Over.forget i` is initial. The gluing helpers are `private`
-   in `AffineTransitionLimit`. It needs split 3 only for
-   `TauCeti/CategoryTheory/Limits/Shapes/Pullback/Cofiltered.lean`; it does not need split 1.
-5. **feat: descent of finitely presented schemes and their properties to a finite stage**
-   (after: 3) — *remaining*. The object half of 01ZM (a scheme of finite presentation over the
-   limit is the base change of one over some `Dᵢ`), and the properties flat, smooth, étale,
-   proper, finite, closed immersion, open immersion inherited from a finite stage (04AI, 0C0C,
-   07RP, 081F, 01ZO, 01ZP, 0EUU), in `Limits/FinitePresentation.lean` and new files; likely two
-   PRs.
-6. **feat: extending finite-presentation models across a quasi-compact open** (after: 2, 4, 5) —
+   *proved*. File `TauCeti/AlgebraicGeometry/Limits/Existence.lean` (307 lines):
+   `hasLimit_of_isAffine` and the instance `hasLimit_of_isAffineHom : HasLimit D` (01YW). It needs
+   split 3 only for `Pullback/Cofiltered.lean`.
+5. **feat: descent of finitely presented affine schemes along cofiltered limits** (after: none) —
+   *proved* (this session). Files:
+   - `TauCeti/CategoryTheory/Limits/ConcreteCategory/Filtered.lean` (51 lines):
+     `TauCeti.CategoryTheory.Limits.Concrete.exists_subset_range_of_isColimit` (a finite subset of a
+     filtered colimit in a concrete category whose forgetful functor preserves the colimit comes from
+     one stage; `TauCeti.GrpCat.exists_subset_range_of_isColimit` on `main` is a special case and can
+     be refactored onto it in a follow-up);
+   - `TauCeti/Algebra/Category/Ring/FinitePresentation.lean` (69 lines):
+     `TauCeti.CommRingCat.exists_isPushout_of_isColimit` (Stacks 00QO: a finitely presented ring map
+     out of a filtered colimit is a pushout of a finitely presented one out of some stage, via
+     Mathlib's `Algebra.Presentation.ModelOfHasCoeffs`);
+   - `TauCeti/AlgebraicGeometry/Limits/AffineDescent.lean` (83 lines):
+     `Scheme.exists_isPullback_of_isLimit_of_isAffine` (01ZM, object half, affine case: an affine
+     scheme of finite presentation over a cofiltered limit of affine schemes is the base change of
+     one over some member) and `Scheme.exists_isPullback_of_isLimit_of_isAffineOpen` (the same over
+     the preimages of an affine open of a member, for any diagram with affine transition maps).
+   About 200 lines.
+6. **feat: closed immersions and finite morphisms are inherited from a finite stage** (after: 3, 5)
+   — *proved* (this session). Files:
+   - `TauCeti/Algebra/Category/Ring/Pushout.lean` (73 lines): `TauCeti.CommRingCat.surjective_of_isPushout`,
+     `TauCeti.CommRingCat.isIntegral_of_isPushout`;
+   - `TauCeti/CategoryTheory/MorphismProperty/Limits.lean` (existing file, +18 lines):
+     `CategoryTheory.MorphismProperty.pullback_fst_pullback_fst_iff`, `pullback_fst_of_comp_eq`;
+   - `TauCeti/AlgebraicGeometry/Limits/AffineProperties.lean` (292 lines):
+     `exists_forall_appTop_snd_mem` (the generator argument), the affine cases
+     `exists_isClosedImmersion_pullback_fst_of_isLimit_of_isAffine`,
+     `exists_isFinite_pullback_fst_of_isLimit_of_isAffine`, the reduction
+     `exists_pullback_fst_of_isLimit_of_le_isAffineHom` (from affine `Y` to `Y` qcqs over the member,
+     via Mathlib's 01Z6 `Scheme.exists_isAffine_of_isLimit` on `D.pullbackOver q`), and
+     `exists_isClosedImmersion_pullback_fst_of_isLimit_of_forall_isAffine`,
+     `exists_isFinite_pullback_fst_of_isLimit_of_forall_isAffine`;
+   - `TauCeti/AlgebraicGeometry/Limits/ZariskiLocal.lean` (136 lines):
+     `exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget` (any property local at the target and
+     stable under base change that is inherited over cofiltered limits of affine schemes is inherited
+     over cofiltered limits of quasi-compact schemes with affine transition maps, via
+     `AlgebraicGeometry.isLimitOpensCone` on a finite affine cover of the member), and the final
+     `exists_isClosedImmersion_pullback_fst_of_isLimit` (01ZP) and `exists_isFinite_pullback_fst_of_isLimit`
+     (01ZO): for `Y` of finite type, quasi-compact and quasi-separated over `Sᵢ`, if
+     `Y ×_{Sᵢ} S ⟶ S` is a closed immersion (finite), so is `Y ×_{Sᵢ} Sⱼ ⟶ Sⱼ` for some `j`.
+   About 520 lines; may be opened as two PRs (affine case, then the two reductions) if reviewers ask.
+7. **feat: descent of finitely presented schemes and of flatness, smoothness, properness and open
+   immersions to a finite stage** (after: 3, 5, 6) — *remaining*. The object half of 01ZM in
+   general (glue the affine-local models of split 5 over a finite affine cover, descending the
+   intersections with Mathlib's `exists_preimage_eq` and the gluing isomorphisms and cocycle
+   conditions with split 3), and the properties flat (04AI), smooth (0C0C), étale (07RP), proper
+   (081F), open immersion (0EUU); the latter can reuse split 6's
+   `exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget` for the reduction to affine members.
+   Likely two or three PRs.
+8. **feat: extending finite-presentation models across a quasi-compact open** (after: 2, 4, 7) —
    *remaining*. Stacks 01Z7, 01Z9, 07RN: given `X = U ∪ W`, `W` affine, and `U` a limit of f.p.
    `ℤ`-schemes, glue an f.p. model over `W`; consumes the stub
    `exists_isFiniteType_mono_restrict_iso` to extend the finite-type ideal sheaf. New file
    `Limits/NoetherianApproximation/Extension.lean`.
-7. **feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes**
-   (after: 1, 2, 3, 4, 5, 6) — *remaining*. `noetherian_approximation` (01ZA) by induction on the
-   number of affines in a cover, starting from split 2; completes the target.
+9. **feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes**
+   (after: 1, 2, 3, 4, 5, 6, 7, 8) — *remaining*. `noetherian_approximation` (01ZA) by induction on
+   the number of affines in a cover, starting from split 2; completes the target.
 
 ## What remains
 
-Proved: existence of cofiltered limits of schemes with affine transition maps (01YW) together with
-the separatedness/quasi-separatedness and (quasi-)affineness criteria of such limits and
-`|lim Xᵢ| = lim |Xᵢ|` (0CUF), which with Mathlib's `Scheme.compactSpace_of_isLimit` and
-`isAffineHom_π_app` make up `affine_transition_limits`; the full affine case of absolute
-Noetherian approximation; the absolute 01ZC factorization and agreement statements; base change of
-cofiltered limits; descent of morphisms (01ZM, morphism half) and of isomorphisms (081E) to a
-finite stage. Remaining: splits 5–7 above — descent of finitely presented schemes themselves (01ZM,
-object half) and of the remaining properties (flat, smooth, étale, proper, finite, closed and open
-immersion), the extension step across an open (the only consumer of the `qcoh-extension` stub),
-and the qcqs induction for `noetherian_approximation` (01Z7, 01Z9, 07RN, 01ZA).
+Proved: existence of cofiltered limits of schemes with affine transition maps (01YW) with the
+separatedness/quasi-separatedness and (quasi-)affineness criteria and `|lim Xᵢ| = lim |Xᵢ|` (0CUF),
+which with Mathlib's `Scheme.compactSpace_of_isLimit` and `isAffineHom_π_app` make up
+`affine_transition_limits`; the affine case of absolute Noetherian approximation; for
+`finite_presentation_limits`: descent of morphisms (01ZM, morphism half), the affine and
+affine-local cases of descent of finitely presented schemes (01ZM, object half), and inheritance
+from a finite stage of isomorphisms (081E), closed immersions (01ZP) and finite morphisms (01ZO)
+over cofiltered limits of quasi-compact schemes with affine transition maps. Remaining: the general
+object half of 01ZM (gluing), the properties flat, smooth, étale, proper and open immersion
+(split 7), the extension step across an open (split 8, the only consumer of the `qcoh-extension`
+stub), and the qcqs induction for `noetherian_approximation` (01Z7, 01Z9, 07RN, 01ZA; split 9).

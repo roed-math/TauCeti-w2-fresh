@@ -27,6 +27,9 @@ where `f` itself has `P`.
   `P (pullback.snd (pullback.snd f v) a)` whenever `a ≫ v` factors through `k`.
 * `CategoryTheory.MorphismProperty.pullback_snd_comp_left`: if `P` is moreover stable under
   composition, `P e` and `P (pullback.snd f k)` imply `P (pullback.snd (e ≫ f) k)`.
+* `CategoryTheory.MorphismProperty.pullback_fst_pullback_fst_iff`: for `P` closed under
+  isomorphisms, `P (pullback.fst f' (pullback.fst f g)) ↔ P (pullback.fst (f' ≫ f) g)`;
+  `pullback_fst_of_comp_eq` is the resulting inheritance along `e ≫ f`.
 -/
 
 public section
@@ -76,5 +79,20 @@ theorem pullback_snd_comp_left [P.IsStableUnderComposition] {X' : C} (f : X ⟶ 
     (e : X' ⟶ X) (he : P e) (h : P (pullback.snd f k)) : P (pullback.snd (e ≫ f) k) := by
   refine (P.cancel_left_of_respectsIso (pullbackRightPullbackFstIso f k e).hom _).mp ?_
   simpa using P.comp_mem _ _ (P.pullback_snd _ _ he) h
+
+omit [P.IsStableUnderBaseChange] in
+/-- The base change of `g` along `f' ≫ f` is the base change along `f'` of its base change along
+`f`, so the two have the same properties closed under isomorphisms. -/
+theorem pullback_fst_pullback_fst_iff [P.RespectsIso] {Z : C} (f' : W ⟶ X) (f : X ⟶ Z)
+    (g : Y ⟶ Z) {a : W ⟶ Z} (hfac : f' ≫ f = a) :
+    P (pullback.fst f' (pullback.fst f g)) ↔ P (pullback.fst a g) := by
+  subst hfac
+  rw [← pullbackRightPullbackFstIso_hom_fst, P.cancel_left_of_respectsIso]
+
+/-- A base change of `pullback.fst f g` along `e` is the base change of `g` along a morphism
+`a = e ≫ f`, so it inherits every property stable under base change. -/
+theorem pullback_fst_of_comp_eq {Z : C} (f : X ⟶ Z) (g : Y ⟶ Z) (e : W ⟶ X) {a : W ⟶ Z}
+    (hfac : e ≫ f = a) (h : P (pullback.fst f g)) : P (pullback.fst a g) :=
+  (pullback_fst_pullback_fst_iff e f g hfac).mp (P.pullback_fst _ _ h)
 
 end CategoryTheory.MorphismProperty
