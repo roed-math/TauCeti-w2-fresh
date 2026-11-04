@@ -8,7 +8,9 @@ module
 public import TauCeti.AlgebraicGeometry.Curves.Node.Relative
 public import TauCeti.RingTheory.Node.QuadraticRelation
 import TauCeti.AlgebraicGeometry.Morphisms.Syntomic.Basic
+import TauCeti.AlgebraicGeometry.Morphisms.Syntomic.CohenMacaulay
 import TauCeti.RingTheory.FittingIdeal.BaseChange
+import Mathlib.RingTheory.Etale.Kaehler
 
 /-!
 # The local ring of a nodal curve at a node
@@ -27,6 +29,12 @@ Consequently one blowup of `𝒪_{X,x}` at its closed point normalizes the node:
 `𝒪_{X,x}[𝔪/u]` is finite over `𝒪_{X,x}`, is its integral closure in `𝒪_{X,x}[1/u]`, and is
 regular at its maximal ideals (`TauCeti.integralClosure_eq_affineBlowup`).
 
+Moreover `u` is a nonzerodivisor. The local ring is Cohen–Macaulay, so its associated primes are
+its minimal primes; and `x` is a closed point, because `Γ(X, W) ⧸ Fitt₁(Ω[Γ(X, W)⁄K])` is unramified
+and hence finite over `K`, on a chart that is pure of dimension one. Therefore `𝒪_{X,x}[1/u]` is a
+ring of fractions of `𝒪_{X,x}`, the conductor of the blowup chart is the maximal ideal, and its
+cokernel over `𝒪_{X,x}` is the residue field: the normalization sequence at a node.
+
 ## Main results
 
 * `AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk`: the maximal ideal of the local ring
@@ -34,6 +42,11 @@ regular at its maximal ideals (`TauCeti.integralClosure_eq_affineBlowup`).
 * `AlgebraicGeometry.Scheme.exists_integralClosure_stalk_eq_affineBlowup`: one blowup of the local
   ring at a node is finite over it, is its integral closure in `𝒪_{X,x}[1/u]`, and is regular at
   its maximal ideals.
+* `AlgebraicGeometry.Scheme.maximalIdeal_stalk_notMem_associatedPrimes`: the local ring at a node
+  has positive depth.
+* `AlgebraicGeometry.Scheme.exists_conductor_stalk_eq_maximalIdeal`: at a node, `u` is a
+  nonzerodivisor, the conductor of the normalization `𝒪_{X,x}[𝔪/u]` is the maximal ideal, and the
+  cokernel is the residue field.
 
 ## References
 
@@ -53,15 +66,19 @@ namespace TauCeti.AlgebraicGeometry
 
 universe u
 
-/-- **The local ring at a node.** Let `X` be a nodal curve over a field `K` and `x` a point of its
-singular locus. Then the maximal ideal of `𝒪_{X,x}` is `(u, v)` with `a u² + b u v + v² = 0` and
-`b² - 4a` a unit. -/
-theorem _root_.AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk
-    {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
+/-- A standard syntomic chart at a node: an affine open `W ∋ x` whose ring of sections is standard
+syntomic of relative dimension one over `K`, with `Γ(X, W) ⧸ Fitt₁(Ω[Γ(X, W)⁄K])` unramified over
+`K`. The prime of `x` contains this Fitting ideal, and the stalk at `x` is its localization. -/
+private theorem exists_chart {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
     (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K))) {x : X}
     (hx : letI := hnodal.syntomic; x ∈ (X.singularLocus K).support) :
-    ∃ u v a b : X.presheaf.stalk x, maximalIdeal _ = Ideal.span {u, v} ∧
-      a * u ^ 2 + b * u * v + v ^ 2 = 0 ∧ IsUnit (discrim a b 1) := by
+    ∃ (W : X.affineOpens) (hxW : x ∈ W.1) (_ : Algebra K Γ(X, W))
+      (_ : Algebra.FiniteType K Γ(X, W)) (q : Ideal Γ(X, W)) (_ : q.IsPrime),
+      Algebra.IsStandardSyntomicOfRelativeDimension 1 K Γ(X, W) ∧
+      Algebra.FormallyUnramified K (Γ(X, W) ⧸ fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1) ∧
+      fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1 ≤ q ∧
+      letI := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
+      IsLocalization.AtPrime (X.presheaf.stalk x) q := by
   let : SyntomicOfRelativeDimension 1 (X ↘ Spec (.of K)) := hnodal.syntomic
   obtain ⟨W, hxW, _, hW⟩ :=
     SyntomicOfRelativeDimension.exists_isStandardSyntomicOfRelativeDimension_appLE_top 1
@@ -76,28 +93,21 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk
     rw [Scheme.baseRingToStructurePresheaf_app_eq_appLE, CommRingCat.hom_comp]
     exact (isStandardSyntomicOfRelativeDimension_respectsIso 1).right _
       (Scheme.ΓSpecIso (.of K)).symm.commRingCatIsoToRingEquiv hW
-  obtain ⟨ι, σ, _, _, P, hP⟩ := hstd.exists_presentation
-  have := Fintype.ofFinite ι
-  have := Fintype.ofFinite σ
-  have := finiteType_sections_of_locallyOfFiniteType K X W
-  have : Algebra.FormallyUnramified K (Γ(X, W) ⧸ fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1) :=
-    X.singularLocus_ideal (R := K) W ▸ X.formallyUnramified_quotient_singularLocus_ideal hnodal W
-  -- The prime of `x` contains the first Fitting ideal of the differentials.
+  have hft := finiteType_sections_of_locallyOfFiniteType K X W
   let q := RingHom.ker (X.evaluation W x hxW).hom
   have : q.IsPrime := RingHom.ker_isPrime _
-  have hq : fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1 ≤ q := by
+  refine ⟨W, hxW, _, hft, q, inferInstance, hstd,
+    X.singularLocus_ideal (R := K) W ▸ X.formallyUnramified_quotient_singularLocus_ideal hnodal W,
+    ?_, ?_⟩
+  · -- The prime of `x` contains the first Fitting ideal of the differentials.
     let := (X.evaluation W x hxW).hom.toAlgebra
-    -- View `q` as the kernel of the algebra map to the residue field, as the singular-locus
-    -- criterion is stated for that algebra structure.
+    -- View the prime of `x` as the kernel of the algebra map to the residue field, as the
+    -- singular-locus criterion is stated for that algebra structure.
     change _ ≤ RingHom.ker (algebraMap Γ(X, W) (X.residueField x))
     rw [← Ideal.map_eq_bot_iff_le_ker, fittingIdeal_map_eq_bot_iff_lt_finrank]
     exact (Scheme.mem_support_singularLocus_iff (R := K) (X := X) hxW).1 hx
-  have hP' : Fintype.card σ + 1 = Fintype.card ι := by
-    rw [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card] at hP
-    omega
-  -- The stalk is the localization of `Γ(X, W)` at `q`.
-  let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
-  have : IsLocalization.AtPrime (X.presheaf.stalk x) q := by
+  · -- The stalk is the localization of `Γ(X, W)` at the prime of `x`.
+    let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
     have h := W.2.isLocalization_stalk ⟨x, hxW⟩
     convert h using 1
     rw [← IsLocalization.AtPrime.under_maximalIdeal (X.presheaf.stalk x)
@@ -106,9 +116,76 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk
     simp only [q, Scheme.evaluation, Ideal.mem_comap, RingHom.mem_ker, CommRingCat.hom_comp,
       RingHom.comp_apply]
     exact IsLocalRing.residue_eq_zero_iff _
+
+/-- **The local ring at a node.** Let `X` be a nodal curve over a field `K` and `x` a point of its
+singular locus. Then the maximal ideal of `𝒪_{X,x}` is `(u, v)` with `a u² + b u v + v² = 0` and
+`b² - 4a` a unit. -/
+theorem _root_.AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk
+    {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
+    (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K))) {x : X}
+    (hx : letI := hnodal.syntomic; x ∈ (X.singularLocus K).support) :
+    ∃ u v a b : X.presheaf.stalk x, maximalIdeal _ = Ideal.span {u, v} ∧
+      a * u ^ 2 + b * u * v + v ^ 2 = 0 ∧ IsUnit (discrim a b 1) := by
+  obtain ⟨W, hxW, _, _, q, _, hstd, _, hq, _⟩ := exists_chart X hnodal hx
+  obtain ⟨ι, σ, _, _, P, hP⟩ := hstd.exists_presentation
+  have := Fintype.ofFinite ι
+  have := Fintype.ofFinite σ
+  have hP' : Fintype.card σ + 1 = Fintype.card ι := by
+    rw [Nat.card_eq_fintype_card, Nat.card_eq_fintype_card] at hP
+    omega
+  let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
   exact exists_quadratic_relation_of_ringEquiv
     (IsLocalization.algEquiv q.primeCompl (Localization.AtPrime q) (X.presheaf.stalk x)).toRingEquiv
     (P.exists_quadratic_relation_of_formallyUnramified hP' q hq)
+
+/-- **The local ring at a node has positive depth.** Let `X` be a nodal curve over a field `K` and
+`x` a point of its singular locus. Then the maximal ideal of `𝒪_{X,x}` is not an associated prime.
+
+Indeed `𝒪_{X,x}` is Cohen–Macaulay, so its associated primes are its minimal primes. On a standard
+syntomic chart, the prime of `x` contains the first Fitting ideal of the differentials, whose
+quotient is unramified, hence finite, over `K`; so `x` is a closed point. As the chart is pure of
+dimension one, a closed point is not a generic point of a component. -/
+theorem _root_.AlgebraicGeometry.Scheme.maximalIdeal_stalk_notMem_associatedPrimes
+    {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
+    (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K))) {x : X}
+    (hx : letI := hnodal.syntomic; x ∈ (X.singularLocus K).support) :
+    maximalIdeal (X.presheaf.stalk x) ∉
+      associatedPrimes (X.presheaf.stalk x) (X.presheaf.stalk x) := by
+  obtain ⟨W, hxW, _, _, q, _, hstd, _, hq, _⟩ := exists_chart X hnodal hx
+  let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
+  have : q.IsMaximal := Ideal.IsPrime.isMaximal_of_formallyUnramified_quotient K hq
+  have hmin : maximalIdeal (X.presheaf.stalk x) ∉ minimalPrimes (X.presheaf.stalk x) := by
+    rw [← Ideal.height_eq_zero_iff, ← IsLocalization.height_under q.primeCompl,
+      IsLocalization.AtPrime.under_maximalIdeal (X.presheaf.stalk x) q, Ideal.height_eq_zero_iff]
+    exact Algebra.IsStandardSyntomicOfRelativeDimension.notMem_minimalPrimes_of_isMaximal 1 K
+      one_ne_zero q
+  let : SyntomicOfRelativeDimension 1 (X ↘ Spec (.of K)) := hnodal.syntomic
+  have := (X ↘ Spec (.of K)).isCohenMacaulay_of_syntomic_of_field (n := 1)
+  rwa [(Scheme.IsCohenMacaulay.isCohenMacaulay_stalk x).associatedPrimes_eq_minimalPrimes,
+    Module.annihilator_eq_bot.2 inferInstance]
+
+/-- At a node of a nodal curve over a field, the maximal ideal of the local ring is not principal:
+its cotangent space is a plane. -/
+private theorem not_isPrincipal_maximalIdeal_stalk {K : Type u} [Field K] (X : Scheme.{u})
+    [X.Over (Spec (.of K))] (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K)))
+    {x : X} (hx : letI := hnodal.syntomic; x ∈ (X.singularLocus K).support) :
+    ¬ (maximalIdeal (X.presheaf.stalk x)).IsPrincipal := by
+  obtain ⟨W, hxW, _, _, q, _, _, _, hq, _⟩ := exists_chart X hnodal hx
+  let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
+  -- The cotangent space of `Γ(X, W)_q` is a plane, and `Γ(X, W)_q` is the stalk.
+  have := formallyUnramified_localization_quotient_fittingIdeal (K := K) q.primeCompl
+  have hsing : fittingIdeal (Localization.AtPrime q) Ω[Localization.AtPrime q⁄K] 1 ≠ ⊤ := by
+    rw [(KaehlerDifferential.isBaseChange_of_formallyEtale K Γ(X, W)
+      (Localization.AtPrime q)).fittingIdeal_eq_map 1]
+    exact ne_top_of_le_ne_top (maximalIdeal.isMaximal _).ne_top
+      ((Ideal.map_mono hq).trans (Localization.AtPrime.map_eq_maximalIdeal (I := q)).le)
+  let e := (IsLocalization.algEquiv q.primeCompl (Localization.AtPrime q)
+    (X.presheaf.stalk x)).toRingEquiv
+  rintro ⟨t, ht⟩
+  refine not_isPrincipal_maximalIdeal hsing ⟨e.symm t, ?_⟩
+  rw [← map_maximalIdeal_of_surjective (e.symm : X.presheaf.stalk x →+* _) e.symm.surjective,
+    ht, Ideal.submodule_span_eq, Ideal.map_span, Set.image_singleton]
+  rfl
 
 /-- **One blowup normalizes the local ring at a node.** Let `X` be a nodal curve over a field `K`
 and `x` a point of its singular locus. Then the maximal ideal of `𝒪_{X,x}` is `(u, v)`, and the
@@ -132,5 +209,36 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_integralClosure_stalk_eq_affineBl
   exact ⟨u, v, hm, finite_affineBlowup (S := Localization.Away u) hm hrel,
     integralClosure_eq_affineBlowup hm hrel hd,
     fun 𝔫 _ ↦ isRegularLocalRing_localization_affineBlowup hm hrel hd 𝔫⟩
+
+/-- **The conductor of the normalization at a node.** Let `X` be a nodal curve over a field `K` and
+`x` a point of its singular locus. Then the maximal ideal of `𝒪_{X,x}` is `(u, v)` with `u` a
+nonzerodivisor, so `𝒪_{X,x}[1/u]` is a ring of fractions of `𝒪_{X,x}`. The blowup chart
+`𝒪_{X,x}[𝔪/u]` is the integral closure of `𝒪_{X,x}` in it, its conductor is the maximal ideal, and
+its cokernel `𝒪_{X,x}[𝔪/u] / 𝒪_{X,x}` is the residue field: this is the normalization sequence
+`0 → 𝒪_{X,x} → 𝒪_{X,x}[𝔪/u] → κ(x) → 0` at a node. -/
+theorem _root_.AlgebraicGeometry.Scheme.exists_conductor_stalk_eq_maximalIdeal
+    {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
+    (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K))) {x : X}
+    (hx : letI := hnodal.syntomic; x ∈ (X.singularLocus K).support) :
+    ∃ u v : X.presheaf.stalk x, maximalIdeal _ = Ideal.span {u, v} ∧
+      u ∈ nonZeroDivisors (X.presheaf.stalk x) ∧
+      integralClosure (X.presheaf.stalk x) (Localization.Away u) =
+        (maximalIdeal (X.presheaf.stalk x)).affineBlowup u (Localization.Away u) ∧
+      Algebra.conductor (X.presheaf.stalk x)
+        ((maximalIdeal (X.presheaf.stalk x)).affineBlowup u (Localization.Away u)) =
+          maximalIdeal (X.presheaf.stalk x) ∧
+      Nonempty (((maximalIdeal (X.presheaf.stalk x)).affineBlowup u (Localization.Away u) ⧸
+        (1 : Submodule (X.presheaf.stalk x)
+          ((maximalIdeal (X.presheaf.stalk x)).affineBlowup u (Localization.Away u)))) ≃ₗ[
+            X.presheaf.stalk x] X.presheaf.stalk x ⧸ maximalIdeal (X.presheaf.stalk x)) := by
+  obtain ⟨u, v, a, b, hm, hrel, hd⟩ := X.exists_quadratic_relation_stalk hnodal hx
+  have := hnodal.syntomic.locallyOfFinitePresentation 1 (X ↘ Spec (.of K))
+  have : IsLocallyNoetherian X := LocallyOfFiniteType.isLocallyNoetherian (X ↘ Spec (.of K))
+  have hu := mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes hm hrel
+    (X.maximalIdeal_stalk_notMem_associatedPrimes hnodal hx)
+  have hprin := not_isPrincipal_maximalIdeal_stalk X hnodal hx
+  exact ⟨u, v, hm, hu, integralClosure_eq_affineBlowup hm hrel hd,
+    conductor_affineBlowup_eq_maximalIdeal hm hrel hu hprin,
+    ⟨affineBlowupQuotientEquiv hm hrel hu hprin⟩⟩
 
 end TauCeti.AlgebraicGeometry

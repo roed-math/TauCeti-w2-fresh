@@ -8,7 +8,6 @@ module
 public import TauCeti.RingTheory.Node.PlaneCurve
 public import TauCeti.RingTheory.Node.Resolution
 public import Mathlib.RingTheory.Ideal.AssociatedPrime.Basic
-import TauCeti.RingTheory.Ideal.AssociatedPrime.Basic
 
 /-!
 # The quadratic relation at a node
@@ -34,6 +33,8 @@ localizations at maximal ideals are discrete valuation rings.
   maximal ideal with `a x² + b x y + y² = 0` and `b² - 4a` a unit.
 * `TauCeti.exists_quadratic_relation_of_isUnit_det_hessian`: the same holds for `P ⧸ (f)` when
   `f ∈ 𝔪_P²` has a unit Hessian determinant with respect to coordinates of `P`.
+* `TauCeti.radical_span_singleton_eq_maximalIdeal`: in that shape, `𝔪` is the radical of `(x)`,
+  so `A_x` is the ring of functions on the punctured spectrum.
 * `TauCeti.mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes`: in that shape, `x` is a
   nonzerodivisor when `A` has positive depth.
 * `TauCeti.exists_quadratic_relation_of_formallyUnramified` and
@@ -42,9 +43,6 @@ localizations at maximal ideals are discrete valuation rings.
 * `TauCeti.exists_integralClosure_eq_affineBlowup_of_formallyUnramified`: at a node of a curve over
   a field, one blowup at the closed point is the integral closure of `A` in `A_x`, and it is
   finite over `A` with regular local rings, indeed discrete valuation rings, at maximal ideals.
-* `TauCeti.exists_conductor_affineBlowup_eq_maximalIdeal_of_formallyUnramified`: if moreover `A` is
-  reduced and not a field, the conductor of this normalization is `𝔪` and its cokernel is the
-  residue field.
 
 ## References
 
@@ -130,6 +128,21 @@ theorem exists_quadratic_relation_of_ringEquiv {B : Type*} [CommRing B] [IsLocal
     Set.image_pair]
   rfl
 
+/-- If the maximal ideal `(x, y)` of a local ring satisfies `a x² + b x y + y² = 0`, then `𝔪` is the
+radical of `(x)`, since `y² = -(a x + b y) x`. So the punctured spectrum of `A` is `D(x)`, and the
+ring of functions on it is `A_x`. -/
+theorem radical_span_singleton_eq_maximalIdeal {x y a b : A}
+    (hm : maximalIdeal A = Ideal.span {x, y}) (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0) :
+    (Ideal.span {x}).radical = maximalIdeal A := by
+  refine le_antisymm ((Ideal.radical_mono ?_).trans (maximalIdeal.isMaximal A).isPrime.radical.le)
+    ?_
+  · rw [hm]
+    exact Ideal.span_mono (by simp)
+  rw [hm, Ideal.span_le, Set.pair_subset_iff]
+  refine ⟨Ideal.le_radical (Ideal.mem_span_singleton_self _), 2, ?_⟩
+  rw [show y ^ 2 = -(a * x + b * y) * x by linear_combination hrel]
+  exact Ideal.mul_mem_left _ _ (Ideal.mem_span_singleton_self _)
+
 end Normalize
 
 section Hessian
@@ -185,8 +198,8 @@ variable {A : Type*} [CommRing A] [IsLocalRing A] [IsNoetherianRing A]
 
 /-- If the maximal ideal `(x, y)` of a Noetherian local ring satisfies `a x² + b x y + y² = 0`,
 then `x` is a nonzerodivisor as soon as `𝔪` is not an associated prime, that is, as soon as `A`
-has positive depth: an associated prime containing `x` contains `y² = -(a x + b y) x`, hence `y`,
-hence `𝔪`. -/
+has positive depth: an associated prime containing `x` contains the radical of `(x)`, which is `𝔪`
+by `TauCeti.radical_span_singleton_eq_maximalIdeal`. -/
 theorem mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes {x y a b : A}
     (hm : maximalIdeal A = Ideal.span {x, y}) (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0)
     (h : maximalIdeal A ∉ associatedPrimes A A) : x ∈ nonZeroDivisors A := by
@@ -196,13 +209,9 @@ theorem mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes {x y a b : A
     exact hx
   obtain ⟨p, hp, hxp⟩ : ∃ p ∈ associatedPrimes A A, x ∈ p := by simpa using hx'
   have := hp.isPrime
-  have hyp : y ∈ p := this.mem_of_pow_mem 2 <| by
-    rw [show y ^ 2 = -((a * x + b * y) * x) by linear_combination hrel]
-    exact neg_mem (Ideal.mul_mem_left _ _ hxp)
   refine h ((le_maximalIdeal this.ne_top).antisymm ?_ ▸ hp)
-  rw [hm, Ideal.span_le]
-  rintro _ (rfl | rfl)
-  exacts [hxp, hyp]
+  rw [← radical_span_singleton_eq_maximalIdeal hm hrel, ← this.radical]
+  exact Ideal.radical_mono ((Ideal.span_singleton_le_iff_mem _).2 hxp)
 
 end NonZeroDivisor
 
@@ -256,35 +265,6 @@ theorem exists_integralClosure_eq_affineBlowup_of_formallyUnramified
   exact ⟨x, y, hm, finite_affineBlowup (S := Localization.Away x) hm hrel,
     integralClosure_eq_affineBlowup hm hrel hd,
     fun 𝔫 _ ↦ isRegularLocalRing_localization_affineBlowup hm hrel hd 𝔫⟩
-
-/-- **The conductor and cokernel of the normalization at a node.** In the setting of
-`TauCeti.exists_integralClosure_eq_affineBlowup_of_formallyUnramified`, suppose moreover that `A`
-is reduced and not a field, as at a node of a reduced curve. Then `x` is a nonzerodivisor, so `A_x`
-is a ring of fractions of `A`, the conductor of the normalization `A[𝔪/x]` over `A` is `𝔪`, and
-its cokernel `A[𝔪/x] / A` is the residue field `A / 𝔪`. -/
-theorem exists_conductor_affineBlowup_eq_maximalIdeal_of_formallyUnramified [IsReduced A]
-    (bQ : Module.Basis ι Q Ω[Q⁄K]) (π : Q →ₐ[K] A) (hπ : Function.Surjective π) {g : σ → Q}
-    (hg : RingHom.ker π = Ideal.span (Set.range g)) (hσ : Fintype.card σ + 1 = Fintype.card ι)
-    (hsing : fittingIdeal A Ω[A⁄K] 1 ≠ ⊤) (hdim : maximalIdeal A ∉ minimalPrimes A) :
-    ∃ x y : A, maximalIdeal A = Ideal.span {x, y} ∧ x ∈ nonZeroDivisors A ∧
-      integralClosure A (Localization.Away x) =
-        (maximalIdeal A).affineBlowup x (Localization.Away x) ∧
-      Algebra.conductor A ((maximalIdeal A).affineBlowup x (Localization.Away x)) =
-        maximalIdeal A ∧
-      Nonempty (((maximalIdeal A).affineBlowup x (Localization.Away x) ⧸
-        (1 : Submodule A ((maximalIdeal A).affineBlowup x (Localization.Away x)))) ≃ₗ[A]
-          A ⧸ maximalIdeal A) := by
-  obtain ⟨x, y, a, b, hm, hrel, hd⟩ :=
-    exists_quadratic_relation_of_formallyUnramified bQ π hπ hg hσ hsing
-  have : IsNoetherianRing A := Algebra.EssFiniteType.isNoetherianRing K A
-  have hx := mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes hm hrel
-    fun h ↦ hdim (IsAssociatedPrime.mem_minimalPrimes_of_isReduced h)
-  have hprin : ¬ (maximalIdeal A).IsPrincipal := by
-    rw [← finrank_cotangentSpace_le_one_iff, finrank_cotangentSpace_eq_two hsing]
-    decide
-  exact ⟨x, y, hm, hx, integralClosure_eq_affineBlowup hm hrel hd,
-    conductor_affineBlowup_eq_maximalIdeal hm hrel hx hprin,
-    ⟨affineBlowupQuotientEquiv hm hrel hx hprin⟩⟩
 
 end Node
 

@@ -47,6 +47,8 @@ a complete intersection, is not standard syntomic of relative dimension zero.
 * `TauCeti.Algebra.IsStandardSyntomicOfRelativeDimension.isPureDimensional_primeSpectrum`: over a
   field, the spectrum of a standard syntomic algebra of relative dimension `n` is pure-dimensional
   of dimension `n`, since it is a global complete intersection.
+* `TauCeti.Algebra.IsStandardSyntomicOfRelativeDimension.notMem_minimalPrimes_of_isMaximal`: over a
+  field, in positive relative dimension, no maximal ideal is a minimal prime.
 * `TauCeti.Algebra.IsStandardSyntomicOfRelativeDimension.baseChange`: standard syntomic algebras of
   relative dimension `n` are stable under arbitrary base change.
 * `TauCeti.Algebra.IsStandardSyntomicOfRelativeDimension.of_algEquiv`: invariance under
@@ -200,6 +202,18 @@ theorem isPureDimensional_primeSpectrum (k : Type u) (A : Type v) [Field k] [Com
     let e := _root_.Algebra.TensorProduct.lid k A
     have : Nontrivial (k ⊗[k] A) := e.toEquiv.nontrivial
     rw [← ringKrullDim_eq_of_ringEquiv e.toRingEquiv, hA.ringKrullDim_tensorProduct_of_field k]
+
+variable (n) in
+/-- Over a field `k`, a maximal ideal of a standard syntomic algebra of positive relative dimension
+`n` is not a minimal prime: the irreducible components have dimension `n`, so none of them is a
+closed point. -/
+theorem notMem_minimalPrimes_of_isMaximal (k : Type u) {A : Type v} [Field k] [CommRing A]
+    [Algebra k A] [IsStandardSyntomicOfRelativeDimension n k A] (hn : n ≠ 0) (m : Ideal A)
+    [m.IsMaximal] : m ∉ minimalPrimes A := fun hm ↦ by
+  have h := isPureDimensional_primeSpectrum_iff.1 (isPureDimensional_primeSpectrum n k A) m hm
+  rw [ringKrullDim_eq_zero_of_isField ((Ideal.Quotient.maximal_ideal_iff_isField_quotient m).1 ‹_›)]
+    at h
+  exact hn (by exact_mod_cast h.symm)
 
 include h in
 /-- Standard syntomic algebras of relative dimension `n` are invariant under isomorphism. -/

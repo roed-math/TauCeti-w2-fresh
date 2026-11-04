@@ -60,6 +60,8 @@ affine schemes are such local homomorphisms, so this is how unramifiedness is re
 * `Ideal.eq_maximalIdeal_of_formallyUnramified_quotient`: over a field `K`, a proper ideal of a
   local `K`-algebra essentially of finite type, with quotient formally unramified over `K`, is the
   maximal ideal.
+* `Ideal.IsPrime.isMaximal_of_formallyUnramified_quotient`: over a field `K`, every prime of a
+  `K`-algebra essentially of finite type containing an ideal with unramified quotient is maximal.
 * `Algebra.FormallyUnramified.faithfulSMul_of_not_isField`: an unramified local algebra which is a
   domain but not a field, over a local ring of dimension at most one, is a faithful algebra.
 * `Algebra.FormallyUnramified.of_flat_of_formallyUnramified`: formal unramifiedness of local
@@ -127,6 +129,22 @@ theorem _root_.Ideal.eq_maximalIdeal_of_formallyUnramified_quotient {I : Ideal A
     IsLocalRing.eq_maximalIdeal
       (Ideal.comap_isMaximal_of_surjective _ Ideal.Quotient.mk_surjective)
   rw [← hmax, hB, ← RingHom.ker_eq_comap_bot, Ideal.mk_ker]
+
+variable (K) in
+/-- **Primes over an unramified quotient are maximal.** If `S` is a `K`-algebra essentially of
+finite type and `S ⧸ I` is unramified over `K`, then `S ⧸ I` is finite over `K`, so every prime of
+`S` containing `I` is maximal. -/
+theorem _root_.Ideal.IsPrime.isMaximal_of_formallyUnramified_quotient {S : Type*} [CommRing S]
+    [Algebra K S] [Algebra.EssFiniteType K S] {I p : Ideal S} [Algebra.FormallyUnramified K (S ⧸ I)]
+    [p.IsPrime] (h : I ≤ p) : p.IsMaximal := by
+  have : Algebra.EssFiniteType K (S ⧸ I) := .comp K S _
+  have : Module.Finite K (S ⧸ I) := Algebra.FormallyUnramified.finite_of_free K _
+  have : IsArtinianRing (S ⧸ I) := isArtinian_of_tower K inferInstance
+  have : (p.map (Ideal.Quotient.mk I)).IsPrime :=
+    Ideal.map_isPrime_of_surjective Ideal.Quotient.mk_surjective (by rwa [Ideal.mk_ker])
+  simpa [Ideal.comap_map_of_surjective', Ideal.mk_ker, sup_eq_right.2 h] using
+    Ideal.comap_isMaximal_of_surjective _ Ideal.Quotient.mk_surjective
+      (K := p.map (Ideal.Quotient.mk I))
 
 end Field
 
