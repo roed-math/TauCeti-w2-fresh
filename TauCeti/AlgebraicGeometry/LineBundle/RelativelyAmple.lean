@@ -44,10 +44,16 @@ predicate `LineBundleClass.IsRelativelyAmple` on line-bundle classes.
   class is ample on every fibre.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.comp`: relative ampleness is
   preserved by composition with an affine morphism.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.of_comp`: relative ampleness for
+  `f ≫ g` implies relative ampleness for `f` when `g` is separated; for affine `g` the two are
+  equivalent (`LineBundleClass.isRelativelyAmple_comp_iff`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_iff_of_iSup_eq_top`: relative
   ampleness is local on the base; one direction is `LineBundleClass.IsRelativelyAmple.restrict`.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback_snd`: relative ampleness
   is stable under base change.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback_fst_mul_pullback_snd`:
+  the exterior product `pr₁* a · pr₂* b` of relatively ample classes is relatively ample for
+  `X ×_S Y ⟶ S`.
 
 ## References
 
@@ -312,6 +318,31 @@ theorem isRelativelyAmple_iff_of_iSup_eq_top {a : LineBundleClass X} {f : X ⟶ 
       ∀ i, (LineBundleClass.pullback (f ⁻¹ᵁ U i).ι a).IsRelativelyAmple (f ∣_ U i) :=
   ⟨fun h i ↦ h.restrict (U i), isRelativelyAmple_of_iSup_eq_top U hU⟩
 
+/-- **Relative ampleness descends along a separated morphism.** If `a` is relatively ample for
+`f ≫ g` and `g : S ⟶ T` is separated, then `a` is relatively ample for `f`. Over an affine open `W`
+of `T`, the class `a` is ample on `(f ≫ g)⁻¹ W = f⁻¹ (g⁻¹ W)` and `g⁻¹ W` is a separated scheme, so
+`a` is relatively ample for `f ∣_ g⁻¹ W` (`LineBundleClass.IsAmple.isRelativelyAmple`). These
+opens cover `S`, and relative ampleness is local on the base. -/
+theorem IsRelativelyAmple.of_comp {T : Scheme.{u}} {a : LineBundleClass X} {f : X ⟶ S}
+    {g : S ⟶ T} [IsSeparated g] (h : a.IsRelativelyAmple (f ≫ g)) : a.IsRelativelyAmple f := by
+  refine isRelativelyAmple_of_iSup_eq_top (fun W : T.affineOpens ↦ g ⁻¹ᵁ W) ?_ fun W ↦ ?_
+  · rw [← Scheme.Hom.preimage_iSup, iSup_affineOpens_eq_top, Scheme.Hom.preimage_top]
+  have : IsAffine W := W.2
+  have : (g ⁻¹ᵁ W).toScheme.IsSeparated := ⟨Limits.terminal.comp_from (g ∣_ W) ▸ inferInstance⟩
+  -- `(f ≫ g) ⁻¹ᵁ W` is `f ⁻¹ᵁ g ⁻¹ᵁ W` by definition (`Scheme.Hom.comp_preimage`).
+  have h' : (LineBundleClass.pullback (f ⁻¹ᵁ g ⁻¹ᵁ W).ι a).IsAmple := h.isAmple_pullback W W.2
+  have := h'.compactSpace
+  have : QuasiCompact ((f ∣_ g ⁻¹ᵁ W) ≫ g ∣_ W) :=
+    (quasiCompact_iff_compactSpace _).mpr inferInstance
+  have : QuasiCompact (f ∣_ g ⁻¹ᵁ W) := .of_comp _ (g ∣_ W)
+  exact h'.isRelativelyAmple _
+
+/-- For an affine morphism `g`, a class is relatively ample for `f ≫ g` exactly when it is
+relatively ample for `f`. -/
+theorem isRelativelyAmple_comp_iff {T : Scheme.{u}} {a : LineBundleClass X} {f : X ⟶ S}
+    (g : S ⟶ T) [IsAffineHom g] : a.IsRelativelyAmple (f ≫ g) ↔ a.IsRelativelyAmple f :=
+  ⟨IsRelativelyAmple.of_comp, fun h ↦ h.comp g⟩
+
 /-- **Relative ampleness is stable under base change.** If `a` is relatively ample for
 `f : X ⟶ S` and `g : S' ⟶ S` is any morphism, then the pullback of `a` to `X ×_S S'` is relatively
 ample for the projection to `S'`. The affine opens `V'` of `S'` mapping into an affine open `V` of
@@ -360,6 +391,49 @@ theorem IsRelativelyAmple.pullback_snd {S' : Scheme.{u}} {a : LineBundleClass X}
   have : IsAffineHom e := MorphismProperty.of_isPullback hsq.flip inferInstance
   rw [← he, ← pullback_comp]
   exact (h.isAmple_pullback V hV).pullback e
+
+/-- **Exterior products of relatively ample classes are relatively ample.** If `a` is relatively
+ample for `f : X ⟶ S` and `b` is relatively ample for `g : Y ⟶ S`, then `pr₁* a · pr₂* b` is
+relatively ample for `X ×_S Y ⟶ S`. Over an affine open `V` of `S`, the preimage of `V` in
+`X ×_S Y` is the fibre product of `f⁻¹ V` and `g⁻¹ V` over `V`, on which the classes are ample
+(`LineBundleClass.IsAmple.pullback_mul_pullback`). -/
+theorem IsRelativelyAmple.pullback_fst_mul_pullback_snd {a : LineBundleClass X}
+    {b : LineBundleClass Y} {f : X ⟶ S} {g : Y ⟶ S} (ha : a.IsRelativelyAmple f)
+    (hb : b.IsRelativelyAmple g) :
+    (LineBundleClass.pullback (Limits.pullback.fst f g) a *
+      LineBundleClass.pullback (Limits.pullback.snd f g) b).IsRelativelyAmple
+      (Limits.pullback.snd f g ≫ g) where
+  quasiCompact := by
+    have := ha.quasiCompact
+    have := hb.quasiCompact
+    infer_instance
+  isAmple_pullback V hV := by
+    have : IsAffine V := hV
+    set p₁ := Limits.pullback.fst f g
+    set p₂ := Limits.pullback.snd f g
+    -- The preimage of `V` is `p₂ ⁻¹ᵁ g ⁻¹ᵁ V` by definition (`Scheme.Hom.comp_preimage`).
+    set W := (p₂ ≫ g) ⁻¹ᵁ V
+    let q₁ : (W : Scheme) ⟶ f ⁻¹ᵁ V := IsOpenImmersion.lift (f ⁻¹ᵁ V).ι (W.ι ≫ p₁) (by
+      rintro _ ⟨x, rfl⟩
+      rw [Scheme.Opens.range_ι]
+      -- Membership in `f ⁻¹ᵁ V` is membership of the image in `V`.
+      change f (p₁ (W.ι x)) ∈ V
+      rw [← Scheme.Hom.comp_apply, Limits.pullback.condition, Scheme.Hom.comp_apply]
+      exact x.2)
+    let q₂ : (W : Scheme) ⟶ g ⁻¹ᵁ V := p₂ ∣_ g ⁻¹ᵁ V
+    have hq₁ : q₁ ≫ (f ⁻¹ᵁ V).ι = W.ι ≫ p₁ := IsOpenImmersion.lift_fac _ _ _
+    have hq₂ : q₂ ≫ (g ⁻¹ᵁ V).ι = W.ι ≫ p₂ := morphismRestrict_ι _ _
+    have hsq : IsPullback q₁ q₂ (f ∣_ V) (g ∣_ V) := by
+      refine IsPullback.of_right ?_ ?_ (isPullback_morphismRestrict f V).flip
+      · rw [hq₁, morphismRestrict_ι]
+        exact (isPullback_morphismRestrict p₂ (g ⁻¹ᵁ V)).flip.paste_horiz
+          (IsPullback.of_hasPullback f g)
+      · rw [← cancel_mono V.ι]
+        simp only [Category.assoc, morphismRestrict_ι]
+        rw [reassoc_of% hq₁, reassoc_of% hq₂, Limits.pullback.condition]
+    rw [pullback_mul, pullback_comp, pullback_comp, ← hq₁, ← hq₂, ← pullback_comp,
+      ← pullback_comp]
+    exact (ha.isAmple_pullback V hV).pullback_mul_pullback (hb.isAmple_pullback V hV) hsq
 
 /-- The trivial class is relatively ample for `f` exactly when `f` is quasi-affine: `f` is
 quasi-compact and the preimage of every affine open of the base is quasi-affine. -/

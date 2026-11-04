@@ -12,6 +12,7 @@ public import TauCeti.AlgebraicGeometry.LineBundle.Functoriality
 public import TauCeti.AlgebraicGeometry.LineBundle.GlobalGeneration.TensorProduct
 public import TauCeti.AlgebraicGeometry.LineBundle.NonvanishingLocus
 public import TauCeti.AlgebraicGeometry.Morphisms.Separated
+public import TauCeti.AlgebraicGeometry.Pullback.Affine
 
 /-!
 # Ample line bundles
@@ -72,6 +73,8 @@ schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
   (`AlgebraicGeometry.Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq_top`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_pullback_iff_of_isIso`: ampleness is
   invariant under pullback along isomorphisms of schemes.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback_mul_pullback`: over a separated
+  base, the exterior product `pr₁* a · pr₂* b` of ample classes is ample on `X ×_S Y`.
 
 ## References
 
@@ -383,5 +386,54 @@ theorem IsAmple.of_iSup_basicOpen_eq_top [CompactSpace X]
     refine ⟨n, hn, L, hL, r i • t, ?_, ?_⟩ <;>
       rw [Scheme.Modules.nonvanishingLocus_smul, ht']
     exacts [hxs, hsaff]
+
+/-- **Exterior products of ample classes are ample over a separated base.** Let `P = X ×_S Y` be
+a fibre product over a separated scheme `S`, with projections `q₁` and `q₂`. If `a` is ample on
+`X` and `b` is ample on `Y`, then `q₁* a · q₂* b` is ample on `P`. Global sections `s` and `t` of
+line bundles of classes `aᴺ` and `bᴺ`, with `X_s` and `Y_t` affine, pull back to sections
+vanishing nowhere exactly on `q₁⁻¹ X_s` and `q₂⁻¹ Y_t`. So their tensor product vanishes nowhere
+exactly on `X_s ×_S Y_t`, which is affine
+(`AlgebraicGeometry.IsAffineOpen.preimage_inf_preimage_of_isPullback`). -/
+theorem IsAmple.pullback_mul_pullback {Y S P : Scheme.{u}} [S.IsSeparated]
+    {a : LineBundleClass X} {b : LineBundleClass Y} (ha : a.IsAmple) (hb : b.IsAmple)
+    {f : X ⟶ S} {g : Y ⟶ S} {q₁ : P ⟶ X} {q₂ : P ⟶ Y} (h : IsPullback q₁ q₂ f g) :
+    (LineBundleClass.pullback q₁ a * LineBundleClass.pullback q₂ b).IsAmple where
+  compactSpace := by
+    have := ha.compactSpace
+    have := hb.compactSpace
+    have := hb.isSeparated
+    -- `f` is quasi-compact: its composite with `S ⟶ ⊤_ Scheme` is, and `S` is quasi-separated.
+    have : QuasiCompact (f ≫ Limits.terminal.from S) := by
+      rw [Limits.terminal.comp_from]
+      exact (quasiCompact_iff_compactSpace _).mpr inferInstance
+    have : QuasiCompact f := .of_comp f (Limits.terminal.from S)
+    have : QuasiCompact q₂ := MorphismProperty.of_isPullback h inferInstance
+    exact (quasiCompact_iff_compactSpace q₂).mp inferInstance
+  exists_isAffineOpen_nonvanishingLocus z := by
+    obtain ⟨n, hn, L, hL, s, hxs, hs⟩ := ha.exists_isAffineOpen_nonvanishingLocus (q₁ z)
+    obtain ⟨m, hm, M, hM, t, hyt, ht⟩ := hb.exists_isAffineOpen_nonvanishingLocus (q₂ z)
+    -- Move both sections to the common power `n * m`.
+    obtain ⟨L', hL'⟩ := mk_surjective (a ^ (n * m))
+    obtain ⟨s', hs'⟩ := InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow hm
+      (by rw [hL', hL, ← pow_mul]) s
+    obtain ⟨M', hM'⟩ := mk_surjective (b ^ (n * m))
+    obtain ⟨t', ht'⟩ := InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow hn
+      (by rw [hM', hM, ← pow_mul, mul_comm m]) t
+    let L₁ := (InvertibleSheaf.pullback q₁).obj L'
+    let M₂ := (InvertibleSheaf.pullback q₂).obj M'
+    let s₁ : Γ(L₁.obj, ⊤) := q₁.pullbackSections L'.obj ⊤ s'
+    let t₂ : Γ(M₂.obj, ⊤) := q₂.pullbackSections M'.obj ⊤ t'
+    have h₁ : L₁.obj.nonvanishingLocus s₁ = q₁ ⁻¹ᵁ L.obj.nonvanishingLocus s := by
+      rw [← hs']
+      exact Scheme.Modules.nonvanishingLocus_pullbackSections q₁ s'
+    have h₂ : M₂.obj.nonvanishingLocus t₂ = q₂ ⁻¹ᵁ M.obj.nonvanishingLocus t := by
+      rw [← ht']
+      exact Scheme.Modules.nonvanishingLocus_pullbackSections q₂ t'
+    obtain ⟨u, hu⟩ := L₁.exists_nonvanishingLocus_tensorProduct M₂ s₁ t₂
+    rw [h₁, h₂] at hu
+    refine ⟨n * m, Nat.mul_pos hn hm, L₁.tensorProduct M₂, ?_, u, hu ▸ ⟨hxs, hyt⟩,
+      hu ▸ hs.preimage_inf_preimage_of_isPullback h ht⟩
+    rw [mk_tensorProduct, ← pullback_mk, ← pullback_mk, hL', hM', mul_pow]
+    simp only [← pullbackHom_apply, map_pow]
 
 end TauCeti.AlgebraicGeometry.LineBundleClass
