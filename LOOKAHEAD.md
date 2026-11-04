@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-base-change","main":"6c781b0a7341d9d794cf474258f824f4fa65faa2","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat: pullback of graded quasicoherent algebras"},{"n":2,"after":[1],"title":"feat: pullback of sections of a graded quasicoherent algebra as a graded ring map"},{"n":3,"after":[2],"title":"feat: affine base change of the graded sections of a pulled-back graded algebra"},{"n":4,"after":[3],"title":"feat: the relative Proj of a pulled-back graded algebra is the base change"},{"n":5,"after":[1,2,3,4],"title":"feat: base change of the relative Proj, compatibly with O(n)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-base-change","main":"6c781b0a7341d9d794cf474258f824f4fa65faa2","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat: pullback of graded quasicoherent algebras"},{"n":2,"after":[1],"title":"feat: pullback of sections of a graded quasicoherent algebra as a graded ring map"},{"n":3,"after":[2],"title":"feat: affine base change of the graded sections of a pulled-back graded algebra"},{"n":4,"after":[3],"title":"feat: the relative Proj of a pulled-back graded algebra is the base change"},{"n":5,"after":[],"title":"feat: lift into a glued module from a covering family of charts"},{"n":6,"after":[4,5],"title":"feat: compare the twisting sheaves of the relative Proj of a pulled-back graded algebra"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: base change of the relative Proj, compatibly with O(n)"}]}-->
 
 # Lookahead: `relative-proj-base-change` (SchemeAndStackFoundations, Layer 0, §0.3)
 
@@ -10,7 +10,7 @@ already on `main` (`AlgebraicGeometry.Proj.isPullback_baseChange`,
 `Proj.isPullback_map_of_isBaseChange` in `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/BaseChange.lean`).
 
 Built on `main` at `6c781b0a7341d9d794cf474258f824f4fa65faa2` (merged into the branch on 2026-11-04). Status: **partial**
-(splits 1–4 proved, sorry-free; split 5 remains).
+(splits 1–6 proved, sorry-free; split 7 remains).
 
 ## Stubs
 
@@ -24,10 +24,11 @@ chart identification `restrictRelativeProjTwistingSheafIso`, and invertibility i
 `CategoryTheory.CommMon.relativeProjTwistingSheafMul` (with `π_app_relativeProjTwistingSheafMul`,
 `res_relativeProjTwistingSheafMul`) and `relativeProjTwistingSheafTensorProductIso`; the README
 milestone still owes the graded map `A → ⊕_{n ≥ 0} (relativeProj.toBase)_* O(n)` (Stacks 01NR),
-which no PR or `Suggested.lean` pins yet. Splits 1–2 consume none of these. Split 3 and the
-part of split 4 written so far consume none of them either. Neither does the
-planned form of split 5 (the isomorphisms `g'^* 𝒪(n) ≅ 𝒪(n)`, built chartwise from
-`Proj.twistingSheafMap` on `main`). If the next session decides that "compatibly with `O(n)`"
+which no PR or `Suggested.lean` pins yet. Splits 1–6 consume none of these, and neither does the
+planned split 7 (the comparison of split 6 is an isomorphism, checked on charts, where the
+twisting sheaves are those of `Proj` on `main`; the supplier's quasi-coherence of `𝒪(n)` on the
+relative `Proj` is not needed, as the check runs on the charts `Proj (⨁ n, Γ(g^* Aₙ, V))`, where
+`AlgebraicGeometry.Proj.isQuasicoherent_twistingSheaf` is on `main`). If the next session decides that "compatibly with `O(n)`"
 must also include compatibility with the multiplication maps, it should stub
 `relativeProjTwistingSheafMul` and its two characterising lemmas from PR #27145's diff
 (`TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf/TensorProduct.lean`), verbatim, in this file.
@@ -101,14 +102,47 @@ No `Suggested.lean` signature exists for any of them (relative Proj is README-on
      (relativeProjPullbackHom g A) g A.relativeProjToBase`, by `Scheme.isPullback_of_openCover`
      over the cover of `X` by `Spec Γ(X, V)` for the same pairs, pasting the chart squares with
      `isPullback_proj_pullbackGradedSections`. Uses no stub.
-5. **`feat: base change of the relative Proj, compatibly with O(n)`** — after: 1, 2, 3, 4.
-   *Not yet written.* With split 4 in place it needs only the `𝒪(n)` part. Planned file `TauCeti/AlgebraicGeometry/RelativeProj/BaseChangeTwistingSheaf.lean`
-   carrying the exported theorem `CategoryTheory.CommMon.relativeProj_baseChange`
-   (`@[stacks 01O3]`): `IsPullback` of the projection, the structure morphisms and `g`, with
-   `relativeProj` of `(GradedQuasicoherentAlgebra.pullback g A).obj`, whose degree-zero part is
-   `g^* A₀` by `pullback_obj_X`, and isomorphisms `(projection)^* 𝒪_A(n) ≅ 𝒪_{g^* A}(n)` for all
-   `n : ℤ`, glued chartwise from the adjoints of `Proj.twistingSheafMap` (bijective on charts by
-   base change) via `ModulesGlueData`.
+5. **`feat: lift into a glued module from a covering family of charts`** — after: none.
+   *Written this session.* File `TauCeti/AlgebraicGeometry/Modules/Gluing.lean` (existing file,
+   +217 lines, now 585). Adds, in `TauCeti.ModulesGlueData`:
+   `eq_of_transition_app_eq_of_le_cover` (sections of `(ιⱼ)_* Mⱼ` over any open are determined by
+   their transitions along a downward closed set of indices whose images cover the image of
+   `F j`), `eq_of_transition_app_eq_of_cover`, `exists_transition_app_eq_of_cover` (a compatible
+   family over a downward closed covering set `J'` extends to every index), `extendOfCover`,
+   `extendOfCover_transition`, `extendOfCover_of_mem`, `extendOfCover_comp_transition`,
+   `liftOfCover` (a morphism into the glued module from compatible morphisms
+   `M ⟶ (ιₖ)_* Mₖ`, `k ∈ J'`) and `liftOfCover_π`, with private helpers
+   `exists_transition_app_eq_hom`, `extendApp` (+ `_zero`, `_add`, `_smul`, `_map`,
+   `transition_app_extendApp`). Purely about gluing data; independent of splits 1–4. Needed
+   because a morphism out of `h^* 𝒪(n)` is only available on the charts over affine opens `V`
+   lying over a single affine open of the base.
+6. **`feat: compare the twisting sheaves of the relative Proj of a pulled-back graded algebra`** —
+   after: 4, 5. *Written this session.* Files:
+   - `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/Functor.lean` (existing file,
+     +16 lines): `AlgebraicGeometry.Proj.twistingSheafMap_app_apply_res_of_eq_comp` (the
+     composition law of `twistingSheafMap` for sections restricted to opens only propositionally
+     equal to preimages; it must live in this file, where `twistingSheaf.comap` unfolds).
+   - `TauCeti/AlgebraicGeometry/RelativeProj/BaseChangeTwistingSheaf.lean` (new, 306 lines), in
+     `TauCeti.AlgebraicGeometry.GradedQuasicoherentAlgebra`: `relativeProjTwistingSheafChartHom`
+     (`𝒪_A(n) ⟶ h_* (ι_V)_* 𝒪(n)` over `V ≤ g⁻¹ U`, from the projection of the glued sheaf and
+     `Proj.twistingSheafMap` of the pullback of sections), `_app_apply`, `_eq_of_le` (change of `U`
+     to a basic open), `_comp_transition` (change of `V`), `relativeProjTwistingSheafChartHom_eq`
+     (independence of `U`, via `eq_of_transition_app_eq_of_le_cover` over the charts lying over
+     common basic opens), `pullbackRelativeProjTwistingSheafChartHom` (+ `_eq`,
+     `_comp_transition`), `exists_mem_opensRange_relativeProjCover_f`,
+     `relativeProjPullbackTwistingSheafHom : h^* 𝒪_A(n) ⟶ 𝒪_{g^* A}(n)` (by `liftOfCover`) and
+     `relativeProjPullbackTwistingSheafHom_π` (its value on charts). Uses no stub.
+     Elaboration notes for the port: pass `pushforwardComp`/`pushforwardCongr` arguments
+     explicitly, state sections of `h_* M` over `W` as `let`s over `h⁻¹ W` before handing them to
+     gluing lemmas, chain with `Eq.trans`/`congrArg` instead of `rw` on sections, and give the
+     implicit opens of `twistingSheafMap_app_apply_res_of_eq_comp` by name; otherwise `whnf`
+     times out. The file takes several minutes to elaborate.
+7. **`feat: base change of the relative Proj, compatibly with O(n)`** — after: 1, 2, 3, 4, 5, 6.
+   *Not yet written.* Planned files: a degree-`n` companion of
+   `TauCeti/RingTheory/GradedAlgebra/HomogeneousLocalization/BaseChange.lean` for the sections of
+   twisting sheaves on standard opens, and `TauCeti/AlgebraicGeometry/RelativeProj/BaseChangeTwistingSheaf.lean`
+   (or a sibling, if that file would pass 1000 lines) carrying the exported theorem
+   `CategoryTheory.CommMon.relativeProj_baseChange` (`@[stacks 01O3]`).
 
 ## What is proved and what remains
 
@@ -120,10 +154,32 @@ projection `relativeProjPullbackHom g A : Proj_X(g^* A) ⟶ Proj_Y(A)` over `g` 
 square `isPullback_relativeProjPullbackHom` (split 4) — i.e. formation of `relativeProj` commutes
 with arbitrary base change, with degree-zero part `g^* A₀`.
 
-Remaining (split 5 only): the compatibility with `O(n)`, namely isomorphisms
-`(relativeProjPullbackHom g A)^* 𝒪_A(n) ≅ 𝒪_{g^* A}(n)` for all `n : ℤ` (glued chartwise from
-`Proj.twistingSheafMap`, which is an isomorphism after adjunction on charts by the base change of
-split 3, using `restrictRelativeProjTwistingSheafIso` on both sides and
-`relativeProjCover_f_relativeProjPullbackHom` to identify the chart restriction of the
-projection), and the exported `CategoryTheory.CommMon.relativeProj_baseChange` (`@[stacks 01O3]`)
-packaging `isPullback_relativeProjPullbackHom`, `pullback_obj_X` and these isomorphisms.
+Also proved (splits 5–6): gluing of morphisms into a glued module from a downward closed covering
+family of charts, and the comparison morphism
+`relativeProjPullbackTwistingSheafHom g A n : h^* 𝒪_A(n) ⟶ 𝒪_{g^* A}(n)` for the projection
+`h = relativeProjPullbackHom g A`, identified on each chart over `V ≤ g⁻¹ U` with the adjoint of
+`Proj.twistingSheafMap` of the pullback of sections (`relativeProjPullbackTwistingSheafHom_π`).
+
+Remaining (split 7 only):
+- *Degree-`n` base change on standard opens.* For a graded ring homomorphism `f : 𝒜 →+*ᵍ ℬ` over
+  `R → S` exhibiting `B` as `S ⊗[R] A` (the hypotheses of `Proj.isPullback_map_of_isBaseChange`)
+  and `a ∈ 𝒜 d`, `d > 0`: `Proj.twistingSheaf.comap f` from `Γ(D₊(a), 𝒪(n))` to `Γ(D₊(f a), 𝒪(n))`
+  is a base change along `Γ(D₊(a), 𝒪) → Γ(D₊(f a), 𝒪)`. This is the degree-`n` analogue of
+  `HomogeneousLocalization.Away.baseChangeEquiv` (degree zero, on `main`), via
+  `Proj.twistingSheaf.exists_eq_const_basicOpen` and `const_eq_zero_iff`.
+- *Proj-level isomorphism.* The adjoint `(Proj.map f)^* 𝒪(n) ⟶ 𝒪(n)` of `Proj.twistingSheafMap`
+  is an isomorphism for such `f`. Both sides are quasi-coherent (`isQuasicoherent_twistingSheaf`;
+  pullbacks of quasi-coherent modules), so this can be checked on the affine cover by the
+  `D₊(f a)`, where pullback of sections is a base change (`Scheme.Hom.isBaseChange_pullbackSectionsLE`,
+  split 3). Open PR #27468 (another author) adds `Proj.pullbackTwistingSheafMap` and an isomorphism
+  criterion assuming degree-one generators, plus `Scheme.Modules.Hom.isIso_of_bijective_app`
+  (isomorphisms of quasi-coherent modules are detected on an affine cover). If it lands first,
+  reuse its comparison and criterion and drop the degree-one assumption with the lemma above.
+- *Relative isomorphism.* `relativeProjPullbackTwistingSheafHom` is an isomorphism. This is local
+  on the cover by the charts over `V ≤ g⁻¹ U`. There, by `relativeProjPullbackTwistingSheafHom_π`,
+  `ModulesGlueData.restrictGluedIso` on both sides and `relativeProjCover_f_relativeProjPullbackHom`,
+  it is the Proj-level isomorphism for the base change `isBaseChange_pullbackGradedSections`
+  (split 3).
+- *Export* `CategoryTheory.CommMon.relativeProj_baseChange` (`@[stacks 01O3]`), packaging
+  `isPullback_relativeProjPullbackHom`, `pullback_obj_X` (degree-zero part `g^* A₀`) and
+  `asIso (relativeProjPullbackTwistingSheafHom g A n)` for all `n : ℤ`.

@@ -17,8 +17,10 @@ Layer 0, §0.3), to be replaced by the landed declarations.
 
 The parts of `relative-proj-base-change` proved so far (the pullback `g^* A` of a graded
 quasicoherent algebra, the graded ring maps of sections along `g`, their affine base change, the
-cartesian chart squares of projective spectra and their compatibility with the transition maps)
-consume no declaration of the supplier, and the twisting sheaves `𝒪(n)` of a relative `Proj`
+cartesian chart squares of projective spectra and their compatibility with the transition maps,
+gluing morphisms into a glued module from a covering family of charts, and the comparison
+morphism `h^* 𝒪(n) ⟶ 𝒪(n)` along the projection of relative `Proj`s) consume no declaration of
+the supplier, and the twisting sheaves `𝒪(n)` of a relative `Proj`
 that the compatibility with `𝒪(n)` will use are already on `main`
 (`CategoryTheory.CommMon.relativeProjTwistingSheaf`,
 `CategoryTheory.CommMon.restrictRelativeProjTwistingSheafIso`). This module therefore states no
