@@ -27,13 +27,16 @@ predicate `LineBundleClass.IsRelativelyAmple` on line-bundle classes.
   `aⁿ` is relatively ample exactly when `a` is.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.mul_mk_of_isGloballyGenerated`: a
   relatively ample class times a globally generated line bundle is relatively ample.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.mul`: a product of relatively ample
+  classes is relatively ample.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_one_iff`: the trivial class is
-  relatively ample exactly for quasi-affine morphisms; in particular it is relatively ample for
-  affine morphisms (`LineBundleClass.isRelativelyAmple_one`).
+  relatively ample exactly for quasi-affine morphisms, and then every class is relatively ample
+  (`LineBundleClass.isRelativelyAmple_of_isQuasiAffine`); in particular every class is relatively
+  ample for an affine morphism (`LineBundleClass.isRelativelyAmple_of_isAffineHom`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.isSeparated`: a morphism carrying
   a relatively ample class is separated.
-* `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_iff_isAmple`: over an affine base,
-  relative ampleness is ampleness.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_iff_isAmple`: over a quasi-affine
+  base, relative ampleness is ampleness.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.isRelativelyAmple`: over a separated base, an
   ample class is relatively ample for every quasi-compact morphism.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback`: relative ampleness is
@@ -42,8 +45,9 @@ predicate `LineBundleClass.IsRelativelyAmple` on line-bundle classes.
   (`LineBundleClass.isRelativelyAmple_pullback_iff_of_isIso`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.isAmple_fiber`: a relatively ample
   class is ample on every fibre.
-* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.comp`: relative ampleness is
-  preserved by composition with an affine morphism.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.comp_of_isQuasiAffine`: relative
+  ampleness is preserved by composition with a quasi-affine morphism, in particular with an affine
+  one (`LineBundleClass.IsRelativelyAmple.comp`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.of_comp`: relative ampleness for
   `f ≫ g` implies relative ampleness for `f` when `g` is separated; for affine `g` the two are
   equivalent (`LineBundleClass.isRelativelyAmple_comp_iff`).
@@ -117,6 +121,14 @@ theorem IsRelativelyAmple.mul_mk_of_isGloballyGenerated {a : LineBundleClass X} 
     rw [← pullbackHom_apply, map_mul, pullbackHom_apply, pullbackHom_apply, pullback_mk]
     exact (h.isAmple_pullback V hV).mul_mk_of_isGloballyGenerated (hK.pullback _)
 
+/-- **Products of relatively ample classes are relatively ample.** -/
+theorem IsRelativelyAmple.mul {a b : LineBundleClass X} {f : X ⟶ S} (ha : a.IsRelativelyAmple f)
+    (hb : b.IsRelativelyAmple f) : (a * b).IsRelativelyAmple f where
+  quasiCompact := ha.quasiCompact
+  isAmple_pullback V hV := by
+    rw [pullback_mul]
+    exact (ha.isAmple_pullback V hV).mul (hb.isAmple_pullback V hV)
+
 /-- **A morphism carrying a relatively ample line bundle is separated.** Over every affine open
 `V` of the base, `f⁻¹ V` carries an ample line bundle and is therefore a separated scheme
 (`LineBundleClass.IsAmple.isSeparated`), so `f ∣_ V` is separated; and separatedness is local on
@@ -128,13 +140,24 @@ theorem IsRelativelyAmple.isSeparated {a : LineBundleClass X} {f : X ⟶ S}
   have := (h.isAmple_pullback V V.2).isSeparated
   infer_instance
 
-/-- **Relative ampleness over an affine base implies ampleness.** If the base `S` is affine and
-`a` is relatively ample for `f : X ⟶ S`, then `a` is ample: `X` is the preimage of `S` itself. -/
-theorem IsRelativelyAmple.isAmple [IsAffine S] {a : LineBundleClass X} {f : X ⟶ S}
+/-- **Relative ampleness over a quasi-affine base implies ampleness.** If the base `S` is
+quasi-affine, for instance affine, and `a` is relatively ample for `f : X ⟶ S`, then `a` is ample.
+The affine basic opens `S_r` of global functions `r` cover `S`, so their preimages `X_{f* r}`
+cover the quasi-compact scheme `X`. The class `a` is ample on each of them, and ampleness can be
+checked on such a cover (`LineBundleClass.IsAmple.of_iSup_basicOpen_eq_top`). -/
+theorem IsRelativelyAmple.isAmple [S.IsQuasiAffine] {a : LineBundleClass X} {f : X ⟶ S}
     (h : a.IsRelativelyAmple f) : a.IsAmple := by
-  -- `f ⁻¹ᵁ ⊤` is `⊤` by definition (`Scheme.Hom.preimage_top`).
-  have h' : (pullback (⊤ : X.Opens).ι a).IsAmple := h.isAmple_pullback ⊤ (isAffineOpen_top S)
-  simpa using h'.pullback X.topIso.inv
+  have := h.quasiCompact
+  have : CompactSpace X := (quasiCompact_iff_compactSpace f).mp inferInstance
+  let R := {r : Γ(S, ⊤) // IsAffineOpen (S.basicOpen r)}
+  refine IsAmple.of_iSup_basicOpen_eq_top (fun r : R ↦ f.appTop r.1)
+    (eq_top_iff.mpr fun x _ ↦ ?_) fun r ↦ ?_
+  · obtain ⟨_, ⟨r, hr, rfl⟩, hx, -⟩ :=
+      TopologicalSpace.Opens.isBasis_iff_nbhd.mp (Scheme.IsQuasiAffine.isBasis_basicOpen S)
+        (TopologicalSpace.Opens.mem_top (f x))
+    exact TopologicalSpace.Opens.mem_iSup.mpr ⟨⟨r, hr⟩, by rwa [← Scheme.preimage_basicOpen_top]⟩
+  · rw [← Scheme.preimage_basicOpen_top]
+    exact h.isAmple_pullback _ r.2
 
 /-- **Ampleness over a separated base implies relative ampleness.** If the base `S` is separated,
 `f : X ⟶ S` is quasi-compact and `a` is ample, then `a` is relatively ample for `f`: the inclusion
@@ -151,8 +174,8 @@ theorem IsAmple.isRelativelyAmple [S.IsSeparated] {a : LineBundleClass X} (h : a
       MorphismProperty.of_isPullback (isPullback_morphismRestrict f V) this
     exact h.pullback _
 
-/-- Over an affine base, relative ampleness is ampleness. -/
-theorem isRelativelyAmple_iff_isAmple [IsAffine S] (a : LineBundleClass X) (f : X ⟶ S) :
+/-- Over a quasi-affine base, for instance an affine one, relative ampleness is ampleness. -/
+theorem isRelativelyAmple_iff_isAmple [S.IsQuasiAffine] (a : LineBundleClass X) (f : X ⟶ S) :
     a.IsRelativelyAmple f ↔ a.IsAmple := by
   refine ⟨IsRelativelyAmple.isAmple, fun h ↦ ?_⟩
   have := h.compactSpace
@@ -203,17 +226,6 @@ theorem isRelativelyAmple_pullback_iff_of_isIso {X' : Scheme.{u}} (e : X' ⟶ X)
   refine ⟨fun h ↦ ?_, fun h ↦ h.pullback e⟩
   simpa [pullback_comp] using h.pullback (inv e)
 
-/-- **Relative ampleness is preserved by composition with an affine morphism.** If `a` is
-relatively ample for `f : X ⟶ S` and `g : S ⟶ T` is affine, then `a` is relatively ample for
-`f ≫ g`: the preimage under `g` of an affine open of `T` is an affine open of `S`. -/
-theorem IsRelativelyAmple.comp {T : Scheme.{u}} {a : LineBundleClass X} {f : X ⟶ S}
-    (h : a.IsRelativelyAmple f) (g : S ⟶ T) [IsAffineHom g] : a.IsRelativelyAmple (f ≫ g) where
-  quasiCompact := by
-    have := h.quasiCompact
-    infer_instance
-  -- `(f ≫ g) ⁻¹ᵁ W` is `f ⁻¹ᵁ g ⁻¹ᵁ W` by definition (`Scheme.Hom.comp_preimage`).
-  isAmple_pullback W hW := h.isAmple_pullback (g ⁻¹ᵁ W) (hW.preimage g)
-
 /-- **Relative ampleness restricts to opens of the base.** If `a` is relatively ample for
 `f : X ⟶ S` and `U` is an open of `S`, then the restriction of `a` to `f⁻¹ U` is relatively ample
 for the restriction `f ∣_ U : f⁻¹ U ⟶ U`. -/
@@ -232,6 +244,30 @@ theorem IsRelativelyAmple.restrict {a : LineBundleClass X} {f : X ⟶ S}
     have := (isAmple_pullback_iff_of_isIso (IsOpenImmersion.isoOfRangeEq _ _ hrange).hom _).mpr
       (h.isAmple_pullback _ (hV.image_of_isOpenImmersion U.ι))
     rwa [pullback_comp, IsOpenImmersion.isoOfRangeEq_hom_fac, ← pullback_comp] at this
+
+/-- **Relative ampleness is preserved by composition with a quasi-affine morphism.** If `a` is
+relatively ample for `f : X ⟶ S`, and `g : S ⟶ T` is quasi-compact with quasi-affine preimages of
+affine opens, then `a` is relatively ample for `f ≫ g`. Over an affine open `W` of `T`, the
+restriction of `a` is relatively ample for `f⁻¹ (g⁻¹ W) ⟶ g⁻¹ W`, whose base is quasi-affine, so
+it is ample (`LineBundleClass.IsRelativelyAmple.isAmple`). -/
+theorem IsRelativelyAmple.comp_of_isQuasiAffine {T : Scheme.{u}} {a : LineBundleClass X}
+    {f : X ⟶ S} (h : a.IsRelativelyAmple f) (g : S ⟶ T) [QuasiCompact g]
+    (hg : ∀ W : T.Opens, IsAffineOpen W → (g ⁻¹ᵁ W).toScheme.IsQuasiAffine) :
+    a.IsRelativelyAmple (f ≫ g) where
+  quasiCompact := by
+    have := h.quasiCompact
+    infer_instance
+  -- `(f ≫ g) ⁻¹ᵁ W` is `f ⁻¹ᵁ g ⁻¹ᵁ W` by definition (`Scheme.Hom.comp_preimage`).
+  isAmple_pullback W hW :=
+    have := hg W hW
+    (h.restrict (g ⁻¹ᵁ W)).isAmple
+
+/-- **Relative ampleness is preserved by composition with an affine morphism.** -/
+theorem IsRelativelyAmple.comp {T : Scheme.{u}} {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) (g : S ⟶ T) [IsAffineHom g] : a.IsRelativelyAmple (f ≫ g) :=
+  h.comp_of_isQuasiAffine g fun W hW ↦
+    have : IsAffine (g ⁻¹ᵁ W) := hW.preimage g
+    inferInstance
 
 /-- **Relative ampleness is local on the base.** If `S` is covered by opens `Uᵢ` and the
 restriction of `a` to every `f⁻¹ Uᵢ` is relatively ample for `f ∣_ Uᵢ`, then `a` is relatively
@@ -435,28 +471,33 @@ theorem IsRelativelyAmple.pullback_fst_mul_pullback_snd {a : LineBundleClass X}
       ← pullback_comp]
     exact (ha.isAmple_pullback V hV).pullback_mul_pullback (hb.isAmple_pullback V hV) hsq
 
+/-- **For a quasi-affine morphism, every class is relatively ample.** If `f` is quasi-compact and
+the preimage of every affine open of the base is quasi-affine, then every line-bundle class on `X`
+is relatively ample for `f`, since every class on a quasi-affine scheme is ample
+(`LineBundleClass.isAmple_of_isQuasiAffine`). -/
+theorem isRelativelyAmple_of_isQuasiAffine {f : X ⟶ S} [QuasiCompact f]
+    (h : ∀ V : S.Opens, IsAffineOpen V → (f ⁻¹ᵁ V).toScheme.IsQuasiAffine)
+    (a : LineBundleClass X) : a.IsRelativelyAmple f where
+  quasiCompact := inferInstance
+  isAmple_pullback V hV :=
+    have := h V hV
+    isAmple_of_isQuasiAffine _
+
 /-- The trivial class is relatively ample for `f` exactly when `f` is quasi-affine: `f` is
 quasi-compact and the preimage of every affine open of the base is quasi-affine. -/
 @[simp]
 theorem isRelativelyAmple_one_iff {f : X ⟶ S} :
     (1 : LineBundleClass X).IsRelativelyAmple f ↔
-      QuasiCompact f ∧ ∀ V : S.Opens, IsAffineOpen V → (f ⁻¹ᵁ V).toScheme.IsQuasiAffine := by
-  refine ⟨fun h ↦ ⟨h.quasiCompact, fun V hV ↦ ?_⟩, fun ⟨hf, h⟩ ↦ ⟨hf, fun V hV ↦ ?_⟩⟩
-  · simpa using h.isAmple_pullback V hV
-  · have := h V hV
-    simpa using isAmple_one (X := (f ⁻¹ᵁ V).toScheme)
+      QuasiCompact f ∧ ∀ V : S.Opens, IsAffineOpen V → (f ⁻¹ᵁ V).toScheme.IsQuasiAffine :=
+  ⟨fun h ↦ ⟨h.quasiCompact, fun V hV ↦ by simpa using h.isAmple_pullback V hV⟩,
+    fun ⟨_, h⟩ ↦ isRelativelyAmple_of_isQuasiAffine h 1⟩
 
-/-- The trivial class is relatively ample for an affine morphism. -/
-theorem isRelativelyAmple_one (f : X ⟶ S) [IsAffineHom f] :
-    (1 : LineBundleClass X).IsRelativelyAmple f :=
-  isRelativelyAmple_one_iff.mpr ⟨inferInstance, fun V hV ↦
+/-- **Every line-bundle class is relatively ample for an affine morphism.** -/
+theorem isRelativelyAmple_of_isAffineHom (f : X ⟶ S) [IsAffineHom f] (a : LineBundleClass X) :
+    a.IsRelativelyAmple f :=
+  isRelativelyAmple_of_isQuasiAffine (fun V hV ↦
     have : IsAffine (f ⁻¹ᵁ V) := hV.preimage f
-    inferInstance⟩
-
-/-- Every torsion line-bundle class is relatively ample for an affine morphism. -/
-theorem isRelativelyAmple_of_pow_eq_one (f : X ⟶ S) [IsAffineHom f] {a : LineBundleClass X}
-    {n : ℕ} (hn : 0 < n) (h : a ^ n = 1) : a.IsRelativelyAmple f :=
-  .of_pow hn (h ▸ isRelativelyAmple_one f)
+    inferInstance) a
 
 end LineBundleClass
 

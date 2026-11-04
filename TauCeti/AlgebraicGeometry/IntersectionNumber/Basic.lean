@@ -75,7 +75,9 @@ off-diagonal entries of the intersection matrix.
   line bundle by an effective Cartier divisor meeting a proper curve properly;
 * `LineBundleClass.intersectionNumber_mul` and `LineBundleClass.intersectionNumber_inv`:
   additivity on a regular proper integral curve, bundled as
-  `LineBundleClass.intersectionNumberHom k ι : Pic X →+ ℤ`;
+  `LineBundleClass.intersectionNumberHom k ι : Pic X →+ ℤ`; for powers
+  `LineBundleClass.intersectionNumber_pow` and `LineBundleClass.intersectionNumber_zpow` give
+  `(aⁿ · C) = n (a · C)`;
 * `LineBundleClass.intersectionNumber_mk_toInvertibleSheaf_comm` and
   `LineBundleClass.intersectionNumber_inv_mk_toInvertibleSheaf_comm`: `(-D · E) = (-E · D)` and
   `(D · E) = (E · D)` for effective Cartier divisors `D` and `E` meeting properly.
@@ -255,6 +257,30 @@ lemma intersectionNumberHom_apply (a : Additive (LineBundleClass X)) :
     intersectionNumberHom k ι a = intersectionNumber k ι a.toMul := by
   rw [intersectionNumberHom, AddMonoidHom.comp_apply, eulerDegreeHom_apply,
     MonoidHom.toAdditive_apply_apply, pullbackHom_apply, toMul_ofMul, intersectionNumber_def]
+
+/-- The intersection number of a power `aⁿ` with a proper integral curve whose codimension-one
+local rings are discrete valuation rings is `n` times that of `a`. -/
+@[simp]
+theorem intersectionNumber_pow (a : LineBundleClass X) (n : ℕ) :
+    intersectionNumber k ι (a ^ n) = n * intersectionNumber k ι a := by
+  induction n with
+  | zero => simp
+  | succ n ih =>
+    rw [pow_succ, intersectionNumber_mul, ih]
+    push_cast
+    ring
+
+/-- The intersection number of an integer power `aⁿ` with a proper integral curve whose
+codimension-one local rings are discrete valuation rings is `n` times that of `a`. -/
+@[simp]
+theorem intersectionNumber_zpow (a : LineBundleClass X) (n : ℤ) :
+    intersectionNumber k ι (a ^ n) = n * intersectionNumber k ι a := by
+  cases n with
+  | ofNat n => simp
+  | negSucc n =>
+    rw [zpow_negSucc, intersectionNumber_inv, intersectionNumber_pow, Int.negSucc_eq]
+    push_cast
+    ring
 
 end Regular
 
