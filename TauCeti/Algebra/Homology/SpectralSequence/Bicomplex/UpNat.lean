@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.Homology.TotalComplexSymmetry
 public import TauCeti.Algebra.Homology.Embedding.ExtendHomology.Sequence
 public import TauCeti.Algebra.Homology.SpectralSequence.Filtered.Convergence
+public import TauCeti.Algebra.Homology.SpectralSequence.Filtered.FirstPage
 public import TauCeti.Algebra.Homology.SpectralSequence.Filtered.Stabilization
 public import TauCeti.Algebra.Homology.TotalComplex.UpNat
 
@@ -56,6 +57,9 @@ the abutment (`HomologicalComplex₂.rowFiltrationUpSpectralSequencePageXIsoEInf
 * `HomologicalComplex₂.rowFiltrationUpSpectralSequence`: its spectral sequence.
 * `HomologicalComplex₂.rowFiltrationUpSpectralSequenceFirstPageXIso`: the first page is the
   cohomology of the rows.
+* `HomologicalComplex₂.rowFiltrationUpSpectralSequence_page_two_d`: the first differential is the
+  connecting map of `Tot (rows ≥ s + 1) ⟶ Tot (rows ≥ s) ⟶ row s` followed by the projection
+  onto the row `s + 1`.
 * `HomologicalComplex₂.columnFiltrationUpSpectralSequenceFirstPageXIso`: the first page of the row
   filtration of the flipped bicomplex is the cohomology of the original columns.
 * `HomologicalComplex₂.isZero_rowFiltrationUpSpectralSequence_page_two_X_of_lt`,
@@ -267,45 +271,71 @@ lemma isZero_rowFiltrationUp_X (s : ℕ) (m : ℤ) (hm : m < s) :
       ((K.totalRowsGEUp s).extendXIso embeddingUpNat (by simp))
   · exact (K.totalRowsGEUp s).isZero_extend_X embeddingUpNat m (fun n hn ↦ by simp at hn; omega)
 
-/-- The quotient of the rows `≥ s` by the rows `≥ s + 1` of the total complex of `K` is the row
-`s`, placed in the degrees it occupies in the total complex. -/
-def rowFiltrationUpGradedIso (s : ℕ) :
+/-- The term of index `i = -s` of the row filtration, as a complex, is the total complex of the
+rows `≥ s`, extended to a complex indexed by `ℤ`. -/
+def rowFiltrationUpObjIso (s : ℕ) (i : ℤ) (hi : i = -s) :
+    (CochainComplex.filtrationFunctor K.rowFiltrationUp K.monotone_rowFiltrationUp).obj i ≅
+      (K.totalRowsGEUp s).extend embeddingUpNat :=
+  CochainComplex.filtrationFunctorObjIso _ _ _ ≪≫ Subobject.isoOfEq _ _ (by
+      rw [CochainComplex.filtrationEInt_coe, K.rowFiltrationUp_eq _ s (by omega)]) ≪≫
+    Subobject.underlyingIso _
+
+/-- The identification `HomologicalComplex₂.rowFiltrationUpObjIso` is compatible with the
+inclusions into the total complex. -/
+@[reassoc (attr := simp)]
+lemma rowFiltrationUpObjIso_hom_extendMap_totalRowsGEUpι (s : ℕ) (i : ℤ) (hi : i = -s) :
+    (K.rowFiltrationUpObjIso s i hi).hom ≫
+        HomologicalComplex.extendMap (K.totalRowsGEUpι s) embeddingUpNat =
+      CochainComplex.filtrationFunctorArrow _ _ i := by
+  simp [rowFiltrationUpObjIso]
+
+/-- Under `HomologicalComplex₂.rowFiltrationUpObjIso`, the inclusion of the term of index `i₁`
+of the row filtration into that of index `i₁ + 1` is the inclusion of the rows `≥ s + 1` into the
+rows `≥ s`, for `i₁ = -(s + 1)`. -/
+@[reassoc]
+lemma filtrationFunctor_map_rowFiltrationUpObjIso_hom (s : ℕ) (i₁ i₂ : ℤ)
+    (hi₁ : i₁ = -(s + 1)) (hi₂ : i₂ = i₁ + 1) :
+    (CochainComplex.filtrationFunctor K.rowFiltrationUp K.monotone_rowFiltrationUp).map
+        (homOfLE (CochainComplex.coe_le_coe_of_eq_add_one (rfl : i₁ = i₁) hi₂)) ≫
+        (K.rowFiltrationUpObjIso s i₂ (by omega)).hom =
+      (K.rowFiltrationUpObjIso (s + 1) i₁ (by omega)).hom ≫
+        HomologicalComplex.extendMap (K.totalRowsGEUpMap s) embeddingUpNat := by
+  rw [← cancel_mono (HomologicalComplex.extendMap (K.totalRowsGEUpι s) embeddingUpNat)]
+  simp [← HomologicalComplex.extendMap_comp]
+
+/-- The quotient of the rows `≥ s` by the rows `≥ s + 1` of the total complex of `K`, that is, the
+cokernel of the inclusion of the term of index `i₁ = -(s + 1)` of the row filtration into that of
+index `i₁ + 1`, is the row `s`, placed in the degrees it occupies in the total complex. -/
+def rowFiltrationUpGradedIso (s : ℕ) (i₁ i₂ : ℤ) (hi₁ : i₁ = -(s + 1)) (hi₂ : i₂ = i₁ + 1) :
     cokernel ((CochainComplex.filtrationFunctor K.rowFiltrationUp K.monotone_rowFiltrationUp).map
-      (homOfLE (CochainComplex.coe_le_coe_of_eq_add_one
-        (rfl : -((s : ℤ) + 1) = -((s : ℤ) + 1)) rfl))) ≅
+      (homOfLE (CochainComplex.coe_le_coe_of_eq_add_one (rfl : i₁ = i₁) hi₂))) ≅
       (K.totalRowUp s).extend embeddingUpNat :=
-  CochainComplex.cokernelFiltrationFunctorMapIso _ _ _ ≪≫
-    TauCeti.cokernelOfLEMkIso
-      (HomologicalComplex.extendMap (K.totalRowsGEUpMap s) embeddingUpNat)
-      (HomologicalComplex.extendMap (K.totalRowsGEUpι s) embeddingUpNat)
-      (by rw [CochainComplex.filtrationEInt_coe, K.rowFiltrationUp_eq_succ _ s rfl])
-      (by rw [CochainComplex.filtrationEInt_coe, K.rowFiltrationUp_eq _ s (by omega)]) _ ≪≫
+  cokernel.mapIso _ ((K.totalRowUpShortComplex s).map (embeddingUpNat.extendFunctor C)).f
+      (K.rowFiltrationUpObjIso (s + 1) i₁ (by omega))
+      (K.rowFiltrationUpObjIso s i₂ (by omega))
+      (K.filtrationFunctor_map_rowFiltrationUpObjIso_hom s i₁ i₂ hi₁ hi₂) ≪≫
     (cokernelIsCokernel _).coconePointUniqueUpToIso
       ((K.totalRowUpShortComplex_shortExact s).extend embeddingUpNat).gIsCokernel
 
 /-- The identification `HomologicalComplex₂.rowFiltrationUpGradedIso` of the graded piece with the
 row `s` is induced by the projection of the rows `≥ s` onto their bottom row `s`. -/
 @[reassoc (attr := simp)]
-lemma π_rowFiltrationUpGradedIso_hom (s : ℕ) :
-    cokernel.π _ ≫ (K.rowFiltrationUpGradedIso s).hom =
-      (CochainComplex.filtrationFunctorObjIso K.rowFiltrationUp K.monotone_rowFiltrationUp
-        ((-((s : ℤ) + 1) + 1 : ℤ) : EInt)).hom ≫
-      ((Subobject.isoOfEq _ _ (by
-        rw [CochainComplex.filtrationEInt_coe, K.rowFiltrationUp_eq _ s (by omega)])).trans
-        (Subobject.underlyingIso
-          (HomologicalComplex.extendMap (K.totalRowsGEUpι s) embeddingUpNat))).hom ≫
-      HomologicalComplex.extendMap (K.totalRowUpπ s) embeddingUpNat := by
-  have h : cokernel.π (HomologicalComplex.extendMap (K.totalRowsGEUpMap s) embeddingUpNat) ≫
+lemma π_rowFiltrationUpGradedIso_hom (s : ℕ) (i₁ i₂ : ℤ) (hi₁ : i₁ = -(s + 1))
+    (hi₂ : i₂ = i₁ + 1) :
+    cokernel.π ((CochainComplex.filtrationFunctor K.rowFiltrationUp
+        K.monotone_rowFiltrationUp).map
+          (homOfLE (CochainComplex.coe_le_coe_of_eq_add_one (rfl : i₁ = i₁) hi₂))) ≫
+        (K.rowFiltrationUpGradedIso s i₁ i₂ hi₁ hi₂).hom =
+      (K.rowFiltrationUpObjIso s i₂ (by omega)).hom ≫
+        HomologicalComplex.extendMap (K.totalRowUpπ s) embeddingUpNat := by
+  have h : cokernel.π ((K.totalRowUpShortComplex s).map (embeddingUpNat.extendFunctor C)).f ≫
       ((cokernelIsCokernel _).coconePointUniqueUpToIso
         ((K.totalRowUpShortComplex_shortExact s).extend embeddingUpNat).gIsCokernel).hom =
       HomologicalComplex.extendMap (K.totalRowUpπ s) embeddingUpNat :=
     (cokernelIsCokernel _).comp_coconePointUniqueUpToIso_hom _ WalkingParallelPair.one
-  rw [rowFiltrationUpGradedIso, Iso.trans_hom,
-    CochainComplex.π_cokernelFiltrationFunctorMapIso_hom_assoc]
-  -- The cokernels in `TauCeti.cokernelOfLEMkIso` and in `h` are formed through different
-  -- `HasCokernel` instance paths, which agree only after unfolding instances: `rw` cannot match
-  -- them, `erw` can.
-  erw [Iso.trans_hom, TauCeti.π_cokernelOfLEMkIso_hom_assoc, h]
+  dsimp only [rowFiltrationUpGradedIso, Iso.trans, cokernel.mapIso, cokernel.map]
+  rw [cokernel.π_desc_assoc, Category.assoc]
+  exact congrArg ((K.rowFiltrationUpObjIso s i₂ (by omega)).hom ≫ ·) h
 
 /-! ### The spectral sequence -/
 
@@ -317,14 +347,74 @@ abbrev rowFiltrationUpSpectralSequence :=
   CochainComplex.spectralSequence
     (CochainComplex.filtrationFunctor K.rowFiltrationUp K.monotone_rowFiltrationUp)
 
-/-- The object at `(p, -(s + 1))` on the first page (numbered `2`) of the spectral sequence of the
-row filtration is the cohomology in degree `p - (s + 1)` of the row `s`, placed in the degrees it
-occupies in the total complex. -/
-def rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (p : ℤ) (s : ℕ) :
-    (K.rowFiltrationUpSpectralSequence.page 2).X (p, -((s : ℤ) + 1)) ≅
-      ((K.totalRowUp s).extend embeddingUpNat).homology (p + -((s : ℤ) + 1)) :=
-  CochainComplex.spectralSequenceFirstPageXIsoCokernel _ (p, -((s : ℤ) + 1)) _ _ rfl rfl _ rfl ≪≫
-    (HomologicalComplex.homologyFunctor C (up ℤ) _).mapIso (K.rowFiltrationUpGradedIso s)
+/-- The object at `pq = (p, q)` on the first page (numbered `2`) of the spectral sequence of the
+row filtration, for `q = -(s + 1)`, is the cohomology in degree `n = p + q` of the row `s`, placed
+in the degrees it occupies in the total complex. The indices `i₁ = q` and `i₂ = q + 1` of the
+filtration steps are given up to equality, as in
+`CochainComplex.spectralSequenceFirstPageXIsoCokernel`. -/
+def rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (pq : ℤ × ℤ) (i₁ i₂ : ℤ)
+    (hi₁ : i₁ = pq.2) (hi₂ : i₂ = pq.2 + 1) (s : ℕ) (hs : i₁ = -(s + 1)) (n : ℤ)
+    (hn : n = pq.1 + pq.2) :
+    (K.rowFiltrationUpSpectralSequence.page 2).X pq ≅
+      ((K.totalRowUp s).extend embeddingUpNat).homology n :=
+  CochainComplex.spectralSequenceFirstPageXIsoCokernel _ pq i₁ i₂ hi₁ hi₂ n hn ≪≫
+    HomologicalComplex.homologyMapIso (K.rowFiltrationUpGradedIso s i₁ i₂ hs (by omega)) n
+
+/-- **The first differential of the spectral sequence of the row filtration.** Under the
+identifications of the first page with the cohomology of the rows, the differential from
+`(p, q)` to `(p + 2, q - 1)`, for `q = -(s + 1)`, is the connecting map
+`Hⁿ(row s) ⟶ Hⁿ⁺¹(Tot (rows ≥ s + 1))` of the short exact sequence
+`Tot (rows ≥ s + 1) ⟶ Tot (rows ≥ s) ⟶ row s`, followed by the projection of the rows `≥ s + 1`
+onto the row `s + 1`. -/
+theorem rowFiltrationUpSpectralSequence_page_two_d (p q : ℤ) (s : ℕ) (hq : q = -(s + 1)) :
+    (K.rowFiltrationUpSpectralSequence.page 2).d (p, q) (p + 2, q - 1) =
+      (K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (p, q) q (q + 1) rfl rfl s hq
+          (p + q) rfl).hom ≫
+        ((K.totalRowUpShortComplex_shortExact s).extend embeddingUpNat).δ
+          (p + q) (p + q + 1) (ComplexShape.up_mk _ _ rfl) ≫
+        HomologicalComplex.homologyMap
+          (HomologicalComplex.extendMap (K.totalRowUpπ (s + 1)) embeddingUpNat) (p + q + 1) ≫
+        (K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (p + 2, q - 1) (q - 1) q rfl
+          (by lia) (s + 1) (by push_cast; omega) (p + q + 1) (by lia)).inv := by
+  -- The morphism from `F_q ⟶ F_{q+1} ⟶ F_{q+1}/F_q` to the extended sequence
+  -- `Tot (rows ≥ s + 1) ⟶ Tot (rows ≥ s) ⟶ row s`.
+  let ψ : ShortComplex.cokernelSequence
+      ((CochainComplex.filtrationFunctor K.rowFiltrationUp K.monotone_rowFiltrationUp).map
+        (homOfLE (CochainComplex.coe_le_coe_of_eq_add_one (rfl : q = q) rfl))) ⟶
+      (K.totalRowUpShortComplex s).map (embeddingUpNat.extendFunctor C) :=
+    { τ₁ := (K.rowFiltrationUpObjIso (s + 1) q (by omega)).hom
+      τ₂ := (K.rowFiltrationUpObjIso s (q + 1) (by omega)).hom
+      τ₃ := (K.rowFiltrationUpGradedIso s q (q + 1) hq rfl).hom
+      comm₁₂ := (K.filtrationFunctor_map_rowFiltrationUpObjIso_hom s q (q + 1) hq rfl).symm
+      comm₂₃ := (K.π_rowFiltrationUpGradedIso_hom s q (q + 1) hq rfl).symm }
+  have hnat := HomologicalComplex.HomologySequence.δ_naturality ψ
+    (TauCeti.cokernelSequence_shortExact _)
+    ((K.totalRowUpShortComplex_shortExact s).extend embeddingUpNat) (p + q) (p + q + 1)
+    (ComplexShape.up_mk _ _ rfl)
+  have hπ := K.π_rowFiltrationUpGradedIso_hom (s + 1) (q - 1) q (by push_cast; omega) (by lia)
+  rw [CochainComplex.spectralSequence_first_page_d_eq_δ_comp_homologyMap_π]
+  simp only [rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow, Iso.trans_hom, Iso.trans_inv,
+    HomologicalComplex.homologyMapIso_hom, HomologicalComplex.homologyMapIso_inv, Category.assoc]
+  congr 1
+  dsimp only [ψ] at hnat
+  have hH : HomologicalComplex.homologyMap (cokernel.π
+      ((CochainComplex.filtrationFunctor K.rowFiltrationUp K.monotone_rowFiltrationUp).map
+        (homOfLE (CochainComplex.coe_le_coe_of_eq_add_one (rfl : q - 1 = q - 1)
+          (by lia : q = q - 1 + 1))))) (p + q + 1) =
+      HomologicalComplex.homologyMap (K.rowFiltrationUpObjIso (s + 1) q (by omega)).hom
+          (p + q + 1) ≫
+        HomologicalComplex.homologyMap
+          (HomologicalComplex.extendMap (K.totalRowUpπ (s + 1)) embeddingUpNat) (p + q + 1) ≫
+        HomologicalComplex.homologyMap (K.rowFiltrationUpGradedIso (s + 1) (q - 1) q
+          (by push_cast; omega) (by lia)).inv (p + q + 1) := by
+    rw [← HomologicalComplex.homologyMap_comp, ← HomologicalComplex.homologyMap_comp,
+      ← reassoc_of% hπ, Iso.hom_inv_id, Category.comp_id]
+  rw [hH]
+  -- Reassociate by hand: the connecting maps are typed through `ShortComplex.cokernelSequence`,
+  -- which `rw` and `simp` do not see through.
+  exact (congrArg (_ ≫ ·) (Category.assoc _ _ _)).trans <| (Category.assoc _ _ _).symm.trans <|
+    (congrArg (· ≫ _) hnat).trans <| (Category.assoc _ _ _).trans <|
+      congrArg (_ ≫ _ ≫ ·) (Category.assoc _ _ _)
 
 /-- **The first page of the spectral sequence of the row filtration** is the cohomology of the
 rows: its object at `(p, -(s + 1))`, with `p = k + 2s + 1`, is the cohomology in degree `k` of the
@@ -332,7 +422,8 @@ row `s` `(K.X 0).X s ⟶ (K.X 1).X s ⟶ ⋯` of `K`, formed by the horizontal d
 def rowFiltrationUpSpectralSequenceFirstPageXIso (p : ℤ) (s k : ℕ) (hp : p = k + 2 * s + 1) :
     (K.rowFiltrationUpSpectralSequence.page 2).X (p, -((s : ℤ) + 1)) ≅
       (((HomologicalComplex.eval C (up ℕ) s).mapHomologicalComplex (up ℕ)).obj K).homology k :=
-  K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow p s ≪≫
+  K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (p, -((s : ℤ) + 1)) _ _ rfl rfl s rfl
+      _ rfl ≪≫
     (K.totalRowUp s).extendHomologyIso embeddingUpNat (j := k + s) (by simp; omega) ≪≫
     K.totalRowUpHomologyIso s k
 
@@ -341,7 +432,8 @@ def rowFiltrationUpSpectralSequenceFirstPageXIso (p : ℤ) (s k : ℕ) (hp : p =
 lemma isZero_rowFiltrationUpSpectralSequence_page_two_X_of_lt (p : ℤ) (s : ℕ)
     (h : p < 2 * s + 1) :
     IsZero ((K.rowFiltrationUpSpectralSequence.page 2).X (p, -((s : ℤ) + 1))) := by
-  refine IsZero.of_iso ?_ (K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow p s)
+  refine IsZero.of_iso ?_ (K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow
+    (p, -((s : ℤ) + 1)) _ _ rfl rfl s rfl _ rfl)
   by_cases hps : 0 ≤ p + -((s : ℤ) + 1)
   · obtain ⟨n, hn⟩ : ∃ n : ℕ, p + -((s : ℤ) + 1) = n := ⟨(p + -((s : ℤ) + 1)).toNat, by omega⟩
     exact (K.isZero_totalRowUp_homology s n (by omega)).of_iso

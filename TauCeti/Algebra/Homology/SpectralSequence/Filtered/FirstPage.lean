@@ -36,6 +36,9 @@ connecting maps of the short exact sequences of graded pieces
   spectral object, for monomorphic transition maps.
 * `CochainComplex.spectralSequence_first_page_d_eq`: the first differential of the spectral
   sequence of a filtered complex.
+* `CochainComplex.spectralSequence_first_page_d_eq_δ_comp_homologyMap_π`: the same differential
+  as the connecting map of `F_q ⟶ F_{q+1} ⟶ F_{q+1}/F_q` followed by the projection onto
+  `F_q/F_{q-1}`.
 
 ## References
 
@@ -112,6 +115,41 @@ theorem spectralSequence_first_page_d_eq (p q : ℤ)
     Iso.trans_hom, Iso.trans_inv, Category.assoc]
   congr 1
   exact (Category.assoc _ _ _).trans (Category.assoc _ _ _)
+
+/-- **The first differential of the spectral sequence of a filtered complex**, through the
+filtration step `F_q ⟶ F_{q+1}` itself: under the identifications of the first page with the
+cohomology of the graded pieces, the differential of the first page from `(p, q)` to
+`(p + 2, q - 1)` is the connecting map `H^{p+q}(F_{q+1}/F_q) ⟶ H^{p+q+1}(F_q)` of the short exact
+sequence `F_q ⟶ F_{q+1} ⟶ F_{q+1}/F_q`, followed by the projection `F_q ⟶ F_q/F_{q-1}`. -/
+theorem spectralSequence_first_page_d_eq_δ_comp_homologyMap_π (p q : ℤ)
+    [Mono (F.map (homOfLE (coe_le_coe_of_eq_add_one (show q - 1 = q - 1 from rfl)
+      (show q = q - 1 + 1 by lia))))]
+    [Mono (F.map (homOfLE (coe_le_coe_of_eq_add_one (show q = q from rfl) rfl)))] :
+    ((spectralSequence F).page 2).d (p, q) (p + 2, q - 1) =
+      (spectralSequenceFirstPageXIsoCokernel F (p, q) q (q + 1) rfl rfl (p + q) rfl).hom ≫
+        (TauCeti.cokernelSequence_shortExact
+          (F.map (homOfLE (coe_le_coe_of_eq_add_one (show q = q from rfl) rfl)))).δ
+            (p + q) (p + q + 1) (ComplexShape.up_mk _ _ rfl) ≫
+        HomologicalComplex.homologyMap (cokernel.π
+          (F.map (homOfLE (coe_le_coe_of_eq_add_one (show q - 1 = q - 1 from rfl)
+            (show q = q - 1 + 1 by lia))))) (p + q + 1) ≫
+        (spectralSequenceFirstPageXIsoCokernel F (p + 2, q - 1) (q - 1) q rfl (by lia)
+          (p + q + 1) (by lia)).inv := by
+  set a := F.map (homOfLE (coe_le_coe_of_eq_add_one (show q - 1 = q - 1 from rfl)
+    (show q = q - 1 + 1 by lia)))
+  set b := F.map (homOfLE (coe_le_coe_of_eq_add_one (show q = q from rfl) rfl))
+  -- The naturality of connecting maps along `(F_q ⟶ F_{q+1} ⟶ F_{q+1}/F_q) ⟶ (graded pieces)`.
+  have h := HomologicalComplex.HomologySequence.δ_naturality
+    (TauCeti.cokernelSequenceToSnakeInputL₃ a b) (TauCeti.cokernelSequence_shortExact b)
+    (TauCeti.kernelCokernelCompSequence_snakeInput_L₃_shortExact a b) (p + q) (p + q + 1)
+    (ComplexShape.up_mk _ _ rfl)
+  simp only [TauCeti.cokernelSequenceToSnakeInputL₃_τ₃,
+    TauCeti.cokernelSequenceToSnakeInputL₃_τ₁] at h
+  replace h := h.trans ((congrArg (· ≫ _) (HomologicalComplex.homologyMap_id _ (p + q))).trans
+    (Category.id_comp _))
+  rw [spectralSequence_first_page_d_eq]
+  congr 1
+  exact (congrArg (· ≫ _) h.symm).trans (Category.assoc _ _ _)
 
 end SpectralSequence
 
