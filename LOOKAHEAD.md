@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[1],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[3],"title":"feat: descent of finitely presented schemes and their properties to a finite stage"},{"n":6,"after":[2,4,5],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[3],"title":"feat: descent of finitely presented schemes and their properties to a finite stage"},{"n":6,"after":[2,4,5],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
 # Lookahead: `noetherian-approximation` (SchemeAndStackFoundations §0.9)
 
 Built on `main` at `333c9e4914`. Status: **partial**.
@@ -79,12 +79,19 @@ finite-presentation model over an open, from `U` to `X`).
      between base changes of schemes over `Dᵢ`, the target locally of finite presentation, is the
      base change of one over some `Dⱼ`); `exists_isIso_pullbackMap_of_isLimit` (081E, the
      "isomorphism" case of the inherited properties of `finite_presentation_limits`).
-4. **feat: existence of cofiltered limits of schemes with affine transition maps** (after: 1) —
-   *remaining*. `affine_transition_limits` existence (01YW), by gluing the affine limits
-   `Spec (colim Γ)` over an affine open cover of one member (Mathlib's `isLimitOpensCone` identifies
-   the restrictions), or by relative `Spec` of the colimit of the pushed-forward quasi-coherent
-   algebras (needs filtered colimits in `QuasicoherentAlgebra`, absent on `main`); into
-   `Limits/AffineTransition.lean` or a new `Limits/Existence.lean`.
+4. **feat: existence of cofiltered limits of schemes with affine transition maps** (after: 3) —
+   *proved*. File `TauCeti/AlgebraicGeometry/Limits/Existence.lean` (303 lines), namespace
+   `TauCeti.AlgebraicGeometry.Scheme`: `hasLimit_of_isAffine` (a small diagram of affine schemes
+   has a limit, `Spec` of the colimit of global sections) and the instance
+   `hasLimit_of_isAffineHom : HasLimit D` for every cofiltered `D : I ⥤ Scheme` with affine
+   transition maps, the existence half of `affine_transition_limits` (01YW). Proof: over a member
+   `Dᵢ`, the affine limits `lim_j Dⱼ ×_{Dᵢ} U` (`U` running over the affine opens of `Dᵢ`, via
+   `Functor.pullbackOver` from split 3) form a Mathlib `RelativeGluingData` over
+   `Dᵢ.directedAffineCover` (base change along `U ⊆ V` is a pullback square); the glued scheme
+   carries the cone, cones lift on the preimages of the `U` and are glued by
+   `Scheme.Cover.glueMorphisms`, and `Over.forget i` is initial. The gluing helpers are `private`
+   in `AffineTransitionLimit`. It needs split 3 only for
+   `TauCeti/CategoryTheory/Limits/Shapes/Pullback/Cofiltered.lean`; it does not need split 1.
 5. **feat: descent of finitely presented schemes and their properties to a finite stage**
    (after: 3) — *remaining*. The object half of 01ZM (a scheme of finite presentation over the
    limit is the base change of one over some `Dᵢ`), and the properties flat, smooth, étale,
@@ -102,12 +109,13 @@ finite-presentation model over an open, from `U` to `X`).
 
 ## What remains
 
-Proved: the separatedness/quasi-separatedness and (quasi-)affineness criteria of limits with affine
-transition maps; the underlying space of such a limit is the limit of the underlying spaces
-(0CUF); the full affine case of absolute Noetherian approximation; the absolute 01ZC
-factorization and agreement statements; base change of cofiltered limits; descent of morphisms
-(01ZM, morphism half) and of isomorphisms (081E) to a finite stage. Remaining: splits 4–7 above —
-existence of affine-transition limits (01YW), descent of finitely presented schemes themselves and
-of the remaining properties (flat, smooth, étale, proper, finite, closed and open immersion), the
-extension step across an open (the only consumer of the `qcoh-extension` stub), and the qcqs
-induction for `noetherian_approximation`.
+Proved: existence of cofiltered limits of schemes with affine transition maps (01YW) together with
+the separatedness/quasi-separatedness and (quasi-)affineness criteria of such limits and
+`|lim Xᵢ| = lim |Xᵢ|` (0CUF), which with Mathlib's `Scheme.compactSpace_of_isLimit` and
+`isAffineHom_π_app` make up `affine_transition_limits`; the full affine case of absolute
+Noetherian approximation; the absolute 01ZC factorization and agreement statements; base change of
+cofiltered limits; descent of morphisms (01ZM, morphism half) and of isomorphisms (081E) to a
+finite stage. Remaining: splits 5–7 above — descent of finitely presented schemes themselves (01ZM,
+object half) and of the remaining properties (flat, smooth, étale, proper, finite, closed and open
+immersion), the extension step across an open (the only consumer of the `qcoh-extension` stub),
+and the qcqs induction for `noetherian_approximation` (01Z7, 01Z9, 07RN, 01ZA).
