@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"gamma-zero-naive","main":"5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1","status":"partial","suppliers":["finite-quotient"],"splits":[{"n":1,"after":[],"title":"refactor(EllipticCurve/Scheme/Geom/BaseChange): factor the pull-back of a generator square out of IsCyclicSubgroup.comap"},{"n":2,"after":[],"title":"feat(EllipticCurve/Scheme/Geom/ExactOrder): index the divisor of multiples by ZMod N"},{"n":3,"after":[],"title":"feat(ModularCurve/NaiveLevel): naive [Γ₁(N)]-structures extend étale-locally to [Γ(N)]-structures"},{"n":4,"after":[1,2],"title":"feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup): naive cyclic subgroups of elliptic curves"},{"n":5,"after":[2,3,4],"title":"feat(ModularCurve/NaiveGammaZero): the naive moduli problem [Γ₀(N)]"},{"n":6,"after":[],"title":"feat(ModularCurve/ModuliProblem): group actions on representing schemes"},{"n":7,"after":[],"title":"feat(FiniteEtale/Quotient): free quotients of finite étale schemes are torsors"},{"n":8,"after":[5,6,7],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier as the Borel quotient of the [Γ(N)] carrier"},{"n":9,"after":[],"title":"feat(IdealSheaf/FlatLocality): closed subschemes and factorizations through them are detected after fppf coverings"},{"n":10,"after":[5,8,9],"title":"feat(ModularCurve/NaiveGammaZero): the injective classifying map of naive [Γ₀(N)]-structures"},{"n":11,"after":[],"title":"feat(IdealSheaf/EffectiveDescent): closed subschemes descend along affine faithfully flat morphisms"},{"n":12,"after":[4,9],"title":"feat(EllipticCurve/Scheme/Geom/BaseChange/SubgroupDescent): naive cyclic subgroups descend along finite étale base change"},{"n":13,"after":[10,11,12],"title":"feat(ModularCurve/NaiveGammaZero): naive [Γ₀(N)] is relatively representable and étale over Ell/ℤ[1/N]"},{"n":14,"after":[12],"title":"feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup/Torsion): naive cyclic subgroups as closed subgroup schemes of E[N]"},{"n":15,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier is the cyclic locus of the subgroup parameter scheme"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"gamma-zero-naive","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["finite-quotient"],"splits":[{"n":1,"after":[],"title":"refactor(EllipticCurve/Scheme/Geom/BaseChange): factor the pull-back of a generator square out of IsCyclicSubgroup.comap"},{"n":2,"after":[],"title":"feat(EllipticCurve/Scheme/Geom/ExactOrder): index the divisor of multiples by ZMod N"},{"n":3,"after":[],"title":"feat(ModularCurve/NaiveLevel): naive [Γ₁(N)]-structures extend étale-locally to [Γ(N)]-structures"},{"n":4,"after":[1,2],"title":"feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup): naive cyclic subgroups of elliptic curves"},{"n":5,"after":[2,3,4],"title":"feat(ModularCurve/NaiveGammaZero): the naive moduli problem [Γ₀(N)]"},{"n":6,"after":[],"title":"feat(ModularCurve/ModuliProblem): group actions on representing schemes"},{"n":7,"after":[],"title":"feat(FiniteEtale/Quotient): free quotients of finite étale schemes are torsors"},{"n":8,"after":[5,6,7],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier as the Borel quotient of the [Γ(N)] carrier"},{"n":9,"after":[],"title":"feat(IdealSheaf/FlatLocality): closed subschemes and factorizations through them are detected after fppf coverings"},{"n":10,"after":[5,8,9],"title":"feat(ModularCurve/NaiveGammaZero): the injective classifying map of naive [Γ₀(N)]-structures"},{"n":11,"after":[],"title":"feat(IdealSheaf/EffectiveDescent): closed subschemes descend along affine faithfully flat morphisms"},{"n":12,"after":[4,9],"title":"feat(EllipticCurve/Scheme/Geom/BaseChange/SubgroupDescent): naive cyclic subgroups descend along finite étale base change"},{"n":13,"after":[10,11,12],"title":"feat(ModularCurve/NaiveGammaZero): naive [Γ₀(N)] is relatively representable and étale over Ell/ℤ[1/N]"},{"n":14,"after":[12],"title":"feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup/Torsion): naive cyclic subgroups as closed subgroup schemes of E[N]"},{"n":15,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier is the cyclic locus of the subgroup parameter scheme"}]}-->
 
 # Lookahead: `gamma-zero-naive` (ModularCurves, Layer 3N)
 
-Built on `main` at `5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1`. Status: **partial**.
+Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54`. Status: **partial**.
 
 The target is Layer 3N of `ModularCurves/README.md`, *Naive level structures*. The naive `[Γ(N)]`
 and `[Γ₁(N)]` problems, their relative representability and their étaleness were already on
@@ -29,10 +29,14 @@ dependency order given below. Splits 7, 8, 10 and 13 wait for `finite-quotient` 
   pin is the prose of Layer 0C, item 3, copied verbatim: "Deduce the constant-group case: if a
   finite constant group acts freely on `X` and `X` has a group-invariant affine open cover, glue
   the affine invariant quotients and prove that the result represents the fppf quotient."
-- **Source of the stub: PR #27740's diff** (open, `finite-quotient`, last updated 2026-11-04
-  14:27 UTC; one file, `TauCeti/AlgebraicGeometry/Quotient/FiniteGroup/Relative.lean`, new section
-  `Free`, under the file's `variable [Finite G] [A.X.IsQuasicoherent]` and `variable {ρ}`). Its
-  statement, copied verbatim:
+- **Source of the stub: PR #27740's diff** (open, `finite-quotient`, re-read 2026-11-04
+  16:10 UTC at head `4146ac63e68`, last updated 15:40 UTC). Its second commit moves `main`'s
+  `TauCeti/AlgebraicGeometry/Quotient/FiniteGroup/Relative.lean` to `.../Relative/Basic.lean`
+  (and updates the import of `FiniteEtale/Quotient.lean`). It states the theorem in a new file,
+  `TauCeti/AlgebraicGeometry/Quotient/FiniteGroup/Relative/Fppf.lean`, in namespace
+  `CategoryTheory.CommMon` under `variable {A : CommMon X.Modules} {G : Type v} [Group G]
+  [Finite G] [A.X.IsQuasicoherent] {ρ : G →* Aut A}`. The statement is unchanged from the
+  first commit, which the earlier round stubbed. Copied verbatim:
 
   ```lean
   variable
@@ -176,8 +180,9 @@ Splits 1–14 are proved on this branch with no `sorry` outside the stub file. S
 7. **feat(FiniteEtale/Quotient): free quotients of finite étale schemes are torsors.** Needs: no
    split, but it consumes `finite-quotient` (PR #27740), so it opens once that has merged. New in the
    round of 2026-11-04 15:30 UTC. File: `TauCeti/AlgebraicGeometry/FiniteEtale/Quotient.lean`
-   (+66 lines; the port replaces the stub import by `main`'s `Quotient.FiniteGroup.Relative`,
-   which the file already imports publicly). Declarations: the private
+   (+66 lines; the port replaces the stub import by the PR's
+   `Quotient.FiniteGroup.Relative.Fppf`, which imports the renamed `Relative.Basic` that the file
+   already imports publicly). Declarations: the private
    `span_sectionsAlgHom_sub_eq_top` (an action on a finite étale `Y` without fixed points with
    values in fields is free on sections over every affine open: a maximal ideal containing the
    elements `g • a - a` gives a point with values in its residue field that `g⁻¹` fixes) and
@@ -364,6 +369,12 @@ freeness on sections. `universal-subgroup` was re-checked at 15:10 UTC: PR #2722
 still affine-only, and unchanged since 2026-11-03 23:01 UTC. `main` has the universal property
 of the Grassmannian scheme only for affine points (`Module.Grassmannian.schemeHomEquiv`, points
 `Spec A ⟶ G(k, M)` over `Spec R`), so split 15 is still blocked.
+
+The round of 2026-11-04 16:10 UTC merged `main` at `52f9d081237` (no conflicts; nothing of either
+supplier landed). PR #27740 had gained a second commit, which moves the statement into the new
+module `Quotient/FiniteGroup/Relative/Fppf.lean` and does not change it, so the stub stays the same
+and only its recorded source changed. PR #27222 is still open and affine-only, unchanged since
+2026-11-03 23:01 UTC, so split 15 is still blocked.
 
 Remaining, exactly (split 15): the identification of `Y/Borel` with the cyclic open-and-closed
 locus in the subgroup parameter space of Layer 0G. It needs the parameter scheme of rank-`N`
