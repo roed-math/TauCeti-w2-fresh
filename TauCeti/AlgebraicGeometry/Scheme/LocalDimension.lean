@@ -10,10 +10,12 @@ public import TauCeti.AlgebraicGeometry.Morphisms.FiniteType
 public import TauCeti.AlgebraicGeometry.Scheme.BaseAlgebra
 public import TauCeti.AlgebraicGeometry.Scheme.KrullDimension
 public import TauCeti.Lookahead.ChowProperPushforward.Stubs
+public import Mathlib.AlgebraicGeometry.ZariskisMainTheorem
 import Mathlib.FieldTheory.FinTrdeg
 import Mathlib.FieldTheory.IntermediateField.Adjoin.Algebra
 import Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis
 import TauCeti.AlgebraicGeometry.ResidueDegree
+import TauCeti.Topology.NoetherianSpace.ClosedPoints
 
 /-!
 # Local dimension of schemes locally of finite type over a field
@@ -61,6 +63,12 @@ All in the namespace `TauCeti.AlgebraicGeometry`:
   finite residue field extension.
 * `functionFieldMap_finite_of_topologicalKrullDim_eq`: a dominant morphism of integral schemes of
   the same dimension makes `K(X)` finite over `K(Y)`.
+* `height_apply_le_height`: a morphism over `k` does not increase the height of a point.
+* `finite_preimage_singleton_of_height_eq` and `exists_isFinite_morphismRestrict_of_height_eq`:
+  a fibre whose points all have the height of their image is finite, and a proper morphism is then
+  finite over a neighbourhood of that image (Stacks, Tag 02UP).
+* `exists_isFinite_morphismRestrict_of_height_add_one`: a proper dominant morphism of integral
+  schemes of the same dimension is finite over a neighbourhood of every point of codimension one.
 
 ## References
 
@@ -314,6 +322,103 @@ theorem functionFieldMap_finite_of_topologicalKrullDim_eq {Y : Scheme.{u}}
   rw [this, hcomm]
   exact (RingHom.Finite.of_surjective _ e.symm.surjective).comp (hfin.comp
     (RingHom.Finite.of_surjective _ ((Y.residue_surjective _).comp (hspec hx))))
+
+/-- **Morphisms do not increase heights.** For a morphism `f : X ⟶ Y` of schemes locally of finite
+type over a field `k`, the closure of `f x` has dimension at most that of the closure of `x`:
+`κ(f x)` is a subfield of `κ(x)`, so its transcendence degree over `k` is at most that of `κ(x)`. -/
+theorem height_apply_le_height {Y : Scheme.{u}} [Y.Over (Spec (.of k))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of k))] (f : X ⟶ Y) [f.IsOver (Spec (.of k))] (x : X) :
+    Order.height (f x) ≤ Order.height x := by
+  let : Algebra (Y.residueField (f x)) (X.residueField x) := (f.residueFieldMap x).hom.toAlgebra
+  have : IsScalarTower k (Y.residueField (f x)) (X.residueField x) :=
+    IsScalarTower.of_algebraMap_eq fun c ↦ (f.residueFieldMap_algebraMap k x c).symm
+  have hsum := trdeg_add_eq k (Y.residueField (f x)) (A := X.residueField x)
+  have hfin : Algebra.trdeg k (X.residueField x) < Cardinal.aleph0 := trdeg_lt_aleph0 _ _
+  rw [← hsum, Cardinal.add_lt_aleph0_iff] at hfin
+  rw [height_eq_toNat_trdeg_residueField k, height_eq_toNat_trdeg_residueField k, ← hsum,
+    Cardinal.toNat_add hfin.1 hfin.2, Nat.cast_le]
+  exact Nat.le_add_right _ _
+
+/-- **Fibres of equal height are finite.** Let `f : X ⟶ Y` be a quasi-compact morphism of schemes
+locally of finite type over a field `k`, and let `y ∈ Y` be such that every point of the fibre
+over `y` has the height of `y`. Then the fibre is finite. Two points of the fibre with the same
+finite height cannot specialize to one another, so the fibre is a `T₁` space; it is also the
+underlying space of the fibre scheme, which is Noetherian and quasi-sober. -/
+theorem finite_preimage_singleton_of_height_eq {Y : Scheme.{u}} [Y.Over (Spec (.of k))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of k))] (f : X ⟶ Y) [f.IsOver (Spec (.of k))]
+    [QuasiCompact f] (y : Y) (h : ∀ x, f x = y → Order.height x = Order.height y) :
+    (f ⁻¹' {y}).Finite := by
+  have : LocallyOfFiniteType f := by
+    have : LocallyOfFiniteType (f ≫ Y ↘ Spec (.of k)) := by
+      rw [CategoryTheory.comp_over]; infer_instance
+    exact locallyOfFiniteType_of_comp f (Y ↘ Spec (.of k))
+  have : T1Space (f ⁻¹' {y}) := by
+    refine t1Space_iff_specializes_imp_eq.2 fun a b hab ↦ Subtype.ext ?_
+    have hab : (a : X) ⤳ b := Topology.IsInducing.subtypeVal.specializes_iff.2 hab
+    by_contra hne
+    -- `b` is a proper specialization of `a`, so its height is strictly smaller.
+    have hlt : (b : X) < a := ⟨hab, fun hba ↦ hne (hab.antisymm hba).eq⟩
+    have hb : Order.height (b : X) = Order.height y := h b b.2
+    have ha : Order.height (a : X) = Order.height y := h a a.2
+    have hfin : Order.height (b : X) < ⊤ := by
+      rw [height_eq_toNat_trdeg_residueField k]
+      exact ENat.natCast_lt_top _
+    exact (Order.height_strictMono hlt hfin).ne (hb.trans ha.symm)
+  have : LocallyOfFiniteType (f.fiberToSpecResidueField y) :=
+    inferInstanceAs (LocallyOfFiniteType (Limits.pullback.snd _ _))
+  have : IsLocallyNoetherian (f.fiber y) :=
+    LocallyOfFiniteType.isLocallyNoetherian (f.fiberToSpecResidueField y)
+  have : IsNoetherian (f.fiber y) := {}
+  have : T1Space (f.fiber y) := (f.fiberHomeo y).isEmbedding.t1Space
+  have : Finite (f.fiber y) := finite_of_noetherianSpace_of_t1Space
+  exact f.range_fiberι y ▸ Set.finite_range _
+
+/-- **Proper morphisms are finite over points of equal fibre height.** Let `f : X ⟶ Y` be a proper
+morphism of schemes locally of finite type over a field `k`, and let `y ∈ Y` be such that every
+point of the fibre over `y` has the height of `y`. Then `f` is finite over an open neighbourhood
+of `y`: the fibre is finite (`finite_preimage_singleton_of_height_eq`), so this is Mathlib's
+`exists_isFinite_morphismRestrict_of_finite_preimage_singleton` (Stacks, Tag 02UP). -/
+theorem exists_isFinite_morphismRestrict_of_height_eq {Y : Scheme.{u}} [Y.Over (Spec (.of k))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of k))] (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f]
+    (y : Y) (h : ∀ x, f x = y → Order.height x = Order.height y) :
+    ∃ V : Y.Opens, y ∈ V ∧ IsFinite (f ∣_ V) :=
+  exists_isFinite_morphismRestrict_of_finite_preimage_singleton f y
+    (finite_preimage_singleton_of_height_eq k f y h)
+
+/-- **Proper generically finite morphisms are finite in codimension one.** Let `f : X ⟶ Y` be a
+proper dominant morphism of integral schemes locally of finite type over a field `k`, both of
+dimension `n + 1`, and let `y ∈ Y` be a point of codimension one, that is, of height `n`. Then `f`
+is finite over an open neighbourhood of `y`. Indeed a point `x` over `y` has height at least `n`
+(`height_apply_le_height`) and is not the generic point of `X`, which maps to the generic point of
+`Y`; so its height is less than `n + 1`, hence equal to `n`, and
+`exists_isFinite_morphismRestrict_of_height_eq` applies. -/
+theorem exists_isFinite_morphismRestrict_of_height_add_one {Y : Scheme.{u}}
+    [Y.Over (Spec (.of k))] [LocallyOfFiniteType (Y ↘ Spec (.of k))] [IsIntegral X] [IsIntegral Y]
+    (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f] [IsDominant f] {n : ℕ}
+    (hX : topologicalKrullDim X = n + 1) (hY : topologicalKrullDim Y = n + 1) {y : Y}
+    (hy : Order.height y = n) :
+    ∃ V : Y.Opens, y ∈ V ∧ IsFinite (f ∣_ V) := by
+  have hgen : ∀ (Z : Scheme.{u}) [IsIntegral Z], topologicalKrullDim Z = n + 1 →
+      Order.height (genericPoint Z) = n + 1 := fun Z _ hZ ↦ by
+    have h := height_eq_topologicalKrullDim_closure_singleton (genericPoint Z)
+    rw [isGenericPoint_def.1 (genericPoint_spec Z),
+      (Homeomorph.Set.univ Z).isHomeomorph.topologicalKrullDim_eq, hZ] at h
+    exact_mod_cast h
+  refine exists_isFinite_morphismRestrict_of_height_eq k f y fun x hx ↦ ?_
+  subst hx
+  refine le_antisymm ?_ (height_apply_le_height k f x)
+  have hne : x ≠ genericPoint X := by
+    rintro rfl
+    have h := hgen Y hY
+    rw [← f.genericPoint_eq_of_isDominant, hy] at h
+    exact absurd h (by norm_cast; omega)
+  have hspec := (genericPoint_spec X).specializes (Set.mem_univ x)
+  have hlt : x < genericPoint X := ⟨hspec, fun h ↦ hne (h.antisymm hspec).eq⟩
+  have := Order.height_strictMono hlt (by
+    rw [height_eq_toNat_trdeg_residueField k]; exact ENat.natCast_lt_top _)
+  rw [hgen X hX] at this
+  rw [hy]
+  exact Order.le_of_lt_add_one this
 
 end AlgebraicGeometry
 
