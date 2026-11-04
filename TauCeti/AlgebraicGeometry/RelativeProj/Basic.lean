@@ -45,7 +45,8 @@ the pullback of the chart over `U`.
 * `CategoryTheory.CommMon.proj_map_restrictGradedSections_preimage_basicOpen_eq_top`: the chart over
   `D(f)` maps into the locus of the chart over `U` where `f` is invertible.
 * `CategoryTheory.CommMon.isPullback_relativeProjCover`: over an affine open `U` of `X`, the
-  relative `Proj` is `Proj (⨁ n, Γ(Aₙ, U))`.
+  relative `Proj` is `Proj (⨁ n, Γ(Aₙ, U))`; for `X` affine and `U = X` the chart is an
+  isomorphism (`CategoryTheory.CommMon.isIso_relativeProjCover_f_top`).
 
 ## References
 
@@ -267,6 +268,16 @@ theorem _root_.CategoryTheory.CommMon.isPullback_relativeProjCover (U : X.Affine
     IsPullback (Proj.toSpecCoeff (A.gradedSectionsGrading U.toOpens) ≫ U.2.isoSpec.inv)
       (A.relativeProjCover.f U) U.toOpens.ι A.relativeProjToBase :=
   A.relativeProjGluingData.isPullback_natTrans_ι_toBase U
+
+/-- **Over an affine scheme, the relative `Proj` is the `Proj` of the global sections**: when `X`
+is affine, the chart `Proj (⨁ n, Γ(Aₙ, X)) ⟶ Proj_X(A)` over the affine open `⊤` is an
+isomorphism, as the base change of the isomorphism `⊤ ⟶ X`. -/
+instance _root_.CategoryTheory.CommMon.isIso_relativeProjCover_f_top [IsAffine X] :
+    IsIso (A.relativeProjCover.f ⟨⊤, isAffineOpen_top X⟩) :=
+  have : IsIso (⊤ : X.Opens).ι := by
+    rw [← Scheme.topIso_hom]
+    infer_instance
+  (A.isPullback_relativeProjCover ⟨⊤, isAffineOpen_top X⟩).isIso_snd_of_isIso
 
 end Gluing
 

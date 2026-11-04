@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"00deee4410cf1ae1f96695b1ab13f148cea83bc7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[1,2,3,4,5,6,7,8,9,10,11],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[1,2,3,4,5,6,7,8,9,10,11],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
-Built on `main` at `00deee4410cf1ae1f96695b1ab13f148cea83bc7`. Status: **partial**. Target text
+Built on `main` at `5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1`. Status: **partial**. Target text
 (StableReduction README, Layer 2): "Extend Tau Ceti's invertible-sheaf API with tensor powers,
 Cartier divisors, pullback, degree on components, global generation, and relative ampleness.
 Build projective morphisms and relative `Proj` of a finitely generated graded quasi-coherent
@@ -9,7 +9,7 @@ algebra." The target has no pinned forms in `StableReduction/Suggested.lean`.
 
 ## Stubbed declarations: none left
 
-Sixth session (2026-11-04, 00:05 UTC), still true in the eighteenth. The supplier `relative-proj-twisting-sheaf`
+Sixth session (2026-11-04, 00:05 UTC), still true in the nineteenth. The supplier `relative-proj-twisting-sheaf`
 (SchemeAndStackFoundations §0.3) has landed the part this target consumes, in
 `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf.lean` on `main`. The stub file
 `TauCeti/Lookahead/RelativeAmpleness/Stubs.lean` is deleted and the proof now uses the landed
@@ -39,6 +39,43 @@ The earlier stubs and what replaced them:
    `CommMon.IsGeneratedInDegreeOne A` with exactly that body, plus `isGeneratedInDegreeOne_iff`,
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
+
+## Changes in the nineteenth session (2026-11-04, 15:00 UTC)
+
+- `main` moved to `5f78b5307b9` and is merged in with no conflicts. None of its new commits
+  touches a file of this branch or adds a declaration of it. The supplier PR #27145 is still open
+  and still not consumed, so there are still no stubs.
+- **The sections of `Sym F` over an affine open are the symmetric algebra of the sections**
+  (`TauCeti.AlgebraicGeometry.gradedSymmetricAlgebraSectionsEquiv`, an `AlgEquiv`
+  `Sym Γ(F, U) ≃ₐ[Γ(X, U)] ⨁ n, Γ(Symⁿ F, U)` with `_ι`, `_mem` and `_symm_mem`, in `Adjunction.lean`,
+  split 7). The section-level extension was already known to be surjective; it is now also
+  injective (`sectionsLift_injective_of`, private): its degree-`n` part is the bijection
+  `Symⁿ Γ(F, U) ≅ Γ(Symⁿ F, U)` of `main`'s `symmetricPowerSectionsIso` followed by the degree-`n`
+  component of the sheaf-level extension, and the degree-`n` parts span `Sym Γ(F, U)`
+  (`iSup_homogeneousSubmodule_eq_top`). `adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra`
+  is now a corollary, and the private `adjoin_gradedSectionsGrading_one_eq_top_of` is gone.
+  `finiteType_sections_gradedSymmetricAlgebra` shrinks from 25 lines to 8: the sections are
+  `Sym` of the finite module `Γ(F, U)`.
+- **Over an affine base, the relative `Proj` is the `Proj` of the global sections**
+  (`CommMon.isIso_relativeProjCover_f_top`, an instance, in `main`'s `RelativeProj/Basic.lean`,
+  split 7): the chart over `⊤` is the base change of the isomorphism `⊤ ⟶ X`.
+- **`ℙ(F)` over an affine scheme is `Proj (Sym Γ(F, X))`** (`RelativeProj/SymmetricAlgebra.lean`,
+  split 7): `gradedSymmetricAlgebraSectionsGradedHom` and its inverse,
+  `projGradedSectionsGradingIso` (`Proj (⨁ n, Γ(Symⁿ F, U)) ≅ Proj (Sym Γ(F, U))` over
+  `Spec Γ(X, U)`, `projGradedSectionsGradingIso_hom_toSpecCoeff`), and
+  `relativeProjGradedSymmetricAlgebraIso` (`ℙ(F) ≅ Proj (Sym Γ(F, X))` for `X` affine) with
+  `relativeProjGradedSymmetricAlgebraIso_inv_relativeProjToBase` (it lies over `X`).
+- **Over an affine base, `Proj (Sym Γ(F, S)) ⟶ S` is projective** for `F` of finite type
+  (`isProjective_toSpecCoeff_comp_fromSpec`, an instance, final split 12). This is the first half
+  of the comparison with `main`'s `Scheme.IsProjectiveOver`; see "Remains" for the second.
+- Verified: `lake build` green and `lookahead-check` ok. No `sorry` anywhere on the branch.
+- Rubric audit:
+  - reuse: the finite-type proof now goes through Tau Ceti's `SymmetricAlgebra.instFiniteType`
+    instead of an ad hoc span argument, and the generation-in-degree-one theorem is derived from
+    the equivalence rather than proved separately;
+  - the module system hides `Proj.mapIso`, so `projGradedSectionsGradingIso_hom_toSpecCoeff`
+    rewrites with `Proj.mapIso_hom` stated for the concrete isomorphism (a `rw` of the generic
+    lemma fails, since the sections module is typed through `PresheafOfModulesOfCommRing`).
 
 ## Changes in the eighteenth session (2026-11-04, 12:00 UTC)
 
@@ -645,13 +682,19 @@ The earlier stubs and what replaced them:
    - Subject: `feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes`
 7. **The symmetric algebra is generated in degree one and its relative `Proj` is proper** (after: 1).
    - Files: `main`'s `Modules/Quasicoherent/GradedAlgebra/SymmetricAlgebra/Adjunction.lean`
-     (+103; it now imports `Modules/SymmetricPower/Sections.lean` and
-     `LinearAlgebra/SymmetricAlgebra/Homogeneous.lean`); `RelativeProj/SymmetricAlgebra.lean`
-     (115 lines, new).
-   - Declarations: `TauCeti.AlgebraicGeometry.adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra`
-     (with three private lemmas in `Adjunction.lean`), `isGeneratedInDegreeOne_gradedSymmetricAlgebra`,
+     (+209; it now imports `Modules/SymmetricPower/Sections.lean` and
+     `LinearAlgebra/SymmetricAlgebra/Homogeneous.lean`); `main`'s `RelativeProj/Basic.lean` (+12);
+     `RelativeProj/SymmetricAlgebra.lean` (185 lines, new). About 400 lines.
+   - Declarations: in `Adjunction.lean`, `gradedSymmetricAlgebraSectionsEquiv` with
+     `gradedSymmetricAlgebraSectionsEquiv_ι`, `_mem`, `_symm_mem`, and
+     `adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra` (with private helper lemmas); in
+     `RelativeProj/Basic.lean`, the instance `CommMon.isIso_relativeProjCover_f_top`; in
+     `RelativeProj/SymmetricAlgebra.lean`, `isGeneratedInDegreeOne_gradedSymmetricAlgebra`,
      `finiteType_sections_gradedSymmetricAlgebra`, `finite_sections_gradedSymmetricAlgebra_zero`,
-     `isProper_relativeProjToBase_gradedSymmetricAlgebra`.
+     `isProper_relativeProjToBase_gradedSymmetricAlgebra`, `gradedSymmetricAlgebraSectionsGradedHom`,
+     `gradedSymmetricAlgebraSectionsGradedHomInv`, `projGradedSectionsGradingIso`,
+     `projGradedSectionsGradingIso_hom_toSpecCoeff`, `relativeProjGradedSymmetricAlgebraIso`,
+     `relativeProjGradedSymmetricAlgebraIso_inv_relativeProjToBase`.
    - Roadmap line: `Roadmap: SchemeAndStackFoundations` (§0.3 relative `Proj`).
    - Subject: `feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper`
 8. **Sections over nonvanishing loci extend; ampleness pulls back along immersions**
@@ -719,8 +762,8 @@ The earlier stubs and what replaced them:
     (after: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11). It imports splits 1, 6, 7 and 10, and through them
     2, 3, 4, 5, 8 and 9; split 11 is ordered before it so that it is the last split to merge.
     It is the only split that completes the target, and it carries its exported theorems.
-    - Files (about 435 lines):
-      - `TauCeti/AlgebraicGeometry/Morphisms/Projective.lean` (290 lines, new; imports
+    - Files (about 450 lines):
+      - `TauCeti/AlgebraicGeometry/Morphisms/Projective.lean` (306 lines, new; imports
         `LineBundle/RelativelyAmple/Comp.lean`);
       - `TauCeti/AlgebraicGeometry/Blowup/Projective.lean` (130 lines, new);
       - `main`'s `Blowup/IdealSheaf.lean` (+24/−12: the two inline bullets of
@@ -737,7 +780,8 @@ The earlier stubs and what replaced them:
       instance `IsProjective.isProper`; projective bundles:
       `InvertibleSheaf.isRelativelyVeryAmple_relativeProjTwistingSheaf_gradedSymmetricAlgebra`,
       `LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra`, and
-      the instance `isProjective_relativeProjToBase_gradedSymmetricAlgebra`.
+      the instance `isProjective_relativeProjToBase_gradedSymmetricAlgebra`; over an affine base, the
+      instance `isProjective_toSpecCoeff_comp_fromSpec` (`Proj (Sym Γ(F, S)) ⟶ S`).
     - Declarations in `Blowup/Projective.lean` (namespace `AlgebraicGeometry.Scheme.IdealSheafData`,
       like its neighbours): `adjoin_gradedSectionsGrading_one_reesAlgebra`,
       `isGeneratedInDegreeOne_reesAlgebra`, `isProjective_blowupToBase` (Stacks 02NS),
@@ -798,7 +842,9 @@ Proved, with no stubs:
 - Projective morphisms are closed under precomposition with closed immersions and are
   **proper**. Closed immersions, in particular isomorphisms, are projective. They carry a line bundle, the pullback of `𝒪(1)`, that is relatively very ample and
   relatively ample.
-- `Sym F` is generated in degree one for every quasicoherent `F`. For `F` of finite type, the
+- `Sym F` is generated in degree one for every quasicoherent `F`; over an affine open its sections
+  are the symmetric algebra of the sections of `F`, and over an affine base `ℙ(F)` is
+  `Proj (Sym Γ(F, S))`, which is therefore projective over `S` for `F` of finite type. For `F` of finite type, the
   projective bundle `ℙ(F) = Proj_S(Sym F) ⟶ S` is projective (hence proper), and its `𝒪(1)` is
   relatively very ample and relatively ample. A closed immersion into `ℙ(F)` over `S` is
   therefore projective: this is the Stacks definition of projective morphisms.
@@ -817,14 +863,28 @@ Remains for the target:
   Segre or Veronese step to reach degree one). For base change: pullback of graded
   quasi-coherent algebras along an arbitrary morphism of the base and `Proj` commuting with it
   (`main` has it only for restriction to opens, `CommMon.isPullback_proj_restrictGradedSections`).
-- Comparison with `main`'s affine-base notion `AlgebraicGeometry.Scheme.IsProjectiveOver R X`
-  (eighteenth session): `X.IsProjectiveOver R ↔ IsProjective (X ↘ Spec R)`. The forward
-  direction needs `Proj (Sym_R M) ≅ Proj_{Spec R}(Sym M~)` over `Spec R`: the chart of the
-  relative `Proj` over the affine open `⊤` is `Proj (⨁ n, Γ(Symⁿ M~, ⊤))`
-  (`CommMon.isPullback_relativeProjCover`), and the graded ring map `Sym_R M → ⨁ n, Γ(Symⁿ M~, ⊤)`
-  from the universal property is surjective (`adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra`)
-  and injective degreewise by `main`'s `symmetricPowerSectionsIso`; the compatibility of these two
-  descriptions is what remains to be written.
+- Comparison with `main`'s affine-base notion `AlgebraicGeometry.Scheme.IsProjectiveOver R X`:
+  `X.IsProjectiveOver R → IsProjective (X ↘ Spec R)` (the converse needs the `Proj` side of
+  composition above). Done in the nineteenth session: over an affine `S` and for `F` of finite
+  type, `Proj (Sym Γ(F, S)) ⟶ Spec Γ(S, S) ≅ S` is projective
+  (`isProjective_toSpecCoeff_comp_fromSpec`, through `relativeProjGradedSymmetricAlgebraIso`).
+  What remains, for `S = Spec R` and `F = M~` with `M` a finite `R`-module:
+  1. `(tilde M).IsFiniteType` for `Module.Finite R M`. `main` only has finite presentation
+     (`isFinitePresentation_tilde`). Take Mathlib's `presentationTilde M s hs t ht` with `s`
+     finite and `t` the whole kernel; its generators are of finite type, and they should be
+     transported to a `LocalGeneratorsData` over the single open `⊤`, as `main`'s
+     `Presentation.isFinitePresentation` does for presentations (`Refinement.lean`).
+  2. The graded isomorphism `Sym_R M ≅ Sym_{Γ(Spec R, ⊤)} Γ(M~, ⊤)`: `SymmetricAlgebra.mapₛₗ` of
+     the semilinear bijection `tilde.toOpen M ⊤` (over `algebraMap R Γ(Spec R, ⊤)`, as the private
+     `symmetricToOpenSemilinear` of `main`'s `SymmetricPower/Affine.lean`, which should be made
+     public rather than copied) and of its inverse, with `mapₛₗ_comp_mapₛₗ`, `mapₛₗ_eq_id` and
+     `mapₛₗ_mem_homogeneousSubmodule`; then `Proj.mapIso`.
+  3. Coefficients: `Proj.map f ≫ toSpecZero = toSpecZero ≫ Spec.map f₀` (`Proj.map_toSpecZero`)
+     with `mapₛₗ_algebraMap` gives `Proj.map f ≫ projToSpec R M = toSpecCoeff ≫ Spec.map
+     (algebraMap R Γ(Spec R, ⊤))`, and `(isAffineOpen_top (Spec R)).fromSpec =
+     Spec.map (ΓSpecIso R).inv` (`IsAffineOpen.fromSpec_top`, `Scheme.isoSpec_Spec_inv`).
+  4. Then `X ↘ Spec R = g ≫ projToSpec R M` for the closed immersion `g` of the definition, and
+     `projToSpec R M` is an isomorphism followed by the projective morphism above.
 Not needed from this target (checked in the fifteenth session):
 - Cartier divisors and degree on components. `main` already has the basic API: Cartier divisors,
   their sheaves `𝒪(D)` and the map to line-bundle classes (`CartierDivisor/Sheaf.lean`,

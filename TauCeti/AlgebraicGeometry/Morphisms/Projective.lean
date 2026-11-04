@@ -53,6 +53,8 @@ Project defined through `ℙ(ℰ)`.
   projective bundle `ℙ(F) = Proj_S(Sym F)` of a quasicoherent sheaf `F` of finite type is
   projective, and `𝒪(1)` on it is relatively ample
   (`LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra`).
+* `TauCeti.AlgebraicGeometry.isProjective_toSpecCoeff_comp_fromSpec`: over an affine scheme `S`,
+  `Proj (Sym Γ(F, S)) ⟶ Spec Γ(S, S) ≅ S` is projective for `F` quasicoherent of finite type.
 
 Closed immersions, in particular isomorphisms, are projective
 (`TauCeti.AlgebraicGeometry.isProjective_of_isClosedImmersion`); this is proved in
@@ -286,6 +288,16 @@ instance isProjective_relativeProjToBase_gradedSymmetricAlgebra [F.obj.IsFiniteT
   isProjective_relativeProjToBase _ (isGeneratedInDegreeOne_gradedSymmetricAlgebra F)
     (fun _ hU ↦ finiteType_sections_gradedSymmetricAlgebra F hU)
     (fun U _ ↦ finite_sections_gradedSymmetricAlgebra_zero F U)
+
+/-- **Over an affine base, the `Proj` of a symmetric algebra is projective**: for `S` affine and a
+quasicoherent sheaf `F` of finite type, `Proj (Sym Γ(F, S)) ⟶ Spec Γ(S, S) ≅ S` is projective. It
+is the projective bundle `ℙ(F) ⟶ S`, through `relativeProjGradedSymmetricAlgebraIso`. -/
+instance isProjective_toSpecCoeff_comp_fromSpec [IsAffine S] [F.obj.IsFiniteType] :
+    IsProjective (Proj.toSpecCoeff (TauCeti.SymmetricAlgebra.homogeneousSubmodule Γ(S, ⊤)
+        (PresheafOfModulesOfCommRing.obj (R := S.presheaf) F.obj.val (Opposite.op ⊤))) ≫
+      (isAffineOpen_top S).fromSpec) := by
+  rw [← relativeProjGradedSymmetricAlgebraIso_inv_relativeProjToBase]
+  infer_instance
 
 end ProjectiveBundle
 

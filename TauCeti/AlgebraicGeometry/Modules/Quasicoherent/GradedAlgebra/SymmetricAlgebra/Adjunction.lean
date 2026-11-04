@@ -47,6 +47,11 @@ adjunction. Uniqueness holds because `Sym F` is generated in degree one
   `gradedSymmetricAlgebra X ⊣ degreeOne`, whose unit is the identification `F ≅ Sym¹ F`
   (`gradedSymmetricAlgebraAdjunction_unit`) and whose counit `Sym A₁ ⟶ A` extends the identity
   of `A₁` (`gradedSymmetricAlgebraAdjunction_counit_app`).
+* `TauCeti.AlgebraicGeometry.gradedSymmetricAlgebraSectionsEquiv`: over an affine open `U`, the
+  sections of `Sym F` are the symmetric algebra of the sections, `Sym Γ(F, U) ≃ ⨁ n, Γ(Symⁿ F, U)`,
+  degree by degree (`gradedSymmetricAlgebraSectionsEquiv_mem`,
+  `gradedSymmetricAlgebraSectionsEquiv_symm_mem`); in particular they are generated in degree one
+  (`adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra`).
 
 ## References
 
@@ -284,11 +289,11 @@ private lemma liftDegree_app_symmetricPowerSectionsIso_hom [F.IsQuasicoherent] (
 
 /-- Over an affine open `U`, if the degree-`n` component of the extension of `φ` is an
 isomorphism, then every section of `Aₙ` over `U` is the degree-`n` part of the extension on
-sections of a homogeneous element of `Sym Γ(F, U)`. -/
-private lemma exists_sectionsLift_eq_of [F.IsQuasicoherent] (φ : F ⟶ A.X 1) (n : ℕ)
+sections of an element of `Symⁿ Γ(F, U)`. -/
+private lemma exists_mem_sectionsLift_eq_of [F.IsQuasicoherent] (φ : F ⟶ A.X 1) (n : ℕ)
     [IsIso (liftDegree φ n)] {U : X.Opens} (hU : IsAffineOpen U) (y : Γ(A.X n, U)) :
-    ∃ x : SymmetricAlgebra Γ(X, U)
-        (PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.val (op U)),
+    ∃ x ∈ TauCeti.SymmetricAlgebra.homogeneousSubmodule Γ(X, U)
+        (PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.val (op U)) n,
       sectionsLift φ U x = DirectSum.of (fun n ↦ Γ(A.X n, U)) n y := by
   have : IsIso ((_root_.SheafOfModules.forget X.ringCatSheaf).map (liftDegree φ n)) :=
     Functor.map_isIso _ (liftDegree φ n)
@@ -298,30 +303,62 @@ private lemma exists_sectionsLift_eq_of [F.IsQuasicoherent] (φ : F ⟶ A.X 1) (
   obtain ⟨z, rfl⟩ := hbij.2 y
   obtain ⟨x, rfl⟩ :=
     (ConcreteCategory.bijective_of_isIso (F.symmetricPowerSectionsIso hU n).hom).2 z
-  refine ⟨x.1, ?_⟩
+  refine ⟨x.1, x.2, ?_⟩
   rw [liftDegree_app_symmetricPowerSectionsIso_hom, presheafLiftApp_apply]
   exact SymmetricAlgebra.lift_lof_comp_apply_of_mem_homogeneousSubmodule _ _ _ x.2
 
 /-- Over an affine open `U`, if every component of the extension of `φ` is an isomorphism, then
-the graded ring `⨁ n, Γ(Aₙ, U)` is generated over `Γ(X, U)` by its degree-one sections. -/
-private lemma adjoin_gradedSectionsGrading_one_eq_top_of [F.IsQuasicoherent] (φ : F ⟶ A.X 1)
+the extension on sections is injective. Its degree-`n` part is the bijection
+`Symⁿ Γ(F, U) ≅ Γ(Symⁿ F, U)` followed by the degree-`n` component of the extension, and the
+degree-`n` parts span `Sym Γ(F, U)`. -/
+private lemma sectionsLift_injective_of [F.IsQuasicoherent] (φ : F ⟶ A.X 1)
     [∀ n, IsIso (liftDegree φ n)] {U : X.Opens} (hU : IsAffineOpen U) :
-    Algebra.adjoin Γ(X, U) (A.gradedSectionsGrading U 1 : Set (⨁ n, Γ(A.X n, U))) = ⊤ := by
-  have hrange : (sectionsLift φ U).range ≤
-      Algebra.adjoin Γ(X, U) (A.gradedSectionsGrading U 1 : Set (⨁ n, Γ(A.X n, U))) := by
-    rw [← Algebra.map_top, ← TauCeti.SymmetricAlgebra.adjoin_range_ι, AlgHom.map_adjoin]
-    refine Algebra.adjoin_mono ?_
-    rintro _ ⟨_, ⟨m, rfl⟩, rfl⟩
-    rw [sectionsLift_ι]
-    exact A.of_mem_gradedSectionsGrading 1 _
-  refine eq_top_iff.mpr fun w _ ↦ ?_
-  clear ‹w ∈ ⊤›
+    Function.Injective (sectionsLift φ U) := by
+  have hinj (n : ℕ) : Function.Injective (presheafLiftApp φ n U) := by
+    have : IsIso ((_root_.SheafOfModules.forget X.ringCatSheaf).map (liftDegree φ n)) :=
+      Functor.map_isIso _ (liftDegree φ n)
+    intro x y h
+    rw [← liftDegree_app_symmetricPowerSectionsIso_hom φ n hU,
+      ← liftDegree_app_symmetricPowerSectionsIso_hom φ n hU] at h
+    exact (ConcreteCategory.bijective_of_isIso (F.symmetricPowerSectionsIso hU n).hom).1
+      ((ConcreteCategory.bijective_of_isIso ((PresheafOfModules.evaluation _ (op U)).map
+        ((_root_.SheafOfModules.forget _).map (liftDegree φ n)))).1 h)
+  refine (injective_iff_map_eq_zero (sectionsLift φ U)).mpr fun x hx ↦ ?_
+  have hmem : x ∈ ⨆ n, TauCeti.SymmetricAlgebra.homogeneousSubmodule Γ(X, U)
+      (PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.val (op U)) n := by
+    rw [TauCeti.SymmetricAlgebra.iSup_homogeneousSubmodule_eq_top]
+    trivial
+  obtain ⟨c, hc, rfl⟩ := (Submodule.mem_iSup_iff_exists_finsupp _ _).mp hmem
+  have hof (m : ℕ) : sectionsLift φ U (c m) =
+      DirectSum.of (fun n ↦ Γ(A.X n, U)) m (sectionsLift φ U (c m) m) :=
+    SymmetricAlgebra.lift_lof_comp_apply_of_mem_homogeneousSubmodule _ _ _ (hc m)
+  have hzero (n : ℕ) : c n = 0 := by
+    have h := congrArg (DirectSum.component Γ(X, U) ℕ (fun n ↦ Γ(A.X n, U)) n) hx
+    rw [map_finsuppSum, map_finsuppSum, map_zero, Finsupp.sum_eq_single n] at h
+    · refine congrArg Subtype.val (hinj n (a₁ := ⟨c n, hc n⟩) (a₂ := 0) ?_)
+      rw [map_zero, presheafLiftApp_apply]
+      exact h
+    · intro m _ hmn
+      rw [hof, ← DirectSum.apply_eq_component, DirectSum.of_eq_of_ne _ _ _ hmn.symm]
+    · intro _
+      rw [map_zero, map_zero]
+  exact Finset.sum_eq_zero fun n _ ↦ hzero n
+
+/-- Over an affine open `U`, if every component of the extension of `φ` is an isomorphism, then
+the extension on sections `Sym Γ(F, U) → ⨁ n, Γ(Aₙ, U)` is bijective. -/
+private lemma bijective_sectionsLift_of [F.IsQuasicoherent] (φ : F ⟶ A.X 1)
+    [∀ n, IsIso (liftDegree φ n)] {U : X.Opens} (hU : IsAffineOpen U) :
+    Function.Bijective (sectionsLift φ U) := by
+  refine ⟨sectionsLift_injective_of φ hU, fun w ↦ ?_⟩
   induction w using DirectSum.induction_on with
-  | zero => exact zero_mem _
+  | zero => exact ⟨0, map_zero _⟩
   | of n y =>
-    obtain ⟨x, hx⟩ := exists_sectionsLift_eq_of φ n hU y
-    exact hrange ⟨x, hx⟩
-  | add w w' hw hw' => exact add_mem hw hw'
+    obtain ⟨x, -, hx⟩ := exists_mem_sectionsLift_eq_of φ n hU y
+    exact ⟨x, hx⟩
+  | add w w' hw hw' =>
+    obtain ⟨x, rfl⟩ := hw
+    obtain ⟨x', rfl⟩ := hw'
+    exact ⟨x + x', map_add _ _ _⟩
 
 end Sections
 
@@ -469,6 +506,81 @@ private lemma gradedSymmetricAlgebraLift_degreeOneIso_inv (F : QuasicoherentShea
   rw [← gradedSymmetricAlgebraAdjunction_homEquiv_symm_apply, ← h]
   exact Equiv.symm_apply_apply _ _
 
+/-- The degree-`n` components of the extension of the identification `F ≅ Sym¹ F` are
+isomorphisms, since the extension is the identity of `Sym F`. -/
+private lemma isIso_liftDegree_degreeOneIso_inv (F : QuasicoherentSheaf X) (n : ℕ) :
+    IsIso (liftDegree (A := ((gradedSymmetricAlgebra X).obj F).obj)
+      (((gradedSymmetricAlgebraDegreeOneIso X).inv.app F).hom ≫
+        eqToHom (degree_obj_obj ((gradedSymmetricAlgebra X).obj F) 1)) n) := by
+  let A := (gradedSymmetricAlgebra X).obj F
+  let φ := (gradedSymmetricAlgebraDegreeOneIso X).inv.app F
+  have h := degree_map_gradedSymmetricAlgebraLift_hom φ n
+  rw [gradedSymmetricAlgebraLift_degreeOneIso_inv, CategoryTheory.Functor.map_id] at h
+  have : IsIso (eqToHom (degree_obj_gradedSymmetricAlgebra_obj F n) ≫
+      liftDegree (A := A.obj) (φ.hom ≫ eqToHom (degree_obj_obj A 1)) n ≫
+      eqToHom (degree_obj_obj A n).symm) := h ▸ inferInstance
+  -- The transports are morphisms of `X.Modules`, where typeclass search does not find their
+  -- `IsIso` instances, so they are supplied by hand.
+  have hi {B C : X.Modules} (p : B = C) : IsIso (eqToHom p) := (eqToIso p).isIso_hom
+  have := hi (degree_obj_gradedSymmetricAlgebra_obj F n)
+  have h' := IsIso.of_isIso_comp_left (eqToHom (degree_obj_gradedSymmetricAlgebra_obj F n))
+    (liftDegree (A := A.obj) (φ.hom ≫ eqToHom (degree_obj_obj A 1)) n ≫
+      eqToHom (degree_obj_obj A n).symm)
+  exact @IsIso.of_isIso_comp_right _ _ _ _ _ _ _ (hi _) h'
+
+/-- **The sections of `Sym F` over an affine open are the symmetric algebra of the sections.** For
+a quasicoherent sheaf `F` and an affine open `U`, the algebra map
+`Sym Γ(F, U) → ⨁ n, Γ(Symⁿ F, U)` sending a section of `F` to its image in degree one under
+`F ≅ Sym¹ F` (`gradedSymmetricAlgebraSectionsEquiv_ι`) is an isomorphism of `Γ(X, U)`-algebras. -/
+def gradedSymmetricAlgebraSectionsEquiv (F : QuasicoherentSheaf X) {U : X.Opens}
+    (hU : IsAffineOpen U) :
+    SymmetricAlgebra Γ(X, U) (PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.obj.val (op U))
+      ≃ₐ[Γ(X, U)] ⨁ n, Γ(((gradedSymmetricAlgebra X).obj F).obj.X n, U) :=
+  have := isIso_liftDegree_degreeOneIso_inv F
+  AlgEquiv.ofBijective _ (bijective_sectionsLift_of (F := F.obj)
+    (((gradedSymmetricAlgebraDegreeOneIso X).inv.app F).hom ≫
+      eqToHom (degree_obj_obj ((gradedSymmetricAlgebra X).obj F) 1)) hU)
+
+/-- `gradedSymmetricAlgebraSectionsEquiv` sends a section of `F` to its image in degree one under
+the identification `F ≅ Sym¹ F`. -/
+@[simp]
+theorem gradedSymmetricAlgebraSectionsEquiv_ι (F : QuasicoherentSheaf X) {U : X.Opens}
+    (hU : IsAffineOpen U)
+    (m : PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.obj.val (op U)) :
+    gradedSymmetricAlgebraSectionsEquiv F hU (SymmetricAlgebra.ι _ _ m) =
+      DirectSum.of (fun n ↦ Γ(((gradedSymmetricAlgebra X).obj F).obj.X n, U)) 1
+        (Scheme.Modules.Hom.app (((gradedSymmetricAlgebraDegreeOneIso X).inv.app F).hom ≫
+          eqToHom (degree_obj_obj ((gradedSymmetricAlgebra X).obj F) 1)) U m) :=
+  sectionsLift_ι _ U m
+
+/-- `gradedSymmetricAlgebraSectionsEquiv` maps `Symⁿ Γ(F, U)` into the degree-`n` summand
+`Γ(Symⁿ F, U)`. -/
+theorem gradedSymmetricAlgebraSectionsEquiv_mem (F : QuasicoherentSheaf X) {U : X.Opens}
+    (hU : IsAffineOpen U) {n : ℕ} {x : SymmetricAlgebra Γ(X, U)
+      (PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.obj.val (op U))}
+    (hx : x ∈ TauCeti.SymmetricAlgebra.homogeneousSubmodule _ _ n) :
+    gradedSymmetricAlgebraSectionsEquiv F hU x ∈
+      ((gradedSymmetricAlgebra X).obj F).obj.gradedSectionsGrading U n := by
+  have h : gradedSymmetricAlgebraSectionsEquiv F hU x =
+      DirectSum.of _ n (gradedSymmetricAlgebraSectionsEquiv F hU x n) :=
+    SymmetricAlgebra.lift_lof_comp_apply_of_mem_homogeneousSubmodule _ _ _ hx
+  rw [h]
+  exact ((gradedSymmetricAlgebra X).obj F).obj.of_mem_gradedSectionsGrading n _
+
+/-- The inverse of `gradedSymmetricAlgebraSectionsEquiv` maps the degree-`n` summand
+`Γ(Symⁿ F, U)` into `Symⁿ Γ(F, U)`. -/
+theorem gradedSymmetricAlgebraSectionsEquiv_symm_mem (F : QuasicoherentSheaf X) {U : X.Opens}
+    (hU : IsAffineOpen U) {n : ℕ} {y : ⨁ n, Γ(((gradedSymmetricAlgebra X).obj F).obj.X n, U)}
+    (hy : y ∈ ((gradedSymmetricAlgebra X).obj F).obj.gradedSectionsGrading U n) :
+    (gradedSymmetricAlgebraSectionsEquiv F hU).symm y ∈
+      TauCeti.SymmetricAlgebra.homogeneousSubmodule _ _ n := by
+  have := isIso_liftDegree_degreeOneIso_inv F
+  obtain ⟨z, rfl⟩ := DirectSum.mem_summand.mp hy
+  obtain ⟨x, hx, hxz⟩ := exists_mem_sectionsLift_eq_of (F := F.obj)
+    (((gradedSymmetricAlgebraDegreeOneIso X).inv.app F).hom ≫
+      eqToHom (degree_obj_obj ((gradedSymmetricAlgebra X).obj F) 1)) n hU z
+  rwa [(gradedSymmetricAlgebraSectionsEquiv F hU).symm_apply_eq.mpr hxz.symm]
+
 /-- **The sections of `Sym F` over an affine open are generated in degree one.** For a
 quasicoherent sheaf `F` and an affine open `U`, the graded ring `⨁ n, Γ(Symⁿ F, U)` of sections of
 the graded symmetric algebra is generated over `Γ(X, U)` by its degree-one sections. -/
@@ -477,24 +589,18 @@ theorem adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra (F : Quasicohere
     Algebra.adjoin Γ(X, U)
         (((gradedSymmetricAlgebra X).obj F).obj.gradedSectionsGrading U 1 :
           Set (⨁ n, Γ(((gradedSymmetricAlgebra X).obj F).obj.X n, U))) = ⊤ := by
-  let A := (gradedSymmetricAlgebra X).obj F
-  let φ := (gradedSymmetricAlgebraDegreeOneIso X).inv.app F
-  have (n : ℕ) : IsIso (liftDegree (A := A.obj) (φ.hom ≫ eqToHom (degree_obj_obj A 1)) n) := by
-    have h := degree_map_gradedSymmetricAlgebraLift_hom φ n
-    rw [gradedSymmetricAlgebraLift_degreeOneIso_inv, CategoryTheory.Functor.map_id] at h
-    have : IsIso (eqToHom (degree_obj_gradedSymmetricAlgebra_obj F n) ≫
-        liftDegree (A := A.obj) (φ.hom ≫ eqToHom (degree_obj_obj A 1)) n ≫
-        eqToHom (degree_obj_obj A n).symm) := h ▸ inferInstance
-    -- The transports are morphisms of `X.Modules`, where typeclass search does not find their
-    -- `IsIso` instances, so they are supplied by hand.
-    have hi {B C : X.Modules} (p : B = C) : IsIso (eqToHom p) := (eqToIso p).isIso_hom
-    have := hi (degree_obj_gradedSymmetricAlgebra_obj F n)
-    have h' := IsIso.of_isIso_comp_left (eqToHom (degree_obj_gradedSymmetricAlgebra_obj F n))
-      (liftDegree (A := A.obj) (φ.hom ≫ eqToHom (degree_obj_obj A 1)) n ≫
-        eqToHom (degree_obj_obj A n).symm)
-    exact @IsIso.of_isIso_comp_right _ _ _ _ _ _ _ (hi _) h'
-  exact adjoin_gradedSectionsGrading_one_eq_top_of (F := F.obj)
-    (φ.hom ≫ eqToHom (degree_obj_obj A 1)) hU
+  let e := gradedSymmetricAlgebraSectionsEquiv F hU
+  have h := congrArg (Subalgebra.map e.toAlgHom) (TauCeti.SymmetricAlgebra.adjoin_range_ι Γ(X, U)
+    (PresheafOfModulesOfCommRing.obj (R := X.presheaf) F.obj.val (op U)))
+  rw [AlgHom.map_adjoin, Algebra.map_top] at h
+  refine eq_top_iff.mpr fun w _ ↦ ?_
+  obtain ⟨x, rfl⟩ := e.surjective w
+  have hx := e.toAlgHom.mem_range_self x
+  rw [← h] at hx
+  refine Algebra.adjoin_mono ?_ hx
+  rintro _ ⟨_, ⟨m, rfl⟩, rfl⟩
+  rw [AlgEquiv.coe_toAlgHom, gradedSymmetricAlgebraSectionsEquiv_ι]
+  exact ((gradedSymmetricAlgebra X).obj F).obj.of_mem_gradedSectionsGrading 1 _
 
 end
 
