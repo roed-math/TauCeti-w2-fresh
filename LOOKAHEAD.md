@@ -1,20 +1,22 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"6c781b0a7341d9d794cf474258f824f4fa65faa2","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their cohomology over a field"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Weierstrass model over a ring"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*𝒪_E(n[0]) vanishes on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: the base change morphism of a direct image of modules"},{"n":12,"after":[10,11],"title":"feat: π_*𝒪_E(n[0]) commutes with arbitrary base change"},{"n":13,"after":[12],"title":"feat: pushforwards of line bundles of positive fibre degree on an elliptic curve"},{"n":14,"after":[13],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":15,"after":[10],"title":"feat: the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":16,"after":[15],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their cohomology over a field"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Weierstrass model over a ring"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*𝒪_E(n[0]) vanishes on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: the base change morphism of a direct image of modules"},{"n":12,"after":[10,11],"title":"feat: π_*𝒪_E(n[0]) commutes with arbitrary base change"},{"n":13,"after":[12],"title":"feat: pushforwards of line bundles of positive fibre degree on an elliptic curve"},{"n":14,"after":[13],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":15,"after":[10],"title":"feat: the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":16,"after":[15],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
 
 # Lookahead: `pole-sheaf` (ModularCurves, Layer 1C)
 
-Built on `main` at `6c781b0a7341d9d794cf474258f824f4fa65faa2`. Status: **partial**. Splits
-1–11 are on this branch, fully proved, with no `sorry`. Splits 12–17 are the plan for the rest of
+Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54`. Status: **partial**. Splits
+1–12 are on this branch, fully proved, with no `sorry`. Splits 13–17 are the plan for the rest of
 the target and are **not** on the branch.
 
 History. The first round left tip `a1900430f893` with splits 1 and 2. The second round left tip
 `3cb1a6114df7`, adding splits 3, 4 and 5. The third round added splits 6 and 7, so
 `H⁰(projModel W, 𝒪(n[0]))` is projective of constant rank `n` over every ring. The fourth round
 left tip `543397aab8a1`. The fifth round left tip `7bba41d2eebe`, adding splits 8, 9 and 10:
-`R¹π_*ℒ_n = 0`, and `π_*ℒ_n` is locally free of rank `n`. This round merged current `main` and
-added split 11, the general base change morphism `f^* π_* ⟶ π'_* g'^*` of a commutative square
+`R¹π_*ℒ_n = 0`, and `π_*ℒ_n` is locally free of rank `n`. The sixth round left tip `1ca2316d3bfa`.
+It merged `main` and added split 11, the general base change morphism `f^* π_* ⟶ π'_* g'^*` of a commutative square
 of schemes, with its value on sections and a criterion over affine opens for it to be an
 isomorphism. The old split 11 (the base-change clause for `ℒ_n`) is now split 12, and the old
-splits 12–16 are renumbered 13–17.
+splits 12–16 are renumbered 13–17. The seventh round (this one) merged current `main` without
+conflicts and added split 12: `π_*ℒ_n` commutes with arbitrary base change. (A proof of split 12
+from an earlier session was lost before it was pushed; this is a fresh proof.)
 
 ## Suppliers and stubs
 
@@ -22,7 +24,7 @@ splits 12–16 are renumbered 13–17.
 consumes neither supplier:
 
 - `relative-cartier-divisor` (open PR #27087, the geometric-fibre criterion of 0A item 1;
-  re-checked this round, still open and still unused by splits 1–11).
+  re-checked this round, still open and still unused by splits 1–12).
   `Suggested.lean` pins no declaration for it. Its §Finite flat group schemes says the carrier
   "is supplied once by the Jacobian Challenge", and the file "deliberately introduces no
   substitute". PR #27087 adds
@@ -40,7 +42,7 @@ consumes neither supplier:
 
 Neither supplier's statement was restated, so there are no differences to record.
 
-## What is proved (splits 1–11)
+## What is proved (splits 1–12)
 
 ### Split 1 — after: none
 
@@ -326,28 +328,51 @@ General infrastructure, independent of elliptic curves; it builds on `main` alon
     `Γ(V i)`-linear map `Φ i : Γ(V i) ⊗_{Γ(U i)} Γ(π⁻¹ (U i), M) → Γ(π'⁻¹ (V i), g'^* M)` with
     `Φ i (1 ⊗ s) = g'^* s` is bijective, then the base change morphism at `M` is an isomorphism.
 
-## What remains (splits 12–17, not on this branch)
+### Split 12 — after: 10, 11
 
-12. **(after 10, 11)** Base change for `ℒ_n`: for a pullback square
-    `hg : IsPullback g E'.structureMap E.structureMap f`, the base change morphism
-    `(pushforwardBaseChange hg.toCommSq).app (E.poleSheaf n).obj` is an isomorphism, and hence
-    (by `pullback_mk_poleSheaf_of_isPullback`, split 2) `f^* π_* ℒ_n ≅ π'_* ℒ'_n`. Apply
-    `isIso_pushforwardBaseChange_app_of_bijective` (split 11) to the basis of affine opens `V` of
-    `S'` lying in some `f⁻¹ (U)`, `U` the image of the base of a chart `c` of an atlas
-    (`π_* ℒ_n` is quasicoherent: see `isFiniteLocallyFree_pushforward_poleSheaf`, split 10). The
-    remaining work is the bijectivity of `r ⊗ s ↦ r • g^* s :
-    Γ(V) ⊗_{Γ(U)} Γ(π⁻¹ U, ℒ_n) → Γ(π'⁻¹ V, g^* ℒ_n)`, by transport from
-    `WeierstrassCurve.bijective_cohomologyBaseChange_zero_poleSheaf` (split 5) with
-    `R = c.ring`, `R' = Γ(S', V)` and the square `isPullback_projModelBaseChange_over`:
-    - an isomorphism `θ : projModel (W.map φ) ≅ π'⁻¹ V` with
-      `θ ≫ (π'⁻¹ V).ι ≫ g = projModelBaseChange ≫ c.modelIso.inv ≫ c.toTotal`, as the comparison
-      of two pullbacks of `π` along `V ⟶ S` (paste `c.isPullback`, `c.modelIso_over`, `hg`,
-      `isPullback_morphismRestrict` and `hV.isoSpec`);
-    - `H⁰ = Γ(⊤)` through `cohomologyZeroEquiv_cohomologyPullback`, the sheaf isomorphism of
-      `nonempty_restrict_poleSheaf_iso`, `pullbackSections_comp`, `pullbackSections_naturality`,
-      and bijectivity of pullback of sections along an isomorphism and an open immersion;
-    - the `R'`-actions: `R' = Γ(S', V)` acts on `Γ(π'⁻¹ V, g^* ℒ_n)` through `π'`, and on
-      `H⁰(projModel (W.map φ), -)` through the structure morphism; they agree through `θ`.
+PR subject: `feat: π_*𝒪_E(n[0]) commutes with arbitrary base change`
+
+- `TauCeti/RingTheory/TensorProduct/IsBaseChange/BijectiveAlgebraMap.lean` (new, 106 lines).
+  Base change along bijective ring maps:
+  - `IsBaseChange.of_bijective_algebraMap`: if `R → S` is bijective, every `S`-module is its own
+    base change along it, through the identity.
+  - `IsBaseChange.of_bijective_algebraMap_right`: a base change along `A → T` is one along
+    `A → B` when `B → T` is bijective.
+  - `IsBaseChange.restrictScalars_of_bijective`: a base change along `R → T` is one along
+    `A → B` when `A → R`, `B → T` are bijective and the square of rings commutes.
+  These are a new module rather than an extension of `TauCeti/RingTheory/TensorProduct/IsBaseChange.lean`
+  only because that file has 1637 transitive importers; the port may append them there instead.
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/BaseChange.lean` (new, 452
+  lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`:
+  - private, general: `bijective_pullbackSectionsLE` (pulling back sections along an open
+    immersion between opens matching up is bijective), `bijective_appLE`, `appLE_eq_of_eq`. The
+    port should consider making the first public in `Modules/Pullback/Sections.lean`, beside
+    `Scheme.Hom.bijective_pullbackSections_of_isOpenImmersion` (kept here to avoid rebuilding its
+    25 dependents, among them `Cohomology/FlatBaseChange.lean`).
+  - private, in `PointedWeierstrassChart` for a chart pair `(k, c, h, hh)` over the base change
+    square `hg`: `opensRange_modelIso_inv_toTotal`, `top_le_preimage_modelIso_inv_toTotal`,
+    `opensRange_le_preimage_opensRange`, `preimage_le_preimage_preimage`,
+    `modelMap_comp_modelIso_inv_toTotal`, the ring-map identities `appLE_comp_app_comp_appLE`
+    and `app_comp_appLE`, `isPullback_modelMap_over` (main's `isPullback_modelMap` read over
+    `Spec c.ring ← Spec k.ring` with the algebra `Spec.preimage`), `pullbackModelIso` (the
+    identification of `g^*M` on the model of `k` with the pullback of `M|_c` along `modelMap`)
+    and `pullbackModelIso_hom_app_pullbackSectionsLE` (its value on pulled-back sections).
+  - private `exists_bijective_pullbackSectionsLE_poleSheaf`: over a chart pair, the
+    `Γ(S', V)`-linear extension of `g^*` on sections of `ℒ_n` is bijective. This is
+    `WeierstrassCurve.bijective_cohomologyBaseChange_zero_poleSheaf` (split 5) for the model
+    square, transported along `H⁰ ≅ Γ(⊤)`, the model identification of `ℒ_n`
+    (`nonempty_restrict_poleSheaf_iso`), the ring isomorphisms `Γ(S, U) ≅ c.ring` and
+    `Γ(S', V) ≅ k.ring` (through `bijective_baseRingToGlobalSections`, split 10) and
+    `IsBaseChange.restrictScalars_of_bijective`.
+  - `isIso_pushforwardBaseChange_app_poleSheaf`: **for `n > 0` the base change morphism
+    `f^* π_* ℒ_n ⟶ π'_* g^* ℒ_n` is an isomorphism**, by split 11's
+    `isIso_pushforwardBaseChange_app_of_bijective` on the basis of images of chart bases of `E'`
+    lying over a chart of `E` (`exists_chart_comp_baseMap` on `main`, restricted to affine opens).
+  - `nonempty_pullback_pushforward_poleSheaf_iso`: **`f^* π_* ℒ_n ≅ π'_* ℒ'_n`** when `g`
+    preserves the zero sections (with `pullback_mk_poleSheaf_of_isPullback`, split 2).
+
+## What remains (splits 13–17, not on this branch)
+
 13. **(after 12)** The positive-degree theorem: an invertible `M` of constant positive fibre degree
     `d` has `R¹π_*M = 0`, and `π_*M` is locally free of rank `d` and commutes with base change.
     Splits 8, 10 and 12 generalise directly once the Weierstrass-model inputs hold for `M`.
