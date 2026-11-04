@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.Algebra.Homology.LocalCohomology.Principal
 public import TauCeti.AlgebraicGeometry.Cohomology.Support.Affine
 public import TauCeti.Examples.Algebra.Homology.LocalCohomology
 public import TauCeti.RingTheory.DiscreteValuationRing.FractionRing
@@ -96,6 +97,41 @@ def cohomologyWithSupportOneEquiv (K : Type*) [Field K] [Algebra R K] [IsFractio
       K ⧸ (algebraMap R K).range.toAddSubgroup :=
   have := isLocalizationAway_fractionRing (K := K) hϖ
   cohomologyWithSupportSpecOneEquiv ϖ K
+
+/-- Degree-one native local cohomology of a discrete valuation ring at its maximal ideal is the
+fraction field modulo `R`: `H¹_m(R) ≅ K / R`. The maximal ideal is `(ϖ)`, and `K` is the
+localization of `R` away from `ϖ`. -/
+def localCohomologyOneMaximalIdealLinearEquiv (K : Type u) [Field K] [Algebra R K]
+    [IsFractionRing R K] (hϖ : Irreducible ϖ) :
+    (localCohomology (IsLocalRing.maximalIdeal R) 1).obj (ModuleCat.of R R) ≃ₗ[R]
+      K ⧸ LinearMap.range (Algebra.linearMap R K) :=
+  have := isLocalizationAway_fractionRing (K := K) hϖ
+  (eqToIso (congrArg (fun I => (localCohomology I 1).obj (ModuleCat.of R R))
+      hϖ.maximalIdeal_eq)).toLinearEquiv ≪≫ₗ
+    localCohomologyOneLinearEquiv (mem_nonZeroDivisors_of_ne_zero hϖ.ne_zero) K
+
+/-- For a discrete valuation ring, native local cohomology at the maximal ideal and cohomology of
+the structure sheaf of `Spec R` with supports at the closed point agree in degree one: both are
+`K / R`. -/
+def localCohomologyOneAddEquivCohomologyWithSupport (K : Type u) [Field K] [Algebra R K]
+    [IsFractionRing R K] (hϖ : Irreducible ϖ) :
+    (localCohomology (IsLocalRing.maximalIdeal R) 1).obj (ModuleCat.of R R) ≃+
+      cohomologyWithSupport (uniformizerLocus ϖ)
+        (SheafOfModules.unit (Spec (CommRingCat.of R)).ringCatSheaf) 1 :=
+  (localCohomologyOneMaximalIdealLinearEquiv K hϖ).toAddEquiv.trans
+    ((QuotientAddGroup.quotientAddEquivOfEq (by ext; simp)).trans
+      (cohomologyWithSupportOneEquiv K hϖ).symm)
+
+/-- Local cohomology of a discrete valuation ring at its maximal ideal: `H⁰_m(R) = 0` and
+`H¹_m(R) ≅ K / R`, for the native colimit-of-`Ext` functors. -/
+theorem isZero_localCohomology_zero_and_nonempty_one_linearEquiv (K : Type u) [Field K]
+    [Algebra R K] [IsFractionRing R K] :
+    IsZero ((localCohomology (IsLocalRing.maximalIdeal R) 0).obj (ModuleCat.of R R)) ∧
+      Nonempty ((localCohomology (IsLocalRing.maximalIdeal R) 1).obj (ModuleCat.of R R) ≃ₗ[R]
+        K ⧸ LinearMap.range (Algebra.linearMap R K)) :=
+  have ⟨_, hϖ⟩ := IsDiscreteValuationRing.exists_irreducible R
+  ⟨isZero_localCohomology_zero_maximalIdeal R,
+    ⟨localCohomologyOneMaximalIdealLinearEquiv K hϖ⟩⟩
 
 end DiscreteValuationRingExample
 
