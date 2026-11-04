@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.LinearAlgebra.Isomorphisms
 public import Mathlib.RingTheory.Finiteness.Basic
 public import Mathlib.RingTheory.Ideal.Colon
 public import TauCeti.Algebra.Module.LocalizedModule.Submodule
@@ -46,6 +47,11 @@ its target glue to an ideal sheaf. Without finiteness only one inclusion holds.
   lies in the conductor of the localization.
 * `TauCeti.Algebra.conductor_eq_map`: for `B` finite over `A`, the conductor of a
   localization `S⁻¹B` over `S⁻¹A` is the extension of the conductor of `B` over `A`.
+* `TauCeti.Algebra.map_conductor_le_one`: the extension of the conductor to `B` lies in the image
+  of `A`.
+* `TauCeti.Algebra.quotientOneEquivOfLE`: modulo an ideal of `B` lying in the image of `A`, the
+  cokernel of `A → B` is unchanged; with the conductor this is the conductor square of a
+  normalization.
 
 ## References
 
@@ -124,5 +130,61 @@ theorem conductor_eq_map [Module.Finite A B] :
   rwa [Submodule.localized'_one S A' B'] at h
 
 end Localization
+
+section Quotient
+
+variable {B : Type*} [CommRing B] [Algebra A B]
+
+/-- The extension of the conductor to `B` lies in the image of `A`: it is the largest ideal of `B`
+contained in `A`. -/
+theorem map_conductor_le_one :
+    ((conductor A B).map (algebraMap A B) : Set B) ⊆ (1 : Submodule A B) := by
+  intro b hb
+  -- Every element of the extension still carries all of `B` into the image of `A`.
+  suffices h : ∀ b' : B, b * b' ∈ (1 : Submodule A B) by simpa using h 1
+  refine Submodule.span_induction (p := fun z _ ↦ ∀ b' : B, z * b' ∈ (1 : Submodule A B))
+    ?_ (fun _ ↦ by simp) (fun _ _ _ _ h₁ h₂ b' ↦ by simpa [add_mul] using add_mem (h₁ b') (h₂ b'))
+    (fun c z _ hz b' ↦ by simpa [smul_eq_mul, mul_assoc, mul_left_comm] using hz (c * b')) hb
+  rintro _ ⟨a, ha, rfl⟩ b'
+  obtain ⟨c, hc⟩ := mem_conductor_iff.mp ha b'
+  exact Submodule.mem_one.mpr ⟨c, hc⟩
+
+/-- The cokernel of `A → B / I` as a quotient of `B`. -/
+private abbrev quotientOneMk (I : Ideal B) : B →ₗ[A] (B ⧸ I) ⧸ (1 : Submodule A (B ⧸ I)) :=
+  (1 : Submodule A (B ⧸ I)).mkQ ∘ₗ (Ideal.Quotient.mkₐ A I).toLinearMap
+
+private theorem ker_quotientOneMk (I : Ideal B) (hI : (I : Set B) ⊆ (1 : Submodule A B)) :
+    LinearMap.ker (quotientOneMk I) = (1 : Submodule A B) := by
+  ext b
+  simp only [LinearMap.mem_ker, LinearMap.coe_comp, Function.comp_apply, Submodule.mkQ_apply,
+    Submodule.Quotient.mk_eq_zero, Submodule.mem_one, AlgHom.toLinearMap_apply,
+    Ideal.Quotient.mkₐ_eq_mk]
+  refine ⟨fun ⟨a, ha⟩ ↦ ?_, fun ⟨a, ha⟩ ↦ ⟨a, by rw [← ha]; rfl⟩⟩
+  rw [← Ideal.Quotient.mk_algebraMap, Ideal.Quotient.eq] at ha
+  obtain ⟨c, hc⟩ := Submodule.mem_one.mp (hI ha)
+  exact ⟨a - c, by rw [map_sub, hc]; ring⟩
+
+/-- **Cokernels modulo an ideal inside `A`.** If an ideal `I` of `B` lies in the image of `A`, for
+instance the extension of the conductor (`TauCeti.Algebra.map_conductor_le_one`), then the
+cokernel `B / A` of `A → B` is the cokernel of `A → B / I`. For the normalization of a curve and
+the conductor this identifies the functions on the normalization modulo those on the curve with
+the functions on the preimage of the singular locus modulo those on the singular locus. -/
+def quotientOneEquivOfLE (I : Ideal B) (hI : (I : Set B) ⊆ (1 : Submodule A B)) :
+    (B ⧸ (1 : Submodule A B)) ≃ₗ[A] (B ⧸ I) ⧸ (1 : Submodule A (B ⧸ I)) :=
+  Submodule.quotEquivOfEq _ _ (ker_quotientOneMk I hI).symm ≪≫ₗ
+    (quotientOneMk I).quotKerEquivOfSurjective
+      ((Submodule.mkQ_surjective _).comp Ideal.Quotient.mk_surjective)
+
+/-- `TauCeti.Algebra.quotientOneEquivOfLE` sends the class of `b` to the class of its image
+in `B / I`. -/
+@[simp]
+theorem quotientOneEquivOfLE_mk (I : Ideal B) (hI : (I : Set B) ⊆ (1 : Submodule A B)) (b : B) :
+    quotientOneEquivOfLE I hI (Submodule.Quotient.mk b) =
+      Submodule.Quotient.mk (Ideal.Quotient.mk I b) := by
+  rw [quotientOneEquivOfLE, LinearEquiv.trans_apply, Submodule.quotEquivOfEq_mk,
+    LinearMap.quotKerEquivOfSurjective_apply_mk]
+  rfl
+
+end Quotient
 
 end TauCeti.Algebra
