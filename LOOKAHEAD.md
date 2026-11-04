@@ -1,10 +1,10 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"81820d6b555f126c9030bfa46d25d61690af4fb6","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":8,"after":[7],"title":"feat: flat base change of Noetherian local cohomology"},{"n":9,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":10,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":11,"after":[10],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":12,"after":[6,9,11],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":13,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[5],"title":"feat: long exact sequence of local cohomology in positive degrees"},{"n":8,"after":[1,5,7],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":9,"after":[8],"title":"feat: flat base change of Noetherian local cohomology"},{"n":10,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":11,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":12,"after":[11],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":13,"after":[6,10,12],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
-Built on `main` at `81820d6b555f126c9030bfa46d25d61690af4fb6` (session 9 merged `main` again). Status:
-**partial**. Session 9 inserted two splits (5 and 6), so the splits numbered 5–11 before it are
-now 7–13; the session notes below use the new numbers.
+Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54` (session 10 merged `main` again).
+Status: **partial**. Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
+splits numbered 5–11 before session 9 are now 8–14; the session notes below use the new numbers.
 
 ## Suppliers: both have landed, so no stub remains
 
@@ -33,7 +33,7 @@ imported it, and `main` now carries every declaration it stubbed:
   landed with exactly this statement, under the name
   `AlgebraicGeometry.Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`
   (`TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean`, PR #22975, merged by Bors). The
-  earlier stub `TauCeti.QCoh.higherDirectImage_vanishing` therefore had to go. Split 12 should use
+  earlier stub `TauCeti.QCoh.higherDirectImage_vanishing` therefore had to go. Split 14 should use
   the landed name. PR #27295 (localization of quasi-coherent cohomology) is still open, and nothing
   here needs it.
 
@@ -152,7 +152,7 @@ These lemmas compare them in positive degrees, for both vanishing and injectivit
 
   These are the native half of `localCohomology_module_comparison_nil_ideal`. The geometric half
   (`H⁰_{V(I)}(Spec A, 𝒪) = A ≠ 0`) follows from `V(I) = Spec A`, `sectionsWithSupport_top` and
-  `cohomologyWithSupportZeroLinearEquiv` below, and goes in split 12.
+  `cohomologyWithSupportZeroLinearEquiv` below, and goes in split 13.
 
 `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines, new), in namespace
 `TauCeti.AlgebraicGeometry.Scheme.Modules` (beside `Scheme.Modules.Cohomology`). This is the
@@ -324,7 +324,7 @@ The same file gains the `Γ(X, ⊤)`-linearity of degree one (+67 lines; the fil
 `TauCeti.Supports.isZero_localCohomology_succ_of_injective`: native `H^{q+1}_I(J) = 0` for an
 injective module `J` (every `Ext^{q+1}(A/Iⁿ, J)` vanishes, via `Abelian.Ext.eq_zero_of_injective`
 and `isZero_localCohomology_of_subsingleton_ext`). This is the effaceability that the comparison
-of split 13 needs on the native side.
+of split 14 needs on the native side.
 
 `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Comparison.lean` (new), in namespace
 `TauCeti.Supports`:
@@ -336,7 +336,7 @@ of split 13 needs on the native side.
   H¹_{V(ϖ)}(Spec R, 𝒪) ≃+ K ⧸ (algebraMap R K).range` (through `main`'s
   `TauCeti.isLocalizationAway_fractionRing`: `K` is `R` localized away from `ϖ`) and
   `subsingleton_cohomologyWithSupport_add_two`. These are the geometric halves of
-  `test_depth_dvr`/`localCohomology_module_comparison_dvr`; once split 13 proves the comparison,
+  `test_depth_dvr`/`localCohomology_module_comparison_dvr`; once split 14 proves the comparison,
   they give the native `H¹_m(R) ≅ K/R` as well.
 - `NilIdealExample.idealZeroLocus k` (`V(I)` as a closed subset of `Spec A`),
   `idealZeroLocus_eq_top`, `cohomologyWithSupportZeroEquiv : H⁰_{V(I)}(Spec A, 𝒪) ≃+ A`, the
@@ -405,7 +405,7 @@ localization away from `a`:
   with `Concrete.colimit_exists_rep`; injectivity holds stage by stage, since `r / aⁿ ∈ A` forces
   `r ∈ (aⁿ)` for a nonzerodivisor.
 
-`TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Comparison.lean` (split 12) gains, in
+`TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Comparison.lean` (split 13) gains, in
 `DiscreteValuationRingExample`:
 
 - `localCohomologyOneMaximalIdealLinearEquiv K hϖ : H¹_m(R) ≃ₗ[R] K ⧸ R` (native; through
@@ -414,7 +414,42 @@ localization away from `a`:
   `H¹_{V(ϖ)}(Spec R, 𝒪)` (both are `K ⧸ R`);
 - `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`: `H⁰_m(R) = 0` and
   `H¹_m(R) ≅ K ⧸ R`, natively. This is the content of the README check `test_depth_dvr`, now
-  complete; split 13 collects it under the check's name.
+  complete; split 14 collects it under the check's name.
+
+### Session 10: the long exact sequence of native local cohomology in positive degrees
+
+Merged `main` at `52f9d081237d` (one docstring conflict in `ProjectiveResolution.lean`, where
+`main` had added `hasProjectiveDimensionLT`; both texts are kept).
+
+`TauCeti/Algebra/Homology/LocalCohomology/Exact.lean` (new, 400 lines, split 7), in namespace
+`TauCeti.Supports`, for a short exact sequence `hS : S.ShortExact` of `A`-modules over any
+commutative ring:
+
+- filtered colimits of functors `J ⥤ ModuleCat A ⥤ ModuleCat A`: `exists_colimit_ι_app_eq`
+  (every element comes from a stage), `exists_map_app_eq_zero` (zero in the colimit is zero at a
+  later stage), **`exists_eq_of_stages`** (maps induced stage by stage by natural maps are exact
+  once every stage is) and **`comp_eq_zero_of_stages`** (they compose to zero once every stage
+  does);
+- stage level, for the derived-functor `Ext(N, -)`, through session 9's `extSuccLinearEquiv` and
+  Mathlib's `Ext.covariant_sequence_exact₁/₂/₃`: `exists_Ext_map_f_eq`, `Ext_map_f_comp_map_g`;
+  the connecting map **`extSuccδ N hS p : Extᵖ⁺¹(N, X₃) ⟶ Extᵖ⁺²(N, X₁)`** (Yoneda product with
+  `hS.extClass`), `extSuccLinearEquiv_extSuccδ`, `extSuccδ_naturality` (natural in `N`),
+  `exists_Ext_map_g_eq`, `exists_extSuccδ_eq`, `Ext_map_g_comp_extSuccδ`,
+  `extSuccδ_comp_Ext_map_f`;
+- colimit level: `localCohomologyDiagramδ` (the stages as a natural transformation along
+  `A ⧸ Iⁿ`), `ι_app_localCohomology_map`, **`localCohomologySuccδ I hS p :
+  H^{p+1}_I(X₃) ⟶ H^{p+2}_I(X₁)`**, `ι_app_localCohomologySuccδ`;
+- exactness: `exists_localCohomology_map_f_eq`, `exists_localCohomology_map_g_eq`,
+  `exists_localCohomologySuccδ_eq` (elementwise), `localCohomology_map_f_comp_map_g`,
+  `localCohomology_map_g_comp_localCohomologySuccδ`,
+  `localCohomologySuccδ_comp_localCohomology_map_f`, and **`localCohomology_sequence_exact₂`,
+  `localCohomology_sequence_exact₃`, `localCohomology_sequence_exact₁`** (`ShortComplex.Exact` at
+  `H^{p+1}_I(X₂)`, `H^{p+1}_I(X₃)` and `H^{p+2}_I(X₁)`, named after Mathlib's
+  `Ext.covariant_sequence_exact₁/₂/₃`).
+
+This is the long exact sequence that split 8 (`localCohomology_colimit_ext_comparison`, by
+dimension shifting against `isZero_localCohomology_succ_of_injective`) needs on the native side,
+except for its degree-zero end (see "What remains").
 
 ## What `main` already has (found in session 2)
 
@@ -427,18 +462,22 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
 
 ## What remains
 
-- `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 10). Its compatibility with the
+- `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 11). Its compatibility with the
   connecting maps of short exact sequences is not stated yet.
 - `rHZ_adjunction` and `localToGlobal`: derived-category statements; `main` has only the edge map
   `supportedHEdgeEquiv`.
-- `localCohomology_colimit_ext_comparison` (split 7); `Supports.localCohomology_flat_baseChange`
-  and flat excision (split 8). The native side's effaceability
-  (`isZero_localCohomology_succ_of_injective`) is done; the geometric side needs that `J~` is
-  flasque for an injective module `J` over a Noetherian ring (Hartshorne III.3.4), and both sides
-  need a long exact sequence in `M`. For the native functor, session 9's `extSuccLinearEquiv`
-  identifies `Ext k C (p + 1)` with the derived-category `Ext` naturally in both arguments, so
-  the derived-category `Ext.covariant_sequence_exact*` transport stage by stage (degree `0`
-  goes through `extZeroIso`); what remains is passing them through the filtered colimit.
+- `localCohomology_colimit_ext_comparison` (split 8); `Supports.localCohomology_flat_baseChange`
+  and flat excision (split 9). The native side's effaceability
+  (`isZero_localCohomology_succ_of_injective`) is done, and so is its long exact sequence in
+  positive degrees (session 10, split 7). Still missing on the native side: the degree-zero end
+  `0 → H⁰_I(X₁) → H⁰_I(X₂) → H⁰_I(X₃) → H¹_I(X₁)`. It needs the derived-functor `Ext⁰(N, -)`
+  identified with `Hom(N, -)` naturally in the **second** argument (`extZeroIso` is natural only
+  in the first); Mathlib has no naturality of `Functor.fromLeftDerivedZero` in the functor, which
+  is the missing lemma. With it, split 7's `exists_eq_of_stages`/`comp_eq_zero_of_stages` give the
+  degree-zero exactness exactly as in positive degrees, and the native functors form an
+  effaceable `δ`-functor agreeing with `Γ_I` in degree zero (split 1). The geometric side needs
+  that `J~` is flasque for an injective module `J` over a Noetherian ring (Hartshorne III.3.4) and
+  its own long exact sequence (`main`'s `relativeH'` sequences in the coefficients).
 - `localCohomologySheaf Z F q` as a sheaf of `𝒪_X`-modules: `main` has the abelian
   `supportedHSheaf` and the `R`-linear `supportedModuleHPresheaf`, but no scheme wrapper yet.
 - `Γ(X, ⊤)`-linearity is done for the structure sheaf on `V(r)`
@@ -446,24 +485,25 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
   quasi-coherent `M` (`cohomologyWithSupportOneEquiv_globalSectionsSmul`). The affine-line and
   DVR geometric identifications are still stated additively, so the DVR comparison of session 9
   is an `AddEquiv`.
-- Split 13:
+- Split 14:
   - `localCohomology_module_comparison`, using
     `Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`; in degree one along a nonzerodivisor
     both sides are now computed (`localCohomologyOneLinearEquiv`,
     `cohomologyWithSupportSpecOneEquiv`), which the general comparison should be checked against;
   - the checks `test_support_all` and `test_support_empty` (one line each, from
     `cohomologyWithSupportTopEquiv` and `subsingleton_cohomologyWithSupport_bot`),
-    `test_support_affine_line_origin` and `test_support_not_restriction` (both proved in split 11;
-    split 13 only collects them), `test_depth_dvr` (complete in split 12:
+    `test_support_affine_line_origin` and `test_support_not_restriction` (both proved in split 12;
+    split 14 only collects them), `test_depth_dvr` (complete in split 13:
     `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`),
-    `localCohomology_module_comparison_nil_ideal` (complete in split 12; split 13 only collects
-    it) and `localCohomology_module_comparison_dvr` (both sides are computed in split 12 and agree
+    `localCohomology_module_comparison_nil_ideal` (complete in split 13; split 14 only collects
+    it) and `localCohomology_module_comparison_dvr` (both sides are computed in split 13 and agree
     in degrees zero and one; the check's wording asks for them to follow from the general
-    comparison, so split 13 rederives it once `localCohomology_module_comparison` is proved).
+    comparison, so split 14 rederives it once `localCohomology_module_comparison` is proved).
 
 ## Split plan
 
-Session 9 inserted splits 5 and 6; the former splits 5–11 are now 7–13.
+Session 9 inserted splits 5 and 6, and session 10 inserted split 7; the splits numbered 5–11
+before session 9 are now 8–14.
 
 1. **feat: degree zero of local cohomology is the power torsion**. After: none (done).
    `TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean`; the declarations listed under
@@ -496,32 +536,35 @@ Session 9 inserted splits 5 and 6; the former splits 5–11 are now 7–13.
 6. **feat: degree-one local cohomology along a nonzerodivisor**. After: 5 (done, 311 lines).
    `TauCeti/Algebra/Homology/LocalCohomology/Principal.lean`: the declarations listed
    under session 9.
-7. **feat: Noetherian local cohomology computes derived power torsion**. After: 1, 5 (not yet
+7. **feat: long exact sequence of local cohomology in positive degrees**. After: 5 (done, 400
+   lines). `TauCeti/Algebra/Homology/LocalCohomology/Exact.lean`: the declarations listed under
+   session 10.
+8. **feat: Noetherian local cohomology computes derived power torsion**. After: 1, 5, 7 (not yet
    written). `localCohomology_colimit_ext_comparison`.
-8. **feat: flat base change of Noetherian local cohomology**. After: 7 (not yet written).
+9. **feat: flat base change of Noetherian local cohomology**. After: 8 (not yet written).
    `Supports.localCohomology_flat_baseChange`, flat excision.
-9. **feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal**. After: 1
+10. **feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal**. After: 1
    (done, 170 lines). `TauCeti/Examples/Algebra/Homology/LocalCohomology.lean`:
    `isZero_localCohomology_zero_self_of_ne_bot`, `isZero_localCohomology_zero_maximalIdeal`, and
    in `NilIdealExample`: `relations`, `CoordRing`, `ideal`, `mem_relations_iff`,
    `exists_X_pow_mul_notMem_relations`, `one_notMem_relations`, the `Nontrivial` instance,
    `exists_mem_pow_mul_ne_zero`, `ideal_le_nilradical`, `zeroLocus_ideal`,
    `not_isNoetherianRing`, `isZero_localCohomology_zero`.
-10. **feat: cohomology with supports of a sheaf of modules on a scheme**. After: 2, 3 (done, about
+11. **feat: cohomology with supports of a sheaf of modules on a scheme**. After: 2, 3 (done, about
    400 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (274 lines) plus
    `globalSectionsSmul_app_top_apply` in `TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean`;
    the declarations listed under sessions 4, 7 and 8. Also
    `TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` (122 lines, session 6):
    `cohomologyWithSupportPullback` and its three lemmas.
-11. **feat: cohomology with supports on affine schemes and at the origin of the affine line**.
-   After: 10 (done, about 425 lines). `oneAddEquivOfSubsingleton` (+18 lines in
+12. **feat: cohomology with supports on affine schemes and at the origin of the affine line**.
+   After: 11 (done, about 425 lines). `oneAddEquivOfSubsingleton` (+18 lines in
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative.lean`), `supportedHOneEquiv` (+28 lines
    in `TauCeti/Topology/Sheaves/SupportedCohomology.lean`),
    `TauCeti/AlgebraicGeometry/Cohomology/Support/Affine.lean` (251 lines) and
    `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support.lean` (127 lines); the declarations
    listed under sessions 5, 7 and 8.
-12. **feat: local cohomology and cohomology with supports of a DVR and a nil ideal**. After: 6,
-   9, 11 (done, about 190 lines).
+13. **feat: local cohomology and cohomology with supports of a DVR and a nil ideal**. After: 6,
+   10, 12 (done, about 190 lines).
    `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Comparison.lean`: the session-8
    declarations (`DiscreteValuationRingExample.uniformizerLocus`,
    `subsingleton_cohomologyWithSupport_add_two`, `subsingleton_cohomologyWithSupport_zero`,
@@ -530,6 +573,6 @@ Session 9 inserted splits 5 and 6; the former splits 5–11 are now 7–13.
    `localCohomology_module_comparison_nil_ideal`) and the session-9 DVR declarations
    (`localCohomologyOneMaximalIdealLinearEquiv`, `localCohomologyOneAddEquivCohomologyWithSupport`,
    `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`).
-13. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–12
+14. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–13
    (not yet written). `localCohomology_module_comparison`, the remaining scheme wrappers and the
    remaining §2.7 checks. This is the only split that completes the target.
