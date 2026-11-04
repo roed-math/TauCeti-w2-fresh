@@ -65,6 +65,7 @@ variable [HasSheafify J AddCommGrpCat.{v}]
 
 /-- The sheafification of the free abelian presheaf on `yoneda.obj U`, functorial in `U`. This is
 the source-object functor used in Mathlib's definition of `Sheaf.H'`. -/
+@[expose]
 noncomputable def freeYonedaSheafFunctor :
     C ⥤ _root_.CategoryTheory.Sheaf J AddCommGrpCat.{v} :=
   yoneda ⋙ (Functor.whiskeringRight _ _ _).obj AddCommGrpCat.free ⋙

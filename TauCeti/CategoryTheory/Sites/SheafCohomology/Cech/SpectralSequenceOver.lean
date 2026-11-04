@@ -17,8 +17,8 @@ object `Over.mk (𝟙 V)`, so the Čech-to-cohomology spectral sequence of
 `TauCeti.CategoryTheory.cechToCohomologySpectralSequence` applies to the restriction of an
 injective resolution `0 ⟶ F ⟶ K⁰ ⟶ K¹ ⟶ ⋯` of an abelian sheaf `F` on `C`. When restriction to
 `J.over V` and its left adjoint are exact, its first page is the group of Čech cochains
-`Čᵖ(U, Hᵠ(F)) = ∏ₐ Hᵠ(u (a 0) ×_V ⋯ ×_V u (a p), F)` of the cohomology presheaf of `F` and it
-converges to `Hⁿ(V, F)`.
+`Čᵖ(U, Hᵠ(F)) = ∏ₐ Hᵠ(u (a 0) ×_V ⋯ ×_V u (a p), F)` of the cohomology presheaf of `F`, its
+differential is `(-1)ᵠ` times the Čech differential, and it converges to `Hⁿ(V, F)`.
 
 ## Main definitions
 
@@ -34,6 +34,9 @@ converges to `Hⁿ(V, F)`.
   object of `J.over V` if and only if the family `f` covers `V`.
 * `TauCeti.CategoryTheory.injective_overPullback_obj`: restriction to `J.over V` preserves
   injective abelian sheaves.
+* `TauCeti.CategoryTheory.cechToCohomologyOverSpectralSequenceFirstPageAddEquiv_d`: the
+  differential of the first page is `(-1)ᵠ` times the Čech differential of `Hᵠ(-, F)`, so that the
+  second page is `Ȟᵖ(U, Hᵠ(F))`.
 
 ## References
 
@@ -127,6 +130,43 @@ def cechToCohomologyOverSpectralSequenceFirstPageAddEquiv (p q : ℕ) :
     (fun _ _ _ k ↦ Abelian.Ext.subsingleton_of_injective _ _ k) p q).trans
     (AddEquiv.piCongrRight fun a ↦ (F.cohomologyPresheafObjIsoOverH' q
       (∏ᶜ fun j ↦ Over.mk (f (a j)))).symm.addCommGroupIsoToAddEquiv)
+
+/-- **The first differential of the Čech-to-cohomology spectral sequence of a covering is the Čech
+differential** of the cohomology presheaf `Hᵠ(-, F)`, up to the sign `(-1)ᵠ`: under
+`cechToCohomologyOverSpectralSequenceFirstPageAddEquiv`, the differential from the Čech
+`p`-cochains to the Čech `(p + 1)`-cochains of `Hᵠ(-, F)` sends `c` to `(-1)ᵠ δc`, where `(δc)(b)`
+is the alternating sum of the restrictions of the `c (b ∘ m.succAbove)` along the projections
+`u (b 0) ×_V ⋯ ×_V u (b (p + 1)) ⟶ u (b 0) ×_V ⋯ (omitting m) ⋯ ×_V u (b (p + 1))`. Hence the
+second page is the Čech cohomology `Ȟᵖ(U, Hᵠ(F))` of the covering. -/
+@[stacks 03AV "The differential of the first page of the Čech-to-cohomology spectral sequence."]
+theorem cechToCohomologyOverSpectralSequenceFirstPageAddEquiv_d (p q : ℕ)
+    (x : ((cechToCohomologyOverSpectralSequence f K).page 2).X
+      ((q : ℤ) + 2 * p + 1, -((p : ℤ) + 1)))
+    (b : Fin (p + 2) → ι) :
+    cechToCohomologyOverSpectralSequenceFirstPageAddEquiv f ε hε hε' hK (p + 1) q
+        (((cechToCohomologyOverSpectralSequence f K).page 2).d
+          ((q : ℤ) + 2 * p + 1, -((p : ℤ) + 1))
+          ((q : ℤ) + 2 * (p + 1 : ℕ) + 1, -(((p + 1 : ℕ) : ℤ) + 1)) x) b =
+      (-1 : ℤ) ^ q • ∑ m : Fin (p + 2), (-1 : ℤ) ^ (m : ℕ) • (F.cohomologyPresheaf q).map
+        (Pi.lift fun y ↦ Pi.π (fun j ↦ Over.mk (f (b j))) (m.succAbove y)).left.op
+          (cechToCohomologyOverSpectralSequenceFirstPageAddEquiv f ε hε hε' hK p q x
+            (b ∘ m.succAbove)) := by
+  have (q : ℕ) : Injective
+      ((((J.overPullback AddCommGrpCat.{v} V).mapHomologicalComplex _).obj K).X q) :=
+    injective_overPullback_obj (K.X q)
+  have hd := cechToCohomologySpectralSequenceFirstPageAddEquiv_d (fun i ↦ Over.mk (f i))
+    ((J.overPullback AddCommGrpCat.{v} V).map ε) _ (hε'.map _) (exactAt_overPullback hK)
+    (fun _ _ _ k ↦ Abelian.Ext.subsingleton_of_injective _ _ k) p q x b
+  have h (m : Fin (p + 2)) := ConcreteCategory.congr_hom
+    (F.cohomologyPresheafObjIsoOverH'_inv_naturality q
+      (Pi.lift fun y ↦ Pi.π (fun j ↦ Over.mk (f (b j))) (m.succAbove y)))
+  simp only [ConcreteCategory.comp_apply] at h
+  simp only [cechToCohomologyOverSpectralSequenceFirstPageAddEquiv, AddEquiv.trans_apply,
+    AddEquiv.piCongrRight_apply]
+  rw [hd]
+  simp only [Iso.addCommGroupIsoToAddEquiv_apply, Iso.symm_hom, map_zsmul, map_sum, h]
+  -- The two sides differ only in `b ∘ m.succAbove` and the coercion of morphisms of groups.
+  rfl
 
 /-- **The abutment of the Čech-to-cohomology spectral sequence of a covering.** For an injective
 resolution `0 ⟶ F ⟶ K⁰ ⟶ K¹ ⟶ ⋯` of an abelian sheaf `F` and a family `f i : u i ⟶ V` generating
