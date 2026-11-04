@@ -7,7 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.ModularCurve.NaiveGammaZero.Basic
 public import TauCeti.LinearAlgebra.Matrix.GeneralLinearGroup.Borel
-public import TauCeti.Lookahead.GammaZeroNaive.Stubs
+public import TauCeti.AlgebraicGeometry.FiniteEtale.Quotient
 import TauCeti.Algebra.Algebra.NatCast
 import TauCeti.AlgebraicGeometry.Morphisms.FormallyUnramified
 import TauCeti.AlgebraicGeometry.ResidueField

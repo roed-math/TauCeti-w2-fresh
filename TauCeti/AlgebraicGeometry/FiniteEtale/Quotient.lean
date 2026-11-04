@@ -11,6 +11,7 @@ public import TauCeti.AlgebraicGeometry.Quotient.FiniteGroup.Relative
 public import TauCeti.AlgebraicGeometry.RelativeSpec.Counit
 public import TauCeti.AlgebraicGeometry.RelativeSpec.MorphismProperties
 public import TauCeti.RingTheory.Etale.Equalizer
+import TauCeti.Lookahead.GammaZeroNaive.Stubs
 
 /-!
 # Quotients of finite étale schemes by finite groups
@@ -56,6 +57,9 @@ With the finite limits, finite coproducts and direct summands of
 * `TauCeti.FiniteEtaleScheme.exists_comp_map_eq_of_comp_quotientπ_eq F`: two points of `Y` with
   values in a field and the same image in `Y / G` differ by the action of an element of `G`
   (`CommMon.exists_comp_relativeSpecMap_eq`).
+* `TauCeti.FiniteEtaleScheme.isPullback_quotientπ_of_free F`: if `G` acts without fixed points
+  with values in fields, then `∐_g Y ≅ Y ×_{Y/G} Y`, so `Y ⟶ Y / G` is a `G`-torsor
+  (`CategoryTheory.CommMon.isPullback_invariantSubalgebraPresheaf_relativeSpecπ_of_free`).
 * `HasColimitsOfShape (SingleObj G) (FiniteEtaleScheme S)` for a finite group `G`.
 * `PreGaloisCategory (FiniteEtaleScheme S)` for every scheme `S`.
 
@@ -272,6 +276,68 @@ theorem exists_comp_map_eq_of_comp_quotientπ_eq {K : Type u} [Field K]
   have h' := congr($hg ≫ (F.obj (SingleObj.star G)).obj.hom.relativeSpecFunctionsToScheme)
   rwa [Category.assoc, Category.assoc, relativeSpecMap_relativeSpecFunctionsToScheme,
     IsIso.inv_hom_id_assoc, Category.assoc, IsIso.inv_hom_id, Category.comp_id] at h'
+
+omit [Finite G] in
+/-- An action without fixed points with values in fields is free on the sections over every affine
+open: a maximal ideal containing the elements `g • a - a` gives a point with values in its residue
+field that is fixed by `g⁻¹`. -/
+private lemma span_sectionsAlgHom_sub_eq_top
+    (hfree : ∀ (K : Type u) [Field K]
+      (x : Spec (CommRingCat.of K) ⟶ (F.obj (SingleObj.star G)).obj.left) (g : G),
+      x ≫ (F.map (X := SingleObj.star G) (Y := SingleObj.star G) g).hom.left = x → g = 1)
+    (U : S.affineOpens) (g : G) (hg : g ≠ 1) :
+    Ideal.span (Set.range fun a :
+      Γ((F.obj (SingleObj.star G)).obj.hom.pushforwardStructureAlgebra.X, U) ↦
+        CommMon.sectionsAlgHom (functionAlgebraAction F g).asIso.hom U a - a) = ⊤ := by
+  set p := (F.obj (SingleObj.star G)).obj.hom
+  by_contra hI
+  obtain ⟨m, _, hIm⟩ := Ideal.exists_le_maximal _ hI
+  let σ := CommRingCat.ofHom
+    (CommMon.sectionsAlgHom (functionAlgebraAction F g).asIso.hom (U : S.Opens)).toRingHom
+  let q : CommRingCat.of Γ(p.pushforwardStructureAlgebra.X, U) ⟶
+      CommRingCat.of (Γ(p.pushforwardStructureAlgebra.X, U) ⧸ m) :=
+    CommRingCat.ofHom (Ideal.Quotient.mk m)
+  -- The residue map is invariant under `g`, since it kills every `g • a - a`.
+  have hσ : σ ≫ q = q := by
+    ext a
+    exact Ideal.Quotient.eq.mpr (hIm (Ideal.subset_span ⟨a, rfl⟩))
+  -- On the chart over `U`, at its explicit source, `g⁻¹` acts on `Y` through `σ`.
+  let ι : Spec (CommRingCat.of Γ(p.pushforwardStructureAlgebra.X, U)) ⟶
+      p.pushforwardStructureAlgebra.relativeSpec :=
+    p.pushforwardStructureAlgebra.relativeSpecCover.f ⟨U.1, U.2⟩
+  have hchart : ι ≫ p.relativeSpecFunctionsToScheme ≫
+      (F.map (X := SingleObj.star G) (Y := SingleObj.star G) g⁻¹).hom.left =
+        Spec.map σ ≫ ι ≫ p.relativeSpecFunctionsToScheme := by
+    rw [← relativeSpecMap_relativeSpecFunctionsToScheme]
+    exact CommMon.relativeSpecCover_f_relativeSpecMap_assoc _ ⟨U.1, U.2⟩ _
+  refine hg (inv_eq_one.mp (@hfree _ (Ideal.Quotient.field m)
+    (Spec.map q ≫ ι ≫ p.relativeSpecFunctionsToScheme) g⁻¹ ?_))
+  rw [Category.assoc, Category.assoc, hchart, ← Spec.map_comp_assoc, hσ]
+
+/-- **Free quotients of finite étale schemes are torsors** (SGA 3, Exposé V, Théorème 4.1,
+constant-group case). If a finite group `G` acts on a finite étale `S`-scheme `Y` without fixed
+points with values in fields, then `Y ×_{Y/G} Y` is the disjoint union of `|G|` copies of `Y`, the
+copy of `g` mapping to `(y, g y)`: the quotient map `Y ⟶ Y / G` is a `G`-torsor. -/
+theorem isPullback_quotientπ_of_free
+    (hfree : ∀ (K : Type u) [Field K]
+      (x : Spec (CommRingCat.of K) ⟶ (F.obj (SingleObj.star G)).obj.left) (g : G),
+      x ≫ (F.map (X := SingleObj.star G) (Y := SingleObj.star G) g).hom.left = x → g = 1) :
+    IsPullback (Sigma.desc fun _ : G ↦ 𝟙 (F.obj (SingleObj.star G)).obj.left)
+      (Sigma.desc fun g : G ↦ (F.map (X := SingleObj.star G) (Y := SingleObj.star G) g).hom.left)
+      (quotientπ F).hom.left (quotientπ F).hom.left := by
+  -- Identify `∐_g Spec_S(p_* 𝒪_Y)` with `∐_g Y`, sending the copy of `g` to the copy of `g⁻¹`:
+  -- `g` acts on the function algebra through the action of `g⁻¹` on `Y`.
+  let φ := (F.obj (SingleObj.star G)).obj.hom.relativeSpecFunctionsToScheme
+  let e : (∐ fun _ : G ↦
+        (F.obj (SingleObj.star G)).obj.hom.pushforwardStructureAlgebra.relativeSpec) ≅
+      ∐ fun _ : G ↦ (F.obj (SingleObj.star G)).obj.left :=
+    Sigma.whiskerEquiv (Equiv.inv G) fun _ ↦ (asIso φ).symm
+  refine (CommMon.isPullback_invariantSubalgebraPresheaf_relativeSpecπ_of_free
+      (span_sectionsAlgHom_sub_eq_top F hfree)).of_iso e (asIso φ) (asIso φ) (Iso.refl _)
+    (Sigma.hom_ext _ _ fun g ↦ by simp [e]) (Sigma.hom_ext _ _ fun g ↦ ?_)
+    ((Category.comp_id _).trans (IsIso.hom_inv_id_assoc φ _).symm)
+    ((Category.comp_id _).trans (IsIso.hom_inv_id_assoc φ _).symm)
+  simp [e, φ]
 
 /-- The quotient of a finite étale scheme by a finite group, as a cocone over the action. It is a
 colimit (`isColimitQuotientCocone`). -/
