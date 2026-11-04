@@ -7,6 +7,9 @@ module
 
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.BaseChange.SubgroupDescent
 public import TauCeti.AlgebraicGeometry.GroupScheme.ClosedSubgroup.Basic
+public import Mathlib.AlgebraicGeometry.Morphisms.Etale
+import Mathlib.AlgebraicGeometry.Morphisms.FlatMono
+import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.Torsion.Etale.Locus
 import TauCeti.CategoryTheory.Monoidal.Mon
 
 /-!
@@ -40,6 +43,9 @@ the cyclic locus of the subgroup parameter scheme of `E[N]`.
 * `EllipticCurveGeom.IsNaiveCyclicSubgroup.isFinite_toGrp`, `flat_toGrp`,
   `locallyOfFinitePresentation_toGrp`, `finrank_toGrp`: the closed subgroup scheme is finite
   locally free of rank `N` over `S`.
+* `EllipticCurveGeom.IsNaiveCyclicSubgroup.etale_toGrp` and
+  `EllipticCurveGeom.IsNaiveCyclicSubgroup.isClopen_range_toTorsion`: where `N` is invertible,
+  it is étale over `S` and open and closed in `E[N]`.
 * `EllipticCurveGeom.IsNaiveCyclicSubgroup.torsionSubgroupIdeal_closedSubgroup` and
   `EllipticCurveGeom.IsNaiveCyclicSubgroup.closedSubgroup_torsionSubgroupIdeal`: the two passages
   are inverse to each other.
@@ -159,6 +165,42 @@ point of `S`. -/
 theorem finrank_toGrp (h : E.IsNaiveCyclicSubgroup I N) (s : S) :
     h.toGrp.X.hom.finrank s = N :=
   h.finrank_eq s
+
+/-- **Where `N` is invertible, a naive cyclic subgroup of order `N` is étale over `S`.** It is
+flat and of finite presentation, and unramified as a closed subscheme of the étale `E[N]`. -/
+theorem etale_toGrp (h : E.IsNaiveCyclicSubgroup I N)
+    (hN : ∀ s : S, (N : S.residueField s) ≠ 0) : Etale h.toGrp.X.hom := by
+  have := E.etale_torsion_hom_of_forall_intCast_ne_zero (n := N) (by simpa using hN)
+  have := h.flat_toGrp
+  have := h.locallyOfFinitePresentation_toGrp
+  have : IsClosedImmersion h.toTorsionHom.left := by
+    simpa using h.isClosedImmersion_toTorsion
+  have : FormallyUnramified h.toGrp.X.hom := by
+    rw [← Over.w h.toTorsionHom]
+    exact MorphismProperty.comp_mem _ _ _ inferInstance inferInstance
+  exact Etale.of_formallyUnramified_of_flat _
+
+/-- **Where `N` is invertible, a naive cyclic subgroup of order `N` is open in `E[N]`.** Its
+inclusion is étale, since both schemes are étale over `S`, and an étale monomorphism is an open
+immersion. -/
+theorem isOpenImmersion_toTorsion (h : E.IsNaiveCyclicSubgroup I N)
+    (hN : ∀ s : S, (N : S.residueField s) ≠ 0) :
+    IsOpenImmersion h.toTorsion.hom.hom.left := by
+  have := E.etale_torsion_hom_of_forall_intCast_ne_zero (n := N) (by simpa using hN)
+  have : Etale (h.toTorsion.hom.hom.left ≫ (E.torsion N).X.hom) := by
+    rw [toTorsion_hom_hom, Over.w h.toTorsionHom]
+    exact h.etale_toGrp hN
+  have := Etale.of_comp h.toTorsion.hom.hom.left (E.torsion N).X.hom
+  exact IsOpenImmersion.of_flat_of_mono _
+
+/-- **Where `N` is invertible, a naive cyclic subgroup of order `N` is open and closed in
+`E[N]`.** -/
+theorem isClopen_range_toTorsion (h : E.IsNaiveCyclicSubgroup I N)
+    (hN : ∀ s : S, (N : S.residueField s) ≠ 0) :
+    IsClopen (Set.range h.toTorsion.hom.hom.left) :=
+  have := h.isOpenImmersion_toTorsion hN
+  ⟨h.toTorsion.hom.hom.left.isClosedEmbedding.isClosed_range,
+    h.toTorsion.hom.hom.left.isOpenEmbedding.isOpen_range⟩
 
 end IsNaiveCyclicSubgroup
 
