@@ -1,18 +1,21 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"81820d6b555f126c9030bfa46d25d61690af4fb6","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[],"title":"feat: Ext and sheaf cohomology from acyclic resolutions"},{"n":3,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":4,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":5,"after":[4],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":6,"after":[5],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":7,"after":[1,2],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":8,"after":[2,5,6],"title":"feat: the Čech double complex of a complex of abelian sheaves"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[],"title":"feat: Ext and sheaf cohomology from acyclic resolutions"},{"n":3,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":4,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":5,"after":[4],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":6,"after":[5],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":7,"after":[1,2],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":8,"after":[],"title":"feat: total complexes of first-quadrant cochain bicomplexes"},{"n":9,"after":[2,5,6,8],"title":"feat: the Čech double complex of a complex of abelian sheaves"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `81820d6b555f126c9030bfa46d25d61690af4fb6` (this session, 2026-11-04, merged `main`
-forward from `6c781b0a734`; #27242 is still open at head `fc88ca0a5dc2`, so its stub stays). Status:
+Built on `main` at `7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b` (this session, 2026-11-04, merged `main`
+forward from `81820d6b555`; #27242 is still open at head `fc88ca0a5dc2`, so its stub stays). Status:
 **partial**.
 
 Earlier sessions proved the Čech half of the target's inputs on a general site (Čech complexes of
 injective sheaves are exact in positive degrees; Leray's acyclicity theorem for a covering of a site,
 the third statement of the target's README), the Leray edge map with Leray's acyclicity theorem for
-a morphism of sites, and that acyclic resolutions compute `Ext` and sheaf cohomology. This session
-added the Čech double complex `Čᵖ(U, Kᵠ)` with both of its one-variable cohomologies computed: its
-augmented rows of injectives are exact, and the cohomology of its columns is the first page
-`∏ₐ Hᵠ(U_a, F)` of the Čech-to-cohomology spectral sequence. See "New this session" below.
+a morphism of sites, that acyclic resolutions compute `Ext` and sheaf cohomology, and the Čech
+double complex `Čᵖ(U, Kᵠ)` with its column cohomology `∏ₐ Hᵠ(U_a, F)` (the first page of
+`cech_to_cohomology`). This session added total complexes of first-quadrant *cochain* bicomplexes
+(`up ℕ × up ℕ`, absent from Mathlib and `main`), with the quasi-isomorphism from exact coaugmented
+rows, and applied it to the Čech double complex: **the cohomology of `Tot Čᵖ(U, Iᵠ)` for an
+injective resolution `I` of `F` is `Hⁿ(T, F)`**, the abutment of `cech_to_cohomology`. See "New this
+session" below.
 
 ## Supplier state
 
@@ -84,7 +87,67 @@ for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for
 - new: `lerayEdge_sheafAdjunctionContinuous_bijective` — Leray acyclicity for a morphism of sites
   `u : C ⥤ D` (uses the stubbed additivity instance).
 
-## New this session: the Čech double complex (no stub used)
+## New this session: cochain total complexes and the Čech abutment (no stub used)
+
+`TauCeti/Algebra/Homology/ComplexShape/Signs.lean` (existing file on `main`, +37 lines):
+
+- the instance `ComplexShape.tensorSignsUpNat : TensorSigns (ComplexShape.up ℕ)` (sign `(-1)ⁿ`;
+  Mathlib has only `down ℕ` and `up ℤ`) and its simp lemma `ComplexShape.ε_up_ℕ`;
+- the instance `HomologicalComplex₂.totalComplexShapeSymmetryUpNat` (Koszul sign `(-1)^(pq)`), the
+  `up ℕ` twin of `main`'s `totalComplexShapeSymmetryDownNat`: it gives Mathlib's
+  `totalFlipIso : Tot K.flip ≅ Tot K`, which the column filtration ("What remains" 3(a)) needs
+  to pass between rows and columns.
+
+`TauCeti/Algebra/Homology/Embedding/ExtendHomology/Basic.lean` (existing file on `main`, +12 lines):
+
+- `HomologicalComplex.mono_homologyMap_extendMap_iff`, the monomorphism counterpart of the existing
+  `epi_homologyMap_extendMap_iff`.
+
+`TauCeti/Algebra/Homology/TotalComplex/UpNat.lean` (new, 611 lines, namespace
+`HomologicalComplex₂`), the cohomological counterpart of `main`'s
+`TauCeti/Algebra/Homology/TotalComplex.lean`:
+
+- `hasTotal_up_nat`; `totalCoaugmentation K η hη : E ⟶ Tot K` for `η : E ⟶ K.X 0` killed by
+  `K.d 0 1`, with `totalCoaugmentation_f`, `comp_totalCoaugmentation`,
+  `totalCoaugmentation_total_map`; `isIso_totalCoaugmentation_single` (+
+  `singleObjXSelf_inv_comp_single_d`, `singleObjXSelf_inv_comp_f_zero_d`);
+- `rowsSuccUp K` (the rows `≥ 1`), `rowsSuccUpι : Tot(rowsSuccUp K)[-1] ⟶ Tot K`,
+  `rowZeroUpπ : Tot K ⟶ row 0`, `rowsSuccUpShortComplex`, `rowsSuccUpShortComplex_shortExact`
+  (degreewise split), with `ιTotal_rowsSuccUpι_f`, `ιTotal_rowZeroUpπ_f_zero/succ`,
+  `rowsSuccUpι_rowZeroUpπ`;
+- `quasiIso_total_map_of_rows_up` (a map that is a quasi-isomorphism on every row is one on total
+  complexes; induction with `mono_homologyMap_τ₂`/`isIso_homologyMap_τ₂`),
+  `quasiIso_totalCoaugmentation_of_rows` (from the single-column bicomplex);
+- `rowCoaugmentation K η hη q : single₀ (E.X q) ⟶ row q` (+ `rowCoaugmentation_f_zero`) and
+  **`quasiIso_totalCoaugmentation`**: exact coaugmented rows make `E ⟶ Tot K` a quasi-isomorphism.
+  Names carry `Up` where `main`'s homological file already uses the plain name (`rowsSucc`,
+  `quasiIso_total_map_of_rows`).
+- **Port notes.** (i) The file mirrors `main`'s `TotalComplex.lean` (rows `≥ 1` are a subcomplex
+  here and a quotient there, so the short exact sequence and the induction run the other way:
+  `mono_homologyMap_τ₂` replaces `epi_homologyMap_τ₂`); a reuse reviewer may ask why the two are
+  not one construction. They cannot share the short exact sequence, but if asked, `rowsSucc`
+  and `rowsSuccUp` can become one definition over any vertical shape on `ℕ` whose relation is
+  invariant under `q ↦ q + 1`. (ii) Placement: `TotalComplex.lean` and `TotalComplex/UpNat.lean`
+  sit side by side; if the placement rubric asks, move the former to `TotalComplex/Basic.lean`
+  (a `git mv` plus import updates) in the same PR. (iii) Three `change`s in `DoubleComplex.lean`
+  restate goals in terms of `cechComplexFunctor`/`single₀`, whose terms `cechDoubleComplex` and
+  `sectionsComplex` only unfold to. Each carries a comment, as the proof-quality rubric asks.
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean` (+118 lines, now 305):
+
+- `cechDoubleComplexCoaugmentation U K hT : sectionsComplex K T ⟶ (cechDoubleComplex U K).X 0`
+  (degree `0` of `cechAugmentation`, natural in `q` by `cechAugmentation_naturality`), with
+  `cechDoubleComplexCoaugmentation_f`, `cechDoubleComplexCoaugmentation_f_π` (restriction to the
+  members of `U`),
+  `cechDoubleComplexCoaugmentation_comp_d` and
+  `rowCoaugmentation_cechDoubleComplexCoaugmentation` (its coaugmented rows are the augmented Čech
+  complexes `cechAugmentation U hT (K.X q).obj`);
+- `quasiIso_totalCoaugmentation_cechDoubleComplex U K hT hU` — for a covering family and a complex
+  of injective sheaves, `K(T) ⟶ Tot Č•(U, K•)` is a quasi-isomorphism;
+- **`homologyTotalCechDoubleComplexAddEquiv U hT ε hε hε' hK hU n : Hⁿ(Tot Čᵖ(U, Iᵠ)) ≃+ Hⁿ(T, F)`**
+  for an injective resolution `ε : F ⟶ I⁰` (via `Sheaf.H'.addEquivHomologyOfResolution`).
+
+## Earlier session: the Čech double complex (no stub used)
 
 `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean` (new, 189 lines, namespace
 `TauCeti.CategoryTheory`), for a site `(C, J)` with finite products, `U : ι → C` and a cochain complex
@@ -198,17 +261,22 @@ The spectral sequence itself:
    nor `main` has; `ofShortExact` and the dimension-shift lemmas of split 1 are its inductive step.
 2. ~~Čech acyclicity of injective abelian sheaves on a general site~~ and ~~Leray's acyclicity
    theorem for coverings~~: **done** (`Cech/Injective.lean`, `Cech/Leray.lean`).
-3. The Čech double complex `Čᵖ(U, Iᵠ)` is defined, with exact augmented rows and column cohomology
-   `∏ₐ Hᵠ(U_a, F)` (**done**, `Cech/DoubleComplex.lean`). Still missing for `cech_to_cohomology`:
-   (a) the *cohomological* total complex of a first-quadrant `(up ℕ, up ℕ)` bicomplex — Mathlib has
-   `TensorSigns` for `down ℕ` and `up ℤ` but not `up ℕ`, and main's `TotalComplex.lean`
-   (`quasiIso_totalAugmentation_of_rows`) and `SpectralSequence/Bicomplex.lean` (row/column
-   filtration spectral sequences) are written for homological `(down ℕ, down ℕ)` bicomplexes.
-   Either port both to `up ℕ` (or work with `up ℤ` extensions, where `TensorSigns` exists and the
-   filtered-complex spectral sequence of `SpectralSequence/Filtered/` applies directly), then: exact
-   augmented rows ⇒ `Tot(Č(U, I)) ≃ I(T)` (abutment `Hⁿ(V, F)`), and the column filtration's `E₁` is
-   `cechDoubleComplexHomologyAddEquiv`, whose `d₁` must still be identified with the Čech differential
-   of the presheaf `Hᵠ(-, F)` (`E₂ = Ȟᵖ(U, Hᵠ(F))`).
+3. The Čech double complex `Čᵖ(U, Iᵠ)` is defined, with exact augmented rows, column cohomology
+   `∏ₐ Hᵠ(U_a, F)` and — new this session — its cochain total complex with
+   `Hⁿ(Tot Č(U, I)) ≃+ Hⁿ(T, F)` (**done**, `TotalComplex/UpNat.lean`, `Cech/DoubleComplex.lean`).
+   Still missing for `cech_to_cohomology`:
+   (a) the column-filtration spectral sequence of a first-quadrant *cochain* bicomplex. Main's
+   `SpectralSequence/Bicomplex.lean` filters homological `(down ℕ, down ℕ)` bicomplexes by rows;
+   its cochain analogue: filter `Tot K` (extended to `CochainComplex _ ℤ` along
+   `ComplexShape.embeddingUpNat`) by the subcomplexes of columns `≥ p` (decreasing; index the
+   increasing filtration of `SpectralSequence/Filtered/` by `-p`), identify the graded pieces with
+   the columns shifted by `p` (the same split short exact sequences as `rowsSuccUpShortComplex`,
+   applied to `K.flip`, give the induction), and read off convergence from
+   `Filtered/Convergence.lean` (finite filtration in each degree). Its `E₁` is then
+   `cechDoubleComplexHomologyAddEquiv`, whose `d₁` must be identified, via
+   `Filtered/FirstPage.lean`, with the Čech differential of the presheaf `Hᵠ(-, F)` — this needs
+   naturality of `Sheaf.H'.addEquivHomologyOfResolution` in `V`, not yet proved — giving
+   `E₂ = Ȟᵖ(U, Hᵠ(F))`; the abutment is `homologyTotalCechDoubleComplexAddEquiv`.
    (b) `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
    identification of its `E₂^{n,0}` edge with `lerayEdge`), from item 1.
 
@@ -255,17 +323,36 @@ The spectral sequence itself:
    under `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`. After: 1, 2 (split 2
    identifies the abutment; the `R•G` analogue of split 2 is proved by the dimension shifting of
    split 1 once a long exact sequence of right derived functors exists). Not yet written.
-8. **feat: the Čech double complex of a complex of abelian sheaves** — file:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean` (new, 189 lines). Adds
+8. **feat: total complexes of first-quadrant cochain bicomplexes** — files:
+   `TauCeti/Algebra/Homology/TotalComplex/UpNat.lean` (new, 611 lines),
+   `TauCeti/Algebra/Homology/ComplexShape/Signs.lean` (+37) and
+   `TauCeti/Algebra/Homology/Embedding/ExtendHomology/Basic.lean` (+12). Adds the instances
+   `ComplexShape.tensorSignsUpNat`, `HomologicalComplex₂.totalComplexShapeSymmetryUpNat`,
+   `ComplexShape.ε_up_ℕ`,
+   `HomologicalComplex.mono_homologyMap_extendMap_iff`, `hasTotal_up_nat`, `totalCoaugmentation`
+   (+ `_f`, `comp_totalCoaugmentation`, `totalCoaugmentation_total_map`),
+   `singleObjXSelf_inv_comp_single_d`, `isIso_totalCoaugmentation_single`,
+   `singleObjXSelf_inv_comp_f_zero_d`, `rowsSuccUp`, `rowsSuccUpι`, `ιTotal_rowsSuccUpι_f`,
+   `rowZeroUpπ`, `ιTotal_rowZeroUpπ_f_zero`, `ιTotal_rowZeroUpπ_f_succ`, `rowsSuccUpι_rowZeroUpπ`,
+   `rowsSuccUpShortComplex`, `rowsSuccUpShortComplex_shortExact`, `quasiIso_total_map_of_rows_up`,
+   `quasiIso_totalCoaugmentation_of_rows`, `rowCoaugmentation`, `rowCoaugmentation_f_zero`,
+   `quasiIso_totalCoaugmentation`. After: none. Can be opened now. (If a reviewer asks for it, the
+   ~30-line `Signs.lean` instance can be its own tiny PR first.)
+9. **feat: the Čech double complex of a complex of abelian sheaves** — file:
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean` (new, 305 lines). Adds
    `quasiIso_cechAugmentation_of_injective`, `cechDoubleComplex`, `cechDoubleComplex_d_f`,
    `cechDoubleComplex_X_d`, `sectionsComplex`,
    `cechDoubleComplexXIsoPi`, `cechDoubleComplexXIsoPi_inv_f_π`, `cechDoubleComplexHomologyIsoPi`,
-   `cechDoubleComplexHomologyAddEquiv`. After: 2 (`Sheaf.H'.addEquivHomologyOfResolution`), 5, 6
-   (`isSheafFor_ofArrows_of_mem`). Written. A cohomological total-complex split (see "What remains"
-   3(a)) would sit between 8 and 9.
-9. **feat: the Leray and Čech-to-cohomology spectral sequences** —
+   `cechDoubleComplexHomologyAddEquiv`, `cechDoubleComplexCoaugmentation`,
+   `cechDoubleComplexCoaugmentation_f`, `cechDoubleComplexCoaugmentation_f_π`,
+   `cechDoubleComplexCoaugmentation_comp_d`, `rowCoaugmentation_cechDoubleComplexCoaugmentation`,
+   `quasiIso_totalCoaugmentation_cechDoubleComplex`, `homologyTotalCechDoubleComplexAddEquiv`.
+   After: 2 (`Sheaf.H'.addEquivHomologyOfResolution`), 5, 6 (`isSheafFor_ofArrows_of_mem`), 8.
+   Written. The cochain column-filtration spectral sequence ("What remains" 3(a)) would be a
+   further split between 9 and 10.
+10. **feat: the Leray and Čech-to-cohomology spectral sequences** —
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
    naturality, relative form and edge maps (identified with `lerayEdge`), `cech_to_cohomology`
    (with its degeneration recovering split 6; its first page `Hᵠ(U_a, F)` read off by split 2).
-   After: 1, 2, 3, 4, 5, 6, 7, 8. The only split that
+   After: 1, 2, 3, 4, 5, 6, 7, 8, 9. The only split that
    completes the target. Not yet written.

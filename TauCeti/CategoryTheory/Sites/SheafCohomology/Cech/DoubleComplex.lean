@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.Algebra.Homology.HomologicalBicomplex
+public import TauCeti.Algebra.Homology.TotalComplex.UpNat
 public import TauCeti.Algebra.Homology.ShortComplex.Limit
 public import TauCeti.CategoryTheory.Sites.SheafCohomology.AcyclicResolution
 public import TauCeti.CategoryTheory.Sites.SheafCohomology.Cech.Leray
@@ -28,7 +29,11 @@ families of one-variable cohomology groups.
   generate a covering sieve and every `Kᵠ` is injective, the augmented row
   `0 ⟶ Kᵠ(T) ⟶ Č⁰(U, Kᵠ) ⟶ Č¹(U, Kᵠ) ⟶ ⋯` is exact
   (`TauCeti.CategoryTheory.quasiIso_cechAugmentation_of_injective`). Hence the total complex is
-  quasi-isomorphic to the complex of global sections `K(T)`, whose cohomology is `H*(F)`.
+  quasi-isomorphic to the complex of global sections `K(T)`
+  (`TauCeti.CategoryTheory.quasiIso_totalCoaugmentation_cechDoubleComplex`), and for an injective
+  resolution of `F` its cohomology is `H*(T, F)`
+  (`TauCeti.CategoryTheory.homologyTotalCechDoubleComplexAddEquiv`): the abutment of the spectral
+  sequence.
 * Its *columns* `Čᵖ(U, K•)` (the resolution degree varies): the column `p` is the product, over
   `a : Fin (p + 1) → ι`, of the complexes of sections of `K` over `U (a 0) × ⋯ × U (a p)`
   (`TauCeti.CategoryTheory.cechDoubleComplexXIsoPi`). Since products of abelian groups are exact,
@@ -44,6 +49,8 @@ families of one-variable cohomology groups.
   its outer index.
 * `TauCeti.CategoryTheory.cechDoubleComplexXIsoPi`: the column `p` is a product of complexes of
   sections.
+* `TauCeti.CategoryTheory.cechDoubleComplexCoaugmentation`: the coaugmentation of the column `0` by
+  the sections over the terminal object.
 
 ## Main results
 
@@ -51,6 +58,11 @@ families of one-variable cohomology groups.
   augmented Čech complex of an injective abelian sheaf is exact.
 * `TauCeti.CategoryTheory.cechDoubleComplexHomologyAddEquiv`: the cohomology of the column `p` of
   the Čech double complex of an acyclic resolution of `F` is `∏ₐ Hᵠ(U (a 0) × ⋯ × U (a p), F)`.
+* `TauCeti.CategoryTheory.quasiIso_totalCoaugmentation_cechDoubleComplex`: for a covering family
+  and a complex of injective sheaves, the total complex is quasi-isomorphic to the sections over the
+  terminal object.
+* `TauCeti.CategoryTheory.homologyTotalCechDoubleComplexAddEquiv`: for an injective resolution of
+  `F`, the cohomology of the total complex is `Hⁿ(T, F)`.
 
 ## References
 
@@ -146,7 +158,7 @@ def cechDoubleComplexXIsoPi (p : ℕ) :
 
 /-- Under `cechDoubleComplexXIsoPi`, the projection of a product of complexes of sections to its
 factor `a` is the projection of the Čech cochains to the factor `a`. -/
-@[reassoc (attr := simp)]
+@[reassoc, simp]
 lemma cechDoubleComplexXIsoPi_inv_f_π (p q : ℕ) (a : Fin (p + 1) → ι) :
     (cechDoubleComplexXIsoPi U K p).inv.f q ≫
         Pi.π (fun a : Fin (p + 1) → ι ↦ (K.X q).obj.obj (op (∏ᶜ fun j ↦ U (a j)))) a =
@@ -185,5 +197,109 @@ def cechDoubleComplexHomologyAddEquiv (p q : ℕ) :
       (Sheaf.H'.addEquivHomologyOfResolution ε hε hε' hK _ (hKU p a) q).symm)
 
 end Resolution
+
+/-! ### The total complex: the abutment -/
+
+section Total
+
+variable {T : C} (hT : IsTerminal T)
+
+/-- The coaugmentation of the column `0` of the Čech double complex by the sections over the
+terminal object `T`: in resolution degree `q`, the restriction of sections of `Kᵠ` over `T` to the
+members of `U`, the degree `0` part of `cechAugmentation`. -/
+def cechDoubleComplexCoaugmentation : sectionsComplex K T ⟶ (cechDoubleComplex U K).X 0 where
+  f q := (HomologicalComplex.singleObjXSelf _ 0 ((K.X q).obj.obj (op T))).inv ≫
+    (cechAugmentation U hT (K.X q).obj).f 0
+  comm' q q' _ := by
+    have h := HomologicalComplex.congr_hom (cechAugmentation_naturality U hT _ (K.d q q').hom) 0
+    simp only [HomologicalComplex.comp_f, HomologicalComplex.single_map_f_self] at h
+    -- The terms of the column `0` and of `sectionsComplex K T` are those of the Čech complexes and
+    -- of the sections by definition of `cechDoubleComplex` and `sectionsComplex`; restating the
+    -- goal in those terms lets `h` rewrite it.
+    change ((HomologicalComplex.singleObjXSelf _ 0 ((K.X q).obj.obj (op T))).inv ≫
+        (cechAugmentation U hT (K.X q).obj).f 0) ≫
+          ((cechComplexFunctor U).map (K.d q q').hom).f 0 =
+      (K.d q q').hom.app (op T) ≫
+        (HomologicalComplex.singleObjXSelf _ 0 ((K.X q').obj.obj (op T))).inv ≫
+          (cechAugmentation U hT (K.X q').obj).f 0
+    rw [Category.assoc, h]
+    simp only [Category.assoc, Iso.inv_hom_id_assoc]
+
+lemma cechDoubleComplexCoaugmentation_f (q : ℕ) :
+    (cechDoubleComplexCoaugmentation U K hT).f q =
+      (HomologicalComplex.singleObjXSelf _ 0 ((K.X q).obj.obj (op T))).inv ≫
+        (cechAugmentation U hT (K.X q).obj).f 0 :=
+  (rfl)
+
+/-- The coaugmentation of the Čech double complex, followed by the projection of the Čech
+`0`-cochains onto the factor `a : Fin 1 → ι`, restricts a section of `Kᵠ` over `T` to
+`U (a 0)`, seen as a one-fold product. -/
+@[reassoc, simp]
+lemma cechDoubleComplexCoaugmentation_f_π (q : ℕ) (a : Fin 1 → ι) :
+    (cechDoubleComplexCoaugmentation U K hT).f q ≫
+        Pi.π (fun a : Fin 1 → ι ↦ (K.X q).obj.obj (op (∏ᶜ fun j ↦ U (a j)))) a =
+      (K.X q).obj.map (hT.from (∏ᶜ fun j ↦ U (a j))).op := by
+  -- `singleObjXSelf` is the identity of `Kᵠ(T)` up to the definition of `single₀`.
+  exact (Category.assoc _ _ _).trans ((congrArg (_ ≫ ·)
+    (cechAugmentation_f_zero_comp_π U hT (K.X q).obj a)).trans (Category.id_comp _))
+
+/-- The coaugmentation of the Čech double complex is killed by the horizontal differential. -/
+lemma cechDoubleComplexCoaugmentation_comp_d :
+    cechDoubleComplexCoaugmentation U K hT ≫ (cechDoubleComplex U K).d 0 1 = 0 := by
+  ext q : 1
+  -- The horizontal differential of the Čech double complex is the Čech differential
+  -- (`cechDoubleComplex_d_f`, by definition); stated so, `Hom.comm` applies.
+  change ((HomologicalComplex.singleObjXSelf _ 0 ((K.X q).obj.obj (op T))).inv ≫
+    (cechAugmentation U hT (K.X q).obj).f 0) ≫
+    ((cechComplexFunctor U).obj (K.X q).obj).d 0 1 = 0
+  rw [Category.assoc, HomologicalComplex.Hom.comm, HomologicalComplex.single_obj_d,
+    zero_comp, comp_zero]
+
+/-- The coaugmented rows of the Čech double complex are the augmented Čech complexes
+`0 ⟶ Kᵠ(T) ⟶ Č⁰(U, Kᵠ) ⟶ Č¹(U, Kᵠ) ⟶ ⋯`. -/
+lemma rowCoaugmentation_cechDoubleComplexCoaugmentation (q : ℕ) :
+    (cechDoubleComplex U K).rowCoaugmentation (cechDoubleComplexCoaugmentation U K hT)
+      (cechDoubleComplexCoaugmentation_comp_d U K hT) q = cechAugmentation U hT (K.X q).obj :=
+  HomologicalComplex.from_single_hom_ext
+    ((HomologicalComplex₂.rowCoaugmentation_f_zero _ _ _ q).trans
+      -- `singleObjXSelf` is the identity of `Kᵠ(T)` up to the definition of `single₀`.
+      (by simp only [cechDoubleComplexCoaugmentation]; exact Category.id_comp _))
+
+variable [HasSheafify J AddCommGrpCat.{v}]
+
+/-- **The total Čech complex of a complex of injective sheaves computes its sections.** If the
+maps `U i ⟶ T` to the terminal object generate a covering sieve and every term of `K` is
+injective, the coaugmentation `K(T) ⟶ Tot Č•(U, K•)` is a quasi-isomorphism: its rows are the
+augmented Čech complexes of injective sheaves, which are exact
+(`quasiIso_cechAugmentation_of_injective`). -/
+theorem quasiIso_totalCoaugmentation_cechDoubleComplex
+    (hU : Sieve.ofArrows U (fun i ↦ hT.from (U i)) ∈ J T) [∀ q, Injective (K.X q)] :
+    QuasiIso ((cechDoubleComplex U K).totalCoaugmentation (cechDoubleComplexCoaugmentation U K hT)
+      (cechDoubleComplexCoaugmentation_comp_d U K hT)) :=
+  HomologicalComplex₂.quasiIso_totalCoaugmentation _ _ _ fun q ↦ by
+    rw [rowCoaugmentation_cechDoubleComplexCoaugmentation]
+    exact quasiIso_cechAugmentation_of_injective U hT hU (K.X q)
+
+variable [HasExt.{v} (Sheaf J AddCommGrpCat.{v})] {F : Sheaf J AddCommGrpCat.{v}} {K}
+  (ε : F ⟶ K.X 0) [Mono ε] (hε : ε ≫ K.d 0 1 = 0)
+  (hε' : (ShortComplex.mk ε (K.d 0 1) hε).Exact) (hK : ∀ j, K.ExactAt (j + 1))
+
+attribute [local instance] Abelian.Ext.subsingleton_of_injective in
+/-- **The abutment of the Čech-to-cohomology spectral sequence.** For an injective resolution
+`0 ⟶ F ⟶ K⁰ ⟶ K¹ ⟶ ⋯` of an abelian sheaf `F` and a family `U` whose maps to the terminal
+object `T` generate a covering sieve, the cohomology of the total complex of the Čech double
+complex `Čᵖ(U, Kᵠ)` is the sheaf cohomology `Hⁿ(T, F)`. -/
+@[stacks 03AV "The total complex of the Čech double complex of an injective resolution."]
+def homologyTotalCechDoubleComplexAddEquiv
+    (hU : Sieve.ofArrows U (fun i ↦ hT.from (U i)) ∈ J T) [∀ q, Injective (K.X q)] (n : ℕ) :
+    ((cechDoubleComplex U K).total (ComplexShape.up ℕ)).homology n ≃+ F.H' n T :=
+  have := quasiIso_totalCoaugmentation_cechDoubleComplex U K hT hU
+  ((asIso (HomologicalComplex.homologyMap ((cechDoubleComplex U K).totalCoaugmentation
+    (cechDoubleComplexCoaugmentation U K hT) (cechDoubleComplexCoaugmentation_comp_d U K hT))
+      n)).symm.addCommGroupIsoToAddEquiv).trans
+    (Sheaf.H'.addEquivHomologyOfResolution ε hε hε' hK T
+      (fun j k ↦ ((K.X j).H'AddEquivExt (k + 1) T).subsingleton) n).symm
+
+end Total
 
 end TauCeti.CategoryTheory
