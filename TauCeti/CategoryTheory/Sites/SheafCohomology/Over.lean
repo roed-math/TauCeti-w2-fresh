@@ -29,6 +29,8 @@ Mathlib's `CategoryTheory.Adjunction.extEquiv` for exact adjunctions.
 * `CategoryTheory.GrothendieckTopology.cohomologyPresheafEvaluationIsoFunctorOverH`: the comparison,
   natural in the coefficient sheaf.
 * `CategoryTheory.Sheaf.cohomologyPresheafObjIsoOverH`: `Hⁿ(U, F) ≅ Hⁿ(F.over U)`.
+* `CategoryTheory.Sheaf.cohomologyPresheafObjIsoOverH'`: `Hⁿ(V.left, F) ≅ Hⁿ(V, F.over U)` for
+  `V : Over U`.
 
 This comparison transports acyclicity of the restricted sheaf to vanishing of cohomology on
 the corresponding object, for instance from affine acyclicity to local vanishing hypotheses.
@@ -78,7 +80,8 @@ local instance {C : Type u} [Category.{v} C] (J : GrothendieckTopology C) (U : C
     ((Over.forget U).sheafPullback AddCommGrpCat.{v} (J.over U) J).IsLeftAdjoint :=
   ((Over.forget U).sheafAdjunctionContinuous AddCommGrpCat.{v} (J.over U) J).isLeftAdjoint
 
-local instance {C : Type u} [Category.{v} C] (J : GrothendieckTopology C) (U : C) :
+/-- Restriction of abelian sheaves to a localized site is additive. -/
+instance {C : Type u} [Category.{v} C] (J : GrothendieckTopology C) (U : C) :
     (J.overPullback AddCommGrpCat.{v} U).Additive where
   map_add := rfl
 
@@ -95,16 +98,16 @@ variable {C : Type u} [Category.{v} C] (J : GrothendieckTopology C) (U : C)
 local instance : ((Over.forget U).sheafPullback AddCommGrpCat.{v} (J.over U) J).Additive :=
   Functor.additive_of_preserves_binary_products _
 
-/-- Under an exact restriction adjunction, cohomology at `U` agrees with cohomology at the
-terminal object of the localized site, naturally in the coefficient sheaf. -/
-private def cohomologyPresheafEvaluationIsoOver (n : ℕ) :
+/-- Under an exact restriction adjunction, cohomology at `V.left` agrees with cohomology at
+`V : Over U` of the restricted sheaf on the localized site, naturally in the coefficient sheaf. -/
+def cohomologyPresheafEvaluationIsoOver (n : ℕ) (V : Over U) :
     _root_.CategoryTheory.Sheaf.cohomologyPresheafFunctor J n ⋙
-      (evaluation Cᵒᵖ AddCommGrpCat.{w}).obj (op U) ≅
+      (evaluation Cᵒᵖ AddCommGrpCat.{w}).obj (op V.left) ≅
     J.overPullback AddCommGrpCat.{v} U ⋙
       _root_.CategoryTheory.Sheaf.cohomologyPresheafFunctor (J.over U) n ⋙
-        (evaluation (Over U)ᵒᵖ AddCommGrpCat.{w}).obj (op (Over.mk (𝟙 U))) := by
+        (evaluation (Over U)ᵒᵖ AddCommGrpCat.{w}).obj (op V) := by
   rw [cohomologyPresheafFunctor_eq, cohomologyPresheafFunctor_eq]
-  exact (Abelian.extFunctor n).mapIso (sheafPullbackFreeYonedaIso J U (Over.mk (𝟙 U))).op ≪≫
+  exact (Abelian.extFunctor n).mapIso (sheafPullbackFreeYonedaIso J U V).op ≪≫
     NatIso.ofComponents
       (fun F ↦ AddEquiv.toAddCommGrpIso
         (((Over.forget U).sheafAdjunctionContinuous AddCommGrpCat.{v} (J.over U) J).extEquiv))
@@ -120,7 +123,7 @@ def cohomologyPresheafEvaluationIsoFunctorOverH (n : ℕ) :
     _root_.CategoryTheory.Sheaf.cohomologyPresheafFunctor J n ⋙
       (evaluation Cᵒᵖ AddCommGrpCat.{w}).obj (op U) ≅
     J.overPullback AddCommGrpCat.{v} U ⋙ _root_.CategoryTheory.Sheaf.functorH (J.over U) n :=
-  cohomologyPresheafEvaluationIsoOver J U n ≪≫
+  cohomologyPresheafEvaluationIsoOver J U n (Over.mk (𝟙 U)) ≪≫
     Functor.isoWhiskerLeft (J.overPullback AddCommGrpCat.{v} U)
       (_root_.CategoryTheory.Sheaf.cohomologyPresheafEvaluationIsoFunctorH (J.over U) n
         (Over.mkIdTerminal (X := U)))
@@ -146,5 +149,16 @@ noncomputable def cohomologyPresheafObjIsoOverH (F : Sheaf J AddCommGrpCat.{v}) 
     [PreservesFiniteLimits ((Over.forget U).sheafPullback AddCommGrpCat.{v} (J.over U) J)] :
     H' F n U ≅ AddCommGrpCat.of (H (F.over U) n) :=
   (J.cohomologyPresheafEvaluationIsoFunctorOverH U n).app F
+
+/-- Under an exact restriction adjunction, cohomology at `V.left` is the cohomology at
+`V : Over U` of the restricted sheaf on the localized site. -/
+noncomputable def cohomologyPresheafObjIsoOverH' (F : Sheaf J AddCommGrpCat.{v}) (n : ℕ) {U : C}
+    (V : Over U) [HasSheafify (J.over U) AddCommGrpCat.{v}]
+    [HasExt.{w} (Sheaf (J.over U) AddCommGrpCat.{v})]
+    [(J.overPullback AddCommGrpCat.{v} U).IsRightAdjoint]
+    [PreservesFiniteColimits (J.overPullback AddCommGrpCat.{v} U)]
+    [PreservesFiniteLimits ((Over.forget U).sheafPullback AddCommGrpCat.{v} (J.over U) J)] :
+    H' F n V.left ≅ H' (F.over U) n V :=
+  (J.cohomologyPresheafEvaluationIsoOver U n V).app F
 
 end CategoryTheory.Sheaf

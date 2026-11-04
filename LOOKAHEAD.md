@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[],"title":"feat: Ext and sheaf cohomology from acyclic resolutions"},{"n":3,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":4,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":5,"after":[4],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":6,"after":[5],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":7,"after":[1,2],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":8,"after":[],"title":"feat: total complexes of first-quadrant cochain bicomplexes"},{"n":9,"after":[2,5,6,8],"title":"feat: the Čech double complex of a complex of abelian sheaves"},{"n":10,"after":[8],"title":"feat: the spectral sequence of a first-quadrant cochain bicomplex"},{"n":11,"after":[9,10],"title":"feat: the Čech-to-cohomology spectral sequence"},{"n":12,"after":[],"title":"feat: the connecting map of a degreewise split short exact sequence"},{"n":13,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[],"title":"feat: Ext and sheaf cohomology from acyclic resolutions"},{"n":3,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":4,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":5,"after":[4],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":6,"after":[5],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":7,"after":[1,2],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":8,"after":[],"title":"feat: total complexes of first-quadrant cochain bicomplexes"},{"n":9,"after":[2,5,6,8],"title":"feat: the Čech double complex of a complex of abelian sheaves"},{"n":10,"after":[8],"title":"feat: the spectral sequence of a first-quadrant cochain bicomplex"},{"n":11,"after":[9,10],"title":"feat: the Čech-to-cohomology spectral sequence"},{"n":12,"after":[],"title":"feat: the connecting map of a degreewise split short exact sequence"},{"n":13,"after":[11],"title":"feat: the Čech-to-cohomology spectral sequence of a covering of an object"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
@@ -38,6 +38,60 @@ at `fc88ca0a5dc2`, so the stub stays) closed item (a2) of "What remains" 3: **th
 differential of the Čech-to-cohomology spectral sequence is `(-1)ᵠ` times the Čech differential of
 the cohomology presheaf `Hᵠ(-, F)`**, so its second page is `Ȟᵖ(U, Hᵠ(F))`. See "New in the fifth
 round".
+
+The sixth round (2026-11-04, same `main` `52f9d081237`; #27242 still open at `fc88ca0a5dc2`, so
+the stub stays) moved `cech_to_cohomology` from coverings of the terminal object to **coverings of
+an arbitrary object `V`**, via the localized site `J.over V`. See "New in the sixth round".
+
+## New in the sixth round: coverings of an object `V` (no stub used)
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Over.lean` (existing file on `main`, +22/−8; new
+split 13): the comparison of `main`'s `Over.lean` is generalised from the terminal object
+`Over.mk (𝟙 U)` of `Over U` to an arbitrary `V : Over U`, which is a modest generalisation of
+existing code:
+
+- `GrothendieckTopology.cohomologyPresheafEvaluationIsoOver J U n V` (was `private`, at
+  `Over.mk (𝟙 U)` only; now public and for every `V : Over U`):
+  `Hⁿ(V.left, -) ≅ Hⁿ(V, (-).over U)`, natural in the coefficient sheaf;
+- `Sheaf.cohomologyPresheafObjIsoOverH' F n V : H' F n V.left ≅ H' (F.over U) n V`;
+- the instance `(J.overPullback AddCommGrpCat U).Additive` (was a `local instance`; now global with
+  a docstring, since the new file needs it too).
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/SpectralSequenceOver.lean` (new, 147 lines;
+split 13), for a family `f i : u i ⟶ V`, `[HasFiniteProducts (Over V)]` (for instance from
+Mathlib's `Over.ConstructProducts.over_finiteProducts_of_finiteWidePullbacks`), and the exactness
+hypotheses of `main`'s `Over.lean` (restriction to `J.over V` preserves finite colimits, its left
+adjoint finite limits):
+
+- `ofArrows_mem_over_iff`: `Sieve.ofArrows (Over.mk ∘ f) _ ∈ J.over V (Over.mk (𝟙 V)) ↔
+  Sieve.ofArrows u f ∈ J V`;
+- `injective_overPullback_obj` (restriction to `J.over V` preserves injective abelian sheaves) and
+  the private helper `exactAt_overPullback` (it preserves exactness of a complex in positive
+  degrees); with `ShortComplex.Exact.map` these carry an injective resolution of `F` to one of
+  `F.over V`. (The port may move `injective_overPullback_obj` into `Over.lean`.);
+- `cechToCohomologyOverSpectralSequence f K` and `cechToCohomologyOverSpectralObject f K` (abbrevs:
+  the Čech-to-cohomology spectral sequence of the family `Over.mk (f i)` with coefficients in the
+  restriction of `K`);
+- **`cechToCohomologyOverSpectralSequenceFirstPageAddEquiv`**: its first page at
+  `(q + 2p + 1, -(p + 1))` is `∏ₐ Hᵠ(u (a 0) ×_V ⋯ ×_V u (a p), F)` (the fibre products being
+  `(∏ᶜ Over.mk (f (a j))).left`), cohomology of `F` itself on `C`;
+- **`cechToCohomologyOverAbutmentAddEquiv`**: for a covering family `f`, its abutment in degree
+  `n` is `Hⁿ(V, F)`.
+
+The first differential of this spectral sequence is already identified on the localized site by
+`cechToCohomologySpectralSequenceFirstPageAddEquiv_d` (applied to `J.over V`, `F.over V`): it is
+`(-1)ᵠ` times the Čech differential of `Hᵠ(-, F.over V)`. Transporting it to the Čech differential
+of `Hᵠ(-, F)` on `C` needs the naturality of `cohomologyPresheafObjIsoOverH'` in `V : Over U`. The
+round attempted it: the free-sheaf half (`sheafPullbackFreeYonedaIso` commutes with the maps induced
+by `g : V ⟶ W` and `g.left`) is a short corepresentation argument (`e.homEquiv ((e.uniqueUpToIso
+e').hom ≫ k) = e'.homEquiv k`, then `Adjunction.homEquiv_naturality_left` and
+`freeYonedaSheafSectionsEquiv_naturality_left`), but the cohomology half cannot unfold
+`cohomologyPresheafEvaluationIsoOver`, which is built by `rw [cohomologyPresheafFunctor_eq]` across
+the unexposed `freeYonedaSheafFunctor`. The next round should rebuild that isomorphism from
+components `F.H'AddEquivExt`, precomposition with `Ext.mk₀ (sheafPullbackFreeYonedaIso J U V).hom`
+and `Adjunction.extEquiv` (so that its value is computable), then prove the naturality with
+`Adjunction.extEquiv_naturality_left₀`, and state the `_d` theorem for
+`cechToCohomologyOverSpectralSequenceFirstPageAddEquiv`.
 
 ## New in the fifth round: `E₂ = Ȟᵖ(U, Hᵠ(F))` (no stub used)
 
@@ -81,7 +135,7 @@ round): `iso.inv ≫ d ≫ iso'.hom = (-1)ᵏ • Hᵏ(d_h)`.
 `Hᵠ(-, F)` to `(-1)ᵠ δc`. With the first page and abutment already on the branch, this is the
 `cech_to_cohomology` spectral sequence `Ȟᵖ(U, Hᵠ(F)) ⇒ Hᵖ⁺ᵠ(T, F)` for a covering family `U` of the
 terminal object (the target's "covering of `V`" is this applied on the slice site `C/V`, or with
-`T := V` when `C` has a terminal `V`; that restatement is left to split 13).
+`T := V` when `C` has a terminal `V`; that restatement is now split 13, see the sixth round).
 
 ## New in the latest round: the connecting maps of the row filtration (no stub used)
 
@@ -485,9 +539,12 @@ The spectral sequence itself:
    `cechToCohomologySpectralSequenceFirstPageAddEquiv` the first differential is `(-1)ᵠ` times the
    Čech differential of `Hᵠ(-, F)` (`cechToCohomologySpectralSequenceFirstPageAddEquiv_d`), from
    the naturality of `Sheaf.H'.addEquivHomologyOfResolution` in `V`. This gives
-   `E₂ = Ȟᵖ(U, Hᵠ(F))`. What remains for `cech_to_cohomology` is packaging only: stating it for a
-   covering `U` of an arbitrary object `V` (via the slice site, or for `V` terminal), and the
-   degeneration recovering split 6.
+   `E₂ = Ȟᵖ(U, Hᵠ(F))`. (a3) **Mostly done** (sixth round): for a covering `f i : u i ⟶ V` of an
+   arbitrary object, `cechToCohomologyOverSpectralSequence` with first page
+   `∏ₐ Hᵠ(u (a 0) ×_V ⋯ ×_V u (a p), F)` and abutment `Hⁿ(V, F)` (split 13). Still missing: its
+   first differential in terms of `Hᵠ(-, F)` on `C` (needs the naturality of
+   `Sheaf.cohomologyPresheafObjIsoOverH'` in `V : Over U`; see "New in the sixth round" for the
+   plan), and the degeneration recovering split 6.
    (b) `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
    identification of its `E₂^{n,0}` edge with `lerayEdge`), from item 1.
 
@@ -618,9 +675,18 @@ The spectral sequence itself:
    `CochainComplex.homologyMap_homOfDegreewiseSplit`. After: none. Can be opened now. (No longer
    used by the proof since the latest round computed the connecting maps directly; the port may
    drop this split.)
-13. **feat: the Leray and Čech-to-cohomology spectral sequences** —
+13. **feat: the Čech-to-cohomology spectral sequence of a covering of an object** — files:
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Over.lean` (+22/−8, existing file on `main`) and
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/SpectralSequenceOver.lean` (new, 147 lines).
+   Adds (public) `GrothendieckTopology.cohomologyPresheafEvaluationIsoOver` for every `V : Over U`,
+   `Sheaf.cohomologyPresheafObjIsoOverH'`, the global `Additive` instance for `J.overPullback`,
+   `ofArrows_mem_over_iff`, `injective_overPullback_obj`, `cechToCohomologyOverSpectralSequence`,
+   `cechToCohomologyOverSpectralObject`, `cechToCohomologyOverSpectralSequenceFirstPageAddEquiv`,
+   `cechToCohomologyOverAbutmentAddEquiv` (+ the naturality and `_d` statement planned above).
+   After: 11. Written (without the `_d` statement).
+14. **feat: the Leray and Čech-to-cohomology spectral sequences** —
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
    naturality, relative form and edge maps (identified with `lerayEdge`), `cech_to_cohomology`
    (with its degeneration recovering split 6; its first page `Hᵠ(U_a, F)` read off by split 2).
-   After: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12. The only split that
+   After: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13. The only split that
    completes the target. Not yet written.
