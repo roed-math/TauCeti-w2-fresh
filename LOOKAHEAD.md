@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-lattice-dictionary","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["weierstrass-uniformization"],"splits":[{"n":1,"after":[],"title":"feat: scalar maps between period lattices, their kernels, degrees and duals"},{"n":2,"after":[1],"title":"feat: the multiplier ring of a period lattice and its analytic endomorphisms"},{"n":3,"after":[2],"title":"feat: fractional ideals of imaginary quadratic orders as period lattices"},{"n":4,"after":[3],"title":"feat: ideal classes of an imaginary quadratic order and lattices with CM"},{"n":5,"after":[4],"title":"feat: the Picard group acts simply transitively on lattices with CM"},{"n":6,"after":[5],"title":"feat: the isogeny of an invertible integral ideal and its torsion kernel"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-lattice-dictionary","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["weierstrass-uniformization"],"splits":[{"n":1,"after":[],"title":"feat: scalar maps between period lattices, their kernels, degrees and duals"},{"n":2,"after":[1],"title":"feat: the multiplier ring of a period lattice and its analytic endomorphisms"},{"n":3,"after":[2],"title":"feat: fractional ideals of imaginary quadratic orders as period lattices"},{"n":4,"after":[3],"title":"feat: ideal classes of an imaginary quadratic order and lattices with CM"},{"n":5,"after":[4],"title":"feat: the Picard group acts simply transitively on lattices with CM"},{"n":6,"after":[5],"title":"feat: the isogeny of an invertible integral ideal and its torsion kernel"},{"n":7,"after":[],"title":"feat: the j-invariant classifies period lattices up to homothety"},{"n":8,"after":[5,7],"title":"feat: the j-invariant classifies ideal classes and curves with complex multiplication"}]}-->
 # Lookahead: `cm-lattice-dictionary` (ImaginaryQuadraticClassNumber, H3.1)
 
 Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54`. Status: **partial** (see the end).
@@ -48,8 +48,8 @@ module also imports `Mathlib.Analysis.Normed.Module.Connected`, which only its p
 
 ## Split plan
 
-All six splits need the supplier's PR #22646 on `main`. Each split builds on `main` plus the splits
-before it.
+Splits 1–6 and 8 need the supplier's PR #22646 on `main`; split 7 needs no supplier (it builds on
+`main` alone). Each split builds on `main` plus the splits it lists as needed first.
 
 ### Split 1 — `feat: scalar maps between period lattices, their kernels, degrees and duals`
 - Needs first: none (only the supplier).
@@ -135,6 +135,28 @@ before it.
   `natCard_idealTorsion_eq_relIndex` (its degree is `[𝔞⁻¹ I : I]`), `exists_isogeny_picSMul` (the
   `Pic O`-action of split 5 is realized by these isogenies); private helper `toSubring`.
 
+### Split 7 — `feat: the j-invariant classifies period lattices up to homothety`
+- Needs first: none, and no supplier (no import of the stub module).
+- Files: new `TauCeti/Analysis/SpecialFunctions/Elliptic/JInvariant.lean` (263 lines).
+- Declarations (`PeriodPair`): `weierstrassPExcept_zero_eventuallyEq` (equal `g₂, g₃` force the
+  holomorphic parts `℘ - 1/z²` to agree near `0`: from the differential equation times `z⁶`, the
+  difference `s = z^m g` would satisfy `-4 m = 12`), `lattice_eq_of_g₂_eq_of_g₃_eq` (identity
+  theorem on the connected complement of both lattices, then the double pole of `℘`),
+  `exists_lattice_eq_smul_of_weierstrassCurve_j_eq`, `weierstrassCurve_eq_iff` (the curve determines the lattice), `weierstrassCurve_j_eq_iff` (equal
+  `j`-invariants iff homothetic lattices); private helpers
+  `derivWeierstrassPExcept_zero_relation`, `exists_g₂_eq_mul_of_weierstrassCurve_j_eq`.
+
+### Split 8 — `feat: the j-invariant classifies ideal classes and curves with complex multiplication`
+- Needs first: 5, 7.
+- Files: new `TauCeti/NumberTheory/ComplexMultiplication/JInvariant.lean` (120 lines).
+- Declarations (`TauCeti.GlobalNumberFields.NumberFieldOrder`): `jInvariant_eq_jInvariant_iff`
+  (`j(I) = j(J)` iff `[I] = [J]`), `CMClass.jInvariant`, `CMClass.jInvariant_mk`,
+  `CMClass.jInvariant_injective` (the `j`-invariant classifies curves with CM by `O`),
+  `injective_jInvariant_cmClassEquiv` (the classes of `Pic O` have distinct `j`-invariants); and
+  (`TauCeti.GlobalNumberFields.IdealClassMonoid`) `jInvariant_injective`.
+- Small (about 120 lines): if a reviewer prefers, fold it into split 6 or into the final
+  assembly split.
+
 ## What is proved and what remains (`partial`)
 
 Proved (no `sorry` outside the stub file): the analytic half of the dictionary. Scalar maps between
@@ -148,7 +170,10 @@ classes of lattices with multiplier ring `σ(O)`, `Pic O` acts simply transitive
 classes (`[𝔞] · [σ(I)] = [σ(𝔞⁻¹ I)]`), this action is realized by the `𝔞`-isogenies
 `E_I → E_{𝔞⁻¹ I}` for integral invertible `𝔞`, whose kernel is the `𝔞`-torsion `E_I[𝔞]` and whose
 degree is `[𝔞⁻¹ I : I]`, and the `j`-invariant descends to ideal classes and is a modular
-`j`-value.
+`j`-value. The **`j`-invariant classification** is proved (splits 7–8): a period lattice is
+determined by `(g₂, g₃)`, lattices with the same `j`-invariant are homothetic, so `j` is injective
+on ideal classes, on homothety classes of lattices with CM by `O`, and on `Pic O`. This needs no
+lattice-recovery statement from the supplier.
 
 Remains:
 1. **Algebraic isogenies.** The rational description: for `α Λ ⊆ Λ'`, `℘_Λ'(α z)` and
@@ -157,13 +182,9 @@ Remains:
    curves whose point map is `scalarPointHom`; then compare its EllipticCurves degree, kernel and
    dual with `natCard_ker_scalarPointHom`, `scalarPointHom_comp_dual`, and identify the algebraic
    endomorphism ring with `multiplierRing` (so `End(E_I) ≅ O` algebraically).
-2. **j-invariant classification.** The converse of `jInvariant_eq_of_homothetyCon`: equal
-   `j`-invariants force homothetic lattices (hence equal ideal classes, via
-   `mk_eq_mk_iff_exists_lattice_eq_smul`). This needs recovery of the lattice from `(g₂, g₃)`,
-   i.e. the supplier's "period-lattice recovery for every complex elliptic curve", which no open
-   supplier PR yet states.
-3. **Degree of the `𝔞`-isogeny as a norm.** Split 6 proves kernel `E_I[𝔞]` and degree
+2. **Degree of the `𝔞`-isogeny as a norm.** Split 6 proves kernel `E_I[𝔞]` and degree
    `[𝔞⁻¹ I : I]`; what remains is `[𝔞⁻¹ I : I] = N(𝔞) = [O : 𝔞]` for invertible `𝔞` (index
    multiplicativity for invertible ideals of an order: `main` has no ideal norm for non-maximal
    orders), and the algebraic form of the `𝔞`-isogeny after item 1.
-4. The final split carrying the target's exported theorems would assemble 1–3 with splits 1–6.
+3. The final split carrying the target's exported theorems would assemble 1–2 with splits 1–8,
+   and so must need every other split.
