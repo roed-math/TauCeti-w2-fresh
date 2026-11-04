@@ -15,14 +15,11 @@ set_option warningAsError false
 Lookahead stubs for the supplier `relative-proj-twisting-sheaf` (SchemeAndStackFoundations,
 Layer 0, §0.3), to be replaced by the landed declarations.
 
-The parts of `relative-proj-base-change` proved so far (the pullback `g^* A` of a graded
-quasicoherent algebra, the graded ring maps of sections along `g`, their affine base change, the
-cartesian chart squares of projective spectra and their compatibility with the transition maps,
-gluing morphisms into a glued module from a covering family of charts, and the comparison
-morphism `h^* 𝒪(n) ⟶ 𝒪(n)` along the projection of relative `Proj`s) consume no declaration of
-the supplier, and the twisting sheaves `𝒪(n)` of a relative `Proj`
-that the compatibility with `𝒪(n)` will use are already on `main`
+The parts of `relative-proj-base-change` proved so far consume no declaration of the supplier:
+the relative `Proj`, its twisting sheaves `𝒪(n)` and their chart identifications
 (`CategoryTheory.CommMon.relativeProjTwistingSheaf`,
-`CategoryTheory.CommMon.restrictRelativeProjTwistingSheafIso`). This module therefore states no
-stub yet; a later session adds here whatever supplier declaration the remaining splits consume.
+`CategoryTheory.CommMon.restrictRelativeProjTwistingSheafIso`) are already on `main`, and the
+comparison `h^* 𝒪(n) ⟶ 𝒪(n)` is checked on the charts, where the twisting sheaves are those of
+`Proj`. This module therefore states no stub; a later session adds here whatever supplier
+declaration the remaining step consumes, if any.
 -/

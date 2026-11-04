@@ -254,6 +254,13 @@ transition maps (`TauCeti.ModulesGlueData.isIso_restrictGluedHom`). -/
 def restrictGluedHom (i : J) : D.glued.restrict (colimit.ι F i) ⟶ D.obj i :=
   ((Scheme.Modules.restrictAdjunction (colimit.ι F i)).homEquiv _ _).symm (D.π i)
 
+/-- The morphism `restrictGluedHom` is the transpose of the projection `glued ⟶ (ιᵢ)_* Mᵢ` under
+the restriction–pushforward adjunction of `ιᵢ`. -/
+theorem restrictGluedHom_eq (i : J) :
+    D.restrictGluedHom i =
+      ((Scheme.Modules.restrictAdjunction (colimit.ι F i)).homEquiv _ _).symm (D.π i) :=
+  (rfl)
+
 /-- On sections over `W`, the morphism from the restriction of the glued module to `Mᵢ` is the
 projection over the image `ιᵢ(W)`, followed by the restriction along `ιᵢ⁻¹ ιᵢ(W) = W`. -/
 theorem restrictGluedHom_app_apply (i : J) (W : (F.obj i).Opens)
