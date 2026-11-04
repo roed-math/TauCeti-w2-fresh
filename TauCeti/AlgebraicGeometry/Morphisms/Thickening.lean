@@ -205,6 +205,13 @@ instance respectsIso : RespectsIso @IsFirstOrderThickening.{u} :=
 instance isStableUnderBaseChange : IsStableUnderBaseChange @IsFirstOrderThickening.{u} :=
   IsStableUnderBaseChange.mk' fun _ _ _ f i _ _ ↦ pullback_fst f i
 
+/-- The restriction of a first-order thickening over an open is a first-order thickening. -/
+instance morphismRestrict (i : Z ⟶ X) [IsFirstOrderThickening i] (U : X.Opens) :
+    IsFirstOrderThickening (i ∣_ U) := by
+  rw [← Iso.inv_hom_id_assoc (pullbackRestrictIsoRestrict i U) (i ∣_ U),
+    pullbackRestrictIsoRestrict_hom_morphismRestrict]
+  infer_instance
+
 /-- For a surjective ring map `φ : R ⟶ S`, the closed immersion `Spec S ⟶ Spec R` is a first-order
 thickening if and only if the kernel of `φ` has square zero. -/
 theorem SpecMap_iff {R S : CommRingCat.{u}} (φ : R ⟶ S) (hφ : Function.Surjective φ) :

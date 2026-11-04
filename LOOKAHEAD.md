@@ -1,10 +1,10 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"is-thickening","main":"00deee4410cf1ae1f96695b1ab13f148cea83bc7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: formally smooth and formally étale morphisms of schemes"},{"n":2,"after":[1],"title":"feat: formal smoothness of Spec.map and of affine space"},{"n":3,"after":[],"title":"feat: thickenings of order n + 2 factor through first-order thickenings"},{"n":4,"after":[1,2],"title":"feat: étale iff formally étale"},{"n":5,"after":[1,2],"title":"feat: lifts into affine space along a closed immersion form a torsor"},{"n":6,"after":[1,2,3,4,5],"title":"feat: smooth iff formally smooth and the torsor of lifts"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"is-thickening","main":"5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: formally smooth and formally étale morphisms of schemes"},{"n":2,"after":[1],"title":"feat: formal smoothness of Spec.map and of affine space"},{"n":3,"after":[],"title":"feat: thickenings of order n + 2 factor through first-order thickenings"},{"n":4,"after":[1,2],"title":"feat: étale iff formally étale"},{"n":5,"after":[1,2],"title":"feat: lifts into affine space along a closed immersion form a torsor"},{"n":6,"after":[1,2,4],"title":"feat: the sheaf of lifts along a first-order thickening"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: smooth iff formally smooth and the torsor of lifts"}]}-->
 
 # Lookahead: SchemeAndStackFoundations §4.1 `is-thickening` (partial)
 
 Roadmap: `SchemeAndStackFoundations/README.md`, Layer 4, §4.1 *Thickenings, formally smooth and
 étale morphisms, the lifting criterion, torsors of lifts*. Built on `main` at
-`00deee4410cf1ae1f96695b1ab13f148cea83bc7`.
+`5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1`.
 
 ## Stubs: none
 
@@ -29,7 +29,10 @@ Nothing proved on this branch consumes either listed supplier, so there is no
   (Rechecked 2026-11-04: #27237 is now *feat: connecting map of an extension of sheaves of
   groups*, a single new file `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Connecting.lean`;
   the torsor carrier `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Torsor.lean` is on
-  `main`. Nothing on the branch consumes either.)
+  `main`. Nothing on the branch consumes either. Split 6's `liftSheaf_coversTop` is stated in the
+  exact form of the `coversTop` field of main's `CategoryTheory.Sheaf.Torsor`, so that once a
+  group sheaf acts on `liftSheaf` it plugs in directly; it uses only `main`'s
+  `Opens.grothendieckTopology`, not the torsor API itself.)
 
 ## What is proved (all sorry-free, `lake build` green)
 
@@ -61,9 +64,9 @@ How this matches the roadmap API (README §4.1):
 | *FormallyEtale.of_isOpenImmersion* | **proved** (split 1) |
 | *formallyEtale_iff* | **proved** (split 4) |
 | *FormallySmooth.iff_affineLocally* | ⇒ **proved** as `FormallySmooth.formallySmooth_appLE` (split 4); ⇐ remains (needs gluing, see below) |
-| *FormallySmooth.of_smooth*, `smooth_iff_formallySmooth` | ⇐ (formally smooth + LFP ⇒ smooth) **proved** as `AlgebraicGeometry.Smooth.of_formallySmooth` (split 4); ⇒ remains |
+| *FormallySmooth.of_smooth*, `smooth_iff_formallySmooth` | ⇐ (formally smooth + LFP ⇒ smooth) **proved** as `AlgebraicGeometry.Smooth.of_formallySmooth` (split 4); ⇒ **proved for affine `X`, `S`** as `FormallySmooth.of_smooth_of_isAffine`, and **locally** as `exists_local_lift_of_smooth` (split 4); the general ⇒ remains |
 | `etale_iff_formallyEtale` | **proved** (split 4), together with the instance `FormallyEtale.of_etale` |
-| `smooth_lifting_torsor` | affine space case **proved**: instance `affineSpaceLift_addTorsor` (split 5); étale uniqueness **proved** as instance `FormallyEtale.subsingleton_liftStruct` (split 5); the general sheaf torsor remains |
+| `smooth_lifting_torsor` | affine space case **proved**: instance `affineSpaceLift_addTorsor` (split 5); étale uniqueness **proved** as instance `FormallyEtale.subsingleton_liftStruct` (split 5) and, sheaf-wise, as instance `subsingleton_liftSheaf` (split 6); the **sheaf of lifts** `liftSheaf` is **defined**, with `nonempty_liftSheaf_top_iff` (a lift exists iff the sheaf has a global section) and `liftSheaf_coversTop` (locally nonempty for smooth `f`) (split 6); the group sheaf `Hom(a^* Ω_{X/S}, I)`, its simply transitive action and the obstruction class remain |
 | checks *isFirstOrderThickening_dualNumber*, *_id*, `not_isFirstOrderThickening_cube`, `not_isThickening_origin` | already on `main` |
 | checks *formallySmooth_affineSpace*, *formallyEtale_id*, `not_formallySmooth_closedPoint` | **proved**: instance `FormallySmooth.affineSpace`, an `example`, and `not_formallySmooth_origin` (split 2) |
 | check `formallyUnramified_iff_mathlib` | **proved** as `formallyUnramified_iff_hom_ext` (split 4) |
@@ -122,23 +125,43 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    `TauCeti/Examples/AlgebraicGeometry/Morphisms/FormallySmooth.lean` (about 12 lines); the example
    is why this split needs split 2, as that file is split 2's. `Lifts.lean` itself needs only
    split 1.
-6. **`feat: smooth iff formally smooth and the torsor of lifts`** — after: 1, 2, 3, 4, 5.
+6. **`feat: the sheaf of lifts along a first-order thickening`** — after: 1, 2, 4.
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf.lean` (183 lines) and
+   instance `IsFirstOrderThickening.morphismRestrict` (`i ∣_ U` is a first-order thickening; 7
+   lines) in `TauCeti/AlgebraicGeometry/Morphisms/Thickening.lean`. Declarations: `liftPresheaf`
+   (sections over `W`: the `l : W ⟶ X` with `i ∣_ W ≫ l = (i ⁻¹ᵁ W).ι ≫ a` and
+   `l ≫ f = W.ι ≫ h`), `liftPresheaf_isSheaf` (gluing via `Scheme.Cover.glueMorphisms` over the
+   cover of `⨆ U` by the `U j`), `liftSheaf`, `nonempty_liftSheaf_top_iff`, instance
+   `subsingleton_liftSheaf` (formally unramified `f`), `exists_nonempty_liftSheaf_of_smooth`
+   and `liftSheaf_coversTop` (smooth `f`: locally nonempty, in the form of the `coversTop` field
+   of main's `CategoryTheory.Sheaf.Torsor`). It needs split 4 for `exists_local_lift_of_smooth`
+   and split 2 for `IsFirstOrderThickening.isNilpotent_ker`. A reviewer may ask to export the
+   private `iSupCover` (the open cover of `⨆ U` by the `U j`) to a general home; it is kept
+   private as it only serves the gluing here.
+7. **`feat: smooth iff formally smooth and the torsor of lifts`** — after: 1, 2, 3, 4, 5, 6.
    **Not on this branch.** This is the only split that completes the target: the general
    `smooth_lifting_torsor`, `FormallySmooth.of_smooth`, `smooth_iff_formallySmooth`, and the ⇐ half
    of `FormallySmooth.iff_affineLocally`.
 
-Splits 1–5 depend on no unlanded supplier and could be opened against `main` as they stand.
+Splits 1–6 depend on no unlanded supplier and could be opened against `main` as they stand.
 
 ## What remains
 
 * **Smooth ⇒ formally smooth** (Stacks, Lemma 37.11.7 (02H6), via Lemmas 37.9.x and 37.11.10
-  (0D0F)). Local lifts exist on small affine opens of `T'`: `Smooth` gives affine-locally
-  `RingHom.Smooth`, hence `RingHom.FormallySmooth`, and then `FormallySmooth.SpecMap_iff` applies.
-  The construction is the one in `Criterion.lean`'s `exists_local_lift`. Unlike the étale case,
-  however, local lifts are not unique, so they do not glue directly. The differences of two lifts
-  form the sheaf `Hom_{O_T}(a^* Ω_{X/S}, I)`, and the lifts form a torsor under it. Gluing needs
-  that torsor, from §2.3 `equiv-sheaf-h` (`NonabelianH1`, `equivSheafH`), together with
-  `H¹ = 0` for quasi-coherent sheaves on affine `T'`. The same argument gives the ⇐ half of
+  (0D0F)). Done on the branch: local lifts exist on small affine opens of `T'`
+  (`exists_local_lift_of_smooth`, split 4), and they are the sections of the sheaf
+  `liftSheaf f i a h` on `T'` (split 6), which is locally nonempty (`liftSheaf_coversTop`) and has
+  a global section exactly when a lift exists (`nonempty_liftSheaf_top_iff`). Unlike the étale case,
+  local lifts are not unique, so they do not glue directly. What remains: the differences of two
+  lifts form the sheaf `Hom_{O_T}(a^* Ω_{X/S}, I)`; define its action on `liftSheaf` (on an affine
+  `W` whose lifts land in an affine `U ⊆ X` over an affine `V ⊆ S`, this is Mathlib's
+  `derivationToSquareZeroEquivLift` for `Γ(V) → Γ(U)`) and package `liftSheaf` as a
+  `CategoryTheory.Sheaf.Torsor` (`liftSheaf_coversTop` is its `coversTop` field). Then
+  `H¹ = 0` for quasi-coherent sheaves on affine `T'` makes its class trivial, so it has a section
+  (main's `NonabelianH1.mk_eq_one_iff`), and `nonempty_liftSheaf_top_iff` turns the section into
+  the lift. The `H¹` comparison is §2.3 `equiv-sheaf-h` (`equivSheafH`); Serre vanishing is
+  already on `main` (`subsingleton_cohomology_succ_of_isAffine` in
+  `TauCeti/AlgebraicGeometry/Cohomology/Affine.lean`, rechecked 2026-11-04). The same argument gives the ⇐ half of
   `FormallySmooth.iff_affineLocally`, and with it `FormallySmooth.of_smooth` and
   `smooth_iff_formallySmooth` (the ⇐ half is already `Smooth.of_formallySmooth`).
 * **`smooth_lifting_torsor`** in general (its affine space case and the check
