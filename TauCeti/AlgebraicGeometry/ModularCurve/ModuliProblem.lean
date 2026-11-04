@@ -7,6 +7,7 @@ module
 
 public import Mathlib.CategoryTheory.Monoidal.Cartesian.FunctorCategory
 public import TauCeti.AlgebraicGeometry.ModularCurve.Ell
+public import TauCeti.CategoryTheory.Aut.Representable
 
 /-!
 # Moduli problems over `Ell/B`
@@ -43,6 +44,13 @@ identity fixes a level structure on `E/S` (`ModuliProblem.IsRigid`). Rigidity pa
 problem with a morphism to a rigid one (`IsRigid.of_hom`), in particular to simultaneous problems,
 and every problem representable by an object of `Ell/B` is rigid (`isRigid_of_representableBy`).
 
+A group `G` acting on a relatively representable problem `𝒫` acts on every representing scheme
+`𝒫_{E/S}` over `S`, by the Yoneda lemma (`RelRepData.repAction`): `g` acts as the automorphism
+along which the level structure classified by `f : T ⟶ 𝒫_{E/S}` becomes its image under `g`
+(`RelRepData.homEquiv_comp_repAction_hom`). If `G` acts freely on level structures over nonempty
+bases, it acts on `𝒫_{E/S}` without fixed points with values in nonempty schemes
+(`RelRepData.eq_one_of_comp_repAction_hom_left_eq`).
+
 ## Main definitions
 
 * `TauCeti.AlgebraicGeometry.ModuliProblem B`: moduli problems over `Ell/B`.
@@ -53,6 +61,8 @@ and every problem representable by an object of `Ell/B` is rigid (`isRigid_of_re
   over the representing scheme `𝒫_{E/S}`.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.HasProperty`: a property of morphisms of
   schemes holds for every representing morphism.
+* `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.repAction`: the action of a group acting on
+  a relatively representable problem on its representing schemes.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.IsRigid`: rigidity.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.isoTensorUnitOfUnique`: a moduli problem with exactly
   one level structure on every object is the trivial problem `[Γ(1)]`.
@@ -68,6 +78,8 @@ and every problem representable by an object of `Ell/B` is rigid (`isRigid_of_re
   `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.HasProperty.tensor`: the simultaneous
   problem of two relatively representable problems is relatively representable, and inherits every
   property stable under base change and composition.
+* `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.eq_one_of_comp_repAction_hom_left_eq`: a
+  free action on level structures is free on points of the representing schemes.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.isRigid_of_representableBy`: a representable moduli
   problem is rigid.
 
@@ -273,6 +285,43 @@ theorem HasProperty.tensor {D : P.RelRepData} {D' : Q.RelRepData} {W : MorphismP
     [W.IsStableUnderBaseChange] [W.IsStableUnderComposition] (h : D.HasProperty W)
     (h' : D'.HasProperty W) : (D.tensor D').HasProperty W :=
   fun X ↦ W.comp_mem _ _ (W.pullback_fst _ _ (h' X)) (h X)
+
+section Action
+
+variable {G : Type*} [Monoid G] (ρ : G →* Aut P)
+
+/-- **The action on representing schemes.** If `G` acts on a relatively representable moduli
+problem `𝒫`, then for every object `X = (E/S)` of `Ell/B` it acts on the representing scheme
+`𝒫_{E/S}` over `S`: `g` acts as the automorphism along which the level structure classified by
+`f : T ⟶ 𝒫_{E/S}` becomes its image under `g` (`homEquiv_comp_repAction_hom`). -/
+noncomputable def repAction (X : EllObj B) : G →* Aut (D.rep X) :=
+  (D.representableBy X).autMulEquiv.toMonoidHom.comp
+    ((((Functor.whiskeringLeft _ _ _).obj X.baseChangeFunctor.op).mapAut P).comp ρ)
+
+/-- The automorphism of `𝒫_{E/S}` attached to `g` acts on the level structure classified by
+`f : T ⟶ 𝒫_{E/S}` as `g`. -/
+@[simp]
+theorem homEquiv_comp_repAction_hom (X : EllObj B) (g : G) {T : Over X.base}
+    (f : T ⟶ D.rep X) :
+    (D.representableBy X).homEquiv (f ≫ (D.repAction ρ X g).asIso.hom) =
+      (ρ g).asIso.hom.app (op (X.baseChangeFunctor.obj T)) ((D.representableBy X).homEquiv f) :=
+  (D.representableBy X).homEquiv_comp_autMulEquiv_hom _ f
+
+/-- **A free action on level structures is free on representing schemes.** If `G` acts on `𝒫`
+without fixed points over nonempty bases, then the automorphism of `𝒫_{E/S}` attached to `g`
+fixes no point with values in a nonempty scheme unless `g = 1`. -/
+theorem eq_one_of_comp_repAction_hom_left_eq
+    (hρ : ∀ Y : EllObj B, Nonempty Y.base → ∀ (g : G) (α : P.obj (op Y)),
+      (ρ g).asIso.hom.app (op Y) α = α → g = 1)
+    {X : EllObj B} {T : Scheme.{u}} [Nonempty T] {x : T ⟶ (D.rep X).left} {g : G}
+    (h : x ≫ (D.repAction ρ X g).asIso.hom.left = x) : g = 1 := by
+  let x' : Over.mk (x ≫ (D.rep X).hom) ⟶ D.rep X := Over.homMk x
+  have hx' : x' ≫ (D.repAction ρ X g).asIso.hom = x' := Over.OverMorphism.ext h
+  refine hρ (X.baseChangeFunctor.obj (Over.mk (x ≫ (D.rep X).hom))) ‹Nonempty T› g
+    ((D.representableBy X).homEquiv x') ?_
+  rw [← D.homEquiv_comp_repAction_hom, hx']
+
+end Action
 
 end RelRepData
 

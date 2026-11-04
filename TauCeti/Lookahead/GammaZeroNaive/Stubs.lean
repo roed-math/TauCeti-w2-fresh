@@ -26,11 +26,11 @@ public section
 
 open CategoryTheory Limits AlgebraicGeometry
 
-universe u
+universe u v
 
 namespace TauCeti.FiniteEtaleScheme
 
-variable {S : Scheme.{u}} {G : Type u} [Group G] [Finite G]
+variable {S : Scheme.{u}} {G : Type v} [Group G] [Finite G]
   (F : SingleObj G ⥤ FiniteEtaleScheme S)
 
 /-- **Free finite-group quotients are torsors** (SGA 3, Exposé V, Théorème 4.1, constant-group
