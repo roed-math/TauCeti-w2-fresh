@@ -30,6 +30,8 @@ predicate `LineBundleClass.IsRelativelyAmple` on line-bundle classes.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_one_iff`: the trivial class is
   relatively ample exactly for quasi-affine morphisms; in particular it is relatively ample for
   affine morphisms (`LineBundleClass.isRelativelyAmple_one`).
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.isSeparated`: a morphism carrying
+  a relatively ample class is separated.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_iff_isAmple`: over an affine base,
   relative ampleness is ampleness.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.isRelativelyAmple`: over a separated base, an
@@ -44,6 +46,8 @@ predicate `LineBundleClass.IsRelativelyAmple` on line-bundle classes.
   preserved by composition with an affine morphism.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_iff_of_iSup_eq_top`: relative
   ampleness is local on the base; one direction is `LineBundleClass.IsRelativelyAmple.restrict`.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback_snd`: relative ampleness
+  is stable under base change.
 
 ## References
 
@@ -106,6 +110,17 @@ theorem IsRelativelyAmple.mul_mk_of_isGloballyGenerated {a : LineBundleClass X} 
   isAmple_pullback V hV := by
     rw [← pullbackHom_apply, map_mul, pullbackHom_apply, pullbackHom_apply, pullback_mk]
     exact (h.isAmple_pullback V hV).mul_mk_of_isGloballyGenerated (hK.pullback _)
+
+/-- **A morphism carrying a relatively ample line bundle is separated.** Over every affine open
+`V` of the base, `f⁻¹ V` carries an ample line bundle and is therefore a separated scheme
+(`LineBundleClass.IsAmple.isSeparated`), so `f ∣_ V` is separated; and separatedness is local on
+the base. -/
+theorem IsRelativelyAmple.isSeparated {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) : IsSeparated f := by
+  refine (IsZariskiLocalAtTarget.iff_of_iSup_eq_top (P := @IsSeparated) _
+    (iSup_affineOpens_eq_top S)).mpr fun V ↦ ?_
+  have := (h.isAmple_pullback V V.2).isSeparated
+  infer_instance
 
 /-- **Relative ampleness over an affine base implies ampleness.** If the base `S` is affine and
 `a` is relatively ample for `f : X ⟶ S`, then `a` is ample: `X` is the preimage of `S` itself. -/
@@ -296,6 +311,55 @@ theorem isRelativelyAmple_iff_of_iSup_eq_top {a : LineBundleClass X} {f : X ⟶ 
     a.IsRelativelyAmple f ↔
       ∀ i, (LineBundleClass.pullback (f ⁻¹ᵁ U i).ι a).IsRelativelyAmple (f ∣_ U i) :=
   ⟨fun h i ↦ h.restrict (U i), isRelativelyAmple_of_iSup_eq_top U hU⟩
+
+/-- **Relative ampleness is stable under base change.** If `a` is relatively ample for
+`f : X ⟶ S` and `g : S' ⟶ S` is any morphism, then the pullback of `a` to `X ×_S S'` is relatively
+ample for the projection to `S'`. The affine opens `V'` of `S'` mapping into an affine open `V` of
+`S` cover `S'`, and relative ampleness is local on the base. Over such a `V'`, the preimage of
+`V'` maps to `f⁻¹ V` by a base change of the affine morphism `V' ⟶ V`, and `a` is ample on
+`f⁻¹ V`, so its pullback is ample. -/
+theorem IsRelativelyAmple.pullback_snd {S' : Scheme.{u}} {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) (g : S' ⟶ S) :
+    (LineBundleClass.pullback (Limits.pullback.fst f g) a).IsRelativelyAmple
+      (Limits.pullback.snd f g) := by
+  set f' := Limits.pullback.snd f g
+  set g' := Limits.pullback.fst f g
+  -- The affine opens of `S'` mapping into an affine open of `S` cover `S'`.
+  let 𝒱 := {V' : S'.Opens // IsAffineOpen V' ∧ ∃ V : S.Opens, IsAffineOpen V ∧ V' ≤ g ⁻¹ᵁ V}
+  refine isRelativelyAmple_of_iSup_eq_top (fun V' : 𝒱 ↦ V'.1)
+    (eq_top_iff.mpr fun s' _ ↦ ?_) fun ⟨V', hV', V, hV, hle⟩ ↦ ?_
+  · obtain ⟨V, hV, hsV, -⟩ := exists_isAffineOpen_mem_and_subset (x := g s') (U := ⊤) trivial
+    obtain ⟨V', hV', hsV', hle⟩ := exists_isAffineOpen_mem_and_subset (x := s') (U := g ⁻¹ᵁ V) hsV
+    exact TopologicalSpace.Opens.mem_iSup.mpr ⟨⟨V', hV', V, hV, hle⟩, hsV'⟩
+  have : IsAffine V' := hV'
+  have : IsAffine V := hV
+  rw [isRelativelyAmple_iff_isAmple, pullback_comp]
+  -- The open of the cover indexed by `⟨V', _⟩` is `V'` by definition.
+  change (LineBundleClass.pullback ((f' ⁻¹ᵁ V').ι ≫ g') a).IsAmple
+  -- `f'⁻¹ V' ⟶ X` factors through `f⁻¹ V`, by a base change of the affine `V' ⟶ V`.
+  let k : (V' : Scheme) ⟶ V := IsOpenImmersion.lift V.ι (V'.ι ≫ g) (by
+    rintro _ ⟨x, rfl⟩
+    rw [Scheme.Opens.range_ι]
+    exact hle x.2)
+  let e : (f' ⁻¹ᵁ V' : Scheme) ⟶ f ⁻¹ᵁ V := IsOpenImmersion.lift (f ⁻¹ᵁ V).ι ((f' ⁻¹ᵁ V').ι ≫ g')
+    (by
+      rintro _ ⟨x, rfl⟩
+      rw [Scheme.Opens.range_ι]
+      -- Membership in `f ⁻¹ᵁ V` is membership of the image in `V`.
+      change f (g' ((f' ⁻¹ᵁ V').ι x)) ∈ V
+      rw [← Scheme.Hom.comp_apply, Limits.pullback.condition, Scheme.Hom.comp_apply]
+      exact hle x.2)
+  have hk : k ≫ V.ι = V'.ι ≫ g := IsOpenImmersion.lift_fac _ _ _
+  have he : e ≫ (f ⁻¹ᵁ V).ι = (f' ⁻¹ᵁ V').ι ≫ g' := IsOpenImmersion.lift_fac _ _ _
+  have hsq : IsPullback e (f' ∣_ V') (f ∣_ V) k := by
+    refine IsPullback.of_right ?_ ?_ (isPullback_morphismRestrict f V).flip
+    · rw [he, hk]
+      exact (isPullback_morphismRestrict f' V').flip.paste_horiz (IsPullback.of_hasPullback f g)
+    · rw [← cancel_mono V.ι, Category.assoc, Category.assoc, morphismRestrict_ι, hk,
+        ← Category.assoc, he, morphismRestrict_ι_assoc, Category.assoc, Limits.pullback.condition]
+  have : IsAffineHom e := MorphismProperty.of_isPullback hsq.flip inferInstance
+  rw [← he, ← pullback_comp]
+  exact (h.isAmple_pullback V hV).pullback e
 
 /-- The trivial class is relatively ample for `f` exactly when `f` is quasi-affine: `f` is
 quasi-compact and the preimage of every affine open of the base is quasi-affine. -/

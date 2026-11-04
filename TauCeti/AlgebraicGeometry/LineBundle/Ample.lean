@@ -11,6 +11,7 @@ public import TauCeti.AlgebraicGeometry.LineBundle.Class
 public import TauCeti.AlgebraicGeometry.LineBundle.Functoriality
 public import TauCeti.AlgebraicGeometry.LineBundle.GlobalGeneration.TensorProduct
 public import TauCeti.AlgebraicGeometry.LineBundle.NonvanishingLocus
+public import TauCeti.AlgebraicGeometry.Morphisms.Separated
 
 /-!
 # Ample line bundles
@@ -60,8 +61,9 @@ schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
   exactly when `X` is quasi-affine.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback`: ampleness is preserved by
   pullback along affine morphisms.
-* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.quasiSeparatedSpace`: a scheme with an ample
-  line bundle is quasi-separated.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.isSeparated`: a scheme with an ample line
+  bundle is separated, by the affine-cover criterion
+  `AlgebraicGeometry.Scheme.IsSeparated.of_isAffineOpen`.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.of_iSup_basicOpen_eq_top`: on a
   quasi-compact scheme, ampleness can be checked on a cover by basic opens of global functions.
   The proof extends sections from a basic open
@@ -125,6 +127,31 @@ theorem IsAmple.of_pow {a : LineBundleClass X} {n : ℕ} (hn : 0 < n) (h : (a ^ 
     obtain ⟨m, hm, L, hL, s, hx, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
     exact ⟨n * m, Nat.mul_pos hn hm, L, hL.trans (pow_mul a n m).symm, s, hx, hs⟩
 
+/-- **Powers of a section.** A global section `s₀` of a line bundle `L₀` gives, in every line bundle
+`L` of class `(mk L₀)ᵏ` with `k > 0`, a global section with the same nonvanishing locus: the
+`k`-fold tensor product `s₀ ⊗ ⋯ ⊗ s₀`, transported along an isomorphism. -/
+theorem _root_.TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow
+    {L₀ L : InvertibleSheaf X} {k : ℕ} (hk : 0 < k) (hL : mk L = mk L₀ ^ k)
+    (s₀ : Γ(L₀.obj, ⊤)) :
+    ∃ s : Γ(L.obj, ⊤), L.obj.nonvanishingLocus s = L₀.obj.nonvanishingLocus s₀ := by
+  -- The `(k + 1)`-fold tensor product of `s₀` with itself vanishes exactly where `s₀` does.
+  have key (k : ℕ) : ∃ (L' : InvertibleSheaf X) (_ : mk L' = mk L₀ ^ (k + 1))
+      (s' : Γ(L'.obj, ⊤)), L'.obj.nonvanishingLocus s' = L₀.obj.nonvanishingLocus s₀ := by
+    induction k with
+    | zero => exact ⟨L₀, by rw [zero_add, pow_one], s₀, rfl⟩
+    | succ k ih =>
+      obtain ⟨L', hL', s', hs'⟩ := ih
+      obtain ⟨u, hu⟩ := L'.exists_nonvanishingLocus_tensorProduct L₀ s' s₀
+      exact ⟨L'.tensorProduct L₀, by rw [mk_tensorProduct, hL', ← pow_succ], u,
+        by rw [hu, hs', inf_idem]⟩
+  obtain ⟨L', hL', s', hs'⟩ := key (k - 1)
+  rw [Nat.sub_add_cancel hk, ← hL] at hL'
+  obtain ⟨e⟩ := mk_eq_mk_iff.mp hL'
+  obtain ⟨s, hs⟩ : L'.obj.nonvanishingLocus s' ∈ Set.range (L.obj.nonvanishingLocus (U := ⊤)) := by
+    rw [← Scheme.Modules.range_nonvanishingLocus_eq_of_iso e ⊤]
+    exact ⟨s', rfl⟩
+  exact ⟨s, hs.trans hs'⟩
+
 /-- **Positive powers of an ample class are ample.** If `a` is ample and `k > 0`, then `aᵏ` is
 ample: for a global section `s` of a line bundle `L` of class `aⁿ`, the `k`-fold tensor product
 `s ⊗ ⋯ ⊗ s` is a global section of a line bundle of class `(aᵏ)ⁿ` with the same nonvanishing locus
@@ -134,19 +161,10 @@ theorem IsAmple.pow {a : LineBundleClass X} (h : a.IsAmple) {k : ℕ} (hk : 0 < 
   compactSpace := h.compactSpace
   exists_isAffineOpen_nonvanishingLocus x := by
     obtain ⟨n, hn, L, hL, s, hx, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
-    -- The `(k + 1)`-fold tensor product of `s` with itself vanishes exactly where `s` does.
-    have key (k : ℕ) : ∃ (L' : InvertibleSheaf X) (_ : LineBundleClass.mk L' = a ^ (n * (k + 1)))
-        (s' : Γ(L'.obj, ⊤)), L'.obj.nonvanishingLocus s' = L.obj.nonvanishingLocus s := by
-      induction k with
-      | zero => exact ⟨L, by rw [zero_add, mul_one, hL], s, rfl⟩
-      | succ k ih =>
-        obtain ⟨L', hL', s', hs'⟩ := ih
-        obtain ⟨u, hu⟩ := L'.exists_nonvanishingLocus_tensorProduct L s' s
-        refine ⟨L'.tensorProduct L, ?_, u, by rw [hu, hs', inf_idem]⟩
-        rw [mk_tensorProduct, hL', hL, ← pow_add, mul_add_one n (k + 1)]
-    obtain ⟨L', hL', s', hs'⟩ := key (k - 1)
-    rw [Nat.sub_add_cancel hk] at hL'
-    exact ⟨n, hn, L', by rw [hL', ← pow_mul, mul_comm], s', hs' ▸ hx, hs' ▸ hs⟩
+    obtain ⟨L', hL'⟩ := mk_surjective ((a ^ k) ^ n)
+    obtain ⟨s', hs'⟩ := InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow hk
+      (by rw [hL', hL, ← pow_mul, ← pow_mul, mul_comm]) s
+    exact ⟨n, hn, L', hL', s', hs' ▸ hx, hs' ▸ hs⟩
 
 /-- For `k > 0`, the power `aᵏ` of a line-bundle class is ample exactly when `a` is. -/
 @[simp]
@@ -241,20 +259,39 @@ theorem isAmple_pullback_iff_of_isIso {Y : Scheme.{u}} (e : X ⟶ Y) [IsIso e]
   refine ⟨fun h ↦ ?_, fun h ↦ h.pullback e⟩
   simpa using h.pullback (inv e)
 
-/-- **A scheme carrying an ample line bundle is quasi-separated.** The affine nonvanishing loci
-`X_s` of the definition cover `X`. The intersection of two of them, `X_s ∩ X_t`, is the
-nonvanishing locus of the restriction of `t` to the affine open `X_s`, so it is affine and in
-particular quasi-compact. -/
-theorem IsAmple.quasiSeparatedSpace {a : LineBundleClass X} (h : a.IsAmple) :
-    QuasiSeparatedSpace X := by
+/-- **A scheme carrying an ample line bundle is separated.** Finitely many affine nonvanishing
+loci `X_s` cover `X`, and their sections can all be taken in one line bundle `K` of class `aᴺ`
+(`InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow`). For two of them, `X_s ∩ X_t` is the
+nonvanishing locus of the restriction of `t` to the affine open `X_s`, hence affine, and its
+functions are generated by those on `X_s` and `X_t`
+(`Scheme.Modules.sup_range_map_nonvanishingLocus_inf_eq_top`). -/
+theorem IsAmple.isSeparated {a : LineBundleClass X} (h : a.IsAmple) : X.IsSeparated := by
+  have := h.compactSpace
   choose n hn L hL s hx hs using h.exists_isAffineOpen_nonvanishingLocus
-  refine Scheme.quasiSeparatedSpace_of_isOpenCover (fun x ↦ (L x).obj.nonvanishingLocus (s x))
-    (IsOpenCover.mk (eq_top_iff.mpr fun x _ ↦ Opens.mem_iSup.mpr ⟨x, hx x⟩)) hs fun x y ↦ ?_
-  -- `X_s ∩ X_t` is the nonvanishing locus of `t` restricted to `X_s`.
-  have h := (hs x).nonvanishingLocus
-    ((L y).obj.presheaf.map (homOfLE (le_top : (L x).obj.nonvanishingLocus (s x) ≤ ⊤)).op (s y))
-  rw [Scheme.Modules.nonvanishingLocus_map] at h
-  exact h.isCompact
+  -- Finitely many of the affine opens `X_{s x}` cover `X`.
+  obtain ⟨F, hF⟩ := isCompact_univ.elim_finite_subcover
+    (fun x ↦ ((L x).obj.nonvanishingLocus (s x) : Set X)) (fun x ↦ Opens.isOpen _)
+    fun x _ ↦ Set.mem_iUnion.mpr ⟨x, hx x⟩
+  -- Their sections give sections, with the same nonvanishing loci, of a line bundle of class `aᴺ`.
+  have hN : 0 < ∏ x ∈ F, n x := Finset.prod_pos fun x _ ↦ hn x
+  obtain ⟨K, hK⟩ := mk_surjective (a ^ ∏ x ∈ F, n x)
+  have (x : F) : ∃ t : Γ(K.obj, ⊤),
+      K.obj.nonvanishingLocus t = (L x).obj.nonvanishingLocus (s x) := by
+    have hdvd : n x ∣ ∏ x ∈ F, n x := Finset.dvd_prod_of_mem n x.2
+    refine InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow
+      (Nat.div_pos (Nat.le_of_dvd hN hdvd) (hn x)) ?_ (s x)
+    rw [hK, hL, ← pow_mul, Nat.mul_div_cancel' hdvd]
+  choose t ht using this
+  have hA (x : F) : IsAffineOpen (K.obj.nonvanishingLocus (t x)) := ht x ▸ hs x
+  refine Scheme.IsSeparated.of_isAffineOpen (fun x ↦ K.obj.nonvanishingLocus (t x))
+    (eq_top_iff.mpr fun y _ ↦ ?_) hA (fun x y ↦ ?_)
+    fun x _ ↦ Scheme.Modules.sup_range_map_nonvanishingLocus_inf_eq_top (hA x)
+  · obtain ⟨x, hxF, hy⟩ := Set.mem_iUnion₂.mp (hF (Set.mem_univ y))
+    exact Opens.mem_iSup.mpr ⟨⟨x, hxF⟩, (ht ⟨x, hxF⟩).symm ▸ hy⟩
+  · -- `X_s ∩ X_t` is the nonvanishing locus of `t` restricted to `X_s`.
+    have h := (hA x).nonvanishingLocus (K.obj.presheaf.map
+      (homOfLE (le_top : K.obj.nonvanishingLocus (t x) ≤ ⊤)).op (t y))
+    rwa [Scheme.Modules.nonvanishingLocus_map] at h
 
 /-- **A scheme covered by quasi-separated basic opens is quasi-separated.** If the basic opens
 `X_{rᵢ}` of global functions `rᵢ` cover `X` and are quasi-separated, then so is `X`. The affine
@@ -294,7 +331,7 @@ theorem IsAmple.of_iSup_basicOpen_eq_top [CompactSpace X]
   compactSpace := inferInstance
   exists_isAffineOpen_nonvanishingLocus x := by
     have : QuasiSeparatedSpace X := Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq_top r hr
-      fun i ↦ (h i).quasiSeparatedSpace
+      fun i ↦ have := (h i).isSeparated; inferInstance
     obtain ⟨i, hxi⟩ := Opens.mem_iSup.mp (hr.ge (Opens.mem_top x))
     let U := X.basicOpen (r i)
     obtain ⟨n, hn, K, hK, s', hxs', hs'⟩ := (h i).exists_isAffineOpen_nonvanishingLocus ⟨x, hxi⟩
