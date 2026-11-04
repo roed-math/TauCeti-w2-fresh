@@ -8,6 +8,7 @@ module
 public import Mathlib.AlgebraicGeometry.QuasiAffine
 public import TauCeti.AlgebraicGeometry.LineBundle.Class
 public import TauCeti.AlgebraicGeometry.LineBundle.Functoriality
+public import TauCeti.AlgebraicGeometry.LineBundle.GlobalGeneration.TensorProduct
 public import TauCeti.AlgebraicGeometry.LineBundle.NonvanishingLocus
 
 /-!
@@ -48,8 +49,12 @@ under isomorphisms of schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
 
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.exists_pos_forall_mk_eq`: the defining
   sections can be taken in any line bundle representing the relevant power.
-* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.of_pow`: if a positive power `aⁿ` is ample,
-  then so is `a`.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_pow_iff`: for `n > 0`, the power `aⁿ` is
+  ample exactly when `a` is; the forward direction `IsAmple.pow` tensors a section with itself,
+  whose nonvanishing locus does not change
+  (`Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`).
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.mul_mk_of_isGloballyGenerated`: an ample class
+  times a globally generated line bundle is ample.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_one_iff`: the structure sheaf is ample
   exactly when `X` is quasi-affine.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback_of_isOpenImmersion`: ampleness is
@@ -110,6 +115,54 @@ theorem IsAmple.of_pow {a : LineBundleClass X} {n : ℕ} (hn : 0 < n) (h : (a ^ 
   exists_isAffineOpen_nonvanishingLocus x := by
     obtain ⟨m, hm, L, hL, s, hx, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
     exact ⟨n * m, Nat.mul_pos hn hm, L, hL.trans (pow_mul a n m).symm, s, hx, hs⟩
+
+/-- **Positive powers of an ample class are ample.** If `a` is ample and `k > 0`, then `aᵏ` is
+ample: for a global section `s` of a line bundle `L` of class `aⁿ`, the `k`-fold tensor product
+`s ⊗ ⋯ ⊗ s` is a global section of a line bundle of class `(aᵏ)ⁿ` with the same nonvanishing locus
+`X_s`. -/
+theorem IsAmple.pow {a : LineBundleClass X} (h : a.IsAmple) {k : ℕ} (hk : 0 < k) :
+    (a ^ k).IsAmple where
+  compactSpace := h.compactSpace
+  exists_isAffineOpen_nonvanishingLocus x := by
+    obtain ⟨n, hn, L, hL, s, hx, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
+    -- The `(k + 1)`-fold tensor product of `s` with itself vanishes exactly where `s` does.
+    have key (k : ℕ) : ∃ (L' : InvertibleSheaf X) (_ : LineBundleClass.mk L' = a ^ (n * (k + 1)))
+        (s' : Γ(L'.obj, ⊤)), L'.obj.nonvanishingLocus s' = L.obj.nonvanishingLocus s := by
+      induction k with
+      | zero => exact ⟨L, by rw [zero_add, mul_one, hL], s, rfl⟩
+      | succ k ih =>
+        obtain ⟨L', hL', s', hs'⟩ := ih
+        obtain ⟨u, hu⟩ := L'.exists_nonvanishingLocus_tensorProduct L s' s
+        refine ⟨L'.tensorProduct L, ?_, u, by rw [hu, hs', inf_idem]⟩
+        rw [mk_tensorProduct, hL', hL, ← pow_add, mul_add_one n (k + 1)]
+    obtain ⟨L', hL', s', hs'⟩ := key (k - 1)
+    rw [Nat.sub_add_cancel hk] at hL'
+    exact ⟨n, hn, L', by rw [hL', ← pow_mul, mul_comm], s', hs' ▸ hx, hs' ▸ hs⟩
+
+/-- For `k > 0`, the power `aᵏ` of a line-bundle class is ample exactly when `a` is. -/
+@[simp]
+theorem isAmple_pow_iff {a : LineBundleClass X} {k : ℕ} (hk : 0 < k) :
+    (a ^ k).IsAmple ↔ a.IsAmple :=
+  ⟨IsAmple.of_pow hk, fun h ↦ h.pow hk⟩
+
+/-- **An ample class times a globally generated line bundle is ample.** If `a` is ample and `K` is
+globally generated, then `a · [K]` is ample: if `s` is a global section of a line bundle of class
+`aⁿ` with `X_s` affine and `t` is a global section of `K^{⊗n}` with `x ∈ X_t`, then `s ⊗ t` vanishes
+nowhere exactly on `X_s ∩ X_t`, the nonvanishing locus of the restriction of `t` to the affine open
+`X_s`, which is affine. -/
+theorem IsAmple.mul_mk_of_isGloballyGenerated {a : LineBundleClass X} (h : a.IsAmple)
+    {K : InvertibleSheaf X} (hK : K.IsGloballyGenerated) : (a * LineBundleClass.mk K).IsAmple where
+  compactSpace := h.compactSpace
+  exists_isAffineOpen_nonvanishingLocus x := by
+    obtain ⟨n, hn, L, hL, s, hxs, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
+    obtain ⟨t, hxt⟩ := InvertibleSheaf.isGloballyGenerated_iff.mp (hK.tensorPow n) x
+    obtain ⟨u, hu⟩ := L.exists_nonvanishingLocus_tensorProduct (K.tensorPow n) s t
+    refine ⟨n, hn, L.tensorProduct (K.tensorPow n), ?_, u, hu ▸ ⟨hxs, hxt⟩, ?_⟩
+    · rw [mk_tensorProduct, hL, mk_tensorPow, mul_pow]
+    · -- `X_s ∩ X_t` is the nonvanishing locus of `t` restricted to `X_s`.
+      rw [hu, ← Scheme.Modules.nonvanishingLocus_map
+        (homOfLE (le_top : L.obj.nonvanishingLocus s ≤ ⊤)) t]
+      exact hs.nonvanishingLocus _
 
 /-- The structure sheaf `𝒪_X` is ample exactly when `X` is quasi-affine: the nonvanishing loci of
 global sections of a line bundle isomorphic to `𝒪_X` are the basic open sets of global regular

@@ -5,7 +5,10 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.AlgebraicGeometry.Morphisms.Affine
+public import TauCeti.Algebra.Category.ModuleCat.Sheaf.TensorProduct.Stalk
 public import TauCeti.AlgebraicGeometry.LineBundle.Stalk
+public import TauCeti.AlgebraicGeometry.LineBundle.TensorProduct
 
 /-!
 # The nonvanishing locus of a section of an invertible sheaf
@@ -47,7 +50,11 @@ of the restriction of `s`. In other words, `s` trivializes `M` over `X_s`.
 * `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_unit`: on the structure sheaf, `X_r` is the
   basic open set of the regular function `r`;
 * `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_restrictAppIso_inv`: along an open
-  immersion `f`, the nonvanishing locus of a restricted section is the preimage `f⁻¹ Y_s`.
+  immersion `f`, the nonvanishing locus of a restricted section is the preimage `f⁻¹ Y_s`;
+* `AlgebraicGeometry.Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`: the
+  sheafified tensor product `s ⊗ t` of sections satisfies `X_{s ⊗ t} = X_s ∩ X_t`, and
+  `TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocus_tensorProduct` restates it
+  for the tensor product of line bundles.
 
 ## References
 
@@ -58,7 +65,8 @@ of the restriction of `s`. In other words, `s` trivializes `M` over `X_s`.
 
 public section
 
-open CategoryTheory AlgebraicGeometry Opposite TopologicalSpace
+open CategoryTheory AlgebraicGeometry Opposite TopologicalSpace MonoidalCategory
+open scoped TensorProduct
 
 namespace AlgebraicGeometry.Scheme.Modules
 
@@ -308,6 +316,32 @@ theorem nonvanishingLocus_unit {U : X.Opens} (r : Γ(X, U)) :
   · rw [hone]
     exact (inf_eq_left.mpr (X.basicOpen_le r)).symm
 
+/-- **On an affine open, the nonvanishing locus of a section is affine.** If `U` is affine and `s`
+is a section of `M` over `U`, then `X_s` is affine: the regular functions `g` on `U` whose basic
+open sets `D(g)` trivialize `M` generate the unit ideal, and on each such `D(g)` the locus `X_s` is
+the basic open set of the coordinate of `s`, an affine open of the affine scheme `D(g)`. -/
+theorem _root_.AlgebraicGeometry.IsAffineOpen.nonvanishingLocus {U : X.Opens} (hU : IsAffineOpen U)
+    (s : Γ(M, U)) : IsAffineOpen (M.nonvanishingLocus s) := by
+  -- The regular functions on `U` whose basic open set lies in the domain of a trivialization.
+  let T : Set Γ(X, U) := {g | ∃ (V : X.Opens)
+    (_ : SheafOfModules.free (R := X.ringCatSheaf.over V) PUnit ≅ M.over V), X.basicOpen g ≤ V}
+  have hT : Ideal.span T = ⊤ := by
+    rw [← hU.self_le_iSup_basicOpen_iff]
+    intro x hx
+    obtain ⟨V, t, hxV⟩ := exists_mem_trivialization M x
+    obtain ⟨g, hgV, hxg⟩ := hU.exists_basicOpen_le ⟨x, hxV⟩ hx
+    exact Opens.mem_iSup.mpr ⟨⟨g, V, t, hgV⟩, hxg⟩
+  let ρ := (X.presheaf.map (homOfLE (nonvanishingLocus_le s)).op).hom
+  refine isAffineOpen_of_isAffineOpen_basicOpen _ (ρ '' T) ?_ ?_
+  · rw [← Ideal.map_span, hT, Ideal.map_top]
+  · rintro _ ⟨g, ⟨V, t, hgV⟩, rfl⟩
+    -- On `D(g)`, the locus `X_s` is the basic open set of the coordinate of `s`.
+    have hX : M.nonvanishingLocus s ⊓ X.basicOpen g =
+        M.nonvanishingLocus (M.presheaf.map (homOfLE (X.basicOpen_le g)).op s) := by
+      rw [nonvanishingLocus_map, inf_comm]
+    rw [Scheme.basicOpen_res, hX, nonvanishingLocus_eq_basicOpen t (homOfLE hgV)]
+    exact (hU.basicOpen g).basicOpen _
+
 section Restrict
 
 variable {Y : Scheme.{u}} (f : X ⟶ Y) [IsOpenImmersion f] {M : Y.Modules}
@@ -357,4 +391,88 @@ theorem nonvanishingLocus_restrictAppIso_inv {U : X.Opens} (s : Γ(M, f ''ᵁ U)
 
 end Restrict
 
+section TensorProduct
+
+variable {M N : X.Modules}
+
+/-- **A tensor product of sections vanishes nowhere exactly on the intersection.** For sections
+`s` of `M` and `t` of `N` over `U`, the tensor product `M ⊗ N` has a section over `U`, the
+sheafified pure tensor `s ⊗ t`, whose nonvanishing locus is `X_s ∩ X_t`: at a point of `U` the
+stalks of `M` and `N` are free of rank one, and the stalk of `M ⊗ N` is the tensor product of the
+stalks, so the germ of `s ⊗ t` generates exactly when the coordinates of both germs are units. -/
+theorem exists_nonvanishingLocus_tensorProduct_eq_inf
+    [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X M]
+    [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X N]
+    [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X
+      (TauCeti.SheafOfModules.tensorProduct X.sheaf M N)]
+    {U : X.Opens} (s : Γ(M, U)) (t : Γ(N, U)) :
+    ∃ u : Γ((TauCeti.SheafOfModules.tensorProduct X.sheaf M N : X.Modules), U),
+      nonvanishingLocus (TauCeti.SheafOfModules.tensorProduct X.sheaf M N : X.Modules) u =
+        M.nonvanishingLocus s ⊓ N.nonvanishingLocus t := by
+  let T : X.Modules := TauCeti.SheafOfModules.tensorProduct X.sheaf M N
+  -- The sheafified pure tensor `s ⊗ t`.
+  let st : Γ(T, U) := (TauCeti.SheafOfModules.tensorProductIso X.sheaf M N).inv.val.app (op U)
+    (((PresheafOfModules.sheafificationAdjunction
+      (𝟙 (TauCeti.SheafOfModules.ringCatSheaf X.sheaf).obj)).unit.app
+        (M.val ⊗ N.val)).app (op U) (s ⊗ₜ[X.sheaf.obj.obj (op U)] t))
+  refine ⟨st, ?_⟩
+  -- Generating a module is invariant under linear equivalences.
+  have hequiv {R P Q : Type u} [CommRing R] [AddCommGroup P] [Module R P] [AddCommGroup Q]
+      [Module R Q] (f : P ≃ₗ[R] Q) (p : P) :
+      Submodule.span R {f p} = ⊤ ↔ Submodule.span R {p} = ⊤ := by
+    rw [← Submodule.map_eq_top_iff (e := f), Submodule.map_span, Set.image_singleton,
+      LinearEquiv.coe_coe]
+  ext x
+  by_cases hx : x ∈ U
+  swap
+  · exact iff_of_false (fun h ↦ hx (nonvanishingLocus_le _ h))
+      (fun h ↦ hx (nonvanishingLocus_le _ h.1))
+  obtain ⟨eM⟩ := nonempty_linearEquiv_stalk_of_isInvertible M x
+  obtain ⟨eN⟩ := nonempty_linearEquiv_stalk_of_isInvertible N x
+  -- The stalk of `T` is the tensor product of the stalks, and the germ of `s ⊗ t` is the tensor
+  -- product of the germs.
+  have hgerm : TauCeti.SheafOfModules.tensorStalkEquiv X.sheaf M N x (T.presheaf.germ U x hx st) =
+      M.presheaf.germ U x hx s ⊗ₜ[X.presheaf.stalk x] N.presheaf.germ U x hx t :=
+    (TauCeti.SheafOfModules.tensorStalkEquiv_apply _ _ _ _ _).trans
+      (TauCeti.SheafOfModules.tensorStalkComparison_germ_unit_tmul X.sheaf M N x U hx s t)
+  have key : Submodule.span (X.presheaf.stalk x)
+      {M.presheaf.germ U x hx s ⊗ₜ[X.presheaf.stalk x] N.presheaf.germ U x hx t} = ⊤ ↔
+      Submodule.span (X.presheaf.stalk x) {T.presheaf.germ U x hx st} = ⊤ := by
+    rw [← hgerm]
+    exact hequiv (TauCeti.SheafOfModules.tensorStalkEquiv X.sheaf M N x) _
+  -- An element of a module free of rank one generates it exactly when its coordinate is a unit.
+  have hunit {P : Type u} [AddCommGroup P] [Module (X.presheaf.stalk x) P]
+      (e : X.presheaf.stalk x ≃ₗ[X.presheaf.stalk x] P) (p : P) :
+      Submodule.span (X.presheaf.stalk x) {p} = ⊤ ↔ IsUnit (e.symm p) :=
+    (hequiv e.symm p).symm.trans Ideal.span_singleton_eq_top
+  have htmul := hunit ((TensorProduct.lid _ _).symm ≪≫ₗ TensorProduct.congr eM eN)
+    (M.presheaf.germ U x hx s ⊗ₜ[X.presheaf.stalk x] N.presheaf.germ U x hx t)
+  simp only [LinearEquiv.trans_symm, LinearEquiv.symm_symm, LinearEquiv.trans_apply,
+    TensorProduct.congr_symm_tmul, TensorProduct.lid_tmul, smul_eq_mul, IsUnit.mul_iff] at htmul
+  rw [SetLike.mem_coe, SetLike.mem_coe, Opens.mem_inf, mem_nonvanishingLocus_iff_of_mem hx,
+    mem_nonvanishingLocus_iff_of_mem hx, hunit eM, hunit eN, ← htmul, key]
+  exact mem_nonvanishingLocus_iff_of_mem (M := T) hx
+
+end TensorProduct
+
 end AlgebraicGeometry.Scheme.Modules
+
+namespace TauCeti.AlgebraicGeometry.InvertibleSheaf
+
+variable {X : Scheme.{u}}
+
+/-- The tensor product `L ⊗ K` of two line bundles has, for sections `s` of `L` and `t` of `K`
+over `U`, a section over `U` vanishing nowhere exactly on `X_s ∩ X_t`: the section `s ⊗ t`. -/
+theorem exists_nonvanishingLocus_tensorProduct
+    (L K : InvertibleSheaf X) {U : X.Opens} (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) :
+    ∃ u : Γ((L.tensorProduct K).obj, U), (L.tensorProduct K).obj.nonvanishingLocus u =
+      L.obj.nonvanishingLocus s ⊓ K.obj.nonvanishingLocus t := by
+  -- The underlying sheaf of `L ⊗ K` is the sheaf tensor product, which carries `s ⊗ t`.
+  let e := eqToIso (tensorProduct_obj L K).symm
+  have : TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X
+      (TauCeti.SheafOfModules.tensorProduct X.sheaf L.obj K.obj) :=
+    tensorProduct_obj L K ▸ (L.tensorProduct K).property
+  obtain ⟨u, hu⟩ := Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf s t
+  exact ⟨e.hom.app U u, by rw [Scheme.Modules.nonvanishingLocus_hom_app e, hu]⟩
+
+end TauCeti.AlgebraicGeometry.InvertibleSheaf

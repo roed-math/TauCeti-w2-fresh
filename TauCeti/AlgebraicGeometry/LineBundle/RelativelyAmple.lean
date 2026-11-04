@@ -7,8 +7,7 @@ module
 
 public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
 public import TauCeti.AlgebraicGeometry.LineBundle.Ample
-public import TauCeti.AlgebraicGeometry.LineBundle.Functoriality
-public import TauCeti.AlgebraicGeometry.LineBundle.Power
+public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.Ample
 public import TauCeti.AlgebraicGeometry.RelativeProj.Proper
 public import TauCeti.AlgebraicGeometry.RelativeProj.TwistingSheaf
 
@@ -40,8 +39,10 @@ Project defined through `ℙ(ℰ)`.
 
 ## Main results
 
-* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.of_pow`: if a positive power `aⁿ`
-  is relatively ample, then so is `a`.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_pow_iff`: for `n > 0`, the power
+  `aⁿ` is relatively ample exactly when `a` is.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.mul_mk_of_isGloballyGenerated`: a
+  relatively ample class times a globally generated line bundle is relatively ample.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_one_iff`: the trivial class is
   relatively ample exactly for quasi-affine morphisms; in particular it is relatively ample for
   affine morphisms (`LineBundleClass.isRelativelyAmple_one`).
@@ -57,6 +58,9 @@ Project defined through `ℙ(ℰ)`.
   preserved by composition with an affine morphism.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.restrict`: relative ampleness
   restricts to opens of the base.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne`:
+  `𝒪(1)` is relatively ample on the relative `Proj` of an algebra generated in degree one whose
+  structure morphism is quasi-compact.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.isRelativelyVeryAmple_relativeProjTwistingSheaf`:
   `𝒪(1)` is relatively very ample on the relative `Proj` of an algebra generated in degree one.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.IsRelativelyVeryAmple.pullback`: relative very
@@ -155,6 +159,29 @@ theorem IsRelativelyAmple.of_pow {a : LineBundleClass X} {f : X ⟶ S} {n : ℕ}
   quasiCompact := h.quasiCompact
   isAmple_pullback V hV := IsAmple.of_pow hn <| by
     simpa only [← pullbackHom_apply, map_pow] using h.isAmple_pullback V hV
+
+/-- **Positive powers of a relatively ample class are relatively ample.** -/
+theorem IsRelativelyAmple.pow {a : LineBundleClass X} {f : X ⟶ S} (h : a.IsRelativelyAmple f)
+    {n : ℕ} (hn : 0 < n) : (a ^ n).IsRelativelyAmple f where
+  quasiCompact := h.quasiCompact
+  isAmple_pullback V hV := by
+    simpa only [← pullbackHom_apply, map_pow] using (h.isAmple_pullback V hV).pow hn
+
+/-- For `n > 0`, the power `aⁿ` of a line-bundle class is relatively ample for `f` exactly when `a`
+is. -/
+@[simp]
+theorem isRelativelyAmple_pow_iff {a : LineBundleClass X} {f : X ⟶ S} {n : ℕ} (hn : 0 < n) :
+    (a ^ n).IsRelativelyAmple f ↔ a.IsRelativelyAmple f :=
+  ⟨IsRelativelyAmple.of_pow hn, fun h ↦ h.pow hn⟩
+
+/-- **A relatively ample class times a globally generated line bundle is relatively ample.** -/
+theorem IsRelativelyAmple.mul_mk_of_isGloballyGenerated {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) {K : InvertibleSheaf X} (hK : K.IsGloballyGenerated) :
+    (a * LineBundleClass.mk K).IsRelativelyAmple f where
+  quasiCompact := h.quasiCompact
+  isAmple_pullback V hV := by
+    rw [← pullbackHom_apply, map_mul, pullbackHom_apply, pullbackHom_apply, pullback_mk]
+    exact (h.isAmple_pullback V hV).mul_mk_of_isGloballyGenerated (hK.pullback _)
 
 /-- **Relative ampleness over an affine base implies ampleness.** If the base `S` is affine and
 `a` is relatively ample for `f : X ⟶ S`, then `a` is ample: `X` is the preimage of `S` itself. -/
@@ -273,13 +300,57 @@ end LineBundleClass
 
 namespace InvertibleSheaf
 
-/-- If a positive tensor power `L^{⊗n}` is relatively ample for `f`, then so is `L`. -/
-theorem isRelativelyAmple_of_tensorPow {L : InvertibleSheaf X} {f : X ⟶ S} {n : ℕ} (hn : 0 < n)
-    (h : (LineBundleClass.mk (L.tensorPow n)).IsRelativelyAmple f) :
-    (LineBundleClass.mk L).IsRelativelyAmple f :=
-  .of_pow hn (LineBundleClass.mk_tensorPow L n ▸ h)
+/-- For `n > 0`, the tensor power `L^{⊗n}` is relatively ample for `f` exactly when `L` is. -/
+theorem isRelativelyAmple_tensorPow_iff {L : InvertibleSheaf X} {f : X ⟶ S} {n : ℕ}
+    (hn : 0 < n) :
+    (LineBundleClass.mk (L.tensorPow n)).IsRelativelyAmple f ↔
+      (LineBundleClass.mk L).IsRelativelyAmple f := by
+  rw [LineBundleClass.mk_tensorPow, LineBundleClass.isRelativelyAmple_pow_iff hn]
 
 end InvertibleSheaf
+
+/-- **`𝒪(1)` is relatively ample on a quasi-compact relative `Proj`.** If `A` is generated in degree
+one and the structure morphism `Proj_S(A) ⟶ S` is quasi-compact, then `𝒪(1)` is relatively ample
+for it: over an affine open `V` of `S`, the relative `Proj` is the quasi-compact scheme
+`Proj (⨁ n, Γ(Aₙ, V))`, on which `𝒪(1)` restricts to the twisting sheaf `𝒪(1)`, which is ample. -/
+theorem LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne
+    (A : CommMon (GradedObject ℕ S.Modules)) [∀ n, (A.X n).IsQuasicoherent]
+    (hA : A.IsGeneratedInDegreeOne) [QuasiCompact A.relativeProjToBase] :
+    (LineBundleClass.mk (A.relativeProjTwistingSheafOne hA)).IsRelativelyAmple
+      A.relativeProjToBase where
+  quasiCompact := inferInstance
+  isAmple_pullback V hV := by
+    let U : S.AffineZariskiSite := ⟨V, hV⟩
+    let c := A.relativeProjCover.f U
+    -- The chart over `V` is the preimage of `V`.
+    have hrange : Set.range c = Set.range (A.relativeProjToBase ⁻¹ᵁ V).ι := by
+      rw [← Scheme.Hom.coe_opensRange, ← Scheme.Hom.coe_opensRange, Scheme.Opens.opensRange_ι,
+        A.relativeProjToBase_preimage U]
+    let e := IsOpenImmersion.isoOfRangeEq c _ hrange
+    rw [← isAmple_pullback_iff_of_isIso e.hom, pullback_comp,
+      IsOpenImmersion.isoOfRangeEq_hom_fac, pullback_mk]
+    -- The degree-one standard opens cover the chart, which is quasi-compact.
+    have hcover : ⨆ g : A.gradedSectionsGrading V 1,
+        Proj.basicOpen (A.gradedSectionsGrading V) (g : ⨁ n, Γ(A.X n, V)) = ⊤ :=
+      Proj.iSup_basicOpen_eq_top' _ _ (fun g ↦ ⟨1, g.2⟩)
+        (by simpa using A.isGeneratedInDegreeOne_iff.mp hA V hV)
+    have : CompactSpace (Proj (A.gradedSectionsGrading V)) := by
+      have hV' := QuasiCompact.isCompact_preimage (f := A.relativeProjToBase) _ V.isOpen
+        hV.isCompact
+      have hpre : A.relativeProjToBase ⁻¹' V = c '' Set.univ := by
+        rw [Set.image_univ, hrange, Scheme.Opens.range_ι]
+        rfl
+      rw [hpre, ← c.isOpenEmbedding.isCompact_iff] at hV'
+      exact ⟨hV'⟩
+    -- On the chart, the pullback of `𝒪(1)` is the twisting sheaf `𝒪(1)`.
+    have hiso : (Scheme.Modules.pullback c).obj (A.relativeProjTwistingSheaf 1) ≅
+        Proj.twistingSheaf (A.gradedSectionsGrading V) 1 :=
+      ((Scheme.Modules.restrictFunctorIsoPullback c).app _).symm ≪≫
+        A.restrictRelativeProjTwistingSheafIso 1 U
+    rw [show LineBundleClass.mk ((InvertibleSheaf.pullback c).obj _) = LineBundleClass.mk
+        ⟨_, Proj.isInvertible_twistingSheaf_of_iSup_eq_top _ (fun g ↦ g.2) hcover 1⟩ from
+      LineBundleClass.mk_eq_mk_iff.mpr ⟨eqToIso (InvertibleSheaf.pullback_obj_obj _ _) ≪≫ hiso⟩]
+    exact Proj.isAmple_twistingSheaf_one _ (fun g ↦ g.2) hcover
 
 /-- A morphism `f : X ⟶ S` is **projective** if it factors as a closed immersion
 `i : X ⟶ Proj_S(A)` followed by the structure morphism of the relative `Proj` of a graded

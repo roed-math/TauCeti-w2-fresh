@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): ampleness is preserved by pullback along affine open immersions"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles and projective morphisms"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): ampleness under pullback by affine open immersions, powers, and products with globally generated bundles"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): the twisting sheaf O(1) is ample on a quasi-compact Proj"},{"n":6,"after":[1,2,3,4,5],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles and projective morphisms"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
 Built on `main` at `333c9e49143de812ed1452b412193ee9c05501e7`. Status: **partial**. Target text
@@ -40,6 +40,49 @@ The earlier stubs and what replaced them:
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
 
+## Changes in the ninth session (2026-11-04, 01:35 UTC)
+
+- `main` is unchanged at `333c9e49143`, so there is nothing new to merge.
+- **Nonvanishing loci of tensor products.** `Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`:
+  for sections `s`, `t` of invertible `M`, `N` over `U`, the sheafified pure tensor `s ⊗ t` is a
+  section of `M ⊗ N` with `X_{s ⊗ t} = X_s ∩ X_t`. The proof uses `main`'s stalk comparison
+  `SheafOfModules.tensorStalkEquiv` and the rank-one stalks. `InvertibleSheaf.exists_nonvanishingLocus_tensorProduct`
+  restates it for `InvertibleSheaf.tensorProduct`. Both are stated existentially on purpose:
+  `main`'s lax monoidal sections functor `Scheme.Modules.sectionsFunctor` already has a tensor map
+  `μ`, and the sheafified pure tensor agrees with it only through the unexposed
+  `SheafOfModules.tensorUnderlyingIso`. A new named section would duplicate `μ`, and stating the
+  theorem for `μ` needs a bridge lemma `main` lacks.
+- **On an affine open, nonvanishing loci are affine** (`IsAffineOpen.nonvanishingLocus`, via
+  Mathlib's `isAffineOpen_of_isAffineOpen_basicOpen`).
+- **Ampleness is stable under positive powers** (`LineBundleClass.IsAmple.pow`,
+  `isAmple_pow_iff`). This closes the earlier remaining item "`a` relatively ample ⇒ `aⁿ`
+  relatively ample" (`IsRelativelyAmple.pow`, `isRelativelyAmple_pow_iff`). With it,
+  `InvertibleSheaf.isRelativelyAmple_of_tensorPow` became the iff `isRelativelyAmple_tensorPow_iff`;
+  the old one-directional name is removed.
+- **Ample times globally generated is ample** (`IsAmple.mul_mk_of_isGloballyGenerated`), and the
+  same holds for relative ampleness (`IsRelativelyAmple.mul_mk_of_isGloballyGenerated`).
+- **`𝒪(1)` is ample on a quasi-compact `Proj`.** The new file
+  `ProjectiveSpectrum/TwistingSheaf/Ample.lean` proves that `X_{r/1} = D₊(r)` for `r` of degree
+  one (`Proj.nonvanishingLocus_toTwistingSheaf`, when the degree-one standard opens cover). It
+  derives `Proj.isAmple_twistingSheaf_one`, and `Proj.isAmple_twistingSheaf` for `𝒪(n)`, `n > 0`.
+- **`𝒪(1)` is relatively ample on a quasi-compact relative `Proj`**
+  (`LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne`). Over an affine `V`, the
+  chart `Proj (⨁ n, Γ(Aₙ, V))` is the preimage of `V` (`relativeProjToBase_preimage`), and
+  `𝒪(1)` restricts to the chart's `𝒪(1)` (`restrictRelativeProjTwistingSheafIso`). This is the
+  identity case of "relatively very ample + quasi-compact ⇒ relatively ample". If `A` is of
+  finite type with `A₀` finite, the structure morphism is proper by `main`'s
+  `isProper_relativeProjToBase`, so the hypothesis holds.
+- Split 4 now carries the ampleness API of the seventh and ninth sessions. The Proj result is
+  the new split 5. The relative file is split 6 and still completes the target.
+- Kernel-time note for the port. In `isRelativelyAmple_relativeProjTwistingSheafOne`, do not
+  ascribe the chart map the type `Proj (A.gradedSectionsGrading V) ⟶ A.relativeProj`. That
+  ascription makes the kernel unfold the glued cover and takes about 35 s. Leaving its type as
+  `A.relativeProjCover.f U` takes about 2 s.
+- Verified: `lake build` green, `lookahead-check` ok, and `#lint in TauCeti` over the import
+  closure of `RelativelyAmple.lean` passes all 15 linters. `scripts/lint-style.sh` needs `uvx`,
+  which this sandbox lacks. Instead I checked the changed files by grep: no combining marks, no
+  trailing whitespace.
+
 ## Changes in the eighth session (2026-11-04, 01:15 UTC)
 
 - `main` is unchanged at `333c9e49143`, so there is nothing new to merge.
@@ -57,7 +100,7 @@ The earlier stubs and what replaced them:
   (`IsRelativelyAmple.comp`), **and it restricts to opens of the base**
   (`IsRelativelyAmple.restrict`: `a ∣_{f⁻¹ U}` is relatively ample for `f ∣_ U`). The second is
   one direction of locality on the base.
-- All of this is in `RelativelyAmple.lean` (split 5, now 328 lines).
+- All of this is in `RelativelyAmple.lean` (now the last split).
 
 ## Changes in the seventh session (2026-11-04, 00:50 UTC)
 
@@ -75,7 +118,7 @@ The earlier stubs and what replaced them:
   (`LineBundleClass.IsRelativelyAmple.isAmple`). **Relative ampleness is invariant under
   isomorphisms of the source over the base** (`isRelativelyAmple_pullback_iff_of_isIso`). Both are
   in `RelativelyAmple.lean`.
-- The new material is split 4. The old split 4 is now split 5 and still completes the target.
+- The new material is part of split 4.
 
 ## Changes in the sixth session
 
@@ -138,71 +181,101 @@ The earlier stubs and what replaced them:
      `CategoryTheory.MonoidalClosed.mono_pre_app` on `main` inlines the argument of
      `epi_whiskerRight`. Switching it over is a separate refactor PR after this split.
    - Subject: `feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers`
-4. **Ampleness is preserved by pullback along affine open immersions** (after: none). It changes
-   only `main` files: +52 lines in `LineBundle/NonvanishingLocus.lean` and +44 lines in
-   `LineBundle/Ample.lean`. At about 100 lines it is below the usual size, but it is one topic,
-   and it does not belong in the global-generation split or the definitions split.
-   - Declarations: `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_restrictAppIso_inv` (the
-     nonvanishing locus of `(M.restrictAppIso f U).inv s` is `f ⁻¹ᵁ M.nonvanishingLocus s` along an
-     open immersion `f`); `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback_of_isOpenImmersion`
-     (`[IsOpenImmersion e] [IsAffineHom e]`); `LineBundleClass.isAmple_pullback_iff_of_isIso`.
-   - Subject: `feat(AlgebraicGeometry/LineBundle): ampleness is preserved by pullback along affine open immersions`
-5. **Relatively ample and very ample line bundles and projective morphisms** (after: 1, 2, 3, 4).
-   It imports splits 1, 2 and 4. It comes after split 3 so that it is the split that completes
-   the target's global-generation and ampleness layer.
-   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (328 lines, new).
+4. **Stability of ampleness** (after: 2, 3). It changes only `main` files: +171/−2 in
+   `LineBundle/NonvanishingLocus.lean` and +99/−2 in `LineBundle/Ample.lean` (about 270 lines).
+   `Ample.lean` now imports `LineBundle/Functoriality.lean` and
+   `LineBundle/GlobalGeneration/TensorProduct.lean` (split 3). `NonvanishingLocus.lean` now
+   imports `Mathlib.AlgebraicGeometry.Morphisms.Affine`,
+   `Algebra/Category/ModuleCat/Sheaf/TensorProduct/Stalk.lean` and `LineBundle/TensorProduct.lean`.
+   - Declarations in `NonvanishingLocus.lean`: `AlgebraicGeometry.IsAffineOpen.nonvanishingLocus`;
+     `Scheme.Modules.nonvanishingLocus_restrictAppIso_inv` (the nonvanishing locus of
+     `(M.restrictAppIso f U).inv s` is `f ⁻¹ᵁ M.nonvanishingLocus s` along an open immersion `f`);
+     `Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`;
+     `TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocus_tensorProduct`.
+   - Declarations in `Ample.lean` (namespace `TauCeti.AlgebraicGeometry.LineBundleClass`):
+     `IsAmple.pullback_of_isOpenImmersion` (`[IsOpenImmersion e] [IsAffineHom e]`),
+     `isAmple_pullback_iff_of_isIso`, `IsAmple.pow`, `isAmple_pow_iff` (simp),
+     `IsAmple.mul_mk_of_isGloballyGenerated`.
+   - Subject: `feat(AlgebraicGeometry/LineBundle): ampleness under pullback by affine open immersions, powers, and products with globally generated bundles`
+5. **`𝒪(1)` is ample on a quasi-compact `Proj`** (after: 4).
+   - File: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/Ample.lean` (111 lines,
+     new; imports `LineBundle/Ample.lean` and `ProjectiveSpectrum/TwistingSheaf/TensorProduct.lean`).
+   - Declarations (namespace `AlgebraicGeometry.Proj`, like the neighbouring twisting-sheaf
+     files): `nonvanishingLocus_toTwistingSheaf`, `isAmple_twistingSheaf_one`,
+     `isAmple_twistingSheaf`.
+   - Subject: `feat(AlgebraicGeometry/ProjectiveSpectrum): the twisting sheaf O(1) is ample on a quasi-compact Proj`
+6. **Relatively ample and very ample line bundles and projective morphisms** (after: 1, 2, 3, 4,
+   5). It imports splits 1, 4 and 5, and through them 2 and 3. It is the only split that
+   completes the target's relative-ampleness layer.
+   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (399 lines, new).
    - Declarations: `CommMon.relativeProjTwistingSheafOne`; `InvertibleSheaf.IsRelativelyVeryAmple`,
      `IsRelativelyVeryAmple.of_iso`, `isRelativelyVeryAmple_relativeProjTwistingSheaf`,
      `IsRelativelyVeryAmple.pullback`, `IsRelativelyVeryAmple.isSeparated`;
      `LineBundleClass.IsRelativelyAmple` (Stacks 01VH), `IsRelativelyAmple.of_pow`,
-     `IsRelativelyAmple.isAmple` (over an affine base), `IsAmple.isRelativelyAmple` (over a
-     separated base, for quasi-compact `f`), `isRelativelyAmple_iff_isAmple` (over an affine base),
+     `IsRelativelyAmple.pow`, `isRelativelyAmple_pow_iff` (simp),
+     `IsRelativelyAmple.mul_mk_of_isGloballyGenerated`, `IsRelativelyAmple.isAmple` (over an
+     affine base), `IsAmple.isRelativelyAmple` (over a separated base, for quasi-compact `f`),
+     `isRelativelyAmple_iff_isAmple` (over an affine base),
      `IsRelativelyAmple.pullback_of_isOpenImmersion`, `isRelativelyAmple_pullback_iff_of_isIso`,
      `IsRelativelyAmple.comp` (with an affine morphism), `IsRelativelyAmple.restrict` (to opens of
-     the base),
-     `LineBundleClass.isRelativelyAmple_one_iff` (the trivial class is relatively ample exactly
-     for quasi-affine morphisms), `isRelativelyAmple_one` (affine morphisms),
-     `isRelativelyAmple_of_pow_eq_one`, `InvertibleSheaf.isRelativelyAmple_of_tensorPow`;
-     `IsProjective` (class), `isProjective_relativeProjToBase`, the instance `IsProjective (j ≫ f)`
-     for a closed immersion `j`, `IsProjective.exists_isRelativelyVeryAmple`, and the instance
-     `IsProjective.isProper`.
+     the base), `LineBundleClass.isRelativelyAmple_one_iff` (the trivial class is relatively ample
+     exactly for quasi-affine morphisms), `isRelativelyAmple_one` (affine morphisms),
+     `isRelativelyAmple_of_pow_eq_one`, `InvertibleSheaf.isRelativelyAmple_tensorPow_iff`;
+     `LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne`; `IsProjective` (class),
+     `isProjective_relativeProjToBase`, the instance `IsProjective (j ≫ f)` for a closed immersion
+     `j`, `IsProjective.exists_isRelativelyVeryAmple`, and the instance `IsProjective.isProper`.
    - Subject: `feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles and projective morphisms`
 
 ## What is proved and what remains
 
-Proved, with no stubs: tensor powers of line bundles, with their classes, exponent laws and
-pullbacks. Global generation of `𝒪_X`, and of pullbacks, tensor products and tensor powers of
-globally generated line bundles. Relatively very ample line bundles: `𝒪(1)` is relatively very ample
-on `Proj_S A`, relative very ampleness is stable under isomorphism and under pullback along
-immersions, and a relatively very ample bundle forces separatedness. Relative ampleness in the
-Stacks sense: descent from positive powers, the trivial class and quasi-affine morphisms, affine
-morphisms and torsion classes. Over an affine base it is ampleness, and over a separated base
-ampleness implies it for quasi-compact morphisms. It is preserved by pullback along affine open
-immersions of the source, and so it is invariant under isomorphisms of the source over the base. It
-is also preserved by composition with affine morphisms and by restriction to opens of the base.
-Ampleness is preserved by pullback along affine open immersions, in particular along isomorphisms,
-because the nonvanishing locus of a section restricted along an open immersion is the preimage of
-the original locus. Projective morphisms: they are closed under precomposition with closed
-immersions, they carry a relatively very ample line bundle, and they are **proper**.
+Proved, with no stubs:
+- Tensor powers of line bundles, with their classes, exponent laws and pullbacks.
+- Global generation of `𝒪_X`, and of pullbacks, tensor products and tensor powers of globally
+  generated line bundles.
+- Nonvanishing loci: `X_{s ⊗ t} = X_s ∩ X_t`, affineness on affine opens, and preimages along
+  open immersions.
+- Ampleness: stable under pullback along affine open immersions (so invariant under
+  isomorphism), under positive powers (in both directions), and under multiplication by globally
+  generated line bundles.
+- `𝒪(1)`, and every `𝒪(n)` with `n > 0`, is ample on a quasi-compact `Proj` whose degree-one
+  standard opens cover it.
+- Relatively very ample line bundles: `𝒪(1)` is relatively very ample on `Proj_S A`. Relative
+  very ampleness is stable under isomorphism and under pullback along immersions, and it forces
+  separatedness.
+- Relative ampleness in the Stacks sense. It is equivalent for `a` and `aⁿ`, `n > 0`, and stable
+  under multiplication by globally generated bundles. It characterizes quasi-affine morphisms for
+  the trivial class, and it holds for affine morphisms and torsion classes. Over an affine base it
+  is ampleness; over a separated base, ampleness implies it for quasi-compact morphisms. It is
+  preserved by pullback along affine open immersions of the source, so it is invariant under
+  isomorphisms of the source over the base. It is preserved by composition with affine
+  morphisms and by restriction to opens of the base.
+- `𝒪(1)` is relatively ample on a quasi-compact relative `Proj` generated in degree one.
+- Projective morphisms are closed under precomposition with closed immersions, carry a relatively
+  very ample line bundle, and are **proper**.
 
 Remains for the target:
-- **Relatively very ample + quasi-compact ⇒ relatively ample**, and so projective ⇒ the
-  pullback of `𝒪(1)` is relatively ample. This needs four things. (a) A section of `𝒪(1)` on a
-  chart `Proj R` for each `t ∈ R₁`, with nonvanishing locus `D₊(t)`. (b) The nonvanishing locus
-  of a pulled-back section is the preimage of the original locus. This is now proved along open
-  immersions (`nonvanishingLocus_restrictAppIso_inv`). Immersions in general still need a
-  pullback-of-sections API for `Scheme.Modules.pullback` and its comparison with stalks, which
-  `main` lacks. (c) The restriction of the relative
-  `Proj` and of `𝒪(1)` over an affine `V` (from `isPullback_relativeProjCover` and
-  `restrictRelativeProjTwistingSheafIso`). (d) For non-closed immersions, the Stacks argument
-  that extends sections from `X_s` after multiplying by powers of `s`.
-- The converse "`a` relatively ample ⇒ `aⁿ` relatively ample". `IsAmple` on `main` lacks it too
-  (`main` has only `IsAmple.of_pow`).
-- The converse of `IsRelativelyAmple.restrict`: relative ampleness can be checked on an open
-  cover of the base. This needs ampleness on `f⁻¹ V` checked on the preimages of an affine open
-  cover of `V`, which is the Stacks extension of sections from `X_s`.
+- **Relatively very ample + quasi-compact ⇒ relatively ample**, and so: for `f` projective, the
+  pullback of `𝒪(1)` is relatively ample. The case `i = 𝟙` is now proved
+  (`isRelativelyAmple_relativeProjTwistingSheafOne`). What is missing is ampleness pulled back
+  along an immersion `i` that is not open. Two inputs are needed:
+  - the nonvanishing locus of a section pulled back along `i` is `i⁻¹` of the original locus;
+  - for non-closed immersions, the Stacks argument that extends sections from `X_s` after
+    multiplying by powers of `s`.
+
+  `main` lacks a pullback-of-sections API for `Scheme.Modules.pullback`. Two routes look viable:
+  1. a section `s` as a morphism `𝒪 ⟶ L` (`SheafOfModules.freeHomEquiv`), pulled back with
+     `Scheme.Modules.pullbackObjUnitIso`, as in `GlobalGeneration/Pullback.lean`; this needs the
+     compatibility of the pullback with multiplication by regular functions;
+  2. the residue-field criterion `mem_nonvanishingLocus_of_app_ne_zero` together with the adjunction
+     `pullback ⊣ pushforward`.
+
+  For a closed immersion, the preimage of an affine `D₊(t)` is affine, so the first input suffices.
+- The converse of `IsRelativelyAmple.restrict`: relative ampleness can be checked on an open cover
+  of the base. This needs ampleness on `f⁻¹ V` checked on the preimages of an affine open cover of
+  `V`, which is the Stacks extension of sections from `X_s`.
 - Relative ampleness is stable under pullback along immersions that are not open, and under base
-  change. It also implies separatedness.
+  change. It also implies separatedness: ample ⇒ separated, by `X_s ∩ X_t = (X_s)_{t/s}` and a
+  separatedness criterion via affine covers, which Mathlib lacks.
 - `ℙ(ℰ) = Proj_S(Sym ℰ)` is projective for `ℰ` of finite type. This needs `Sym ℰ` generated in
   degree one on affine sections: on an affine open, sections of `Symⁿ ℰ` are `Symⁿ` of sections.
 - Stability of projectivity under composition and base change (Segre embedding and base change
