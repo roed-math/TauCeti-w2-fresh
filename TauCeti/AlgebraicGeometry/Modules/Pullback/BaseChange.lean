@@ -18,7 +18,10 @@ import TauCeti.RingTheory.TensorProduct.IsBaseChange
 
 For a morphism of schemes, if an open and its inverse image are affine, sections of the
 pullback of a quasicoherent sheaf are obtained by extending scalars along the coordinate-ring
-map. The isomorphism is characterized by sending `1 ⊗ s` to the pullback of `s`.
+map. The isomorphism is characterized by sending `1 ⊗ s` to the pullback of `s`. The same holds
+over every affine open `V` contained in the inverse image of an affine open `U`, extending scalars
+along the restriction map `Γ(X, U) ⟶ Γ(Y, V)` (`Scheme.Hom.pullbackSectionsLEEquiv`); both are
+instances of one comparison for a ring map compatible with the morphism on spectra.
 
 For a cartesian square over `Spec S ⟶ Spec R`, the same section map exhibits sections on the
 inverse image as the base change from `R` to `S`. This is the affine-cover input for cohomology
@@ -39,6 +42,9 @@ structure sheaf.
 
 ## Main results
 
+* `AlgebraicGeometry.Scheme.Hom.pullbackSectionsEquiv` and
+  `AlgebraicGeometry.Scheme.Hom.pullbackSectionsLEEquiv`: sections of a quasicoherent pullback
+  over an affine open `V ≤ g⁻¹ U`, for `U` affine, as an extension of scalars.
 * `AlgebraicGeometry.Scheme.Hom.isBaseChange_pullbackSections`: base change of sections over an
   affine open, along any base-ring map.
 * `AlgebraicGeometry.Scheme.Hom.flat_sectionsBase_pullback`: flatness of the sections over an
@@ -67,19 +73,7 @@ private lemma chartPullback_unit (s : Γ(M, U)) :
     ((restrictFunctorIsoPullback hU.fromSpec).hom.app M).app ⊤
       (M.fromSpecSectionsEquiv hU s) =
     Scheme.Hom.pullbackSectionsLE hU.fromSpec M U ⊤ (hU.fromSpec_preimage_self.ge) s := by
-  have h : (restrictAdjunction hU.fromSpec).unit.app M ≫
-      (pushforward hU.fromSpec).map ((restrictFunctorIsoPullback hU.fromSpec).hom.app M) =
-      (pullbackPushforwardAdjunction hU.fromSpec).unit.app M :=
-    Adjunction.unit_leftAdjointUniq_hom_app (restrictAdjunction hU.fromSpec)
-      (pullbackPushforwardAdjunction hU.fromSpec) M
-  have he := congrArg (fun a ↦ a.app U s) h
-  simp only [Hom.comp_app, pushforward_map_app, restrictAdjunction_unit_app_app] at he
-  have he' : ((restrictFunctorIsoPullback hU.fromSpec).hom.app M).app
-      (hU.fromSpec ⁻¹ᵁ U)
-        (M.presheaf.map (homOfLE (hU.fromSpec.image_preimage_le U)).op s) =
-      hU.fromSpec.pullbackSections M U s := by
-    rw [Scheme.Hom.pullbackSections_apply]
-    exact he
+  have he' := hU.fromSpec.restrictFunctorIsoPullback_hom_app_app_map M U s
   have hn := PresheafOfModules.naturality_apply
     ((restrictFunctorIsoPullback hU.fromSpec).hom.app M).val
     (homOfLE (hU.fromSpec_preimage_self.ge)).op
@@ -115,90 +109,105 @@ private lemma chartPullback_unit_inv (s : Γ(M, U)) :
     ((restrictFunctorIsoPullback hU.fromSpec).app M).hom_inv_id
 end AlgebraicGeometry.Scheme.Modules
 namespace AlgebraicGeometry.Scheme.Modules
-variable {X Y : Scheme.{u}} (g : Y ⟶ X) (M : X.Modules) {U : X.Opens}
-  (hU : IsAffineOpen U) (hV : IsAffineOpen (g ⁻¹ᵁ U))
+variable {X Y : Scheme.{u}} (g : Y ⟶ X) (M : X.Modules) {U : X.Opens} {V : Y.Opens}
+  (hU : IsAffineOpen U) (hV : IsAffineOpen V) (φ : Γ(X, U) ⟶ Γ(Y, V))
+  (hc : Spec.map φ ≫ hU.fromSpec = hV.fromSpec ≫ g)
+/-- On affine opens `U` and `V` related by a ring map `φ` compatible with `g`, the restriction of
+`g^* M` to `Spec Γ(Y, V)` is the pullback along `Spec φ` of the restriction of `M`. -/
 private def chartPullbackIso :
     ((pullback g).obj M).restrict hV.fromSpec ≅
-      (pullback (Spec.map (g.app U))).obj (M.restrict hU.fromSpec) := by
-  have hc : Spec.map (g.app U) ≫ hU.fromSpec = hV.fromSpec ≫ g := by
-    simpa only [Scheme.Hom.appLE_eq_app] using
-      IsAffineOpen.SpecMap_appLE_fromSpec g hU hV le_rfl
-  exact (restrictFunctorIsoPullback hV.fromSpec).app _ ≪≫
+      (pullback (Spec.map φ)).obj (M.restrict hU.fromSpec) :=
+  (restrictFunctorIsoPullback hV.fromSpec).app _ ≪≫
     (pullbackComp hV.fromSpec g).app M ≪≫
     (pullbackCongr hc.symm).app M ≪≫
-    ((pullbackComp (Spec.map (g.app U)) hU.fromSpec).app M).symm ≪≫
-    (pullback (Spec.map (g.app U))).mapIso ((restrictFunctorIsoPullback hU.fromSpec).app M).symm
-private lemma chartPullbackIso_unit (s : Γ(M, U)) :
-    (chartPullbackIso g M hU hV).hom.app ⊤
-      (((pullback g).obj M).fromSpecSectionsEquiv hV (Scheme.Hom.pullbackSections g M U s)) =
-      Scheme.Hom.pullbackSectionsLE (Spec.map (g.app U)) (M.restrict hU.fromSpec)
+    ((pullbackComp (Spec.map φ) hU.fromSpec).app M).symm ≪≫
+    (pullback (Spec.map φ)).mapIso ((restrictFunctorIsoPullback hU.fromSpec).app M).symm
+private lemma chartPullbackIso_unit (hVU : V ≤ g ⁻¹ᵁ U) (s : Γ(M, U)) :
+    (chartPullbackIso g M hU hV φ hc).hom.app ⊤
+      (((pullback g).obj M).fromSpecSectionsEquiv hV (g.pullbackSectionsLE M U V hVU s)) =
+      Scheme.Hom.pullbackSectionsLE (Spec.map φ) (M.restrict hU.fromSpec)
         ⊤ ⊤ (by simp) (M.fromSpecSectionsEquiv hU s) := by
   simp only [chartPullbackIso, Iso.trans_hom, Iso.symm_hom, Hom.comp_app,
     ConcreteCategory.comp_apply, Functor.mapIso_hom, Iso.app_hom, Iso.app_inv]
   rw [chartPullback_unit]
-  rw [← Scheme.Hom.pullbackSectionsLE_self g M U s]
   rw [Scheme.Hom.pullbackSectionsLE_comp_hom]
   rw [Scheme.Hom.pullbackSectionsLE_congr]
   rw [Scheme.Hom.pullbackSectionsLE_comp]
   · rw [Scheme.Hom.pullbackSectionsLE_naturality, chartPullback_unit_inv]
   · exact hU.fromSpec_preimage_self.ge
   · simp
+/-- Sections of a quasicoherent pullback over an affine open `V`, for a ring map `φ` from the
+functions on an affine open `U` compatible with `g`, are the extension of the sections over `U`
+along `φ`. -/
+private def chartSectionsEquiv [M.IsQuasicoherent] :
+    (ModuleCat.extendScalars φ.hom).obj (.of Γ(X, U) Γ(M, U)) ≃ₗ[Γ(Y, V)]
+      Γ((pullback g).obj M, V) := by
+  let eM := M.fromSpecSectionsEquiv hU
+  let eP := ((pullback g).obj M).fromSpecSectionsEquiv hV
+  let eQ := ((moduleSpecΓFunctor (R := Γ(Y, V))).mapIso
+    (chartPullbackIso g M hU hV φ hc)).toLinearEquiv
+  let e := φ.moduleSpecΓPullbackIso (M.restrict hU.fromSpec)
+  letI := φ.hom.toAlgebra
+  exact (eM.baseChange Γ(X, U) Γ(Y, V)).trans
+    (e.toLinearEquiv.trans (eQ.symm.trans eP.symm))
+-- These equations remain named rewrites: normalization of the scalar-extension carrier
+-- can change the tensor presentation before simp matches, especially in the inverse equation.
+private lemma chartSectionsEquiv_one_tmul [M.IsQuasicoherent] (hVU : V ≤ g ⁻¹ᵁ U)
+    (s : Γ(M, U)) :
+    chartSectionsEquiv g M hU hV φ hc ((1 : Γ(Y, V)) ⊗ₜ[Γ(X, U), φ.hom] s) =
+      g.pullbackSectionsLE M U V hVU s := by
+  let := φ.hom.toAlgebra
+  let eM := M.fromSpecSectionsEquiv hU
+  let eP := ((pullback g).obj M).fromSpecSectionsEquiv hV
+  let eQ := ((moduleSpecΓFunctor (R := Γ(Y, V))).mapIso
+    (chartPullbackIso g M hU hV φ hc)).toLinearEquiv
+  let e := φ.moduleSpecΓPullbackIso (M.restrict hU.fromSpec)
+  apply eP.injective
+  apply eQ.injective
+  have h : eQ (eP (chartSectionsEquiv g M hU hV φ hc
+        ((1 : Γ(Y, V)) ⊗ₜ[Γ(X, U), φ.hom] s))) =
+      e.toLinearEquiv ((1 : Γ(Y, V)) ⊗ₜ[Γ(X, U), φ.hom] eM s) := by
+    dsimp only [chartSectionsEquiv]
+    erw [LinearEquiv.trans_apply, LinearEquiv.trans_apply, LinearEquiv.trans_apply,
+      LinearEquiv.apply_symm_apply, LinearEquiv.apply_symm_apply,
+      LinearEquiv.baseChange_tmul]
+    rfl
+  have hu := φ.moduleSpecΓPullback_app_one_tmul (M.restrict hU.fromSpec) (eM s)
+  rw [← CommRingCat.Hom.moduleSpecΓPullbackIso_hom] at hu
+  have hu' := (Iso.toLinearEquiv_apply e
+    ((1 : Γ(Y, V)) ⊗ₜ[Γ(X, U), φ.hom] eM s)).trans hu
+  refine h.trans (hu'.trans ?_)
+  -- The section functor changes module structures but its underlying map is evaluation.
+  change ((pullbackPushforwardAdjunction (Spec.map φ)).unit.app
+    (M.restrict hU.fromSpec)).app ⊤ (M.fromSpecSectionsEquiv hU s) =
+    (chartPullbackIso g M hU hV φ hc).hom.app ⊤
+      (((pullback g).obj M).fromSpecSectionsEquiv hV (g.pullbackSectionsLE M U V hVU s))
+  convert! (chartPullbackIso_unit g M hU hV φ hc hVU s).symm using 1
+  erw [Scheme.Hom.pullbackSectionsLE_apply (Spec.map φ) (M.restrict hU.fromSpec)]
+  simp only [Scheme.Hom.pullbackSections_apply]
+  simp
+  rfl
+end AlgebraicGeometry.Scheme.Modules
+namespace AlgebraicGeometry.Scheme.Modules
+variable {X Y : Scheme.{u}} (g : Y ⟶ X) (M : X.Modules) {U : X.Opens}
+  (hU : IsAffineOpen U) (hV : IsAffineOpen (g ⁻¹ᵁ U))
+private lemma specMap_app_fromSpec : Spec.map (g.app U) ≫ hU.fromSpec = hV.fromSpec ≫ g := by
+  simpa only [Scheme.Hom.appLE_eq_app] using
+    IsAffineOpen.SpecMap_appLE_fromSpec g hU hV le_rfl
 /-- If an open and its inverse image are affine, sections of a quasicoherent pullback
 are the extension of the original section module along the map of coordinate rings.
 No flatness or finiteness hypothesis is required. -/
 def _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsEquiv [M.IsQuasicoherent] :
     (ModuleCat.extendScalars (g.app U).hom).obj (.of Γ(X, U) Γ(M, U)) ≃ₗ[Γ(Y, g ⁻¹ᵁ U)]
-      Γ((pullback g).obj M,g ⁻¹ᵁ U) := by
-  let eM := M.fromSpecSectionsEquiv hU
-  let eP := ((pullback g).obj M).fromSpecSectionsEquiv hV
-  let eQ := ((moduleSpecΓFunctor (R := Γ(Y, g ⁻¹ᵁ U))).mapIso
-    (chartPullbackIso g M hU hV)).toLinearEquiv
-  let e := (g.app U).moduleSpecΓPullbackIso (M.restrict hU.fromSpec)
-  letI := (g.app U).hom.toAlgebra
-  exact (eM.baseChange Γ(X, U) Γ(Y, g ⁻¹ᵁ U)).trans
-    (e.toLinearEquiv.trans (eQ.symm.trans eP.symm))
-end AlgebraicGeometry.Scheme.Modules
-namespace AlgebraicGeometry.Scheme.Modules
-variable {X Y : Scheme.{u}} (g : Y ⟶ X) (M : X.Modules) {U : X.Opens}
-  (hU : IsAffineOpen U) (hV : IsAffineOpen (g ⁻¹ᵁ U)) [M.IsQuasicoherent]
--- These equations remain named rewrites: normalization of the scalar-extension carrier
--- can change the tensor presentation before simp matches, especially in the inverse equation.
+      Γ((pullback g).obj M,g ⁻¹ᵁ U) :=
+  chartSectionsEquiv g M hU hV (g.app U) (specMap_app_fromSpec g hU hV)
+variable [M.IsQuasicoherent]
 /-- The affine section comparison sends `1 ⊗ s` to the pullback of `s`. -/
 lemma _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsEquiv_one_tmul (s : Γ(M, U)) :
     Scheme.Hom.pullbackSectionsEquiv g M hU hV ((1 : Γ(Y, g ⁻¹ᵁ U)) ⊗ₜ[Γ(X, U), (g.app U).hom] s) =
       Scheme.Hom.pullbackSections g M U s := by
-  let := (g.app U).hom.toAlgebra
-  let eM := M.fromSpecSectionsEquiv hU
-  let eP := ((pullback g).obj M).fromSpecSectionsEquiv hV
-  let eQ := ((moduleSpecΓFunctor (R := Γ(Y, g ⁻¹ᵁ U))).mapIso
-    (chartPullbackIso g M hU hV)).toLinearEquiv
-  let e := (g.app U).moduleSpecΓPullbackIso (M.restrict hU.fromSpec)
-  apply eP.injective
-  apply eQ.injective
-  have hc : eQ (eP (Scheme.Hom.pullbackSectionsEquiv g M hU hV
-        ((1 : Γ(Y, g ⁻¹ᵁ U)) ⊗ₜ[Γ(X, U), (g.app U).hom] s))) =
-      e.toLinearEquiv ((1 : Γ(Y, g ⁻¹ᵁ U)) ⊗ₜ[Γ(X, U), (g.app U).hom] eM s) := by
-    dsimp only [Scheme.Hom.pullbackSectionsEquiv]
-    erw [LinearEquiv.trans_apply, LinearEquiv.trans_apply, LinearEquiv.trans_apply,
-      LinearEquiv.apply_symm_apply, LinearEquiv.apply_symm_apply,
-      LinearEquiv.baseChange_tmul]
-    rfl
-  have hu := (g.app U).moduleSpecΓPullback_app_one_tmul
-    (M.restrict hU.fromSpec) (eM s)
-  rw [← CommRingCat.Hom.moduleSpecΓPullbackIso_hom] at hu
-  have hu' := (Iso.toLinearEquiv_apply e
-    ((1 : Γ(Y, g ⁻¹ᵁ U)) ⊗ₜ[Γ(X, U), (g.app U).hom] eM s)).trans hu
-  refine hc.trans (hu'.trans ?_)
-  -- The section functor changes module structures but its underlying map is evaluation.
-  change ((pullbackPushforwardAdjunction (Spec.map (g.app U))).unit.app
-    (M.restrict hU.fromSpec)).app ⊤ (M.fromSpecSectionsEquiv hU s) =
-    (chartPullbackIso g M hU hV).hom.app ⊤
-      (((pullback g).obj M).fromSpecSectionsEquiv hV (Scheme.Hom.pullbackSections g M U s))
-  convert! (chartPullbackIso_unit g M hU hV s).symm using 1
-  erw [Scheme.Hom.pullbackSectionsLE_apply]
-  simp only [Scheme.Hom.pullbackSections_apply]
-  simp
-  rfl
+  rw [← Scheme.Hom.pullbackSectionsLE_self]
+  exact chartSectionsEquiv_one_tmul g M hU hV _ _ le_rfl s
 /-- The inverse affine comparison takes a pulled-back section to `1 ⊗ s`. -/
 lemma _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsEquiv_symm_pullbackSections
     (s : Γ(M, U)) :
@@ -208,6 +217,24 @@ lemma _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsEquiv_symm_pullbackSec
     (g.pullbackSectionsEquiv_one_tmul M hU hV s)
   erw [LinearEquiv.symm_apply_apply] at h
   exact h.symm
+end AlgebraicGeometry.Scheme.Modules
+namespace AlgebraicGeometry.Scheme.Modules
+variable {X Y : Scheme.{u}} (g : Y ⟶ X) (M : X.Modules) {U : X.Opens} {V : Y.Opens}
+  (hU : IsAffineOpen U) (hV : IsAffineOpen V) (hVU : V ≤ g ⁻¹ᵁ U) [M.IsQuasicoherent]
+/-- Sections of a quasicoherent pullback over an affine open `V` contained in the inverse image
+of an affine open `U` are the extension of the sections over `U` along the restriction map
+`Γ(X, U) ⟶ Γ(Y, V)`. No flatness or finiteness hypothesis is required. -/
+def _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsLEEquiv :
+    (ModuleCat.extendScalars (g.appLE U V hVU).hom).obj (.of Γ(X, U) Γ(M, U)) ≃ₗ[Γ(Y, V)]
+      Γ((pullback g).obj M, V) :=
+  chartSectionsEquiv g M hU hV (g.appLE U V hVU) (IsAffineOpen.SpecMap_appLE_fromSpec g hU hV hVU)
+/-- The affine section comparison over `V ≤ g⁻¹ U` sends `1 ⊗ s` to the restricted pullback
+of `s`. -/
+lemma _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsLEEquiv_one_tmul (s : Γ(M, U)) :
+    Scheme.Hom.pullbackSectionsLEEquiv g M hU hV hVU
+        ((1 : Γ(Y, V)) ⊗ₜ[Γ(X, U), (g.appLE U V hVU).hom] s) =
+      g.pullbackSectionsLE M U V hVU s :=
+  chartSectionsEquiv_one_tmul g M hU hV _ _ hVU s
 end AlgebraicGeometry.Scheme.Modules
 namespace AlgebraicGeometry.Scheme.Hom
 variable {R S : Type u} [CommRing R] [CommRing S] [Algebra R S]

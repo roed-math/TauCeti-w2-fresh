@@ -1,19 +1,20 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"178f807996a4d882a79e4cef922aa9270c2ff11e","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their cohomology over a field"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Weierstrass model over a ring"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*𝒪_E(n[0]) vanishes on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[10],"title":"feat: π_*𝒪_E(n[0]) commutes with arbitrary base change"},{"n":12,"after":[11],"title":"feat: pushforwards of line bundles of positive fibre degree on an elliptic curve"},{"n":13,"after":[12],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":14,"after":[10],"title":"feat: the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":15,"after":[14],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":16,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"6c781b0a7341d9d794cf474258f824f4fa65faa2","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their cohomology over a field"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Weierstrass model over a ring"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*𝒪_E(n[0]) vanishes on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: the base change morphism of a direct image of modules"},{"n":12,"after":[10,11],"title":"feat: π_*𝒪_E(n[0]) commutes with arbitrary base change"},{"n":13,"after":[12],"title":"feat: pushforwards of line bundles of positive fibre degree on an elliptic curve"},{"n":14,"after":[13],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":15,"after":[10],"title":"feat: the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":16,"after":[15],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
 
 # Lookahead: `pole-sheaf` (ModularCurves, Layer 1C)
 
-Built on `main` at `178f807996a4d882a79e4cef922aa9270c2ff11e`. Status: **partial**. Splits
-1–10 are on this branch, fully proved, with no `sorry`. Splits 11–16 are the plan for the rest of
+Built on `main` at `6c781b0a7341d9d794cf474258f824f4fa65faa2`. Status: **partial**. Splits
+1–11 are on this branch, fully proved, with no `sorry`. Splits 12–17 are the plan for the rest of
 the target and are **not** on the branch.
 
 History. The first round left tip `a1900430f893` with splits 1 and 2. The second round left tip
-`3cb1a6114df7`, adding splits 3, 4 and 5. This round merged current `main` and added splits 6
-and 7 (the old plan's split 6, done in two parts). So `H⁰(projModel W, 𝒪(n[0]))` is now
-projective of constant rank `n`, over every ring. The fourth round left tip `543397aab8a1`. This
-round merged current `main` and added splits 8, 9 and 10, which globalise to `E/S` the first two
-of the three 1C statements for `ℒ_n`: `R¹π_*ℒ_n = 0`, and `π_*ℒ_n` is locally free of rank `n`.
-The old split 8 is now splits 8–11 (the base-change clause is split 11). The old splits 9–13 are
-renumbered 12–16.
+`3cb1a6114df7`, adding splits 3, 4 and 5. The third round added splits 6 and 7, so
+`H⁰(projModel W, 𝒪(n[0]))` is projective of constant rank `n` over every ring. The fourth round
+left tip `543397aab8a1`. The fifth round left tip `7bba41d2eebe`, adding splits 8, 9 and 10:
+`R¹π_*ℒ_n = 0`, and `π_*ℒ_n` is locally free of rank `n`. This round merged current `main` and
+added split 11, the general base change morphism `f^* π_* ⟶ π'_* g'^*` of a commutative square
+of schemes, with its value on sections and a criterion over affine opens for it to be an
+isomorphism. The old split 11 (the base-change clause for `ℒ_n`) is now split 12, and the old
+splits 12–16 are renumbered 13–17.
 
 ## Suppliers and stubs
 
@@ -21,7 +22,7 @@ renumbered 12–16.
 consumes neither supplier:
 
 - `relative-cartier-divisor` (open PR #27087, the geometric-fibre criterion of 0A item 1;
-  re-checked this round, still open and still unused by splits 1–10).
+  re-checked this round, still open and still unused by splits 1–11).
   `Suggested.lean` pins no declaration for it. Its §Finite flat group schemes says the carrier
   "is supplied once by the Jacobian Challenge", and the file "deliberately introduces no
   substitute". PR #27087 adds
@@ -29,17 +30,17 @@ consumes neither supplier:
   The divisor `[0]` does not need it: a section of a smooth separated curve already cuts out a
   relative effective Cartier divisor, by
   `Scheme.Hom.isRelativeEffectiveCartier_ker_of_smoothOfRelativeDimension` on `main`, and sums
-  and base change are on `main` too. The fibre criterion first enters at split 10, where the
+  and base change are on `main` too. The fibre criterion first enters at split 14, where the
   zero divisor of the evaluation section must be shown relative effective Cartier on geometric
   fibres.
 - `polarised-descent` (open PR #27128, descent of stable opens). `Suggested.lean` pins no
-  declaration for it either. It first enters at split 13, for the fppf-descent compatibility of
-  the degree-one divisor–section correspondence. It may also enter at split 16, if the
+  declaration for it either. It first enters at split 14, for the fppf-descent compatibility of
+  the degree-one divisor–section correspondence. It may also enter at split 17, if the
   presentation is descended rather than built Zariski-locally.
 
 Neither supplier's statement was restated, so there are no differences to record.
 
-## What is proved (splits 1–10)
+## What is proved (splits 1–11)
 
 ### Split 1 — after: none
 
@@ -277,33 +278,91 @@ PR subject: `feat: π_*𝒪_E(n[0]) is locally free of rank n`
   - `isFiniteLocallyFree_pushforward_poleSheaf`: **`π_*ℒ_n` is finite locally free.**
   - `rank_pushforward_poleSheaf`: **it has rank `n` at every point.**
 
-## What remains (splits 11–16, not on this branch)
+### Split 11 — after: none
 
-11. **(after 10)** Base change: for `f : T ⟶ S`, the base-change morphism
-    `f^* π_* ℒ_n ⟶ π_{T*} ℒ_{n,T}` is an isomorphism. Here `ℒ_{n,T}` is identified with
-    `g'^* ℒ_n` by `pullback_mk_poleSheaf_baseChange` (split 2). `main` has no sheaf-level
-    base-change morphism for `Scheme.Modules.pushforward`. Build it first, as the mate through
-    `pullbackPushforwardAdjunction`, `pushforwardComp` and the square. Then check it is an iso on
-    the affine basis of chart images (`isBasis_range_opensRange_restrict`, split 8), using
-    `Scheme.Hom.pullbackSectionsEquiv` (`Modules/Pullback/BaseChange.lean`) for the source.
-    For the target use the chart identification of split 10 together with
-    `bijective_cohomologyBaseChange_zero_poleSheaf` (split 5). The hard step is to identify the
-    sheaf map on sections with `cohomologyBaseChange`.
-12. **(after 11)** The positive-degree theorem: an invertible `M` of constant positive fibre degree
+PR subject: `feat: the base change morphism of a direct image of modules`
+
+General infrastructure, independent of elliptic curves; it builds on `main` alone.
+- `TauCeti/AlgebraicGeometry/Modules/Sheaf.lean` (+23/−2 lines):
+  `AlgebraicGeometry.Scheme.Modules.Hom.isIso_of_bijective_app_of_isBasis`, a morphism of
+  `𝒪_X`-modules bijective on the sections over the opens of a basis is an isomorphism (via
+  `TopCat.Sheaf.isIso_iff_isIso_basis`). It sits beside the file's epimorphism criterion
+  `Hom.epi_of_surjective_on_affineOpens`.
+- `TauCeti/AlgebraicGeometry/Modules/Pullback/Sections.lean` (+40 lines, 176 in total):
+  - `AlgebraicGeometry.Scheme.Hom.restrictFunctorIsoPullback_hom_app_app_map`: along an open
+    immersion `j`, `restrictFunctorIsoPullback` carries the restriction of `s` to `j (j⁻¹ U)` to
+    `j.pullbackSections M U s`. This was a step inside the private `chartPullback_unit` of
+    `Pullback/BaseChange.lean`, which now calls it.
+  - `AlgebraicGeometry.Scheme.Hom.bijective_pullbackSections_of_isOpenImmersion`: hence pulling
+    back sections over `U ≤ j.opensRange` is bijective. Split 12 uses it to identify the sections
+    of `g^* ℒ_n` over `π'⁻¹ V` with those of its pullback to the open subscheme `π'⁻¹ V`.
+- `TauCeti/AlgebraicGeometry/Modules/Pullback/BaseChange.lean` (+91/−64 lines, 557 in total).
+  The private comparison behind `Scheme.Hom.pullbackSectionsEquiv` is generalised from the pair
+  `(U, g⁻¹ U)` to any affine `V` with a ring map `φ : Γ(X, U) ⟶ Γ(Y, V)` compatible with `g` on
+  spectra (private `chartPullbackIso`, `chartPullbackIso_unit`, `chartSectionsEquiv`,
+  `chartSectionsEquiv_one_tmul`, `specMap_app_fromSpec`). `pullbackSectionsEquiv` and its two
+  lemmas keep their statements and become instances of it. New:
+  - `AlgebraicGeometry.Scheme.Hom.pullbackSectionsLEEquiv`: for affine opens `V ≤ g⁻¹ U`,
+    `Γ(Y, V) ⊗_{Γ(X, U)} Γ(M, U) ≃ Γ(g^* M, V)` along `g.appLE U V`, for quasicoherent `M`.
+  - `AlgebraicGeometry.Scheme.Hom.pullbackSectionsLEEquiv_one_tmul`: it sends `1 ⊗ s` to
+    `g.pullbackSectionsLE M U V s`.
+- `TauCeti/AlgebraicGeometry/Modules/Pushforward.lean` moves to
+  `TauCeti/AlgebraicGeometry/Modules/Pushforward/Basic.lean` (no content change), because the
+  new file below opens the `Modules/Pushforward/` directory; its three importers are updated.
+- `TauCeti/AlgebraicGeometry/Modules/Pushforward/BaseChange.lean` (new, 212 lines), namespace
+  `TauCeti.AlgebraicGeometry`:
+  - `pushforwardBaseChange sq : pushforward π ⋙ pullback f ⟶ pullback g' ⋙ pushforward π'` for
+    `sq : CommSq g' π' π f`: the mate (`mateEquiv` of the pullback–pushforward adjunctions of `g'`
+    and `f`) of `π_* g'_* = (g' ≫ π)_* = (π' ≫ f)_* = f_* π'_*`.
+  - `unit_comp_pushforward_map_pushforwardBaseChange_app`: its defining property against the
+    unit of `f`.
+  - `pushforwardBaseChange_app_pullbackSections` and
+    `pushforwardBaseChange_app_pullbackSectionsLE`: on sections it sends `f^* s` to `g'^* s`
+    (restricted to `π'⁻¹ V` for `V ≤ f⁻¹ U`).
+  - `pushforwardBaseChange_app_pullbackSectionsLEEquiv_one_tmul`: over affine `V ≤ f⁻¹ U`, on
+    `Γ(V) ⊗ Γ(U, π_* M)` it sends `1 ⊗ s` to `g'^* s`.
+  - `isIso_pushforwardBaseChange_app_of_bijective`: **the reduction to affine opens.** If `π_* M`
+    is quasicoherent and, for a basis of affine opens `V i ≤ f⁻¹ (U i)` with `U i` affine, some
+    `Γ(V i)`-linear map `Φ i : Γ(V i) ⊗_{Γ(U i)} Γ(π⁻¹ (U i), M) → Γ(π'⁻¹ (V i), g'^* M)` with
+    `Φ i (1 ⊗ s) = g'^* s` is bijective, then the base change morphism at `M` is an isomorphism.
+
+## What remains (splits 12–17, not on this branch)
+
+12. **(after 10, 11)** Base change for `ℒ_n`: for a pullback square
+    `hg : IsPullback g E'.structureMap E.structureMap f`, the base change morphism
+    `(pushforwardBaseChange hg.toCommSq).app (E.poleSheaf n).obj` is an isomorphism, and hence
+    (by `pullback_mk_poleSheaf_of_isPullback`, split 2) `f^* π_* ℒ_n ≅ π'_* ℒ'_n`. Apply
+    `isIso_pushforwardBaseChange_app_of_bijective` (split 11) to the basis of affine opens `V` of
+    `S'` lying in some `f⁻¹ (U)`, `U` the image of the base of a chart `c` of an atlas
+    (`π_* ℒ_n` is quasicoherent: see `isFiniteLocallyFree_pushforward_poleSheaf`, split 10). The
+    remaining work is the bijectivity of `r ⊗ s ↦ r • g^* s :
+    Γ(V) ⊗_{Γ(U)} Γ(π⁻¹ U, ℒ_n) → Γ(π'⁻¹ V, g^* ℒ_n)`, by transport from
+    `WeierstrassCurve.bijective_cohomologyBaseChange_zero_poleSheaf` (split 5) with
+    `R = c.ring`, `R' = Γ(S', V)` and the square `isPullback_projModelBaseChange_over`:
+    - an isomorphism `θ : projModel (W.map φ) ≅ π'⁻¹ V` with
+      `θ ≫ (π'⁻¹ V).ι ≫ g = projModelBaseChange ≫ c.modelIso.inv ≫ c.toTotal`, as the comparison
+      of two pullbacks of `π` along `V ⟶ S` (paste `c.isPullback`, `c.modelIso_over`, `hg`,
+      `isPullback_morphismRestrict` and `hV.isoSpec`);
+    - `H⁰ = Γ(⊤)` through `cohomologyZeroEquiv_cohomologyPullback`, the sheaf isomorphism of
+      `nonempty_restrict_poleSheaf_iso`, `pullbackSections_comp`, `pullbackSections_naturality`,
+      and bijectivity of pullback of sections along an isomorphism and an open immersion;
+    - the `R'`-actions: `R' = Γ(S', V)` acts on `Γ(π'⁻¹ V, g^* ℒ_n)` through `π'`, and on
+      `H⁰(projModel (W.map φ), -)` through the structure morphism; they agree through `θ`.
+13. **(after 12)** The positive-degree theorem: an invertible `M` of constant positive fibre degree
     `d` has `R¹π_*M = 0`, and `π_*M` is locally free of rank `d` and commutes with base change.
-    Splits 8 and 10 generalise directly once the Weierstrass-model inputs hold for `M`.
+    Splits 8, 10 and 12 generalise directly once the Weierstrass-model inputs hold for `M`.
     `finite_cohomology_one` (split 4) and `finite_cohomology_zero` (split 6) apply to any
     finite-type `M`. For finite presentation of `H⁰`, descend `M` with `W` to a finitely
     generated subring, as split 7 does for `𝒪(n[0])`.
-13. **(after 12)** For `d = 1`: the evaluation section has a relative effective Cartier zero
+14. **(after 13)** For `d = 1`: the evaluation section has a relative effective Cartier zero
     divisor of degree one, hence is the divisor of a unique section. Prove compatibility with
     base change and fppf descent. This needs `relative-cartier-divisor` and `polarised-descent`.
-14. **(after 10)** The pole filtration of `π_*ℒ_n`: local splittings, the choice of `x` and `y`,
+15. **(after 10)** The pole filtration of `π_*ℒ_n`: local splittings, the choice of `x` and `y`,
     the unique relation in pole order six, and the unit discriminant.
-15. **(after 14)** The bases `1, x, y, x², xy, x³` after a pointed Weierstrass trivialisation, the
+16. **(after 15)** The bases `1, x, y, x², xy, x³` after a pointed Weierstrass trivialisation, the
     multiplication maps, the relation equal to the Weierstrass equation, and their independence of
     the chosen pointed equation.
-16. **(after 1–15; exported)** The Weierstrass-presentation theorem: a smooth proper genus-one
+17. **(after 1–16; exported)** The Weierstrass-presentation theorem: a smooth proper genus-one
     curve with a section is Zariski-locally pointed-isomorphic to a projective Weierstrass model,
     producing a `PointedWeierstrassAtlas`. This split completes the target.
 
@@ -313,12 +372,13 @@ dropped: `main` already has it, over affine bases
 `Scheme/VariableChange/Basic.lean`) and over arbitrary bases
 (`WeierstrassCurve.existsUnique_hom_comp_eq_comp_projModelVariableChangeIso_hom`, in
 `Scheme/VariableChange/OverScheme.lean`). The variable-change group and its action on the
-coefficients are Mathlib's `WeierstrassCurve.VariableChange`. Split 15 should check what remains
+coefficients are Mathlib's `WeierstrassCurve.VariableChange`. Split 16 should check what remains
 of the README's action on `x`, `y` and the invariant differential before adding any of it.
 
 ## Verification
 
 `lake exe cache get`, `lake build` (green, warnings as errors) and
-`/opt/round/lookahead-check` all pass. The environment linters (`simpNF`, `unusedArguments`,
-`docBlame`, `synTaut`, `unusedHavesSuffices`, `explicitVarsOfIff`) pass on the seven modules this
-round changed, run through `scripts/LintEnvDriver.lean --only-listed`.
+`/opt/round/lookahead-check` all pass. Mathlib's default environment linters (including
+`simpNF`, `unusedArguments`, `docBlame`, `synTaut`, `unusedHavesSuffices`,
+`explicitVarsOfIff`) pass on the modules this round changed, run through
+`scripts/LintEnvDriver.lean --only-listed`.

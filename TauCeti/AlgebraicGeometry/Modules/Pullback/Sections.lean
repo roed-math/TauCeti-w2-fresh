@@ -15,6 +15,8 @@ These maps commute with coefficient maps, restriction, and composition of scheme
 `Scheme.Hom.pullbackSectionsLE` also restricts the pullback to any smaller open in the source.
 The composition equation identifies direct and iterated pullback through the canonical
 pullback-composition isomorphism, so sections can be compared across successive morphisms.
+Along an open immersion, pullback of sections is restriction to the image, so it is bijective
+over opens contained in the image (`Scheme.Hom.bijective_pullbackSections_of_isOpenImmersion`).
 -/
 
 public section
@@ -61,6 +63,44 @@ lemma pullbackSections_comp (s : Γ(M, U)) :
     (pullbackPushforwardAdjunction (f ≫ g)) (pullbackComp f g).inv M
   rw [conjugateEquiv_pullbackComp_inv] at h
   exact (congrArg (fun a ↦ a.app U s) h).symm
+
+section OpenImmersion
+
+variable (j : Y ⟶ X) [IsOpenImmersion j]
+
+/-- Along an open immersion `j`, the pullback of a section over `U` is its restriction to the
+image of `j⁻¹ U`, read through `restrictFunctorIsoPullback`. -/
+lemma restrictFunctorIsoPullback_hom_app_app_map (s : Γ(M, U)) :
+    ((restrictFunctorIsoPullback j).hom.app M).app (j ⁻¹ᵁ U)
+      (M.presheaf.map (homOfLE (j.image_preimage_le U)).op s) = j.pullbackSections M U s := by
+  have h : (restrictAdjunction j).unit.app M ≫
+      (pushforward j).map ((restrictFunctorIsoPullback j).hom.app M) =
+      (pullbackPushforwardAdjunction j).unit.app M :=
+    Adjunction.unit_leftAdjointUniq_hom_app (restrictAdjunction j)
+      (pullbackPushforwardAdjunction j) M
+  have he := congrArg (fun a ↦ a.app U s) h
+  simp only [Modules.Hom.comp_app, pushforward_map_app, restrictAdjunction_unit_app_app] at he
+  rw [pullbackSections_apply]
+  exact he
+
+/-- Along an open immersion `j`, pulling back sections over an open `U` contained in the image of
+`j` is bijective. -/
+theorem bijective_pullbackSections_of_isOpenImmersion (hU : U ≤ j.opensRange) :
+    Function.Bijective (j.pullbackSections M U) := by
+  -- restriction to `j (j⁻¹ U) = U` is bijective, and so is the comparison of restriction with
+  -- pullback
+  have h : j ''ᵁ (j ⁻¹ᵁ U) = U := by
+    rw [Scheme.Hom.image_preimage_eq_opensRange_inf]
+    exact inf_eq_right.2 hU
+  have : homOfLE (j.image_preimage_le U) = eqToHom h := Subsingleton.elim _ _
+  have hr : Function.Bijective (M.presheaf.map (homOfLE (j.image_preimage_le U)).op) := by
+    rw [this]
+    exact ConcreteCategory.bijective_of_isIso _
+  rw [show ⇑(j.pullbackSections M U) = _ ∘ _ from
+    funext fun s ↦ (j.restrictFunctorIsoPullback_hom_app_app_map M U s).symm]
+  exact (ConcreteCategory.bijective_of_isIso _).comp hr
+
+end OpenImmersion
 
 variable (V : Y.Opens) (hV : V ≤ g ⁻¹ᵁ U)
 /-- Pull back a section along `g` and restrict it to an open contained in its inverse image. -/
