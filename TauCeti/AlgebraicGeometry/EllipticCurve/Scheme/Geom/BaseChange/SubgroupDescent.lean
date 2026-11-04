@@ -6,7 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.BaseChange.Points
-public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.NaiveCyclicSubgroup
+public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.NaiveCyclicSubgroup.Basic
 public import Mathlib.AlgebraicGeometry.Morphisms.FinitePresentation
 public import Mathlib.AlgebraicGeometry.Morphisms.Flat
 import Mathlib.AlgebraicGeometry.Morphisms.FlatDescent

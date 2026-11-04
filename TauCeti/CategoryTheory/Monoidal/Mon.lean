@@ -31,6 +31,8 @@ commutativity.
   from the trivial monoid on the tensor unit.
 * `CategoryTheory.MonObj.isMonHom_mul`: the multiplication of a commutative monoid object is a
   monoid homomorphism.
+* `CategoryTheory.MonObj.isMonHom_of_comp_mono`: a morphism whose composite with a monic monoid
+  homomorphism is a monoid homomorphism is itself one.
 * `CategoryTheory.MonObj.tensorHom_whisker_one_comp_mul`: a monoid homomorphism out of `M ⊗ N`
   is the product of its restrictions along `m ↦ m ⊗ 1` and `n ↦ 1 ⊗ n`.
 * `CategoryTheory.Adjunction.isMonHom_homEquiv_iff`: along a monoidal adjunction `F ⊣ G`, the
@@ -171,6 +173,16 @@ theorem tensorHom_whisker_one_comp_mul [BraidedCategory C] [MonObj M] [MonObj N]
   simp
 
 end TensorHom
+
+/-- **Monoid homomorphisms cancel against monic ones.** If `g` is a monic monoid homomorphism and
+`f ≫ g` is a monoid homomorphism, then so is `f`. -/
+theorem isMonHom_of_comp_mono {M N T : C} [MonObj M] [MonObj N] [MonObj T] (f : M ⟶ N)
+    (g : N ⟶ T) [Mono g] [IsMonHom g] [IsMonHom (f ≫ g)] : IsMonHom f where
+  one_hom := by
+    rw [← cancel_mono g, Category.assoc, IsMonHom.one_hom, IsMonHom.one_hom]
+  mul_hom := by
+    rw [← cancel_mono g, Category.assoc, IsMonHom.mul_hom (f ≫ g), ← tensorHom_comp_tensorHom]
+    simp only [Category.assoc, IsMonHom.mul_hom g]
 
 end CategoryTheory.MonObj
 
