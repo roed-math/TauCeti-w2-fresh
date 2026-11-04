@@ -41,7 +41,6 @@ two. This is the form used for nodal curves.
 * `TauCeti.formallyEtale_residueField_of_fittingIdeal_ne_top`: the residue field is formally étale
   over `K`.
 * `TauCeti.finrank_cotangentSpace_eq_two`: `dim_κ 𝔪/𝔪² = 2`.
-* `TauCeti.not_isPrincipal_maximalIdeal`: in particular `𝔪` is not principal.
 * `TauCeti.formallyUnramified_localization_quotient_fittingIdeal`: the unramified singular locus
   localizes.
 * `TauCeti.finrank_tensor_kaehlerDifferential_eq_two`: for `A` not necessarily local, the fibre of
@@ -127,14 +126,6 @@ theorem finrank_cotangentSpace_eq_two (h : fittingIdeal A Ω[A⁄K] 1 ≠ ⊤) :
   rw [hker] at e
   rw [← finrank_residueField_tensor_kaehlerDifferential_eq_two h,
     (e.extendScalarsOfSurjective residue_surjective).finrank_eq]
-
-/-- **The maximal ideal at a node is not principal**, since its cotangent space `𝔪/𝔪²` is a plane
-(`TauCeti.finrank_cotangentSpace_eq_two`). -/
-theorem not_isPrincipal_maximalIdeal (h : fittingIdeal A Ω[A⁄K] 1 ≠ ⊤) :
-    ¬ (maximalIdeal A).IsPrincipal := by
-  have : IsNoetherianRing A := Algebra.EssFiniteType.isNoetherianRing K A
-  rw [← finrank_cotangentSpace_le_one_iff, finrank_cotangentSpace_eq_two h]
-  decide
 
 end LocalRing
 

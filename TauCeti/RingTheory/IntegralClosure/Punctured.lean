@@ -32,6 +32,8 @@ normalization of a neighbourhood of the node in its complement has cokernel `A /
 
 * `TauCeti.exists_notMem_forall_eq_of_isMaximal`: in a Noetherian ring, if `q` is the only prime
   below `q` containing `u`, then some basic open `D(g) ∋ q` meets `V(u)` only in `q`.
+* `TauCeti.exists_notMem_radical_span_singleton_eq`: if `u` generates an ideal of radical `𝔪` in
+  `A_q`, then on some basic open `D(g) ∋ q` the closed point `q` is the radical of `(u)`.
 * `TauCeti.isLocalizedModule_id_of_pow_smul_eq_zero`: a `u`-power torsion module is its own
   localization at `q`.
 * `TauCeti.integralClosureQuotientEquiv`: the cokernel of `A → C` is the cokernel of the integral
@@ -91,6 +93,53 @@ theorem exists_notMem_forall_eq_of_isMaximal [IsNoetherianRing A]
     · exact ((inferInstance : q.IsMaximal).eq_of_le hP'.ne_top (hPq ▸ hPP')).symm
     · exact (hg (Ideal.mem_of_dvd _ (Finset.dvd_prod_of_mem gP (by simp [S, hP, hPq]))
         (hPP' (hgP P hP hPq)))).elim
+
+/-- **Isolating a closed point in `V(u)`.** Let `A` be Noetherian, `q` a maximal ideal and `u : A`
+generating an ideal of radical `𝔪` in the localization `A_q`. Then some `g ∉ q` cuts out a basic
+open `D(g) ∋ q` meeting `V(u)` only in `q`: in every localization `B` of `A` away from `g`, the
+extension of `q` is a maximal ideal, and it is the radical of `(u)`. -/
+theorem exists_notMem_radical_span_singleton_eq [IsNoetherianRing A] (Aq : Type*) [CommRing Aq]
+    [Algebra A Aq] [IsLocalization.AtPrime Aq q] [IsLocalRing Aq]
+    (hu : (Ideal.span {algebraMap A Aq u}).radical = maximalIdeal Aq) :
+    ∃ g ∉ q, ∀ (B : Type*) [CommRing B] [Algebra A B] [IsLocalization.Away g B],
+      (q.map (algebraMap A B)).IsMaximal ∧
+        (Ideal.span {algebraMap A B u}).radical = q.map (algebraMap A B) := by
+  have huq : u ∈ q := by
+    rw [← IsLocalization.AtPrime.under_maximalIdeal Aq q, Ideal.mem_comap, ← hu]
+    exact Ideal.le_radical (Ideal.mem_span_singleton_self _)
+  -- In `A_q`, a prime containing `u` contains `√(u) = 𝔪`, so `q` is the only prime below `q`
+  -- containing `u`.
+  obtain ⟨g, hgq, hg⟩ := exists_notMem_forall_eq_of_isMaximal (u := u) fun P hP huP hPq ↦ by
+    have hdisj : Disjoint (q.primeCompl : Set A) P :=
+      Set.disjoint_left.mpr fun _ hs hsP ↦ hs (hPq hsP)
+    have := IsLocalization.isPrime_of_isPrime_disjoint q.primeCompl Aq P hP hdisj
+    refine hPq.antisymm ?_
+    rw [← IsLocalization.under_map_of_isPrime_disjoint q.primeCompl Aq hP hdisj,
+      ← IsLocalization.AtPrime.under_maximalIdeal Aq q]
+    refine Ideal.comap_mono ?_
+    rw [← hu, Ideal.IsPrime.radical_le_iff this, Ideal.span_singleton_le_iff_mem]
+    exact Ideal.mem_map_of_mem _ huP
+  refine ⟨g, hgq, fun B _ _ _ ↦ ?_⟩
+  have hdisj : Disjoint (Submonoid.powers g : Set A) q :=
+    (Ideal.disjoint_powers_iff_notMem g (inferInstance : q.IsMaximal).isPrime.isRadical).mpr hgq
+  have hQ := IsLocalization.isPrime_of_isPrime_disjoint (Submonoid.powers g) B q inferInstance
+    hdisj
+  -- A prime of `B` containing `u` lies over a prime of `A` containing `u` but not `g`.
+  have key (P : Ideal B) (hP : P.IsPrime) (huP : algebraMap A B u ∈ P) :
+      P = q.map (algebraMap A B) := by
+    have hgP : g ∉ P.comap (algebraMap A B) := fun h ↦
+      hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h (IsLocalization.Away.algebraMap_isUnit g))
+    rw [← IsLocalization.map_under (Submonoid.powers g) B P]
+    exact congr_arg _ (hg _ (hP.comap (algebraMap A B)) huP hgP)
+  have hmax : (q.map (algebraMap A B)).IsMaximal := by
+    obtain ⟨M, hM, hle⟩ := Ideal.exists_le_maximal _ hQ.ne_top
+    exact key M hM.isPrime (hle (Ideal.mem_map_of_mem _ huq)) ▸ hM
+  refine ⟨hmax, le_antisymm ?_ ?_⟩
+  · rw [Ideal.IsPrime.radical_le_iff hQ, Ideal.span_singleton_le_iff_mem]
+    exact Ideal.mem_map_of_mem _ huq
+  · rw [Ideal.radical_eq_sInf]
+    exact le_sInf fun P ⟨hP, hPp⟩ ↦
+      (key P hPp ((Ideal.span_singleton_le_iff_mem _).mp hP)).ge
 
 /-- **Torsion modules over a punctured spectrum.** If `√(u)` is a maximal ideal `q` and every
 element of `M` is killed by a power of `u`, then the elements outside `q` act bijectively on `M`,
