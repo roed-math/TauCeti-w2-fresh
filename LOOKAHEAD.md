@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their cohomology over a field"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Weierstrass model over a ring"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*𝒪_E(n[0]) vanishes on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: the base change morphism of a direct image of modules"},{"n":12,"after":[10,11],"title":"feat: π_*𝒪_E(n[0]) commutes with arbitrary base change"},{"n":13,"after":[12],"title":"feat: pushforwards of line bundles of positive fibre degree on an elliptic curve"},{"n":14,"after":[13],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":15,"after":[10],"title":"feat: the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":16,"after":[15],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"57ab0f657d75f3bc2f06d2cb8db2fef3dbd33d39","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their fibre degrees"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: cohomology and base change for line bundles of positive fibre degree on a Weierstrass model"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*𝒪_E(n[0]) vanishes on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: the base change morphism of a direct image of modules"},{"n":12,"after":[10,11],"title":"feat: π_*𝒪_E(n[0]) commutes with arbitrary base change"},{"n":13,"after":[12],"title":"feat: pushforwards of line bundles of positive fibre degree on an elliptic curve"},{"n":14,"after":[13],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":15,"after":[10],"title":"feat: the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":16,"after":[15],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
 
 # Lookahead: `pole-sheaf` (ModularCurves, Layer 1C)
 
-Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54`. Status: **partial**. Splits
+Built on `main` at `57ab0f657d75f3bc2f06d2cb8db2fef3dbd33d39`. Status: **partial**. Splits
 1–12 are on this branch, fully proved, with no `sorry`. Splits 13–17 are the plan for the rest of
 the target and are **not** on the branch.
 
@@ -16,7 +16,14 @@ of schemes, with its value on sections and a criterion over affine opens for it 
 isomorphism. The old split 11 (the base-change clause for `ℒ_n`) is now split 12, and the old
 splits 12–16 are renumbered 13–17. The seventh round (this one) merged current `main` without
 conflicts and added split 12: `π_*ℒ_n` commutes with arbitrary base change. (A proof of split 12
-from an earlier session was lost before it was pushed; this is a fresh proof.)
+from an earlier session was lost before it was pushed; this is a fresh proof.) The seventh round
+left tip `4784a0a14fc1`. The eighth round (this one) merged current `main` without conflicts and
+proved the Weierstrass-model half of the positive-degree theorem (split 13). For any line bundle
+`M` on `projModel W` of positive degree on every fibre, `H¹(M) = 0`, `H⁰(M)` is flat with formation
+commuting with base change, and its fibres have dimension the fibre degree. Split 5 now proves this
+in general, in the new file `Scheme/PositiveDegree.lean`, and derives the pole-sheaf statements
+from it as corollaries, so the pole-sheaf proofs are not duplicated. Split 1's field-level
+`dim H⁰(𝒪(n[0])) = n` moved into split 5, where it is now a corollary.
 
 ## Suppliers and stubs
 
@@ -24,7 +31,7 @@ from an earlier session was lost before it was pushed; this is a fresh proof.)
 consumes neither supplier:
 
 - `relative-cartier-divisor` (open PR #27087, the geometric-fibre criterion of 0A item 1;
-  re-checked this round, still open and still unused by splits 1–12).
+  re-checked on 2026-11-04, still open and still unused by splits 1–12).
   `Suggested.lean` pins no declaration for it. Its §Finite flat group schemes says the carrier
   "is supplied once by the Jacobian Challenge", and the file "deliberately introduces no
   substitute". PR #27087 adds
@@ -35,7 +42,8 @@ consumes neither supplier:
   and base change are on `main` too. The fibre criterion first enters at split 14, where the
   zero divisor of the evaluation section must be shown relative effective Cartier on geometric
   fibres.
-- `polarised-descent` (open PR #27128, descent of stable opens). `Suggested.lean` pins no
+- `polarised-descent` (open PR #27128, descent of stable opens; re-checked on 2026-11-04, still
+  open). `Suggested.lean` pins no
   declaration for it either. It first enters at split 14, for the fppf-descent compatibility of
   the degree-one divisor–section correspondence. It may also enter at split 17, if the
   presentation is descended rather than built Zariski-locally.
@@ -46,7 +54,7 @@ Neither supplier's statement was restated, so there are no differences to record
 
 ### Split 1 — after: none
 
-PR subject: `feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their cohomology over a field`
+PR subject: `feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their fibre degrees`
 
 Files:
 - `TauCeti/AlgebraicGeometry/EffectiveCartierDivisor/TensorProduct.lean` (extended, +38 lines).
@@ -60,7 +68,7 @@ Files:
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Integral.lean` (extended, +7 lines):
   - `WeierstrassCurve.geometricallyIntegral_over_projModel`: the instance on
     `projModel W ↘ Spec R`. This follows the existing `isProper_over_projModel` pattern.
-- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/Basic.lean` (new, 190 lines):
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/Basic.lean` (new, 181 lines):
   - `WeierstrassCurve.poleSheaf W n`, the line bundle `𝒪(n[0])` on `projModel W` over any ring,
     with `poleSheaf_def`, `mk_poleSheaf_one`, `mk_poleSheaf` (`𝒪(n[0]) ≅ 𝒪([0])^{⊗n}`) and
     `mk_poleSheaf_add`.
@@ -70,10 +78,11 @@ Files:
     - `genus_projModel`: `W.projModel.genus K = 1`.
     - `finrank_cohomology_one_trivial_projModel`: `dim H¹(𝒪) = 1`.
     - `eulerDegree_poleSheaf`: `deg 𝒪(n[0]) = n`.
-    - `finrank_cohomology_zero_poleSheaf`: `dim H⁰(𝒪(n[0])) = n` for `n > 0`.
+  - `eulerDegree_pullback_poleSheaf`: over any ring, the pullback of `𝒪(n[0])` to the model over
+    any field `K` receiving `R` has degree `n`. This is the fibre-degree hypothesis of split 5.
 
-  The field-level vanishing `H¹(𝒪(n[0])) = 0` is a private step of split 5, whose public
-  `subsingleton_cohomology_one_poleSheaf` holds over every ring and takes over its name.
+  The field-level Riemann–Roch statements (`H¹ = 0`, `dim H⁰ = n`) are in split 5, as instances of
+  the positive-degree theorem.
 
 ### Split 2 — after: 1
 
@@ -145,7 +154,7 @@ every Weierstrass curve over every ring.
 
 ### Split 5 — after: 1, 4
 
-PR subject: `feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Weierstrass model over a ring`
+PR subject: `feat: cohomology and base change for line bundles of positive fibre degree on a Weierstrass model`
 
 - `TauCeti/AlgebraicGeometry/VectorBundle/Affine/Sections.lean` (new, 80 lines):
   - `TauCeti.AlgebraicGeometry.FiniteLocallyFreeSheaf.finite_projective_sections`: sections of a
@@ -156,9 +165,25 @@ PR subject: `feat: H¹ vanishing and base change for H⁰ of 𝒪(n[0]) on a Wei
   `WeierstrassCurve.smooth_over_projModel` (hence `Flat (projModel W ↘ Spec R)`).
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/BaseChange.lean` (+12 lines):
   `WeierstrassCurve.isPullback_projModelBaseChange_over`.
-- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/Cohomology.lean` (new, 158
-  lines), for `W` elliptic over any ring `R` and `n > 0`:
-  - `flat_sectionsBase_poleSheaf`: sections of `𝒪(n[0])` over affine opens are `R`-flat.
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/PositiveDegree.lean` (new, 179 lines). This is the
+  **positive-degree theorem on a Weierstrass model**. Let `M` be a line bundle on `projModel W`,
+  for `W` elliptic over any ring `R`, such that for every prime `p` the pullback of `M` along
+  `projModelBaseChange (algebraMap R κ(p))` has positive `eulerDegree κ(p)`. Then:
+  - over a field, `subsingleton_cohomology_one_of_eulerDegree_pos` and
+    `finrank_cohomology_zero_of_eulerDegree_pos` give `H¹ = 0` and `dim H⁰ = deg` (Riemann–Roch in
+    genus one, via `InvertibleSheaf.subsingleton_cohomology_one_of_two_mul_genus_sub_two_lt_eulerDegree`
+    and `finrank_cohomology_zero_eq_eulerDegree_add_one_sub_genus` on `main`);
+  - `flat_sectionsBase`: sections of any line bundle over an affine open are `R`-flat;
+  - `subsingleton_cohomology_one_of_forall_eulerDegree_pos`: `H¹(projModel W, M) = 0`;
+  - `flat_cohomology_zero_of_forall_eulerDegree_pos`: `H⁰(projModel W, M)` is flat over `R`;
+  - `bijective_cohomologyBaseChange_zero_of_forall_eulerDegree_pos`: `R' ⊗_R H⁰ ≅ H⁰` after any
+    base change;
+  - `finrank_fiber_cohomology_zero_of_forall_eulerDegree_pos`: `dim_{κ(p)} κ(p) ⊗_R H⁰(M)` is the
+    fibre degree of `M` at `p`.
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/Cohomology.lean` (new; 120 lines
+  in this split). For `W` elliptic over any ring `R` and `n > 0`, these are corollaries of the
+  positive-degree theorem through `eulerDegree_pullback_poleSheaf` (split 1):
+  - `finrank_cohomology_zero_poleSheaf`: over a field, `dim H⁰(𝒪(n[0])) = n`.
   - `subsingleton_cohomology_one_poleSheaf`: `H¹(projModel W, 𝒪(n[0])) = 0`.
   - `flat_cohomology_zero_poleSheaf`: `H⁰(projModel W, 𝒪(n[0]))` is flat over `R`.
   - `bijective_cohomologyBaseChange_zero_poleSheaf`: `R' ⊗_R H⁰ ≅ H⁰` after any base change.
@@ -207,7 +232,7 @@ line's (`TauCeti.AlgebraicGeometry.projectiveLine.finite_globalSections`).
 PR subject: `feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n`
 
 `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/Cohomology.lean` (+61 lines,
-219 lines in total), for `W` elliptic over any ring and `n > 0`:
+for `W` elliptic over any ring and `n > 0`; it imports split 6's `FiniteGlobalSections.lean`):
 - private `finitePresentation_cohomology_zero_poleSheaf_of_map`: the case where `W` is the base
   change of `W₀` over a Noetherian `R₀`. It combines split 6 with split 5's base-change
   bijectivity and `nonempty_pullback_poleSheaf_iso`.
@@ -267,7 +292,7 @@ PR subject: `feat: π_*𝒪_E(n[0]) is locally free of rank n`
   `WeierstrassCurve.bijective_baseRingToGlobalSections`. `surjective_baseRingToStructurePresheaf_app_top`
   is now derived from it.
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/Cohomology.lean` (+28 lines,
-  247 in total):
+  195 in total):
   `WeierstrassCurve.finite_projective_globalSections_poleSheaf`: `Γ(⊤, 𝒪(n[0]))` is finite
   projective of constant rank `n` over `Γ(projModel, ⊤)`. This transports split 7 along
   `R ≃+* Γ(projModel, ⊤)`.
@@ -373,12 +398,23 @@ PR subject: `feat: π_*𝒪_E(n[0]) commutes with arbitrary base change`
 
 ## What remains (splits 13–17, not on this branch)
 
-13. **(after 12)** The positive-degree theorem: an invertible `M` of constant positive fibre degree
-    `d` has `R¹π_*M = 0`, and `π_*M` is locally free of rank `d` and commutes with base change.
-    Splits 8, 10 and 12 generalise directly once the Weierstrass-model inputs hold for `M`.
-    `finite_cohomology_one` (split 4) and `finite_cohomology_zero` (split 6) apply to any
-    finite-type `M`. For finite presentation of `H⁰`, descend `M` with `W` to a finitely
-    generated subring, as split 7 does for `𝒪(n[0])`.
+13. **(after 12)** The positive-degree theorem on `E`: an invertible `M` on `E` of degree `d > 0`
+    on every geometric fibre has `R¹π_*M = 0`, and `π_*M` is locally free of rank `d` and
+    commutes with base change. The Weierstrass-model inputs `H¹ = 0`, flatness and base change of
+    `H⁰`, and fibre dimension are **done for every such `M`** (split 5, `Scheme/PositiveDegree.lean`).
+    What remains:
+    - State the hypothesis on `E` with `main`'s fibre degree,
+      `TauCeti.AlgebraicGeometry.relativePicardFiberDegree` (`PicardFunctor/PicZero/Basic.lean`),
+      at geometric points. Transport it to split 5's residue-field hypothesis on each chart model.
+      This uses the chart identification of the fibres and invariance of the degree under field
+      extension and isomorphism (`LineBundleClass.eulerDegree_pullback_of_isIso` and
+      `InvertibleSheaf.eulerDegree_eq_finrank_mul` on `main`).
+    - Finite presentation of `H⁰(projModel W, M)` over a non-Noetherian `R`. Split 7 descends `W`
+      to a finitely generated subring; for general `M` the line bundle must descend with it,
+      which needs a spreading-out statement for line bundles that neither `main` nor 0E's pinned
+      forms provide yet. A spreading-out-free alternative would also do.
+    - Then generalise splits 8, 10 and 12 from `ℒ_n` to `M`. Their proofs use only the
+      Weierstrass-model statements, which now hold for `M`.
 14. **(after 13)** For `d = 1`: the evaluation section has a relative effective Cartier zero
     divisor of degree one, hence is the divisor of a unique section. Prove compatibility with
     base change and fppf descent. This needs `relative-cartier-divisor` and `polarised-descent`.

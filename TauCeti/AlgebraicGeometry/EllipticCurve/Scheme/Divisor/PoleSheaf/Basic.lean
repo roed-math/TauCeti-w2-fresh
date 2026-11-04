@@ -12,7 +12,6 @@ public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.Basic
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Integral
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.PicZero
 public import TauCeti.AlgebraicGeometry.LineBundle.Dual
-public import TauCeti.AlgebraicGeometry.LineBundle.HighDegree
 public import TauCeti.AlgebraicGeometry.RationalPoint.IdealSheaf
 import TauCeti.AlgebraicGeometry.EllipticCurve.Affine.FunctionField.Genus
 import TauCeti.AlgebraicGeometry.IdealSheaf.Comap
@@ -30,12 +29,9 @@ line bundle of `n[0]`, the dual of the ideal sheaf of `n[0]`. Its class in the P
 Over a field `K`, the projective model is a smooth proper geometrically integral curve of genus
 one (`WeierstrassCurve.genus_projModel`): its genus `dim_K H¹(projModel W, 𝒪)` is the genus of the
 function field `K(W)`, which is one. The line bundle `𝒪(n[0])` has degree `n`, since `[0]` is a
-rational point. By Riemann–Roch on a curve of genus one, for `n > 0`,
-
-`H¹(projModel W, 𝒪(n[0])) = 0` and `dim_K H⁰(projModel W, 𝒪(n[0])) = n`.
-
-These are the fibrewise vanishing and dimension statements for the pole sheaves of an elliptic
-curve over an arbitrary base.
+rational point, so over any ring `𝒪(n[0])` has degree `n` on every fibre
+(`WeierstrassCurve.eulerDegree_pullback_poleSheaf`). These are the fibrewise inputs of
+Riemann–Roch for the pole sheaves of an elliptic curve over an arbitrary base.
 
 ## Main definitions
 
@@ -50,14 +46,11 @@ curve over an arbitrary base.
   coefficient ring.
 * `WeierstrassCurve.genus_projModel`: over a field, the projective model has genus one.
 * `WeierstrassCurve.eulerDegree_poleSheaf`: over a field, `𝒪(n[0])` has degree `n`.
-* `WeierstrassCurve.finrank_cohomology_zero_poleSheaf`: over a field, `dim H⁰(𝒪(n[0])) = n` for
-  `n > 0`.
+* `WeierstrassCurve.eulerDegree_pullback_poleSheaf`: `𝒪(n[0])` has degree `n` on every fibre.
 
 ## References
 
 * N. M. Katz and B. Mazur, *Arithmetic Moduli of Elliptic Curves*, 2.1.
-* [J. H. Silverman, *The Arithmetic of Elliptic Curves*][silverman2009], III.3.1: the
-  Riemann–Roch spaces `L(n O)` have dimension `n` for `n > 0`.
 -/
 
 public section
@@ -174,17 +167,15 @@ theorem eulerDegree_poleSheaf (n : ℕ) : (W.poleSheaf n).eulerDegree K = n := b
       LineBundleClass.eulerDegree_mul_of_smooth, LineBundleClass.eulerDegree_mk, hn, h1,
       Nat.cast_succ]
 
-/-- **`dim_K H⁰(projModel W, 𝒪(n[0])) = n` for `n > 0`** over a field, by Riemann–Roch in genus
-one. -/
-theorem finrank_cohomology_zero_poleSheaf {n : ℕ} (hn : 0 < n) :
-    finrank K (Scheme.Modules.Cohomology (W.poleSheaf n).obj 0) = n := by
-  have h := InvertibleSheaf.finrank_cohomology_zero_eq_eulerDegree_add_one_sub_genus Fact.out
-    (isFunctionField_functionField_projModel W)
-    isIntegrallyClosedIn_functionField_of_geometricallyIntegral (W.poleSheaf n)
-    (by rw [finrank_cohomology_one_trivial_projModel, eulerDegree_poleSheaf]; omega)
-  rw [finrank_cohomology_one_trivial_projModel, eulerDegree_poleSheaf] at h
-  omega
-
 end Field
+
+/-- **The pole sheaves have degree `n` on every fibre**: over a field `K` receiving `R`, the
+pullback of `𝒪(n[0])` to `projModel (W.map f)` has degree `n`. -/
+theorem eulerDegree_pullback_poleSheaf {K : Type u} [Field K] (f : R →+* K) (n : ℕ) :
+    ((InvertibleSheaf.pullback (W.projModelBaseChange f)).obj (W.poleSheaf n)).eulerDegree K =
+      n := by
+  rw [← LineBundleClass.eulerDegree_mk, ← LineBundleClass.pullback_mk,
+    pullback_mk_poleSheaf_projModelBaseChange, LineBundleClass.eulerDegree_mk,
+    eulerDegree_poleSheaf]
 
 end WeierstrassCurve
