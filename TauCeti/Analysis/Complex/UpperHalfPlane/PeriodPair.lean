@@ -565,6 +565,20 @@ instance instSMulUnitsComplex : SMul ℂˣ PeriodPair where
 
 variable (L : PeriodPair) (c : ℂˣ)
 
+/-- The lattice is stable under multiplication by integers. -/
+lemma intCast_mul_mem_lattice (n : ℤ) {z : ℂ} (hz : z ∈ L.lattice) : (n : ℂ) * z ∈ L.lattice := by
+  simpa [zsmul_eq_mul] using zsmul_mem hz n
+
+/-- The coordinates of `m ω₁ + n ω₂` in the basis `ω₁, ω₂` of the lattice are `m` and `n`. -/
+lemma latticeBasis_repr_eq {L : PeriodPair} {m n : ℤ} {x : L.lattice}
+    (hx : (m : ℂ) * L.ω₁ + n * L.ω₂ = x) :
+    L.latticeBasis.repr x 0 = m ∧ L.latticeBasis.repr x 1 = n := by
+  have : x = m • L.latticeBasis 0 + n • L.latticeBasis 1 := by
+    ext
+    simp [← hx, zsmul_eq_mul]
+  subst this
+  simp
+
 @[simp]
 lemma smul_ω₁ : (c • L).ω₁ = c * L.ω₁ := rfl
 
@@ -594,6 +608,10 @@ lemma coe_latticeSMulEquiv (l : L.lattice) : (L.latticeSMulEquiv c l : ℂ) = c 
 lemma mul_mem_lattice_smul_iff {x : ℂ} : (c : ℂ) * x ∈ (c • L).lattice ↔ x ∈ L.lattice := by
   rw [lattice_smul, Submodule.mem_map]
   exact ⟨fun ⟨y, hy, hyx⟩ ↦ mul_right_injective₀ c.ne_zero hyx ▸ hy, fun h ↦ ⟨x, h, rfl⟩⟩
+
+/-- The lattice of `c • L` consists of the products `c w` with `w` in the lattice of `L`. -/
+lemma mem_lattice_smul_iff {z : ℂ} : z ∈ (c • L).lattice ↔ ∃ w ∈ L.lattice, (c : ℂ) * w = z := by
+  simp [lattice_smul]
 
 /-- The lattice sums `G n` are homogeneous of degree `-n` in the lattice. -/
 @[simp]

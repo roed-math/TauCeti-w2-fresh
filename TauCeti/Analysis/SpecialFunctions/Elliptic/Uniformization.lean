@@ -72,6 +72,8 @@ while it vanishes on `Λ` and nowhere else. A point `(x, y)` of the curve with `
   `g₂³ - 27 g₃²`, and it is nonzero.
 * `PeriodPair.weierstrassCurve_j`, `UpperHalfPlane.weierstrassCurve_j_periodPair`: the
   `j`-invariant, and its identification with the modular invariant `TauCeti.ModularForm.j`.
+* `PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul`: homothetic lattices have the same
+  `j`-invariant.
 * `PeriodPair.weierstrassPoint_add_coe`, `PeriodPair.weierstrassPoint_neg`,
   `PeriodPair.weierstrassPoint_eq_zero_iff`: the point map is `Λ`-periodic, odd, and vanishes
   exactly on `Λ`.
@@ -217,6 +219,12 @@ lemma weierstrassCurve_j :
   simp only [c₄, b₂, b₄, weierstrassCurve_a₁, weierstrassCurve_a₂, weierstrassCurve_a₃,
     weierstrassCurve_a₄]
   ring
+
+/-- Homothetic lattices have the same `j`-invariant. -/
+lemma weierstrassCurve_j_eq_of_lattice_eq_smul {L L' : PeriodPair} (c : ℂˣ)
+    (h : L'.lattice = (c • L).lattice) : L'.weierstrassCurve.j = L.weierstrassCurve.j := by
+  have h' := (weierstrassCurve_eq_of_lattice_eq h).trans (L.weierstrassCurve_smul c)
+  simp only [h', variableChange_j]
 
 end PeriodPair
 
