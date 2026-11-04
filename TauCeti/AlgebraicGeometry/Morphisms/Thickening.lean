@@ -46,7 +46,7 @@ module of homomorphisms into `I`.
 * `TauCeti.AlgebraicGeometry.IsThickening.factor_firstOrder`: a thickening of order `n + 2` (its
   ideal sheaf has vanishing `(n + 3)`-rd power) factors as a thickening of order `n + 1` followed
   by a first-order thickening.
-* `TauCeti.AlgebraicGeometry.IsFirstOrderThickening.ker_appTop_mul_self`: a first-order
+* `TauCeti.AlgebraicGeometry.IsFirstOrderThickening.ker_appTop_sq_eq_bot`: a first-order
   thickening of an affine scheme is surjective on global sections with square-zero kernel, so it is
   `Spec` of a square-zero extension; conversely `IsFirstOrderThickening.SpecMap_mk` gives the
   first-order thickening `Spec (B ⧸ I) ⟶ Spec B` of a square-zero ideal `I`.
@@ -236,8 +236,8 @@ theorem appTop_surjective (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i] 
 
 /-- The map on global sections of a first-order thickening of an affine scheme has square-zero
 kernel. -/
-theorem ker_appTop_mul_self (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i] :
-    RingHom.ker i.appTop.hom * RingHom.ker i.appTop.hom = ⊥ := by
+theorem ker_appTop_sq_eq_bot (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i] :
+    RingHom.ker i.appTop.hom ^ 2 = ⊥ := by
   have := (IsClosedImmersion.isAffine_surjective_of_isAffine i).1
   -- Up to the isomorphisms `Z ≅ Spec Γ(Z, ⊤)` and `X ≅ Spec Γ(X, ⊤)`, `i` is `Spec.map i.appTop`.
   have hi : Spec.map i.appTop = Z.isoSpec.inv ≫ i ≫ X.isoSpec.hom := by
@@ -245,7 +245,7 @@ theorem ker_appTop_mul_self (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i
   have : IsFirstOrderThickening (Spec.map i.appTop) := by
     rw [hi]
     infer_instance
-  exact (SpecMap_iff _ (appTop_surjective i)).1 this
+  exact (pow_two _).trans ((SpecMap_iff _ (appTop_surjective i)).1 this)
 
 /-- For a square-zero ideal `I` of `B`, the closed immersion `Spec (B ⧸ I) ⟶ Spec B` is a
 first-order thickening. -/

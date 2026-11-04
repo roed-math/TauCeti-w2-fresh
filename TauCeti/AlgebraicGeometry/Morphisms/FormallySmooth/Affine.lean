@@ -71,7 +71,7 @@ theorem FormallySmooth.SpecMap_iff {R A : CommRingCat.{u}} (φ : R ⟶ A) :
       rw [Spec.map_comp, Spec.map_comp, hα, hη, Category.assoc, w,
         Scheme.isoSpec_inv_naturality_assoc]
     obtain ⟨l, hl₁, hl₂⟩ := hφ.exists_lift η.hom i.appTop.hom hsurj
-      ⟨2, (pow_two _).trans (IsFirstOrderThickening.ker_appTop_mul_self i)⟩ α.hom congr(($hw).hom)
+      ⟨2, IsFirstOrderThickening.ker_appTop_sq_eq_bot i⟩ α.hom congr(($hw).hom)
     refine ⟨T'.isoSpec.hom ≫ Spec.map (CommRingCat.ofHom l), ?_, ?_⟩
     · rw [← Scheme.isoSpec_hom_naturality_assoc, ← Spec.map_comp,
         show CommRingCat.ofHom l ≫ i.appTop = α from CommRingCat.hom_ext hl₁, hα,
@@ -124,7 +124,7 @@ theorem FormallyEtale.SpecMap_iff {R A : CommRingCat.{u}} (φ : R ⟶ A) :
       rw [Spec.map_comp, Spec.map_comp, hm₁, hm₂, Scheme.isoSpec_inv_naturality_assoc,
         Scheme.isoSpec_inv_naturality_assoc, hi]
     exact CommRingCat.hom_ext <| hφ''.ext i.appTop.hom
-      ⟨2, (pow_two _).trans (IsFirstOrderThickening.ker_appTop_mul_self i)⟩ congr(($h₁).hom)
+      ⟨2, IsFirstOrderThickening.ker_appTop_sq_eq_bot i⟩ congr(($h₁).hom)
       congr(($h₂).hom)
 
 /-- Affine space over any base is formally smooth: it is the base change of

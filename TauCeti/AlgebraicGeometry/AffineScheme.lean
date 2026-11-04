@@ -56,6 +56,8 @@ be injective. This is the local reason why an affine blowup changes nothing away
 * `AlgebraicGeometry.IsAffineOpen.span_setOf_basicOpen_mem_sieve_eq_top`: the basic opens of an
   affine open `U` lying in a covering sieve of `U` are defined by functions generating the unit
   ideal of `Γ(X, U)`.
+* `TauCeti.AlgebraicGeometry.toSpecΓ_SpecMap_isoSpec_inv_appTop`: the morphism into an affine
+  scheme `X` given by a ring map `φ : Γ(X, ⊤) ⟶ Γ(Y, ⊤)` acts on global sections by `φ`.
 * `TauCeti.AlgebraicGeometry.overPullback_map_bijective_of_isIso_appTop`: over an affine base,
   base change along `j : T ⟶ S` is a bijection on morphisms `Y ⟶ Y'` into an affine `Y'` when
   `Γ(Y, 𝒪) → Γ(Y ×_S T, 𝒪)` is an isomorphism.
@@ -193,6 +195,13 @@ end AlgebraicGeometry
 namespace TauCeti.AlgebraicGeometry
 
 open _root_.AlgebraicGeometry
+
+/-- The morphism `Y ⟶ X` into an affine scheme given by a ring map `φ : Γ(X, ⊤) ⟶ Γ(Y, ⊤)` acts on
+global sections by `φ`. -/
+theorem toSpecΓ_SpecMap_isoSpec_inv_appTop {X Y : Scheme.{u}} [IsAffine X]
+    (φ : Γ(X, ⊤) ⟶ Γ(Y, ⊤)) : (Y.toSpecΓ ≫ Spec.map φ ≫ X.isoSpec.inv).appTop = φ := by
+  rw [Scheme.Hom.comp_appTop, Scheme.Hom.comp_appTop, Scheme.isoSpec_inv_appTop,
+    Scheme.toSpecΓ_appTop, Category.assoc, Scheme.ΓSpecIso_naturality, Iso.inv_hom_id_assoc]
 
 /-- Let `j : T ⟶ S` be a morphism to an affine scheme, `Y` a scheme over `S` and `Y'` an affine
 scheme over `S`. If restriction of global sections `Γ(Y, 𝒪) → Γ(Y ×_S T, 𝒪)` is an isomorphism,
