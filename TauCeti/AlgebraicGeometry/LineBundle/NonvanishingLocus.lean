@@ -51,6 +51,8 @@ of the restriction of `s`. In other words, `s` trivializes `M` over `X_s`.
   sheaves have the same nonvanishing loci of sections over each open;
 * `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_unit`: on the structure sheaf, `X_r` is the
   basic open set of the regular function `r`;
+* `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_restrictAppIso_inv`: along an open immersion
+  `f`, the restriction of a section `s` to `M|_X` vanishes nowhere exactly on `f⁻¹ X_s`.
 * `AlgebraicGeometry.Scheme.Modules.mem_nonvanishingLocus_iff_pullbackSectionsLE_ne_zero`: a
   section vanishes nowhere at `x` exactly when its value in the fibre at `x` is nonzero;
 * `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_pullbackSections`: along any morphism `g`,
@@ -406,6 +408,55 @@ theorem nonvanishingLocus_pullbackSections {Y : Scheme.{u}} (g : Y ⟶ X)
   exact injective_pullbackSections_SpecMap (g y) y _ _ hab
 
 end Pullback
+
+section Restrict
+
+variable {Y : Scheme.{u}} (f : X ⟶ Y) [IsOpenImmersion f] {M : Y.Modules}
+  [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible Y M]
+  [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X (M.restrict f)]
+
+/-- **The nonvanishing locus of a restricted section is the preimage.** Along an open immersion
+`f : X ⟶ Y`, a section `s` of `M` over `f(U)` restricts to a section of `M|_X` over `U`, whose
+nonvanishing locus is `f⁻¹ Y_s`. -/
+theorem nonvanishingLocus_restrictAppIso_inv {U : X.Opens} (s : Γ(M, f ''ᵁ U)) :
+    (M.restrict f).nonvanishingLocus ((M.restrictAppIso f U).inv s) =
+      f ⁻¹ᵁ M.nonvanishingLocus s := by
+  -- Over an open `W' ⊆ U`, multiplication by the restriction of the restricted section is
+  -- multiplication by the restriction of `s` to `f(W')`, precomposed with the ring isomorphism
+  -- `Γ(X, W') ≅ Γ(Y, f(W'))`.
+  have hbij {W' : X.Opens} (j : W' ⟶ U) :
+      (Function.Bijective fun r : Γ(X, W') ↦
+        r • (M.restrict f).presheaf.map j.op ((M.restrictAppIso f U).inv s)) ↔
+        Function.Bijective fun r : Γ(Y, f ''ᵁ W') ↦
+          r • M.presheaf.map (homOfLE (f.image_mono j.le)).op s := by
+    have he : Function.Bijective (f.appIso W').inv :=
+      (ConcreteCategory.isIso_iff_bijective _).mp inferInstance
+    have hR : Function.Bijective (M.restrictAppIso f W').hom :=
+      (ConcreteCategory.isIso_iff_bijective _).mp inferInstance
+    rw [← Function.Bijective.of_comp_iff' hR, ← Function.Bijective.of_comp_iff _ he]
+    refine iff_of_eq (congrArg _ (funext fun r ↦ ?_))
+    simp
+  -- An open `W ⊆ U` lies in the nonvanishing locus of the restricted section exactly when its
+  -- image lies in the nonvanishing locus of `s`.
+  have key {W : X.Opens} (i : W ⟶ U) :
+      W ≤ (M.restrict f).nonvanishingLocus ((M.restrictAppIso f U).inv s) ↔
+        f ''ᵁ W ≤ M.nonvanishingLocus s := by
+    rw [le_nonvanishingLocus_iff _ i,
+      le_nonvanishingLocus_iff s (homOfLE (f.image_mono i.le))]
+    refine ⟨fun h V' k ↦ ?_, fun h W' j ↦ (hbij (j ≫ i)).mpr (h _ (homOfLE (f.image_mono j.le)))⟩
+    obtain ⟨W', rfl⟩ : ∃ W', f ''ᵁ W' = V' :=
+      ⟨f ⁻¹ᵁ V', (f.image_preimage_eq_opensRange_inf V').trans
+        (inf_eq_right.mpr (k.le.trans (f.image_le_opensRange W)))⟩
+    exact (hbij _).mp (h W' (homOfLE ((f.image_le_image_iff _ _).mp k.le)))
+  refine le_antisymm ?_ ?_
+  · have h := (key (homOfLE (nonvanishingLocus_le _))).mp le_rfl
+    rw [← f.preimage_image_eq (nonvanishingLocus _ _)]
+    exact Scheme.Hom.preimage_mono _ h
+  · have hU : f ⁻¹ᵁ M.nonvanishingLocus s ≤ U :=
+      (f.preimage_image_eq U).le.trans' (Scheme.Hom.preimage_mono _ (nonvanishingLocus_le s))
+    exact (key (homOfLE hU)).mpr (f.image_preimage_le _)
+
+end Restrict
 
 section TensorProduct
 

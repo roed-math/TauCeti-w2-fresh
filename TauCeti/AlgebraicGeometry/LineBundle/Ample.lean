@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.AlgebraicGeometry.QuasiAffine
+public import TauCeti.AlgebraicGeometry.Modules.Localization
 public import TauCeti.AlgebraicGeometry.LineBundle.Class
 public import TauCeti.AlgebraicGeometry.LineBundle.Functoriality
 public import TauCeti.AlgebraicGeometry.LineBundle.GlobalGeneration.TensorProduct
@@ -59,6 +60,14 @@ schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
   exactly when `X` is quasi-affine.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback`: ampleness is preserved by
   pullback along affine morphisms.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.quasiSeparatedSpace`: a scheme with an ample
+  line bundle is quasi-separated.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.of_iSup_basicOpen_eq_top`: on a
+  quasi-compact scheme, ampleness can be checked on a cover by basic opens of global functions.
+  The proof extends sections from a basic open
+  (`AlgebraicGeometry.Scheme.Modules.isLocalizedModule_basicOpenRestrict_of_qcqs`), using that
+  such a cover by quasi-separated opens makes the scheme quasi-separated
+  (`AlgebraicGeometry.Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq_top`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_pullback_iff_of_isIso`: ampleness is
   invariant under pullback along isomorphisms of schemes.
 
@@ -231,5 +240,111 @@ theorem isAmple_pullback_iff_of_isIso {Y : Scheme.{u}} (e : X ⟶ Y) [IsIso e]
     (a : LineBundleClass Y) : (pullback e a).IsAmple ↔ a.IsAmple := by
   refine ⟨fun h ↦ ?_, fun h ↦ h.pullback e⟩
   simpa using h.pullback (inv e)
+
+/-- **A scheme carrying an ample line bundle is quasi-separated.** The affine nonvanishing loci
+`X_s` of the definition cover `X`. The intersection of two of them, `X_s ∩ X_t`, is the
+nonvanishing locus of the restriction of `t` to the affine open `X_s`, so it is affine and in
+particular quasi-compact. -/
+theorem IsAmple.quasiSeparatedSpace {a : LineBundleClass X} (h : a.IsAmple) :
+    QuasiSeparatedSpace X := by
+  choose n hn L hL s hx hs using h.exists_isAffineOpen_nonvanishingLocus
+  refine Scheme.quasiSeparatedSpace_of_isOpenCover (fun x ↦ (L x).obj.nonvanishingLocus (s x))
+    (IsOpenCover.mk (eq_top_iff.mpr fun x _ ↦ Opens.mem_iSup.mpr ⟨x, hx x⟩)) hs fun x y ↦ ?_
+  -- `X_s ∩ X_t` is the nonvanishing locus of `t` restricted to `X_s`.
+  have h := (hs x).nonvanishingLocus
+    ((L y).obj.presheaf.map (homOfLE (le_top : (L x).obj.nonvanishingLocus (s x) ≤ ⊤)).op (s y))
+  rw [Scheme.Modules.nonvanishingLocus_map] at h
+  exact h.isCompact
+
+/-- **A scheme covered by quasi-separated basic opens is quasi-separated.** If the basic opens
+`X_{rᵢ}` of global functions `rᵢ` cover `X` and are quasi-separated, then so is `X`. The affine
+opens contained in some `X_{rᵢ}` cover `X`. If `A ⊆ X_{rᵢ}` and `B ⊆ X_{rⱼ}` are two of them, then
+`A ∩ B` is the intersection of the compact opens `A ∩ X_{rⱼ}` and `B` of the quasi-separated
+`X_{rⱼ}`; the first is the affine basic open of `rⱼ` in `A`. -/
+theorem _root_.AlgebraicGeometry.Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq_top
+    {ι : Type*} (r : ι → Γ(X, ⊤)) (hr : ⨆ i, X.basicOpen (r i) = ⊤)
+    (h : ∀ i, QuasiSeparatedSpace (X.basicOpen (r i))) : QuasiSeparatedSpace X := by
+  refine Scheme.quasiSeparatedSpace_of_isOpenCover
+    (fun A : {A : X.affineOpens // ∃ i, (A : X.Opens) ≤ X.basicOpen (r i)} ↦ A.1.1)
+    (IsOpenCover.mk (eq_top_iff.mpr fun x _ ↦ ?_)) (fun A ↦ A.1.2) fun A B ↦ ?_
+  · obtain ⟨i, hi⟩ := Opens.mem_iSup.mp (hr.ge (Opens.mem_top x))
+    obtain ⟨A, hA, hxA, hAi⟩ := Opens.isBasis_iff_nbhd.mp X.isBasis_affineOpens hi
+    exact Opens.mem_iSup.mpr ⟨⟨⟨A, hA⟩, i, hAi⟩, hxA⟩
+  · obtain ⟨⟨A, hA⟩, -⟩ := A
+    obtain ⟨⟨B, hB⟩, j, hBj⟩ := B
+    -- `A ∩ X_{rⱼ}` is the basic open of the restriction of `rⱼ` to `A`.
+    have hA' := hA.basicOpen (X.presheaf.map (homOfLE (le_top : A ≤ ⊤)).op (r j))
+    rw [Scheme.basicOpen_res] at hA'
+    have hqs :=
+      (isQuasiSeparated_iff_quasiSeparatedSpace _ (X.basicOpen (r j)).isOpen).mpr (h j)
+    have hAB := hqs _ _ (inf_le_right : A ⊓ X.basicOpen (r j) ≤ _) (A ⊓ _).isOpen hA'.isCompact
+      hBj B.isOpen hB.isCompact
+    rwa [Opens.coe_inf, Set.inter_assoc, Set.inter_eq_right.mpr hBj] at hAB
+
+/-- **Ampleness can be checked on a cover by basic opens.** Let `X` be quasi-compact, and let `rᵢ`
+be global functions whose basic opens `X_{rᵢ}` cover `X`. If the restriction of `a` to every
+`X_{rᵢ}` is ample, then `a` is ample. Let `L` be a line bundle of class `aⁿ`, and `s` a section of
+`L` over `X_{rᵢ}` with `X_s` affine. The scheme `X` is quasi-separated, since the `X_{rᵢ}` are. So
+the sections of `L` over `X_{rᵢ}` are the localization of its global sections at `rᵢ`, and `s`
+extends to a global section `t` of `L` after multiplication by a power of `rᵢ`. Then `rᵢ • t` is a
+global section vanishing nowhere exactly on `X_s`. -/
+theorem IsAmple.of_iSup_basicOpen_eq_top [CompactSpace X]
+    {a : LineBundleClass X} {ι : Type*} (r : ι → Γ(X, ⊤)) (hr : ⨆ i, X.basicOpen (r i) = ⊤)
+    (h : ∀ i, (LineBundleClass.pullback (X.basicOpen (r i)).ι a).IsAmple) : a.IsAmple where
+  compactSpace := inferInstance
+  exists_isAffineOpen_nonvanishingLocus x := by
+    have : QuasiSeparatedSpace X := Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq_top r hr
+      fun i ↦ (h i).quasiSeparatedSpace
+    obtain ⟨i, hxi⟩ := Opens.mem_iSup.mp (hr.ge (Opens.mem_top x))
+    let U := X.basicOpen (r i)
+    obtain ⟨n, hn, K, hK, s', hxs', hs'⟩ := (h i).exists_isAffineOpen_nonvanishingLocus ⟨x, hxi⟩
+    obtain ⟨L, hL⟩ := mk_surjective (a ^ n)
+    -- `K` is isomorphic to the restriction `L|_U`, through `L|_U ≅ U.ι^* L`.
+    obtain ⟨ψ⟩ := mk_eq_mk_iff.mp (hK.trans (by
+      rw [← pullbackHom_apply, ← map_pow, pullbackHom_apply, ← hL, pullback_mk]))
+    let φ := (Scheme.Modules.restrictFunctorIsoPullback U.ι).app L.obj
+    have : SheafOfModules.isInvertible U (L.obj.restrict U.ι) :=
+      (SheafOfModules.isInvertible U).prop_of_iso φ.symm inferInstance
+    -- The section `s'` of `K`, carried to `L|_U` and then to a section `s` of `L` over `U`.
+    let s'' : Γ(L.obj.restrict U.ι, ⊤) := (ψ ≪≫ φ.symm).hom.app ⊤ s'
+    let s : Γ(L.obj, U.ι ''ᵁ ⊤) := (L.obj.restrictAppIso U.ι ⊤).hom s''
+    have hs : U.ι ⁻¹ᵁ L.obj.nonvanishingLocus s = K.obj.nonvanishingLocus s' := by
+      rw [← Scheme.Modules.nonvanishingLocus_restrictAppIso_inv, Iso.hom_inv_id_apply,
+        Scheme.Modules.nonvanishingLocus_hom_app]
+    have hUtop : U.ι ''ᵁ ⊤ = U := by
+      rw [U.ι.image_top_eq_opensRange, Scheme.Opens.opensRange_ι]
+    have hsU : L.obj.nonvanishingLocus s ≤ U :=
+      (Scheme.Modules.nonvanishingLocus_le s).trans hUtop.le
+    -- `X_s` is the image of the affine open `K_{s'}` of `U`.
+    have hsaff : IsAffineOpen (L.obj.nonvanishingLocus s) := by
+      have := (hs ▸ hs').image_of_isOpenImmersion U.ι
+      rwa [U.ι.image_preimage_eq_opensRange_inf, Scheme.Opens.opensRange_ι,
+        inf_eq_right.mpr hsU] at this
+    have hxs : x ∈ L.obj.nonvanishingLocus s := by
+      rw [← hs] at hxs'
+      exact hxs'
+    -- Extend `s` to a global section `t` after multiplication by a power of `r i`.
+    let s₀ : Γ(L.obj, U) := L.obj.presheaf.map (homOfLE hUtop.ge).op s
+    have hs₀ : L.obj.nonvanishingLocus s₀ = L.obj.nonvanishingLocus s := by
+      rw [Scheme.Modules.nonvanishingLocus_map, inf_eq_right.mpr hsU]
+    have := L.obj.isLocalizedModule_basicOpenRestrict_of_qcqs (U := ⊤)
+      (by simpa using isCompact_univ) (by simpa using isQuasiSeparated_univ) (r i)
+    obtain ⟨⟨t, _, k, rfl⟩, ht⟩ :=
+      IsLocalizedModule.surj (Submonoid.powers (r i)) (L.obj.basicOpenRestrict (r i)) s₀
+    have hUk : U ≤ X.basicOpen (r i ^ k) := by
+      rcases k with _ | k
+      · simp
+      · rw [Scheme.basicOpen_pow _ _ k.succ_pos]
+    -- On `U`, the section `t` vanishes nowhere exactly on `X_s`.
+    have ht' : U ⊓ L.obj.nonvanishingLocus t = L.obj.nonvanishingLocus s := by
+      have := congrArg L.obj.nonvanishingLocus ht
+      rw [Scheme.Modules.basicOpenRestrict_apply, Scheme.Modules.nonvanishingLocus_map,
+        Submonoid.smul_def, Scheme.Modules.basicOpen_smul_def,
+        Scheme.Modules.nonvanishingLocus_smul, Scheme.basicOpen_res, hs₀,
+        inf_eq_right.mpr (hsU.trans (le_inf le_rfl hUk))] at this
+      exact this.symm
+    refine ⟨n, hn, L, hL, r i • t, ?_, ?_⟩ <;>
+      rw [Scheme.Modules.nonvanishingLocus_smul, ht']
+    exacts [hxs, hsaff]
 
 end TauCeti.AlgebraicGeometry.LineBundleClass
