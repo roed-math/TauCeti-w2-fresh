@@ -24,8 +24,8 @@ graded algebra generated in degree one, whose degree-zero part is only the image
 
 * `TauCeti.GradedAlgebra.mem_adjoin_of_adjoin_zero_union_one_eq_top`: if `A₀ ∪ A₁` generates `A`
   as an `R`-algebra, then `Aₙ ⊆ R[A₁]` for every `n > 0`.
-* `TauCeti.GradedAlgebra.adjoin_one_eq_top_of_adjoin_zero_union_one_eq_top`: if `A₀ ∪ A₁`
-  generates `A` as an `R`-algebra, then `A₁` generates `A` as an `A₀`-algebra.
+* `TauCeti.GradedAlgebra.adjoin_zero_union_one_eq_top_iff`: `A₀ ∪ A₁` generates `A` as an
+  `R`-algebra if and only if `A₁` generates `A` as an `A₀`-algebra.
 
 ## References
 
@@ -110,5 +110,25 @@ theorem adjoin_one_eq_top_of_adjoin_zero_union_one_eq_top
       exact (Algebra.adjoin (𝒜 0) _).algebraMap_mem ⟨_, SetLike.algebraMap_mem_graded 𝒜 r⟩
     | add x y _ _ hx hy => exact add_mem hx hy
     | mul x y _ _ hx hy => exact mul_mem hx hy
+
+/-- Conversely, if `A₁` generates `A` as an `A₀`-algebra, then `A₀ ∪ A₁` generates `A` as an
+`R`-algebra. -/
+theorem adjoin_zero_union_one_eq_top_of_adjoin_one_eq_top
+    (h : Algebra.adjoin (𝒜 0) (𝒜 1 : Set A) = ⊤) :
+    Algebra.adjoin R ((𝒜 0 : Set A) ∪ 𝒜 1) = ⊤ := by
+  refine Algebra.eq_top_iff.mpr fun x ↦ ?_
+  induction (h ▸ Algebra.mem_top : x ∈ Algebra.adjoin (𝒜 0) (𝒜 1 : Set A))
+    using Algebra.adjoin_induction with
+  | mem x hx => exact Algebra.subset_adjoin (Or.inr hx)
+  | algebraMap r => exact Algebra.subset_adjoin (Or.inl r.2)
+  | add x y _ _ hx hy => exact add_mem hx hy
+  | mul x y _ _ hx hy => exact mul_mem hx hy
+
+/-- **Generation in degree one, over `R` or over `A₀`.** `A₀ ∪ A₁` generates `A` as an `R`-algebra
+if and only if `A₁` generates `A` as an `A₀`-algebra. -/
+theorem adjoin_zero_union_one_eq_top_iff :
+    Algebra.adjoin R ((𝒜 0 : Set A) ∪ 𝒜 1) = ⊤ ↔ Algebra.adjoin (𝒜 0) (𝒜 1 : Set A) = ⊤ :=
+  ⟨adjoin_one_eq_top_of_adjoin_zero_union_one_eq_top 𝒜,
+    adjoin_zero_union_one_eq_top_of_adjoin_one_eq_top 𝒜⟩
 
 end TauCeti.GradedAlgebra
