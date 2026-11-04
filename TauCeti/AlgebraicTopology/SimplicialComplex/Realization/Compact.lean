@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicTopology.SimplicialComplex.Realization.Finite
+public import Mathlib.Topology.Compactness.SigmaCompact
 import Mathlib.Data.Finset.Powerset
 import Mathlib.Topology.DiscreteSubset
 
@@ -22,6 +23,8 @@ of every point in a compact subset. They apply to arbitrary vertex types and req
 local finiteness assumption on the complex. In particular, the whole realization is compact
 exactly when its vertex type is finite (`compactSpace_realization_iff_finite`): abstract
 simplicial complexes contain every singleton face, so no unused vertices are counted.
+Likewise a σ-compact realization has countably many vertices
+(`countable_of_sigmaCompactSpace`).
 
 ## References
 
@@ -106,5 +109,19 @@ theorem compactSpace_realization_iff_finite (K : AbstractSimplicialComplex ι) :
     exact Set.finite_univ_iff.mp (V.finite_toSet.subset fun v _ ↦ hvertices v)
   · intro h
     infer_instance
+
+/-- A σ-compact weak realization has countably many vertices: each compact set of a compact
+exhaustion uses only finitely many of them. -/
+theorem countable_of_sigmaCompactSpace (K : AbstractSimplicialComplex ι)
+    [SigmaCompactSpace (Realization K)] : Countable ι := by
+  choose V hV using fun n => exists_finset_support_subset_of_isCompact (K := K)
+    (isCompact_compactCovering (Realization K) n)
+  refine Set.countable_univ_iff.mp ((countable_iUnion fun n => (V n).countable_toSet).mono ?_)
+  intro v _
+  obtain ⟨n, hn⟩ := mem_iUnion.mp
+    ((iUnion_compactCovering (Realization K)).symm ▸ mem_univ (vertex K v))
+  have := hV n _ hn
+  rw [support_vertex, Finset.singleton_subset_iff] at this
+  exact mem_iUnion.mpr ⟨n, this⟩
 
 end AbstractSimplicialComplex
