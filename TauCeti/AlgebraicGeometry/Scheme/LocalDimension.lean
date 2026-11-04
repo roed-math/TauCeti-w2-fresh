@@ -57,6 +57,8 @@ All in the namespace `TauCeti.AlgebraicGeometry`:
 * `topologicalKrullDimAt_eq_iSup_toNat_trdeg_residueField`: `dim_x X` is the supremum of
   `trdeg_k κ(ξ)` over the generic points `ξ` of the irreducible components through `x`.
 * `height_eq_toNat_trdeg_residueField`: the height of `x` is `trdeg_k κ(x)`.
+* `coheight_add_height_eq_topologicalKrullDim`: on an irreducible `X`, the codimension and the
+  height of a point add up to `dim X`.
 * `height_apply_eq_height_of_residueDegree_ne_zero`: a morphism over `k` preserves the height of
   a point with finite residue field extension.
 * `residueDegree_ne_zero_of_height_apply_eq`: conversely, a point with the height of its image has
@@ -210,6 +212,19 @@ theorem height_eq_toNat_trdeg_residueField (x : X) :
   have h := (height_eq_topologicalKrullDim_closure_singleton x).trans
     (topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField k x)
   exact_mod_cast h
+
+include k in
+/-- **The dimension formula.** On an irreducible scheme `X` locally of finite type over a field
+`k`, the codimension of a point `x` and the dimension of its closure add up to the dimension of
+`X`. -/
+theorem coheight_add_height_eq_topologicalKrullDim [IrreducibleSpace X] (x : X) :
+    (Order.coheight x : WithBot ℕ∞) + Order.height x = topologicalKrullDim X := by
+  have h := topologicalKrullDimAt_eq_ringKrullDim_stalk_add_topologicalKrullDim_closure k x
+  rw [topologicalKrullDimAt_eq_iSup_topologicalKrullDim_irreducibleComponents k,
+    irreducibleComponents_eq_singleton, iSup_singleton, iSup_pos (Set.mem_univ x),
+    (Homeomorph.Set.univ X).isHomeomorph.topologicalKrullDim_eq, ringKrullDim_stalk_eq_coheight,
+    ← height_eq_topologicalKrullDim_closure_singleton] at h
+  exact h.symm
 
 /-- **Points with finite residue extension have the same dimension.** Let `f : X ⟶ Y` be a
 morphism of schemes locally of finite type over a field `k`, and let `x ∈ X` be a point whose
