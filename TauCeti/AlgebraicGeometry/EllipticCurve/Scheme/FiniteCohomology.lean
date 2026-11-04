@@ -41,8 +41,11 @@ and `s` running over finitely many generators of `Γ(M, D₊(Z))`, and
 
 * `WeierstrassCurve.awayToSection_algebraMap`: on a standard chart `D₊(f)`, the constant fraction
   `r / 1` is the constant function `r`.
+* `WeierstrassCurve.map_awayCoord_mul_map_awayCoord`: on the overlap, `(Z / Y) (Y / Z) = 1`.
 * `WeierstrassCurve.finite_sectionsQuotient`: the Čech description of `H¹` on the cover by `D₊(Y)`
   and `D₊(Z)` is finite over the global functions.
+* `WeierstrassCurve.surjective_baseRingToStructurePresheaf_app_top`: the global functions on the
+  projective model are the constants.
 * `WeierstrassCurve.finite_cohomology_one`: `H¹(projModel W, M)` is a finitely generated
   `R`-module for every quasi-coherent sheaf `M` of finite type.
 
@@ -85,6 +88,33 @@ theorem awayToSection_algebraMap {f : W.toProjective.CoordinateRing} {m : ℕ}
   refine Eq.trans ?_ ((congrArg _ hr).trans h).symm
   rw [Projective.gradingZeroEquiv_apply]
   rfl
+
+/-- On the overlap `D₊(YZ)`, the affine coordinates `Z / Y` of `D₊(Y)` and `Y / Z` of `D₊(Z)`
+are inverse to each other. -/
+theorem map_awayCoord_mul_map_awayCoord
+    (h₀ : Proj.basicOpen W.toProjective.grading (W.toProjective.coord 1 * W.toProjective.coord 2) ≤
+      Proj.basicOpen W.toProjective.grading (W.toProjective.coord 1))
+    (h₁ : Proj.basicOpen W.toProjective.grading (W.toProjective.coord 1 * W.toProjective.coord 2) ≤
+      Proj.basicOpen W.toProjective.grading (W.toProjective.coord 2)) :
+    W.projModel.presheaf.map (homOfLE h₀).op
+        (Proj.awayToSection _ _ (W.toProjective.awayCoord 1 2)) *
+      W.projModel.presheaf.map (homOfLE h₁).op
+        (Proj.awayToSection _ _ (W.toProjective.awayCoord 2 1)) = 1 := by
+  let σ :=
+    Proj.awayToSection W.toProjective.grading (W.toProjective.coord 1 * W.toProjective.coord 2)
+  have hY : W.projModel.presheaf.map (homOfLE h₀).op
+      (Proj.awayToSection _ _ (W.toProjective.awayCoord 1 2)) =
+        σ (W.toProjective.awayMapOverlapY (W.toProjective.awayCoord 1 2)) :=
+    congr($(Proj.awayMap_awayToSection W.toProjective.grading
+      (W.toProjective.coord_mem_grading 2) rfl) _).symm
+  have hZ : W.projModel.presheaf.map (homOfLE h₁).op
+      (Proj.awayToSection _ _ (W.toProjective.awayCoord 2 1)) =
+        σ (W.toProjective.awayMapOverlapZ (W.toProjective.awayCoord 2 1)) :=
+    congr($(Proj.awayMap_awayToSection W.toProjective.grading
+      (W.toProjective.coord_mem_grading 1) (mul_comm _ _)) _).symm
+  rw [hY, hZ]
+  exact (map_mul σ.hom _ _).symm.trans
+    ((congrArg σ.hom W.toProjective.awayMapOverlapY_mul_awayMapOverlapZ).trans (map_one _))
 
 attribute [local instance] sectionsGlobalAlgebra isScalarTower_sectionsGlobalAlgebra
 
@@ -135,10 +165,7 @@ theorem finite_sectionsQuotient (M : W.projModel.Modules) [M.IsQuasicoherent] [M
   have hF : F = σ (W'.awayMapOverlapY (W'.awayCoord 1 2)) := hY _
   have hG : G = σ (W'.awayMapOverlapZ (W'.awayCoord 2 1)) := hZ _
   have hx : x = σ (W'.awayMapOverlapZ (W'.awayCoord 2 0)) := hZ _
-  have hFG : F * G = 1 := by
-    rw [hF, hG]
-    exact (map_mul σ.hom _ _).symm.trans
-      ((congrArg σ.hom W'.awayMapOverlapY_mul_awayMapOverlapZ).trans (map_one _))
+  have hFG : F * G = 1 := W.map_awayCoord_mul_map_awayCoord h₀ h₁
   -- the functions on the overlap are `Fᵏ (c₀ + x c₁ + x² c₂)` with `cᵢ ∈ Γ[F, G]`
   let B' := Algebra.adjoin Γ(W.projModel, ⊤) {F, G}
   have hconst (r : R) : σ (algebraMap R _ r) ∈ B' := by
@@ -240,6 +267,32 @@ theorem finite_sectionsQuotient (M : W.projModel.Modules) [M.IsQuasicoherent] [M
   · rintro _ ⟨⟨i, s⟩, _, rfl⟩
     exact ⟨xV ^ i • s, sectionsRestrictionLinear_apply _ _ _⟩
 
+/-- **The global functions on the projective model are the constants**: the base ring maps onto
+them (`WeierstrassCurve.isIso_appTop_projModelOver`). -/
+theorem surjective_baseRingToStructurePresheaf_app_top :
+    Function.Surjective ((W.projModel.baseRingToStructurePresheaf R).app (op ⊤)) := by
+  have : IsIso ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop) := by
+    rw [over_projModel]
+    infer_instance
+  intro z
+  obtain ⟨r, hr⟩ := (ConcreteCategory.bijective_of_isIso
+    ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop)).2 z
+  refine ⟨r, ?_⟩
+  rw [Scheme.baseRingToStructurePresheaf_app_top, CommRingCat.ofHom_apply,
+    baseRingToGlobalSections_apply, ← hr, CommRingCat.comp_apply]
+
+/-- Cohomology of a sheaf on the projective model that is finitely generated over the global
+functions is finitely generated over the base ring, which maps onto them. -/
+theorem finite_cohomology_of_finite (M : W.projModel.Modules) (n : ℕ)
+    [Module.Finite Γ(W.projModel, ⊤) (Cohomology M n)] : Module.Finite R (Cohomology M n) := by
+  let : Algebra R Γ(W.projModel, ⊤) :=
+    ((W.projModel.baseRingToStructurePresheaf R).app (op ⊤)).hom.toAlgebra
+  have := isScalarTower_cohomology R W.projModel M n
+  have : Module.Finite R Γ(W.projModel, ⊤) :=
+    Module.Finite.of_surjective (Algebra.linearMap R _)
+      W.surjective_baseRingToStructurePresheaf_app_top
+  exact Module.Finite.trans Γ(W.projModel, ⊤) (Cohomology M n)
+
 /-- **The first cohomology of a quasi-coherent sheaf of finite type on the projective Weierstrass
 model is a finitely generated module** over the base ring, for every Weierstrass curve over every
 commutative ring. It is the Čech cohomology of the cover by the affine charts `D₊(Y)` and `D₊(Z)`
@@ -256,22 +309,6 @@ theorem finite_cohomology_one (M : W.projModel.Modules) [M.IsQuasicoherent] [M.I
   have := W.finite_sectionsQuotient M
   have : Module.Finite Γ(W.projModel, ⊤) (Cohomology M 1) := Module.Finite.equiv
     (sectionsQuotientLinearEquivCohomologyOne M _ _ hUV (hacyclic 1) (hacyclic 2))
-  -- the global functions are the constants (`WeierstrassCurve.isIso_appTop_projModelOver`)
-  let : Algebra R Γ(W.projModel, ⊤) :=
-    ((W.projModel.baseRingToStructurePresheaf R).app (op ⊤)).hom.toAlgebra
-  have := isScalarTower_cohomology R W.projModel M 1
-  have hsurj : Function.Surjective (Algebra.linearMap R Γ(W.projModel, ⊤)) := by
-    have : IsIso ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop) := by
-      rw [over_projModel]
-      infer_instance
-    intro z
-    obtain ⟨r, hr⟩ := (ConcreteCategory.bijective_of_isIso
-      ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop)).2 z
-    refine ⟨r, ?_⟩
-    rw [Algebra.linearMap_apply, RingHom.algebraMap_toAlgebra,
-      Scheme.baseRingToStructurePresheaf_app_top, CommRingCat.hom_ofHom,
-      baseRingToGlobalSections_apply, ← hr, CommRingCat.comp_apply]
-  have : Module.Finite R Γ(W.projModel, ⊤) := Module.Finite.of_surjective _ hsurj
-  exact Module.Finite.trans Γ(W.projModel, ⊤) (Cohomology M 1)
+  exact W.finite_cohomology_of_finite M 1
 
 end WeierstrassCurve

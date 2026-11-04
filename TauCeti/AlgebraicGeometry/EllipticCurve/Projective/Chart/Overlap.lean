@@ -32,6 +32,8 @@ is the input for the finiteness of the first cohomology of the projective model
 
 * `WeierstrassCurve.Projective.exists_eq_chartRing_two`: the chart ring of `D₊(Z)` is spanned by
   `1`, `x` and `x²` over `R[y]`.
+* `WeierstrassCurve.Projective.exists_eq_chartRing_one`: the chart ring of `D₊(Y)` is spanned by
+  `1`, `X / Y` and `(X / Y)²` over `R[Z / Y]`.
 * `WeierstrassCurve.Projective.awayMapOverlapY_mul_awayMapOverlapZ`: `(Z / Y) (Y / Z) = 1` on the
   overlap.
 * `WeierstrassCurve.Projective.isLocalization_awayMapOverlapZ`: `A_(YZ) = A_(Z)[(Y / Z)⁻¹]`.
@@ -96,6 +98,58 @@ theorem exists_eq_chartRing_two (c : W'.ChartRing 2) :
       rw [this, mul_one]
       exact hp
 
+/-- Every element of the chart ring of `D₊(Y)` is `P₀(z) + x P₁(z) + x² P₂(z)`, where `x = X / Y`
+and `z = Z / Y`. -/
+theorem exists_eq_chartRing_one (c : W'.ChartRing 1) :
+    ∃ P₀ P₁ P₂ : Polynomial R, c = Polynomial.aeval (W'.chartPoint 1 2) P₀ +
+      W'.chartPoint 1 0 * Polynomial.aeval (W'.chartPoint 1 2) P₁ +
+        W'.chartPoint 1 0 ^ 2 * Polynomial.aeval (W'.chartPoint 1 2) P₂ := by
+  set x := W'.chartPoint 1 0
+  set z := W'.chartPoint 1 2
+  have h := (equation_iff _).mp (W'.equation_chartPoint 1)
+  rw [chartPoint_self, show W'.baseChange (W'.ChartRing 1) = W'.map (algebraMap R _) from rfl] at h
+  simp only [map_a₁, map_a₂, map_a₃, map_a₄, map_a₆] at h
+  -- `x³` reduces to lower powers of `x` with coefficients polynomial in `z`
+  have hx3 : x ^ 3 = Polynomial.aeval z (Polynomial.X + Polynomial.C W'.a₃ * Polynomial.X ^ 2 -
+      Polynomial.C W'.a₆ * Polynomial.X ^ 3) + x * Polynomial.aeval z
+        (Polynomial.C W'.a₁ * Polynomial.X - Polynomial.C W'.a₄ * Polynomial.X ^ 2) +
+      x ^ 2 * Polynomial.aeval z (-Polynomial.C W'.a₂ * Polynomial.X) := by
+    simp only [map_add, map_sub, map_mul, map_neg, map_pow, Polynomial.aeval_X,
+      Polynomial.aeval_C]
+    linear_combination -h
+  -- the elements of this form are closed under multiplication by `x`, by `z` and by constants
+  let S : Set (W'.ChartRing 1) := {c | ∃ P₀ P₁ P₂ : Polynomial R, c = Polynomial.aeval z P₀ +
+      x * Polynomial.aeval z P₁ + x ^ 2 * Polynomial.aeval z P₂}
+  have hadd {a b} (ha : a ∈ S) (hb : b ∈ S) : a + b ∈ S := by
+    obtain ⟨P₀, P₁, P₂, rfl⟩ := ha
+    obtain ⟨Q₀, Q₁, Q₂, rfl⟩ := hb
+    exact ⟨P₀ + Q₀, P₁ + Q₁, P₂ + Q₂, by simp only [map_add]; ring⟩
+  have hmulx {a} (ha : a ∈ S) : a * x ∈ S := by
+    obtain ⟨P₀, P₁, P₂, rfl⟩ := ha
+    refine ⟨(Polynomial.X + Polynomial.C W'.a₃ * Polynomial.X ^ 2 -
+      Polynomial.C W'.a₆ * Polynomial.X ^ 3) * P₂,
+      P₀ + (Polynomial.C W'.a₁ * Polynomial.X - Polynomial.C W'.a₄ * Polynomial.X ^ 2) * P₂,
+      P₁ + -Polynomial.C W'.a₂ * Polynomial.X * P₂, ?_⟩
+    simp only [map_add, map_mul] at hx3 ⊢
+    linear_combination (Polynomial.aeval z P₂) * hx3
+  have hmulz {a} (ha : a ∈ S) : a * z ∈ S := by
+    obtain ⟨P₀, P₁, P₂, rfl⟩ := ha
+    exact ⟨P₀ * Polynomial.X, P₁ * Polynomial.X, P₂ * Polynomial.X, by
+      simp only [map_mul, Polynomial.aeval_X]; ring⟩
+  obtain ⟨p, rfl⟩ := Ideal.Quotient.mk_surjective c
+  induction p using MvPolynomial.induction_on with
+  | C a => exact ⟨Polynomial.C a, 0, 0, by simp [Polynomial.aeval_C]; rfl⟩
+  | add p q hp hq => rw [map_add]; exact hadd hp hq
+  | mul_X p j hp =>
+    rw [map_mul]
+    match j with
+    | 0 => rw [← chartPoint_apply]; exact hmulx hp
+    | 1 =>
+      have : (Ideal.Quotient.mk _ (X 1) : W'.ChartRing 1) = 1 := W'.chartRing_mk_X_self 1
+      rw [this, mul_one]
+      exact hp
+    | 2 => rw [← chartPoint_apply]; exact hmulz hp
+
 /-- Restriction from the chart `D₊(Y)` to the overlap `D₊(YZ)`. -/
 noncomputable abbrev awayMapOverlapY :
     Away W'.grading (W'.coord 1) →+* Away W'.grading (W'.coord 1 * W'.coord 2) :=
@@ -109,6 +163,42 @@ noncomputable abbrev awayMapOverlapZ :
 /-- The fraction `Xⱼ / Xᵢ` on the chart `D₊(Xᵢ)`. -/
 noncomputable abbrev awayCoord (i j : Fin 3) : Away W'.grading (W'.coord i) :=
   Away.mk W'.grading (W'.coord_mem_grading i) 1 (W'.coord j) (by simpa using W'.coord_mem_grading j)
+
+/-- The chart ring of `D₊(Xᵢ)` is the degree-zero part `A_(Xᵢ)`, as an `R`-algebra. -/
+private noncomputable def chartRingToAway (i : Fin 3) :
+    W'.ChartRing i →ₐ[R] Away W'.grading (W'.coord i) where
+  toRingHom := (W'.awayEquivChartRing i).symm.toRingHom
+  commutes' r := RingHom.congr_fun (W'.awayEquivChartRing_symm_comp_algebraMap i) r
+
+private theorem chartRingToAway_chartPoint (i j : Fin 3) :
+    W'.chartRingToAway i (W'.chartPoint i j) = W'.awayCoord i j := by
+  simp [chartRingToAway, chartPoint_apply]
+
+/-- Every function on the chart `D₊(Y)` is `P₀(Z/Y) + (X/Y) P₁(Z/Y) + (X/Y)² P₂(Z/Y)`. -/
+theorem exists_eq_away_one (a : Away W'.grading (W'.coord 1)) :
+    ∃ P₀ P₁ P₂ : Polynomial R, a = Polynomial.aeval (W'.awayCoord 1 2) P₀ +
+      W'.awayCoord 1 0 * Polynomial.aeval (W'.awayCoord 1 2) P₁ +
+        W'.awayCoord 1 0 ^ 2 * Polynomial.aeval (W'.awayCoord 1 2) P₂ := by
+  obtain ⟨P₀, P₁, P₂, h⟩ := W'.exists_eq_chartRing_one (W'.awayEquivChartRing 1 a)
+  refine ⟨P₀, P₁, P₂, ?_⟩
+  have h' := congrArg (W'.chartRingToAway 1) h
+  rwa [map_add, map_add, map_mul, map_mul, map_pow, ← Polynomial.aeval_algHom_apply,
+    ← Polynomial.aeval_algHom_apply, ← Polynomial.aeval_algHom_apply,
+    chartRingToAway_chartPoint, chartRingToAway_chartPoint,
+    show W'.chartRingToAway 1 (W'.awayEquivChartRing 1 a) = a by simp [chartRingToAway]] at h'
+
+/-- Every function on the chart `D₊(Z)` is `P₀(Y/Z) + (X/Z) P₁(Y/Z) + (X/Z)² P₂(Y/Z)`. -/
+theorem exists_eq_away_two (a : Away W'.grading (W'.coord 2)) :
+    ∃ P₀ P₁ P₂ : Polynomial R, a = Polynomial.aeval (W'.awayCoord 2 1) P₀ +
+      W'.awayCoord 2 0 * Polynomial.aeval (W'.awayCoord 2 1) P₁ +
+        W'.awayCoord 2 0 ^ 2 * Polynomial.aeval (W'.awayCoord 2 1) P₂ := by
+  obtain ⟨P₀, P₁, P₂, h⟩ := W'.exists_eq_chartRing_two (W'.awayEquivChartRing 2 a)
+  refine ⟨P₀, P₁, P₂, ?_⟩
+  have h' := congrArg (W'.chartRingToAway 2) h
+  rwa [map_add, map_add, map_mul, map_mul, map_pow, ← Polynomial.aeval_algHom_apply,
+    ← Polynomial.aeval_algHom_apply, ← Polynomial.aeval_algHom_apply,
+    chartRingToAway_chartPoint, chartRingToAway_chartPoint,
+    show W'.chartRingToAway 2 (W'.awayEquivChartRing 2 a) = a by simp [chartRingToAway]] at h'
 
 /-- On the overlap `D₊(YZ)`, the functions `Z / Y` and `Y / Z` are inverse to each other. -/
 theorem awayMapOverlapY_mul_awayMapOverlapZ :
