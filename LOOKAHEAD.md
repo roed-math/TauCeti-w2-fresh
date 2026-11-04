@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-lattice-dictionary","main":"5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1","status":"partial","suppliers":["weierstrass-uniformization"],"splits":[{"n":1,"after":[],"title":"feat: scalar maps between period lattices, their kernels, degrees and duals"},{"n":2,"after":[1],"title":"feat: the multiplier ring of a period lattice and its analytic endomorphisms"},{"n":3,"after":[2],"title":"feat: fractional ideals of imaginary quadratic orders as period lattices"},{"n":4,"after":[3],"title":"feat: ideal classes of an imaginary quadratic order and lattices with CM"},{"n":5,"after":[4],"title":"feat: the Picard group acts simply transitively on lattices with CM"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-lattice-dictionary","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["weierstrass-uniformization"],"splits":[{"n":1,"after":[],"title":"feat: scalar maps between period lattices, their kernels, degrees and duals"},{"n":2,"after":[1],"title":"feat: the multiplier ring of a period lattice and its analytic endomorphisms"},{"n":3,"after":[2],"title":"feat: fractional ideals of imaginary quadratic orders as period lattices"},{"n":4,"after":[3],"title":"feat: ideal classes of an imaginary quadratic order and lattices with CM"},{"n":5,"after":[4],"title":"feat: the Picard group acts simply transitively on lattices with CM"},{"n":6,"after":[5],"title":"feat: the isogeny of an invertible integral ideal and its torsion kernel"}]}-->
 # Lookahead: `cm-lattice-dictionary` (ImaginaryQuadraticClassNumber, H3.1)
 
-Built on `main` at `5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1`. Status: **partial** (see the end).
+Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54`. Status: **partial** (see the end).
 
 Target (H3.1): "Prove that scalar maps between lattices correspond to algebraic isogenies, with
 kernel/degree/dual comparisons to EllipticCurves, by the rational elliptic-function description in
@@ -48,7 +48,7 @@ module also imports `Mathlib.Analysis.Normed.Module.Connected`, which only its p
 
 ## Split plan
 
-All five splits need the supplier's PR #22646 on `main`. Each split builds on `main` plus the splits
+All six splits need the supplier's PR #22646 on `main`. Each split builds on `main` plus the splits
 before it.
 
 ### Split 1 — `feat: scalar maps between period lattices, their kernels, degrees and duals`
@@ -122,6 +122,19 @@ before it.
   `main`'s `isProperFractionalIdeal_iff_isUnit_of_finrank_eq_two` (proper = invertible in a
   quadratic order).
 
+### Split 6 — `feat: the isogeny of an invertible integral ideal and its torsion kernel`
+- Needs first: 5.
+- Files: new `TauCeti/NumberTheory/ComplexMultiplication/IdealIsogeny.lean` (~225 lines); adds
+  `NumberFieldOrder.exists_mkPic_eq_coeIdeal` to
+  `TauCeti/NumberTheory/NumberField/Global/Orders/Picard.lean` (every class of `Pic O` contains an
+  invertible ideal of `O`).
+- Declarations (`TauCeti.GlobalNumberFields.NumberFieldOrder`): `idealTorsion` (`E_I[𝔞]`, the
+  points killed by every element of an integral ideal `𝔞`), `weierstrassPoint_mem_idealTorsion_iff`,
+  `mem_lattice_of_mul_eq_one` (`σ(I) ⊆ σ(𝔞⁻¹ I)`), `ker_scalarPointHom_one_eq_idealTorsion` (the
+  `𝔞`-isogeny `E_I → E_{𝔞⁻¹ I}` has kernel `E_I[𝔞]`), `natCard_idealTorsion`,
+  `natCard_idealTorsion_eq_relIndex` (its degree is `[𝔞⁻¹ I : I]`), `exists_isogeny_picSMul` (the
+  `Pic O`-action of split 5 is realized by these isogenies); private helper `toSubring`.
+
 ## What is proved and what remains (`partial`)
 
 Proved (no `sorry` outside the stub file): the analytic half of the dictionary. Scalar maps between
@@ -132,8 +145,10 @@ ring acts faithfully, consists of integers of imaginary quadratic orders with de
 nonzero fractional ideal gives a period lattice whose multiplier ring is `σ` of the ideal's
 multiplier ring (so `O` for proper ideals), ideal classes correspond bijectively to homothety
 classes of lattices with multiplier ring `σ(O)`, `Pic O` acts simply transitively on these
-classes (`[𝔞] · [σ(I)] = [σ(𝔞⁻¹ I)]`), and the `j`-invariant descends to ideal classes and is a
-modular `j`-value.
+classes (`[𝔞] · [σ(I)] = [σ(𝔞⁻¹ I)]`), this action is realized by the `𝔞`-isogenies
+`E_I → E_{𝔞⁻¹ I}` for integral invertible `𝔞`, whose kernel is the `𝔞`-torsion `E_I[𝔞]` and whose
+degree is `[𝔞⁻¹ I : I]`, and the `j`-invariant descends to ideal classes and is a modular
+`j`-value.
 
 Remains:
 1. **Algebraic isogenies.** The rational description: for `α Λ ⊆ Λ'`, `℘_Λ'(α z)` and
@@ -147,8 +162,8 @@ Remains:
    `mk_eq_mk_iff_exists_lattice_eq_smul`). This needs recovery of the lattice from `(g₂, g₃)`,
    i.e. the supplier's "period-lattice recovery for every complex elliptic curve", which no open
    supplier PR yet states.
-3. **Class-group action by isogenies.** The action itself is split 5; what remains is its
-   isogeny form: for integral invertible `𝔞`, the `𝔞`-isogeny `E_I → E_{𝔞⁻¹ I}` (the scalar map
-   of `1`, from `σ(I) ⊆ σ(𝔞⁻¹ I)`) has kernel `E_I[𝔞]` and degree `N(𝔞) = [O : 𝔞]`, and its
-   algebraic form after item 1.
-4. The final split carrying the target's exported theorems would assemble 1–3 with splits 1–5.
+3. **Degree of the `𝔞`-isogeny as a norm.** Split 6 proves kernel `E_I[𝔞]` and degree
+   `[𝔞⁻¹ I : I]`; what remains is `[𝔞⁻¹ I : I] = N(𝔞) = [O : 𝔞]` for invertible `𝔞` (index
+   multiplicativity for invertible ideals of an order: `main` has no ideal norm for non-maximal
+   orders), and the algebraic form of the `𝔞`-isogeny after item 1.
+4. The final split carrying the target's exported theorems would assemble 1–3 with splits 1–6.
