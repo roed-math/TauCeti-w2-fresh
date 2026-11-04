@@ -25,6 +25,9 @@ inverse image as the base change from `R` to `S`. This is the affine-cover input
 and base change. The module structures remain caller parameters, including at the top open.
 Use `pullbackSectionsEquiv` for extension of scalars along the coordinate-ring map, and
 `isBaseChange_pullbackSections` for extension along the original base-ring map `R ⟶ S`.
+More generally, for affine opens `U` and `V ≤ g⁻¹ U`, pulling back sections and restricting them
+to `V` is a base change along `Γ(X, U) → Γ(Y, V)` (`isBaseChange_pullbackSectionsLE`), by the same
+comparison applied to the affine chart `Spec Γ(Y, V) ⟶ Y` of `V` composed with `g`.
 
 When `R → S` is flat, the same holds over every quasi-compact quasi-separated open `U`, which is
 flat base change for the sections of a quasicoherent sheaf
@@ -41,6 +44,9 @@ structure sheaf.
 
 * `AlgebraicGeometry.Scheme.Hom.isBaseChange_pullbackSections`: base change of sections over an
   affine open, along any base-ring map.
+* `AlgebraicGeometry.Scheme.Hom.isBaseChange_pullbackSectionsLE`: for affine opens `U` and
+  `V ≤ g⁻¹ U`, sections over `V` of the pullback are the base change along `Γ(X, U) → Γ(Y, V)`,
+  even when `g⁻¹ U` is not affine.
 * `AlgebraicGeometry.Scheme.Hom.flat_sectionsBase_pullback`: flatness of the sections over an
   affine open survives every base change.
 * `AlgebraicGeometry.Scheme.Hom.liftBaseChange_pullbackSectionsBaseLinear_injective`: for flat
@@ -209,6 +215,109 @@ lemma _root_.AlgebraicGeometry.Scheme.Hom.pullbackSectionsEquiv_symm_pullbackSec
   erw [LinearEquiv.symm_apply_apply] at h
   exact h.symm
 end AlgebraicGeometry.Scheme.Modules
+namespace AlgebraicGeometry.Scheme.Hom
+variable {X Y : Scheme.{u}} (g : Y ⟶ X) (M : X.Modules) {U : X.Opens} {V : Y.Opens}
+/-- The composite of the affine chart of `V` with `g` pulls `U` back to the whole chart. -/
+private lemma fromSpec_comp_preimage_eq_top (hV : V ≤ g ⁻¹ᵁ U) (hV' : IsAffineOpen V) :
+    (hV'.fromSpec ≫ g) ⁻¹ᵁ U = ⊤ :=
+  top_le_iff.mp (hV'.fromSpec_preimage_self.ge.trans fun _ hx ↦ hV hx)
+/-- On the affine chart of `V`, the inverse image of `U` under the composite with `g` lies in the
+inverse image of `V`, which is the whole chart. -/
+private lemma fromSpec_comp_preimage_le (hV' : IsAffineOpen V) :
+    (hV'.fromSpec ≫ g) ⁻¹ᵁ U ≤ hV'.fromSpec ⁻¹ᵁ V := by
+  rw [hV'.fromSpec_preimage_self]
+  exact le_top
+/-- Pullback of sections along the affine chart of `V` to the inverse image of `U` under the
+composite with `g` is bijective. -/
+private lemma bijective_fromSpec_pullbackSectionsLE (hV : V ≤ g ⁻¹ᵁ U) (hV' : IsAffineOpen V)
+    (N : Y.Modules) :
+    Function.Bijective (hV'.fromSpec.pullbackSectionsLE N V ((hV'.fromSpec ≫ g) ⁻¹ᵁ U)
+      (fromSpec_comp_preimage_le g hV')) := by
+  have hι : IsIso (homOfLE le_top : (hV'.fromSpec ≫ g) ⁻¹ᵁ U ⟶ ⊤) :=
+    homOfLE_isIso_of_eq _ (fromSpec_comp_preimage_eq_top g hV hV')
+  have h : ⇑(hV'.fromSpec.pullbackSectionsLE N V ((hV'.fromSpec ≫ g) ⁻¹ᵁ U)
+      (fromSpec_comp_preimage_le g hV')) =
+      ((pullback hV'.fromSpec).obj N).presheaf.map (homOfLE le_top).op ∘
+        ((restrictFunctorIsoPullback hV'.fromSpec).hom.app N).app ⊤ ∘
+          N.fromSpecSectionsEquiv hV' := by
+    ext s
+    simp only [Function.comp_apply]
+    rw [chartPullback_unit N hV', pullbackSectionsLE_apply, pullbackSectionsLE_apply,
+      ← ConcreteCategory.comp_apply, ← Functor.map_comp]
+    rfl
+  rw [h]
+  exact (ConcreteCategory.bijective_of_isIso _).comp
+    ((ConcreteCategory.bijective_of_isIso _).comp (N.fromSpecSectionsEquiv hV').bijective)
+/-- **Affine base change of quasicoherent sections.** If `U` is an affine open of `X` and `V` an
+affine open of `Y` with `V ≤ g⁻¹ U`, pulling back sections along `g` and restricting them to `V`
+exhibits `Γ(V, g^* M)` as the base change `Γ(Y, V) ⊗[Γ(X, U)] Γ(U, M)` along
+`g.appLE U V hV`. Unlike `pullbackSectionsEquiv`, the inverse image `g⁻¹ U` need not be affine.
+The `Γ(X, U)`-module structure on `Γ(V, g^* M)` and the map are caller parameters. -/
+theorem isBaseChange_pullbackSectionsLE [M.IsQuasicoherent] (hV : V ≤ g ⁻¹ᵁ U)
+    (hU : IsAffineOpen U) (hV' : IsAffineOpen V) :
+    letI := (g.appLE U V hV).hom.toAlgebra
+    ∀ [Module Γ(X, U) Γ((pullback g).obj M, V)]
+      [IsScalarTower Γ(X, U) Γ(Y, V) Γ((pullback g).obj M, V)]
+      (f : Γ(M, U) →ₗ[Γ(X, U)] Γ((pullback g).obj M, V)),
+      (∀ s, f s = g.pullbackSectionsLE M U V hV s) → IsBaseChange Γ(Y, V) f := by
+  let := (g.appLE U V hV).hom.toAlgebra
+  intro _ _ f hf
+  -- Compare with the base change along `h : Spec Γ(Y, V) ⟶ X`, where `h⁻¹ U` is the whole chart.
+  let h := hV'.fromSpec ≫ g
+  let W := h ⁻¹ᵁ U
+  have hW : W ≤ hV'.fromSpec ⁻¹ᵁ V := fromSpec_comp_preimage_le g hV'
+  have hWa : IsAffineOpen W := by
+    rw [show W = ⊤ from fromSpec_comp_preimage_eq_top g hV hV']
+    exact isAffineOpen_top _
+  let : Algebra Γ(X, U) Γ(Spec Γ(Y, V), W) := (h.app U).hom.toAlgebra
+  have hτ : Function.Bijective (hV'.fromSpec.appLE V W hW) := by
+    have : IsIso (homOfLE hW) := homOfLE_isIso_of_eq _ (by
+      rw [hV'.fromSpec_preimage_self]; exact fromSpec_comp_preimage_eq_top g hV hV')
+    rw [Scheme.Hom.appLE, hV'.fromSpec_app_self]
+    exact ConcreteCategory.bijective_of_isIso _
+  -- the chart identifies `Γ(Y, V)` with the functions on `h⁻¹ U`, over `Γ(X, U)`
+  let κ : Γ(Y, V) ≃ₗ[Γ(X, U)] Γ(Spec Γ(Y, V), W) := LinearEquiv.ofBijective
+    { toFun := hV'.fromSpec.appLE V W hW
+      map_add' := map_add _
+      map_smul' r c := by
+        rw [Algebra.smul_def, Algebra.smul_def, map_mul, RingHom.id_apply]
+        congr 1
+        -- both algebra maps are given by `RingHom.toAlgebra`, so this is the composite of the
+        -- maps of functions of `g` and of the chart
+        change (g.appLE U V hV ≫ hV'.fromSpec.appLE V W hW) r = (h.app U) r
+        rw [Scheme.Hom.appLE_comp_appLE, Scheme.Hom.app_eq_appLE] }
+    hτ
+  let ρ : Γ((pullback g).obj M, V) → Γ((pullback h).obj M, W) := fun t ↦
+    ((pullbackComp hV'.fromSpec g).hom.app M).app W
+      (hV'.fromSpec.pullbackSectionsLE ((pullback g).obj M) V W hW t)
+  have hρ : Function.Bijective ρ :=
+    (ConcreteCategory.bijective_of_isIso _).comp
+      (bijective_fromSpec_pullbackSectionsLE g hV hV' _)
+  let e : Γ(Spec Γ(Y, V), W) ⊗[Γ(X, U)] Γ(M, U) ≃ₗ[Γ(Spec Γ(Y, V), W)]
+      Γ((pullback h).obj M, W) := h.pullbackSectionsEquiv M hU hWa
+  have he (s : Γ(M, U)) : e (1 ⊗ₜ s) = h.pullbackSections M U s :=
+    h.pullbackSectionsEquiv_one_tmul M hU hWa s
+  have key : ∀ x, ρ (f.liftBaseChange Γ(Y, V) x) = e (κ.rTensor Γ(M, U) x) := by
+    intro x
+    induction x using TensorProduct.inductionOn with
+    | add a b ha hb =>
+      have hadd : ∀ t t', ρ (t + t') = ρ t + ρ t' := fun t t' ↦ by simp only [ρ, map_add]
+      rw [map_add, hadd, ha, hb, map_add, LinearEquiv.map_add]
+    | tmul c s =>
+      rw [LinearMap.liftBaseChange_tmul, LinearEquiv.rTensor_tmul,
+        TensorProduct.tmul_eq_smul_one_tmul (κ c), LinearEquiv.map_smul, he, hf]
+      simp only [ρ, map_smulₛₗ]
+      -- sheaf morphisms are linear over the functions on each open
+      rw [Scheme.Modules.Hom.app_smul]
+      rw [pullbackSectionsLE_comp_hom, ← pullbackSectionsLE_self]
+      -- `κ c` is `hV'.fromSpec.appLE V W hW c` by definition
+      rfl
+  refine IsBaseChange.of_equiv (LinearEquiv.ofBijective (f.liftBaseChange Γ(Y, V)) ?_)
+    fun s ↦ by rw [LinearEquiv.ofBijective_apply, LinearMap.liftBaseChange_tmul, one_smul]
+  refine (hρ.of_comp_iff' _).1 ?_
+  rw [show ρ ∘ _ = _ from funext key]
+  exact e.bijective.comp (κ.rTensor Γ(M, U)).bijective
+end AlgebraicGeometry.Scheme.Hom
 namespace AlgebraicGeometry.Scheme.Hom
 variable {R S : Type u} [CommRing R] [CommRing S] [Algebra R S]
   {X Y : Scheme.{u}} [X.Over (Spec (.of R))] [Y.Over (Spec (.of S))]
