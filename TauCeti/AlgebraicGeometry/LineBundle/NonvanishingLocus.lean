@@ -59,10 +59,10 @@ of the restriction of `s`. In other words, `s` trivializes `M` over `X_s`.
   section vanishes nowhere at `x` exactly when its value in the fibre at `x` is nonzero;
 * `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_pullbackSections`: along any morphism `g`,
   the nonvanishing locus of a pulled-back section is the preimage `g⁻¹ X_s`;
-* `AlgebraicGeometry.Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`: the
-  sheafified tensor product `s ⊗ t` of sections satisfies `X_{s ⊗ t} = X_s ∩ X_t`, and
-  `TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocus_tensorProduct` restates it
-  for the tensor product of line bundles.
+* `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_tmul`: the sheafified pure tensor `s ⊗ t`
+  of sections satisfies `X_{s ⊗ t} = X_s ∩ X_t`, and
+  `TauCeti.AlgebraicGeometry.InvertibleSheaf.nonvanishingLocus_tmul` restates it for the tensor
+  product `TauCeti.AlgebraicGeometry.InvertibleSheaf.tmul` of sections of line bundles.
 
 ## References
 
@@ -524,26 +524,21 @@ section TensorProduct
 variable {M N : X.Modules}
 
 /-- **A tensor product of sections vanishes nowhere exactly on the intersection.** For sections
-`s` of `M` and `t` of `N` over `U`, the tensor product `M ⊗ N` has a section over `U`, the
-sheafified pure tensor `s ⊗ t`, whose nonvanishing locus is `X_s ∩ X_t`: at a point of `U` the
-stalks of `M` and `N` are free of rank one, and the stalk of `M ⊗ N` is the tensor product of the
-stalks, so the germ of `s ⊗ t` generates exactly when the coordinates of both germs are units. -/
-theorem exists_nonvanishingLocus_tensorProduct_eq_inf
+`s` of `M` and `t` of `N` over `U`, the sheafified pure tensor `s ⊗ t`, a section of `M ⊗ N` over
+`U`, vanishes nowhere exactly on `X_s ∩ X_t`: at a point of `U` the stalks of `M` and `N` are free
+of rank one, and the stalk of `M ⊗ N` is the tensor product of the stalks, so the germ of `s ⊗ t`
+generates exactly when the coordinates of both germs are units. -/
+theorem nonvanishingLocus_tmul
     [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X M]
     [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X N]
     [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X
       (TauCeti.SheafOfModules.tensorProduct X.sheaf M N)]
     {U : X.Opens} (s : Γ(M, U)) (t : Γ(N, U)) :
-    ∃ u : Γ((TauCeti.SheafOfModules.tensorProduct X.sheaf M N : X.Modules), U),
-      nonvanishingLocus (TauCeti.SheafOfModules.tensorProduct X.sheaf M N : X.Modules) u =
-        M.nonvanishingLocus s ⊓ N.nonvanishingLocus t := by
+    nonvanishingLocus (TauCeti.SheafOfModules.tensorProduct X.sheaf M N : X.Modules)
+        (TauCeti.SheafOfModules.tmul X.sheaf (X := op U) s t) =
+      M.nonvanishingLocus s ⊓ N.nonvanishingLocus t := by
   let T : X.Modules := TauCeti.SheafOfModules.tensorProduct X.sheaf M N
-  -- The sheafified pure tensor `s ⊗ t`.
-  let st : Γ(T, U) := (TauCeti.SheafOfModules.tensorProductIso X.sheaf M N).inv.val.app (op U)
-    (((PresheafOfModules.sheafificationAdjunction
-      (𝟙 (TauCeti.SheafOfModules.ringCatSheaf X.sheaf).obj)).unit.app
-        (M.val ⊗ N.val)).app (op U) (s ⊗ₜ[X.sheaf.obj.obj (op U)] t))
-  refine ⟨st, ?_⟩
+  let st : Γ(T, U) := TauCeti.SheafOfModules.tmul X.sheaf (X := op U) s t
   -- Generating a module is invariant under linear equivalences.
   have hequiv {R P Q : Type u} [CommRing R] [AddCommGroup P] [Module R P] [AddCommGroup Q]
       [Module R Q] (f : P ≃ₗ[R] Q) (p : P) :
@@ -587,20 +582,66 @@ end AlgebraicGeometry.Scheme.Modules
 
 namespace TauCeti.AlgebraicGeometry.InvertibleSheaf
 
-variable {X : Scheme.{u}}
+variable {X : Scheme.{u}} {L K : InvertibleSheaf X} {U : X.Opens}
 
-/-- The tensor product `L ⊗ K` of two line bundles has, for sections `s` of `L` and `t` of `K`
-over `U`, a section over `U` vanishing nowhere exactly on `X_s ∩ X_t`: the section `s ⊗ t`. -/
-theorem exists_nonvanishingLocus_tensorProduct
-    (L K : InvertibleSheaf X) {U : X.Opens} (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) :
-    ∃ u : Γ((L.tensorProduct K).obj, U), (L.tensorProduct K).obj.nonvanishingLocus u =
-      L.obj.nonvanishingLocus s ⊓ K.obj.nonvanishingLocus t := by
-  -- The underlying sheaf of `L ⊗ K` is the sheaf tensor product, which carries `s ⊗ t`.
-  let e := eqToIso (tensorProduct_obj L K).symm
+/-- The **tensor product** `s ⊗ t ∈ Γ(L ⊗ K, U)` of sections `s` of `L` and `t` of `K` over
+`U`: the sheafified pure tensor `TauCeti.SheafOfModules.tmul`. -/
+noncomputable def tmul (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) : Γ((L.tensorProduct K).obj, U) :=
+  TauCeti.SheafOfModules.tmul X.sheaf (X := op U) s t
+
+/-- The tensor product of sections commutes with restriction. -/
+lemma tmul_map {V : X.Opens} (i : V ⟶ U) (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) :
+    (L.tensorProduct K).obj.presheaf.map i.op (tmul s t) =
+      tmul (L.obj.presheaf.map i.op s) (K.obj.presheaf.map i.op t) :=
+  TauCeti.SheafOfModules.tmul_map X.sheaf i.op s t
+
+/-- The tensor product of sections is linear in the first factor. -/
+lemma smul_tmul (r : Γ(X, U)) (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) :
+    tmul (r • s) t = r • tmul s t := by
+  unfold tmul TauCeti.SheafOfModules.tmul
+  have h := TensorProduct.smul_tmul' (R := X.sheaf.obj.obj (op U))
+    (R' := X.sheaf.obj.obj (op U)) (M := PresheafOfModulesOfCommRing.obj L.obj.val (op U))
+    (N := PresheafOfModulesOfCommRing.obj K.obj.val (op U)) r s t
+  exact (congrArg _ h).trans ((((SheafOfModules.tensorProductIso X.sheaf L.obj K.obj).inv.val.app
+    (op U)).hom.comp (((PresheafOfModules.sheafificationAdjunction
+      (𝟙 (SheafOfModules.ringCatSheaf X.sheaf).obj)).unit.app (L.obj.val ⊗ K.obj.val)).app
+        (op U)).hom).map_smul r (s ⊗ₜ t))
+
+/-- The tensor product of sections is linear in the second factor. -/
+lemma tmul_smul (r : Γ(X, U)) (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) :
+    tmul s (r • t) = r • tmul s t := by
+  unfold tmul TauCeti.SheafOfModules.tmul
+  have h := TensorProduct.tmul_smul (R := X.sheaf.obj.obj (op U))
+    (R' := X.sheaf.obj.obj (op U)) (M := PresheafOfModulesOfCommRing.obj L.obj.val (op U))
+    (N := PresheafOfModulesOfCommRing.obj K.obj.val (op U)) r s t
+  exact (congrArg _ h).trans ((((SheafOfModules.tensorProductIso X.sheaf L.obj K.obj).inv.val.app
+    (op U)).hom.comp (((PresheafOfModules.sheafificationAdjunction
+      (𝟙 (SheafOfModules.ringCatSheaf X.sheaf).obj)).unit.app (L.obj.val ⊗ K.obj.val)).app
+        (op U)).hom).map_smul r (s ⊗ₜ t))
+
+/-- The tensor product of sections is additive in the second factor. -/
+lemma tmul_sub (s : Γ(L.obj, U)) (t t' : Γ(K.obj, U)) :
+    tmul s (t - t') = tmul s t - tmul s t' := by
+  unfold tmul TauCeti.SheafOfModules.tmul
+  have h := TensorProduct.tmul_sub (R := X.sheaf.obj.obj (op U))
+    (M := PresheafOfModulesOfCommRing.obj L.obj.val (op U))
+    (P := PresheafOfModulesOfCommRing.obj K.obj.val (op U)) s t t'
+  exact (congrArg _ h).trans ((((SheafOfModules.tensorProductIso X.sheaf L.obj K.obj).inv.val.app
+    (op U)).hom.comp (((PresheafOfModules.sheafificationAdjunction
+      (𝟙 (SheafOfModules.ringCatSheaf X.sheaf).obj)).unit.app (L.obj.val ⊗ K.obj.val)).app
+        (op U)).hom).map_sub _ _)
+
+/-- **A tensor product of sections vanishes nowhere exactly on the intersection**:
+`X_{s ⊗ t} = X_s ∩ X_t`. -/
+theorem nonvanishingLocus_tmul (s : Γ(L.obj, U)) (t : Γ(K.obj, U)) :
+    (L.tensorProduct K).obj.nonvanishingLocus (tmul s t) =
+      L.obj.nonvanishingLocus s ⊓ K.obj.nonvanishingLocus t :=
   have : TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X
-      (TauCeti.SheafOfModules.tensorProduct X.sheaf L.obj K.obj) :=
-    tensorProduct_obj L K ▸ (L.tensorProduct K).property
-  obtain ⟨u, hu⟩ := Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf s t
-  exact ⟨e.hom.app U u, by rw [Scheme.Modules.nonvanishingLocus_hom_app e, hu]⟩
+      (TauCeti.SheafOfModules.tensorProduct X.sheaf L.obj K.obj) := (L.tensorProduct K).property
+  Scheme.Modules.nonvanishingLocus_tmul s t
+
+/-- The tensor product with the zero section is zero. -/
+lemma tmul_zero (s : Γ(L.obj, U)) : tmul s (0 : Γ(K.obj, U)) = 0 := by
+  rw [← zero_smul Γ(X, U) (0 : Γ(K.obj, U)), tmul_smul, zero_smul]
 
 end TauCeti.AlgebraicGeometry.InvertibleSheaf

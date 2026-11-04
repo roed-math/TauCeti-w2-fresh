@@ -62,6 +62,7 @@ def trivialObjIsoUnit (X : Scheme.{u}) : (trivial X).obj ≅ 𝟙_ X.Modules :=
   (trivial_obj X) ▸ TauCeti.SheafOfModules.freePUnitIsoUnit X.ringCatSheaf
 
 /-- The tensor product of two line bundles on a scheme. -/
+@[expose]
 def tensorProduct (L K : InvertibleSheaf X) : InvertibleSheaf X :=
   ⟨SheafOfModules.tensorProduct X.sheaf L.obj K.obj,
     by

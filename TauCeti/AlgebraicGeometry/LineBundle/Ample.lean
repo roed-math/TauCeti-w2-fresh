@@ -5,9 +5,11 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
 public import Mathlib.AlgebraicGeometry.QuasiAffine
 public import TauCeti.AlgebraicGeometry.Modules.Localization
 public import TauCeti.AlgebraicGeometry.LineBundle.Class
+public import TauCeti.AlgebraicGeometry.LineBundle.Extension
 public import TauCeti.AlgebraicGeometry.LineBundle.Functoriality
 public import TauCeti.AlgebraicGeometry.LineBundle.GlobalGeneration.TensorProduct
 public import TauCeti.AlgebraicGeometry.LineBundle.NonvanishingLocus
@@ -56,7 +58,7 @@ schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_pow_iff`: for `n > 0`, the power `aⁿ` is
   ample exactly when `a` is; the forward direction `IsAmple.pow` tensors a section with itself,
   whose nonvanishing locus does not change
-  (`Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`).
+  (`Scheme.Modules.nonvanishingLocus_tmul`).
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.mul_mk_of_isGloballyGenerated`: an ample class
   times a globally generated line bundle is ample.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.mul`: a product of ample classes is ample.
@@ -67,6 +69,10 @@ schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
   exactly when `X` is quasi-affine.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback`: ampleness is preserved by
   pullback along affine morphisms.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.exists_isAffineOpen_nonvanishingLocus_le`:
+  the affine nonvanishing loci of sections of positive powers form a basis of the topology.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback_of_isImmersion`: ampleness is
+  preserved by pullback along immersions from quasi-compact schemes.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.isSeparated`: a scheme with an ample line
   bundle is separated, by the affine-cover criterion
   `AlgebraicGeometry.Scheme.IsSeparated.of_isAffineOpen`.
@@ -149,9 +155,8 @@ theorem _root_.TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocu
     | zero => exact ⟨L₀, by rw [zero_add, pow_one], s₀, rfl⟩
     | succ k ih =>
       obtain ⟨L', hL', s', hs'⟩ := ih
-      obtain ⟨u, hu⟩ := L'.exists_nonvanishingLocus_tensorProduct L₀ s' s₀
-      exact ⟨L'.tensorProduct L₀, by rw [mk_tensorProduct, hL', ← pow_succ], u,
-        by rw [hu, hs', inf_idem]⟩
+      exact ⟨L'.tensorProduct L₀, by rw [mk_tensorProduct, hL', ← pow_succ],
+        InvertibleSheaf.tmul s' s₀, by rw [InvertibleSheaf.nonvanishingLocus_tmul, hs', inf_idem]⟩
   obtain ⟨L', hL', s', hs'⟩ := key (k - 1)
   rw [Nat.sub_add_cancel hk, ← hL] at hL'
   obtain ⟨e⟩ := mk_eq_mk_iff.mp hL'
@@ -191,8 +196,9 @@ theorem IsAmple.mul_mk_of_isGloballyGenerated {a : LineBundleClass X} (h : a.IsA
   exists_isAffineOpen_nonvanishingLocus x := by
     obtain ⟨n, hn, L, hL, s, hxs, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
     obtain ⟨t, hxt⟩ := InvertibleSheaf.isGloballyGenerated_iff.mp (hK.tensorPow n) x
-    obtain ⟨u, hu⟩ := L.exists_nonvanishingLocus_tensorProduct (K.tensorPow n) s t
-    refine ⟨n, hn, L.tensorProduct (K.tensorPow n), ?_, u, hu ▸ ⟨hxs, hxt⟩, ?_⟩
+    have hu := InvertibleSheaf.nonvanishingLocus_tmul s t
+    refine ⟨n, hn, L.tensorProduct (K.tensorPow n), ?_, InvertibleSheaf.tmul s t,
+      hu ▸ ⟨hxs, hxt⟩, ?_⟩
     · rw [mk_tensorProduct, hL, mk_tensorPow, mul_pow]
     · -- `X_s ∩ X_t` is the nonvanishing locus of `t` restricted to `X_s`.
       rw [hu, ← Scheme.Modules.nonvanishingLocus_map
@@ -217,9 +223,10 @@ theorem IsAmple.mul {a b : LineBundleClass X} (ha : a.IsAmple) (hb : b.IsAmple) 
     obtain ⟨M', hM'⟩ := mk_surjective (b ^ (n * m))
     obtain ⟨t', ht'⟩ := InvertibleSheaf.exists_nonvanishingLocus_eq_of_mk_eq_pow hn
       (by rw [hM', hM, ← pow_mul, mul_comm m]) t
-    obtain ⟨u, hu⟩ := L'.exists_nonvanishingLocus_tensorProduct M' s' t'
+    have hu := InvertibleSheaf.nonvanishingLocus_tmul s' t'
     rw [hs', ht'] at hu
-    refine ⟨n * m, Nat.mul_pos hn hm, L'.tensorProduct M', ?_, u, hu ▸ ⟨hxs, hxt⟩, ?_⟩
+    refine ⟨n * m, Nat.mul_pos hn hm, L'.tensorProduct M', ?_, InvertibleSheaf.tmul s' t',
+      hu ▸ ⟨hxs, hxt⟩, ?_⟩
     · rw [mk_tensorProduct, hL', hM', mul_pow]
     · -- `X_s ∩ X_t` is the nonvanishing locus of `t` restricted to `X_s`.
       rw [hu, ← Scheme.Modules.nonvanishingLocus_map
@@ -379,6 +386,75 @@ theorem IsAmple.isSeparated {a : LineBundleClass X} (h : a.IsAmple) : X.IsSepara
       (homOfLE (le_top : K.obj.nonvanishingLocus (t x) ≤ ⊤)).op (t y))
     rwa [Scheme.Modules.nonvanishingLocus_map] at h
 
+/-- **Ample line bundles have a basis of affine nonvanishing loci.** If `a` is ample, every
+neighbourhood `W` of a point `x` contains an affine nonvanishing locus `X_t ∋ x` of a global section
+`t` of a line bundle of class `aⁿ`, `n > 0`. Inside an affine `X_s ∋ x`, some basic open
+`D(f) ⊆ W` contains `x`; as `X` is quasi-compact and separated, `sᵇ ⊗ sᵃ ⊗ f` extends from `X_s`
+to a global section `ξ` (`InvertibleSheaf.exists_map_eq_tmul_sectionPow`), and `X_{s ⊗ ξ} = D(f)`.
+This is part of Stacks, Tag 01Q3. -/
+theorem IsAmple.exists_isAffineOpen_nonvanishingLocus_le {a : LineBundleClass X} (h : a.IsAmple)
+    {x : X} {W : X.Opens} (hx : x ∈ W) :
+    ∃ n : ℕ, 0 < n ∧ ∃ (L : InvertibleSheaf X) (_ : LineBundleClass.mk L = a ^ n) (t : Γ(L.obj, ⊤)),
+      x ∈ L.obj.nonvanishingLocus t ∧ L.obj.nonvanishingLocus t ≤ W ∧
+        IsAffineOpen (L.obj.nonvanishingLocus t) := by
+  have := h.compactSpace
+  have := h.isSeparated
+  obtain ⟨n, hn, L, hL, s, hxs, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus x
+  -- A basic open `D(f)` of the affine open `X_s` lies in `W` and contains `x`.
+  obtain ⟨f, hfW, hxf⟩ := hs.exists_basicOpen_le ⟨x, hx⟩ hxs
+  have hfD : X.basicOpen f ≤ L.obj.nonvanishingLocus s := X.basicOpen_le f
+  -- Extend `sᵇ ⊗ sᵃ ⊗ f` from `X_s` to `X`.
+  obtain ⟨a', b, ξ, hξ⟩ := InvertibleSheaf.exists_map_eq_tmul_sectionPow
+    (F := InvertibleSheaf.trivial X) (U := ⊤) (by simpa using isCompact_univ)
+    (by simpa using isQuasiSeparated_univ) s
+    (f • InvertibleSheaf.oneSection _)
+  let t := InvertibleSheaf.tmul s ξ
+  have hD : L.obj.nonvanishingLocus s ≤ L.obj.nonvanishingLocus
+      (L.obj.presheaf.map (homOfLE (Scheme.Modules.nonvanishingLocus_le s)).op s) := by
+    rw [Scheme.Modules.nonvanishingLocus_map, inf_idem]
+  have ht : (L.tensorProduct ((L.tensorPow b).tensorProduct ((L.tensorPow a').tensorProduct
+      (InvertibleSheaf.trivial X)))).obj.nonvanishingLocus t = X.basicOpen f := by
+    refine (InvertibleSheaf.nonvanishingLocus_tmul s ξ).trans ?_
+    have h := congrArg (Scheme.Modules.nonvanishingLocus _) hξ
+    rw [Scheme.Modules.nonvanishingLocus_map, InvertibleSheaf.nonvanishingLocus_tmul,
+      InvertibleSheaf.nonvanishingLocus_tmul, InvertibleSheaf.nonvanishingLocus_sectionPow_of_le hD,
+      InvertibleSheaf.nonvanishingLocus_sectionPow_of_le hD, Scheme.Modules.nonvanishingLocus_smul,
+      InvertibleSheaf.nonvanishingLocus_oneSection] at h
+    rw [h, inf_eq_left.mpr hfD, inf_eq_right.mpr hfD, inf_eq_right.mpr hfD]
+  refine ⟨n * (1 + b + a'), Nat.mul_pos hn (by omega), _, ?_, t, ht ▸ hxf, ht ▸ hfW,
+    ht ▸ hs.basicOpen f⟩
+  simp only [mk_tensorProduct, mk_tensorPow, mk_trivial, hL]
+  rw [mul_one, ← pow_mul, ← pow_mul, ← pow_add, ← pow_add]
+  ring_nf
+
+
+/-- **Ampleness is preserved by pullback along an immersion from a quasi-compact scheme**, in
+particular along a quasi-compact open immersion. The immersion `j` is a closed immersion into the
+open `coborderRange j` followed by its inclusion, and ample line bundles have a basis of affine
+nonvanishing loci (`IsAmple.exists_isAffineOpen_nonvanishingLocus_le`): those inside
+`coborderRange j` pull back to affine opens. -/
+theorem IsAmple.pullback_of_isImmersion {Y : Scheme.{u}} {a : LineBundleClass Y}
+    (h : a.IsAmple) (j : X ⟶ Y) [IsImmersion j] [CompactSpace X] :
+    (LineBundleClass.pullback j a).IsAmple where
+  compactSpace := inferInstance
+  exists_isAffineOpen_nonvanishingLocus x := by
+    obtain ⟨n, hn, L, hL, t, hx, hle, ht⟩ :=
+      h.exists_isAffineOpen_nonvanishingLocus_le (W := j.coborderRange)
+        (show j x ∈ coborder (Set.range j) from subset_coborder ⟨x, rfl⟩)
+    let t' : Γ(((InvertibleSheaf.pullback j).obj L).obj, ⊤) := j.pullbackSections L.obj ⊤ t
+    have ht' : ((InvertibleSheaf.pullback j).obj L).obj.nonvanishingLocus t' =
+        j ⁻¹ᵁ L.obj.nonvanishingLocus t :=
+      Scheme.Modules.nonvanishingLocus_pullbackSections j t
+    -- `j` is a closed immersion into `coborderRange j` followed by its inclusion, so the preimage
+    -- of an affine open contained in `coborderRange j` is affine.
+    have hpre : j ⁻¹ᵁ L.obj.nonvanishingLocus t =
+        j.liftCoborder ⁻¹ᵁ j.coborderRange.ι ⁻¹ᵁ L.obj.nonvanishingLocus t := by
+      rw [← Scheme.Hom.comp_preimage, j.liftCoborder_ι]
+    refine ⟨n, hn, (InvertibleSheaf.pullback j).obj L, ?_, t', ht' ▸ hx, ?_⟩
+    · rw [← pullback_mk, hL, ← pullbackHom_apply, map_pow, pullbackHom_apply]
+    · rw [ht', hpre]
+      exact (ht.preimage_of_isOpenImmersion _ (by simpa using hle)).preimage _
+
 /-- **A scheme covered by quasi-separated basic opens is quasi-separated.** If the basic opens
 `X_{rᵢ}` of global functions `rᵢ` cover `X` and are quasi-separated, then so is `X`. The affine
 opens contained in some `X_{rᵢ}` cover `X`. If `A ⊆ X_{rᵢ}` and `B ⊆ X_{rⱼ}` are two of them, then
@@ -512,9 +588,10 @@ theorem IsAmple.pullback_mul_pullback {Y S P : Scheme.{u}} [S.IsSeparated]
     have h₂ : M₂.obj.nonvanishingLocus t₂ = q₂ ⁻¹ᵁ M.obj.nonvanishingLocus t := by
       rw [← ht']
       exact Scheme.Modules.nonvanishingLocus_pullbackSections q₂ t'
-    obtain ⟨u, hu⟩ := L₁.exists_nonvanishingLocus_tensorProduct M₂ s₁ t₂
+    have hu := InvertibleSheaf.nonvanishingLocus_tmul s₁ t₂
     rw [h₁, h₂] at hu
-    refine ⟨n * m, Nat.mul_pos hn hm, L₁.tensorProduct M₂, ?_, u, hu ▸ ⟨hxs, hyt⟩,
+    refine ⟨n * m, Nat.mul_pos hn hm, L₁.tensorProduct M₂, ?_, InvertibleSheaf.tmul s₁ t₂,
+      hu ▸ ⟨hxs, hyt⟩,
       hu ▸ hs.preimage_inf_preimage_of_isPullback h ht⟩
     rw [mk_tensorProduct, ← pullback_mk, ← pullback_mk, hL', hM', mul_pow]
     simp only [← pullbackHom_apply, map_pow]

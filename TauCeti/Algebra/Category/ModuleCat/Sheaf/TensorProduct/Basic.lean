@@ -28,6 +28,8 @@ that structure is transported to presheaves of modules over the sheaf of rings u
   `R`-modules;
 * `SheafOfModules.tensorProductIso R M N` is its defining identification with the
   sheafification of the sectionwise tensor product of the underlying presheaves of modules;
+* `SheafOfModules.tmul R m n` is the pure tensor of two sections, a section of the tensor product,
+  and `SheafOfModules.tmul_map` says it commutes with restriction;
 * `SheafOfModules.tensorProductCongrLeft/right` transport an isomorphism of one argument
   through the tensor product;
 * `SheafOfModules.tensorProductUnitIsoLeft/right` identify `R ⊗ M` and `M ⊗ R` with `M`;
@@ -42,6 +44,7 @@ monoidal structure on `X.Modules` are in
 public section
 
 open CategoryTheory Category Limits MonoidalCategory Opposite
+open scoped TensorProduct
 
 namespace TauCeti
 
@@ -108,6 +111,28 @@ def tensorProductIso (M N : SheafOfModules.{u} (ringCatSheaf R)) :
     tensorProduct R M N ≅
       (PresheafOfModules.sheafification (𝟙 (ringCatSheaf R).obj)).obj (M.val ⊗ N.val) :=
   Iso.refl _
+
+/-- The **pure tensor** `m ⊗ n` of sections `m` of `M` and `n` of `N` over `X`, as a section of
+the sheafified tensor product: the image of the sectionwise pure tensor `m ⊗ₜ n` under the unit of
+sheafification. -/
+@[expose]
+def tmul {M N : SheafOfModules.{u} (ringCatSheaf R)} {X : Cᵒᵖ} (m : M.val.obj X)
+    (n : N.val.obj X) : (tensorProduct R M N).val.obj X :=
+  (tensorProductIso R M N).inv.val.app X
+    (((PresheafOfModules.sheafificationAdjunction (𝟙 (ringCatSheaf R).obj)).unit.app
+      (M.val ⊗ N.val)).app X (m ⊗ₜ[(R.obj).obj X] n))
+
+/-- Pure tensors of sections commute with restriction. -/
+lemma tmul_map {M N : SheafOfModules.{u} (ringCatSheaf R)} {X Y : Cᵒᵖ} (f : X ⟶ Y)
+    (m : M.val.obj X) (n : N.val.obj X) :
+    (tensorProduct R M N).val.map f (tmul R m n) =
+      tmul R (M := M) (N := N) (X := Y) (M.val.map f m) (N.val.map f n) := by
+  unfold tmul
+  -- Both the unit of sheafification and `tensorProductIso` are morphisms of presheaves of
+  -- modules, and the sectionwise tensor product restricts pure tensors factorwise.
+  erw [← PresheafOfModules.naturality_apply (tensorProductIso R M N).inv.val f,
+    ← PresheafOfModules.naturality_apply]
+  rfl
 
 /-- An isomorphism of the first argument transports through the tensor product. -/
 def tensorProductCongrLeft {M M' N : SheafOfModules.{u} (ringCatSheaf R)} (e : M ≅ M') :

@@ -43,6 +43,8 @@ predicate `LineBundleClass.IsRelativelyAmple` on line-bundle classes.
   preserved by pullback along affine morphisms of the source; in particular it is
   invariant under isomorphisms of the source over the base
   (`LineBundleClass.isRelativelyAmple_pullback_iff_of_isIso`).
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback_of_isImmersion`: relative
+  ampleness is preserved by pullback along quasi-compact immersions of the source.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.isAmple_fiber`: a relatively ample
   class is ample on every fibre.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.comp_of_isQuasiAffine`: relative
@@ -202,6 +204,30 @@ theorem IsRelativelyAmple.pullback {a : LineBundleClass X} {f : X ⟶ S}
       MorphismProperty.of_isPullback (isPullback_morphismRestrict j _).flip inferInstance
     rw [pullback_comp, ← morphismRestrict_ι, ← pullback_comp]
     exact (h.isAmple_pullback V hV).pullback _
+
+/-- **Relative ampleness is preserved by pullback along a quasi-compact immersion.** If `a` is
+relatively ample for `f` and `j : Y ⟶ X` is a quasi-compact immersion, for instance a
+quasi-compact open immersion, then the pullback of `a` along `j` is relatively ample for
+`j ≫ f`. Over an affine open `V` of the base, `j` restricts to an immersion into `f⁻¹ V` from the
+quasi-compact scheme `(j ≫ f)⁻¹ V`, so `IsAmple.pullback_of_isImmersion` applies. -/
+theorem IsRelativelyAmple.pullback_of_isImmersion {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) (j : Y ⟶ X) [IsImmersion j] [QuasiCompact j] :
+    (LineBundleClass.pullback j a).IsRelativelyAmple (j ≫ f) where
+  quasiCompact := by
+    have := h.quasiCompact
+    infer_instance
+  isAmple_pullback V hV := by
+    have := h.quasiCompact
+    -- As in `IsRelativelyAmple.pullback`, the inclusion of `j ⁻¹ᵁ f ⁻¹ᵁ V` followed by `j` is
+    -- `j ∣_ f ⁻¹ᵁ V` followed by the inclusion of `f ⁻¹ᵁ V`.
+    change (LineBundleClass.pullback (j ⁻¹ᵁ f ⁻¹ᵁ V).ι
+      (LineBundleClass.pullback j a)).IsAmple
+    have : IsImmersion (j ∣_ f ⁻¹ᵁ V) :=
+      MorphismProperty.of_isPullback (isPullback_morphismRestrict j _).flip inferInstance
+    have : CompactSpace (j ⁻¹ᵁ f ⁻¹ᵁ V) := isCompact_iff_compactSpace.mp
+      (QuasiCompact.isCompact_preimage (f := j ≫ f) _ V.isOpen hV.isCompact)
+    rw [pullback_comp, ← morphismRestrict_ι, ← pullback_comp]
+    exact (h.isAmple_pullback V hV).pullback_of_isImmersion _
 
 /-- **A relatively ample class is ample on every fibre.** If `a` is relatively ample for
 `f : X ⟶ S`, then its pullback to the fibre `f⁻¹(s)` is ample for every point `s` of `S`: relative
