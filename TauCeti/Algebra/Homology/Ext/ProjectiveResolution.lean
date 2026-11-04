@@ -9,6 +9,7 @@ public import Mathlib.Algebra.Homology.DerivedCategory.Ext.Linear
 public import Mathlib.CategoryTheory.Abelian.Ext
 public import Mathlib.CategoryTheory.Abelian.Projective.Ext
 public import TauCeti.Algebra.Homology.Opposite
+import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 
 /-!
 # Computing `Ext` from projective resolutions
@@ -31,6 +32,14 @@ over the coefficient ring.
 Degree `0` is deliberately excluded: there `Ext⁰(X, Y)` is `Hom(X, Y)`, which need not be
 `Hom(R₀, Y)`.
 
+Mathlib has two `Ext`s: the derived functor `Ext k C n` of `Mathlib.CategoryTheory.Abelian.Ext`,
+computed by `isoExt`, and the derived-category `CategoryTheory.Abelian.Ext`, computed by `extMk`.
+Both are the cohomology of the same complex `Hom(R, Y)`. So in positive degrees they vanish
+together, and a map induced by `g : X' ⟶ X` on the first is injective once precomposition with `g`
+is injective on the second. The comparison of maps rests on `Ext_map_comp_isoExt_hom`, the
+naturality of `isoExt` in `X`, and on a cocycle criterion for injectivity on homology of complexes
+of modules.
+
 ## Main definitions
 
 * `CategoryTheory.ProjectiveResolution.extLinearEquiv`: the linear equivalence
@@ -40,6 +49,16 @@ Degree `0` is deliberately excluded: there `Ext⁰(X, Y)` is `Hom(X, Y)`, which 
 
 * `CategoryTheory.ProjectiveResolution.isoExt_hom_comp_homologyMap`: computing `Ext` from two
   resolutions related by a chain map agrees with the induced map on cohomology.
+* `TauCeti.ShortComplex.injective_homologyMap_moduleCat`,
+  `TauCeti.HomologicalComplex.injective_homologyMap_moduleCat`: a map of complexes of modules is
+  injective on homology when every cycle mapping to a boundary is a boundary.
+* `TauCeti.Ext_map_comp_isoExt_hom`: `ProjectiveResolution.isoExt` is natural in the first
+  argument.
+* `TauCeti.injective_Ext_map_succ`: in positive degrees, a map induced on the derived-functor `Ext`
+  is injective once precomposition is injective on the derived-category `Ext`.
+* `TauCeti.isZero_Ext_succ_iff_subsingleton`: in positive degrees, the derived-functor `Ext` of
+  `Mathlib.CategoryTheory.Abelian.Ext` vanishes exactly when the derived-category
+  `CategoryTheory.Abelian.Ext` does, since both are computed by the same `Hom`-complex.
 
 ## References
 
@@ -134,3 +153,122 @@ theorem extLinearEquiv_apply (R : ProjectiveResolution X) (n : ℕ)
   (rfl)
 
 end CategoryTheory.ProjectiveResolution
+
+namespace TauCeti
+
+open CategoryTheory CategoryTheory.Abelian CategoryTheory.Limits Opposite
+
+variable {C : Type*} [Category* C] [Abelian C] {k : Type*} [Ring k] [Linear k C]
+  [EnoughProjectives C]
+
+/-- In positive degrees, the derived-functor `Ext k C` vanishes exactly when the derived-category
+`Ext` does: both are the cohomology of `Hom(P, Y)` for a projective resolution `P` of `X`, the
+first through `ProjectiveResolution.isoExt` and the second through
+`ProjectiveResolution.extMk`. -/
+theorem isZero_Ext_succ_iff_subsingleton [HasExt C] (X Y : C) (p : ℕ) :
+    IsZero (((_root_.Ext k C (p + 1)).obj (op X)).obj Y) ↔ Subsingleton (Ext X Y (p + 1)) := by
+  let P := projectiveResolution X
+  rw [(P.isoExt (p + 1) Y).isZero_iff, ← HomologicalComplex.exactAt_iff_isZero_homology,
+    HomologicalComplex.exactAt_iff' _ p (p + 1) (p + 2) (by simp) (by simp),
+    ShortComplex.moduleCat_exact_iff]
+  refine ⟨fun h => subsingleton_of_forall_eq 0 fun α => ?_, fun h f hf => ?_⟩
+  · obtain ⟨f, hf, rfl⟩ := P.extMk_surjective α (p + 2) rfl
+    exact (P.extMk_eq_zero_iff f (p + 2) rfl hf p rfl).2 (h f hf)
+  · exact (P.extMk_eq_zero_iff f (p + 2) rfl hf p rfl).1 (Subsingleton.elim _ _)
+
+/-- A morphism `φ` of short complexes of modules is injective on homology as soon as every cycle
+of `S₁` whose image is a boundary of `S₂` is already a boundary of `S₁`. -/
+theorem ShortComplex.injective_homologyMap_moduleCat {R : Type*} [Ring R]
+    {S₁ S₂ : ShortComplex (ModuleCat R)} (φ : S₁ ⟶ S₂)
+    (h : ∀ x₂ : S₁.X₂, S₁.g x₂ = 0 → (∃ y₁ : S₂.X₁, S₂.f y₁ = φ.τ₂ x₂) →
+      ∃ x₁ : S₁.X₁, S₁.f x₁ = x₂) :
+    Function.Injective (ShortComplex.homologyMap φ).hom := by
+  refine (injective_iff_map_eq_zero _).2 fun x hx => ?_
+  obtain ⟨z, rfl⟩ := (ModuleCat.epi_iff_surjective S₁.homologyπ).1 inferInstance x
+  have hz : S₂.homologyπ (ShortComplex.cyclesMap φ z) = 0 := by
+    rw [← ModuleCat.comp_apply, ← ShortComplex.homologyπ_naturality, ModuleCat.comp_apply, hx]
+  obtain ⟨y₁, hy₁⟩ := (ShortComplex.moduleCat_exact_iff _).1
+    ((ShortComplex.mk _ _ S₂.toCycles_comp_homologyπ).exact_of_g_is_cokernel
+      S₂.homologyIsCokernel) _ hz
+  obtain ⟨x₁, hx₁⟩ := h (S₁.iCycles z) (by rw [← ModuleCat.comp_apply, S₁.iCycles_g]; rfl)
+    ⟨y₁, by
+      have := congrArg S₂.iCycles hy₁
+      rwa [← ModuleCat.comp_apply, ← ModuleCat.comp_apply, S₂.toCycles_i,
+        ShortComplex.cyclesMap_i] at this⟩
+  have : S₁.toCycles x₁ = z := (ModuleCat.mono_iff_injective S₁.iCycles).1 inferInstance
+    (by rw [← ModuleCat.comp_apply, S₁.toCycles_i, hx₁])
+  rw [← this, ← ModuleCat.comp_apply, S₁.toCycles_comp_homologyπ]
+  rfl
+
+
+/-- A morphism `ψ` of complexes of modules is injective on homology in degree `j` as soon as every
+cycle of `K` whose image is a boundary of `L` is already a boundary of `K`. -/
+theorem HomologicalComplex.injective_homologyMap_moduleCat {R : Type*} [Ring R] {ι : Type*}
+    {c : ComplexShape ι} {K L : HomologicalComplex (ModuleCat R) c} (ψ : K ⟶ L) {i j l : ι}
+    (hi : c.prev j = i) (hl : c.next j = l)
+    (h : ∀ x : K.X j, K.d j l x = 0 → (∃ y : L.X i, L.d i j y = ψ.f j x) →
+      ∃ x' : K.X i, K.d i j x' = x) :
+    Function.Injective (HomologicalComplex.homologyMap ψ j).hom := by
+  subst hi hl
+  exact ShortComplex.injective_homologyMap_moduleCat _ h
+
+/-- **`isoExt` is natural in the first argument.** If `φ : P' ⟶ P` is a chain map between
+projective resolutions lying over `g : X' ⟶ X`, then computing `Ext` from `P` and `P'` turns the map
+`Extⁿ(X, Y) ⟶ Extⁿ(X', Y)` induced by `g` into the map induced by `φ` on `Hom`-complexes. -/
+theorem Ext_map_comp_isoExt_hom {X X' : C} (g : X' ⟶ X) (P : ProjectiveResolution X)
+    (P' : ProjectiveResolution X') (φ : P'.complex ⟶ P.complex)
+    (comm : φ.f 0 ≫ P.π.f 0 = P'.π.f 0 ≫ g) (n : ℕ) (Y : C) :
+    ((_root_.Ext k C n).map g.op).app Y ≫ (P'.isoExt n Y).hom =
+      (P.isoExt n Y).hom ≫ HomologicalComplex.homologyMap
+        ((HomologicalComplex.unopFunctor _ _).map
+          ((((linearYoneda k C).obj Y).rightOp.mapHomologicalComplex _).map φ).op) n := by
+  let F := ((linearYoneda k C).obj Y).rightOp
+  have h : (P'.isoLeftDerivedObj F n).inv ≫ (F.leftDerived n).map g =
+      (F.mapHomologicalComplex _ ⋙ HomologicalComplex.homologyFunctor _ _ n).map φ ≫
+        (P.isoLeftDerivedObj F n).inv := by
+    rw [Iso.inv_comp_eq, ← Category.assoc, Iso.eq_comp_inv]
+    exact P'.isoLeftDerivedObj_hom_naturality g P φ comm F n
+  have hu : ((_root_.Ext k C n).map g.op).app Y ≫ (P'.isoLeftDerivedObj F n).inv.unop =
+      (P.isoLeftDerivedObj F n).inv.unop ≫
+        ((F.mapHomologicalComplex _ ⋙ HomologicalComplex.homologyFunctor _ _ n).map φ).unop :=
+    congrArg Quiver.Hom.unop h
+  have hn := TauCeti.HomologicalComplex.homologyUnop_inv_naturality
+    ((F.mapHomologicalComplex _).map φ) n
+  change _ ≫ (P'.isoLeftDerivedObj F n).inv.unop ≫ (HomologicalComplex.homologyUnop _ n).inv =
+    ((P.isoLeftDerivedObj F n).inv.unop ≫ (HomologicalComplex.homologyUnop _ n).inv) ≫ _
+  exact (Category.assoc _ _ _).symm.trans ((congrArg (· ≫ _) hu).trans ((Category.assoc _ _ _).trans
+    ((congrArg (_ ≫ ·) hn).trans (Category.assoc _ _ _).symm)))
+
+/-- In positive degrees, the map `Ext k C (p + 1)` induces along `g : X' ⟶ X` is injective once
+precomposition with `g` is injective on the derived-category `Ext`: both are computed by the
+same `Hom`-complexes, through `ProjectiveResolution.isoExt` and `ProjectiveResolution.extMk`. -/
+theorem injective_Ext_map_succ [HasExt C] {X X' : C} (g : X' ⟶ X) (Y : C) (p : ℕ)
+    (h : Function.Injective fun α : Ext X Y (p + 1) => (Ext.mk₀ g).comp α (zero_add _)) :
+    Function.Injective (((_root_.Ext k C (p + 1)).map g.op).app Y).hom := by
+  let P := projectiveResolution X
+  let P' := projectiveResolution X'
+  let φ : ProjectiveResolution.Hom P' P g :=
+    ⟨ProjectiveResolution.lift g P' P,
+      by simpa using ProjectiveResolution.lift_commutes_zero g P' P⟩
+  have sq := Ext_map_comp_isoExt_hom (k := k) g P P' φ.hom
+    (ProjectiveResolution.lift_commutes_zero g P' P) (p + 1) Y
+  let ψ := (HomologicalComplex.unopFunctor _ _).map
+    ((((linearYoneda k C).obj Y).rightOp.mapHomologicalComplex _).map φ.hom).op
+  have hH := HomologicalComplex.injective_homologyMap_moduleCat ψ (i := p) (j := p + 1)
+    (l := p + 2) ((ComplexShape.down ℕ).symm.prev_eq' rfl)
+    ((ComplexShape.down ℕ).symm.next_eq' rfl)
+    fun (x : P.complex.X (p + 1) ⟶ Y) (hx : P.complex.d (p + 2) (p + 1) ≫ x = 0)
+      ⟨(y : P'.complex.X p ⟶ Y), (hy : P'.complex.d (p + 1) p ≫ y = φ.hom.f (p + 1) ≫ x)⟩ => by
+      have h1 := (P'.extMk_eq_zero_iff (φ.hom.f (p + 1) ≫ x) (p + 2) rfl
+        (by simp [← φ.hom.comm_assoc, hx]) p rfl).2 ⟨y, hy⟩
+      have h2 := ProjectiveResolution.mk₀_comp_extMk x (p + 2) rfl hx φ
+      exact (P.extMk_eq_zero_iff x (p + 2) rfl hx p rfl).1
+        (h ((h2.trans h1).trans (Ext.comp_zero _ _ _ _ _).symm))
+  have hm : Mono (HomologicalComplex.homologyMap ψ (p + 1)) :=
+    (ModuleCat.mono_iff_injective _).2 hH
+  have : Mono ((((_root_.Ext k C (p + 1)).map g.op).app Y) ≫ (P'.isoExt (p + 1) Y).hom) := by
+    rw [sq]
+    exact @mono_comp _ _ _ _ _ _ inferInstance _ hm
+  exact (ModuleCat.mono_iff_injective _).1 (mono_of_mono _ (P'.isoExt (p + 1) Y).hom)
+
+end TauCeti
