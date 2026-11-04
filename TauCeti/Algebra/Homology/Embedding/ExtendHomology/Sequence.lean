@@ -14,9 +14,10 @@ public import TauCeti.Algebra.Homology.Embedding.ExtendHomology.Basic
 Let `e : c.Embedding c'` be an embedding of complex shapes and `S` a short exact sequence of
 complexes of shape `c` in an abelian category. Extending `S` by zero along `e` gives a short exact
 sequence of complexes of shape `c'` (`CategoryTheory.ShortComplex.ShortExact.extend`); in
-particular, extension preserves epimorphisms (`HomologicalComplex.epi_extendMap`). Mathlib
-identifies the homology of an extended complex in degree `e.f j` with the homology of the original
-complex in degree `j` (`HomologicalComplex.extendHomologyIso`). This file shows that the connecting
+particular, extension preserves epimorphisms and monomorphisms (`HomologicalComplex.epi_extendMap`,
+`HomologicalComplex.mono_extendMap`). Mathlib identifies the homology of an extended complex in
+degree `e.f j` with the homology of the original complex in degree `j`
+(`HomologicalComplex.extendHomologyIso`). This file shows that the connecting
 maps of the two homology sequences correspond under these identifications
 (`CategoryTheory.ShortComplex.ShortExact.extend_δ_comp_extendHomologyIso_hom`).
 
@@ -59,6 +60,12 @@ instance _root_.HomologicalComplex.epi_extendMap {K L : HomologicalComplex C c} 
     [Epi φ] (e : c.Embedding c') : Epi (HomologicalComplex.extendMap φ e) :=
   ((ShortComplex.ShortExact.mk' (ShortComplex.kernelSequence_exact φ) inferInstance
     (inferInstanceAs (Epi φ))).extend e).epi_g
+
+/-- Extending by zero along an embedding of complex shapes preserves monomorphisms. -/
+instance _root_.HomologicalComplex.mono_extendMap {K L : HomologicalComplex C c} (φ : K ⟶ L)
+    [Mono φ] (e : c.Embedding c') : Mono (HomologicalComplex.extendMap φ e) :=
+  ((ShortComplex.ShortExact.mk' (ShortComplex.cokernelSequence_exact φ) (inferInstanceAs (Mono φ))
+    inferInstance).extend e).mono_f
 
 variable (hS : S.ShortExact) (e : c.Embedding c') {i j : ι} (hij : c.Rel i j)
   {i' j' : ι'} (hi' : e.f i = i') (hj' : e.f j = j')

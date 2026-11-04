@@ -36,6 +36,8 @@ simultaneously.
   `a ≫ b` by the kernel of `a` is the kernel of `b`.
 * `TauCeti.cokernelKernelSubobjectArrowIso`: for an epimorphism `a`, the quotient by the kernel of
   `a` is the target of `a`.
+* `TauCeti.cokernelOfLEMkIso`: for monomorphisms `a` and `b`, the quotient of the subobject `b` by
+  the subobject `a ≫ b` is the cokernel of `a`.
 * `TauCeti.cokernelSequenceToSnakeInputL₃`: the morphism from `Y ⟶ Z ⟶ cokernel b` to that
   sequence.
 * `CategoryTheory.ShortComplex.shortExact_of_forall_evaluation`: a short complex of functors is
@@ -168,6 +170,30 @@ lemma π_cokernelKernelSubobjectArrowIso_hom [Epi a] {S : Subobject X}
     (hS : S = kernelSubobject a) :
     cokernel.π S.arrow ≫ (cokernelKernelSubobjectArrowIso a hS).hom = a :=
   (cokernelIsCokernel _).comp_coconePointUniqueUpToIso_hom _ WalkingParallelPair.one
+
+/-- For monomorphisms `a` and `b`, the cokernel of the inclusion of the subobject `a ≫ b` into the
+subobject `b` is the cokernel of `a`, the isomorphism being induced by the identification of the
+subobject `b` with `Y` (`TauCeti.π_cokernelOfLEMkIso_hom`). The two subobjects are given up to
+equality, for flexibility. -/
+noncomputable def cokernelOfLEMkIso [Mono a] [Mono b] {S T : Subobject Z}
+    (hS : S = Subobject.mk (a ≫ b)) (hT : T = Subobject.mk b) (h : S ≤ T) :
+    cokernel (Subobject.ofLE S T h) ≅ cokernel a :=
+  have e : Subobject.ofLE S T h ≫ ((Subobject.isoOfEq _ _ hT).trans
+      (Subobject.underlyingIso b)).hom =
+      ((Subobject.isoOfEq _ _ hS).trans (Subobject.underlyingIso (a ≫ b))).hom ≫ a := by
+    rw [← cancel_mono b]
+    subst hS hT
+    simp
+  (cokernelCompIsIso _ _).symm ≪≫ cokernelIsoOfEq e ≪≫ cokernelEpiComp _ _
+
+/-- The isomorphism `TauCeti.cokernelOfLEMkIso` is induced by the identification of the subobject
+`b` with `Y`. -/
+@[reassoc (attr := simp)]
+lemma π_cokernelOfLEMkIso_hom [Mono a] [Mono b] {S T : Subobject Z}
+    (hS : S = Subobject.mk (a ≫ b)) (hT : T = Subobject.mk b) (h : S ≤ T) :
+    cokernel.π (Subobject.ofLE S T h) ≫ (cokernelOfLEMkIso a b hS hT h).hom =
+      ((Subobject.isoOfEq _ _ hT).trans (Subobject.underlyingIso b)).hom ≫ cokernel.π a := by
+  simp [cokernelOfLEMkIso]
 
 /-- The morphism of short complexes from `Y ⟶ Z ⟶ cokernel b` to
 `cokernel a ⟶ cokernel (a ≫ b) ⟶ cokernel b` given by the cokernel projections of `a` and
