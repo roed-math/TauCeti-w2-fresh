@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":8,"after":[2],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":9,"after":[8],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"8e29268de79c45d1730fa54d62137f70cd24b4e3","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":8,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":9,"after":[8],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
-Built on `main` at `333c9e49143de812ed1452b412193ee9c05501e7`. Status: **partial**.
+Built on `main` at `8e29268de79c45d1730fa54d62137f70cd24b4e3`. Status: **partial**.
 
 ## Suppliers: both have landed, so no stub remains
 
@@ -224,6 +224,44 @@ point. The `H⁰_Z = 0` half of `test_support_not_restriction` is
 `subsingleton_cohomologyWithSupport_origin_zero`; the other half (the restriction to `Z` has
 sections `k`) is not done.
 
+### Session 6: pullback of cohomology with supports (`cohomologyWithSupport_pullback`)
+
+`Suggested.lean` does not pin `cohomologyWithSupport_pullback`; it is stated from the README's API
+list, in the same shape as `main`'s `Sheaf.H.pullback`, `TopCat.Hom.cohomologyPullback` and
+`Scheme.Hom.cohomologyPullback`.
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Relative/Pullback.lean` (new), for a continuous
+functor `u : C ⥤ D` whose pushforward has a left adjoint `u^* = u.sheafPullback`:
+
+- `TauCeti.CategoryTheory.freeYonedaSheafPullbackComparison u U : ℤ_{u U} ⟶ u^* ℤ_U` (the section
+  of `u^* ℤ_U` over `u U` given by the unit), with
+  `freeYonedaSheafSectionsEquiv_pullbackComparison`,
+  `freeYonedaSheafSectionsEquiv_pullbackComparison_comp` (precomposition is the adjunct) and
+  `freeYonedaSheafPullbackComparison_naturality` (natural in `U`);
+- `relativeFreeYonedaSheafPullbackComparison u i : ℤ_{u V, u U} ⟶ u^* ℤ_{V, U}`, with
+  `cokernel_π_relativeFreeYonedaSheafPullbackComparison` and
+  `coe_relativeFreeYonedaSheafHomEquiv_pullbackComparison_comp`;
+- for `u^*` left exact: `CategoryTheory.Sheaf.relativeH'.pullback u F i n :
+  Hⁿ(V, U; F) →+ Hⁿ(u V, u U; u^* F)`, `pullback_apply`, `pullback_naturality` and
+  `coe_zeroEquiv_pullback` (degree zero is the unit `F ⟶ u_* u^* F` on sections vanishing along
+  `i`).
+
+`TauCeti/Topology/Sheaves/SupportedCohomology/Pullback.lean` (new), for a continuous map
+`f : X ⟶ Y`:
+
+- `TopCat.Hom.supportedHPullback f F S W n : H_Sⁿ(W, F) →+ H_{f⁻¹ S}ⁿ(f⁻¹ W, f⁻¹ F)`;
+- `supportedHPullback_naturality`, `coe_supportedHZeroEquiv_supportedHPullback`.
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` (new), for a morphism of schemes
+`g : Y ⟶ X`:
+
+- `AlgebraicGeometry.Scheme.Hom.cohomologyWithSupportPullback g Z M q :
+  H_Z^q(X, M) →+ H_{g⁻¹ Z}^q(Y, g^* M)` (the README's `cohomologyWithSupport_pullback`);
+- `cohomologyWithSupportPullback_cohomologyWithSupportMap` (naturality),
+  `cohomologyWithSupportPullback_smul` (semilinear along `g^♯`) and
+  `coe_cohomologyWithSupportZeroLinearEquiv_cohomologyWithSupportPullback` (degree zero is
+  `Scheme.Hom.pullbackSections`).
+
 ## What `main` already has (found in session 2)
 
 `sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
@@ -235,8 +273,8 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
 
 ## What remains
 
-- `cohomologyWithSupport_pullback` (split 3): `Sheaf.H.pullback` is on `main`, so this can be
-  written directly. It needs `pb` to carry the relative free sheaf `ℤ_{W, W ∖ S}` to its pullback.
+- `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 8). Its compatibility with the
+  connecting maps of short exact sequences is not stated yet.
 - `rHZ_adjunction` and `localToGlobal`: derived-category statements; `main` has only the edge map
   `supportedHEdgeEquiv`.
 - `localCohomology_colimit_ext_comparison` (split 5); `Supports.localCohomology_flat_baseChange`
@@ -270,8 +308,10 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
    `TauCeti/Topology/Sheaves/SupportedCohomology/Univ.lean` (done):
    `isZero_freeYonedaSheafFunctor_obj_bot`, `isIso_cokernel_π_complInclusion_top`,
    `supportedHTopEquiv`, `supportedHTopEquiv_apply`, `toH'_complInclusion_top_bijective`.
-3. **feat: pullback of cohomology with supports**. After: none (not yet written).
-   `cohomologyWithSupport_pullback` via `main`'s `Sheaf.H.pullback`.
+3. **feat: pullback of cohomology with supports**. After: none (done, about 290 lines).
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative/Pullback.lean` and
+   `TauCeti/Topology/Sheaves/SupportedCohomology/Pullback.lean`; the declarations listed under
+   session 6 (all but the scheme wrapper).
 4. **feat: local cohomology vanishes below the depth and not in degree the depth**. After: 1
    (done, about 345 lines). `TauCeti/Algebra/Homology/Ext/ProjectiveResolution.lean` (+138 lines):
    `ShortComplex.injective_homologyMap_moduleCat`,
@@ -295,10 +335,12 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
    `not_isNoetherianRing`, `isZero_localCohomology_zero`. (Split 1 carries the 25-line
    `isZero_localCohomology_zero_iff` and `isZero_localCohomology_zero_of_isSMulRegular` that
    this uses.)
-8. **feat: cohomology with supports of a sheaf of modules on a scheme**. After: 2 (done, about
-   235 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines) plus
+8. **feat: cohomology with supports of a sheaf of modules on a scheme**. After: 2, 3 (done, about
+   350 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines) plus
    `globalSectionsSmul_app_top_apply` in `TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean`;
-   the declarations listed under session 4.
+   the declarations listed under session 4. Also
+   `TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` (122 lines, session 6):
+   `cohomologyWithSupportPullback` and its three lemmas.
 9. **feat: cohomology with supports on affine schemes and at the origin of the affine line**.
    After: 8 (done, about 320 lines). `oneAddEquivOfSubsingleton` (+18 lines in
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative.lean`), `supportedHOneEquiv` (+28 lines
