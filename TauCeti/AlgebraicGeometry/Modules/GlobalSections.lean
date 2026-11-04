@@ -160,6 +160,17 @@ lemma globalSectionsSmul_naturality
     X.presheaf.map U.leTop.op r • f.app U x
   exact f.app_smul _ _
 
+/-- Multiplication by a global function on global sections is the global component of the
+corresponding scalar endomorphism. -/
+lemma globalSectionsSmul_app_top_apply (M : X.Modules) (r : Γ(X, ⊤)) (s : Γ(M, ⊤)) :
+    (M.globalSectionsSmul r).app ⊤ s = r • s := by
+  rw [globalSectionsSmul_app]
+  have h : X.presheaf.map (⊤ : X.Opens).leTop.op r = r := by
+    rw [Subsingleton.elim (⊤ : X.Opens).leTop.op (𝟙 (op ⊤))]
+    exact ConcreteCategory.congr_hom (X.presheaf.map_id _) r
+  rw [h]
+  exact M.smul_apply r s
+
 section Functoriality
 
 variable {Y : Scheme.{u}} (f : X ⟶ Y)

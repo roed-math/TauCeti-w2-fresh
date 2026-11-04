@@ -30,6 +30,8 @@ For a commutative ring `A`, an ideal `I` and an `A`-module `M`, Mathlib defines
   `I`-power torsion.
 * `TauCeti.Supports.localCohomology_degreeZero`: `H⁰_I(M)` is in bijection with the elements of
   `M` killed by a power of `I`.
+* `TauCeti.Supports.isZero_localCohomology_zero_iff`: `H⁰_I(M) = 0` exactly when no nonzero
+  element of `M` is killed by a power of `I`.
 -/
 
 public section
@@ -170,5 +172,28 @@ theorem localCohomology_degreeZero (A : Type u) [CommRing A] (I : Ideal A)
       {m : M // ∃ n : ℕ, ∀ a ∈ I ^ n, a • m = 0}) :=
   ⟨(Equiv.ofInjective _ (localCohomologyZeroToModule_injective I M)).trans
     (Equiv.subtypeEquivRight (Set.ext_iff.1 (range_localCohomologyZeroToModule I M)))⟩
+
+/-- Degree zero of local cohomology vanishes exactly when `M` has no nonzero element killed by a
+power of `I`. -/
+theorem isZero_localCohomology_zero_iff (I : Ideal A) (M : ModuleCat.{u} A) :
+    IsZero ((localCohomology I 0).obj M) ↔
+      ∀ m : M, (∃ n : ℕ, ∀ a ∈ I ^ n, a • m = 0) → m = 0 := by
+  refine ModuleCat.isZero_iff_subsingleton.trans ⟨fun _ m hm => ?_, fun h => ⟨fun x y => ?_⟩⟩
+  · obtain ⟨x, hx⟩ : m ∈ Set.range (localCohomologyZeroToModule I M).hom := by
+      rwa [range_localCohomologyZeroToModule]
+    rw [← hx, Subsingleton.elim x 0, map_zero]
+  · refine localCohomologyZeroToModule_injective I M ?_
+    have hmem (z) : (localCohomologyZeroToModule I M).hom z ∈
+        {m : M | ∃ n : ℕ, ∀ a ∈ I ^ n, a • m = 0} :=
+      range_localCohomologyZeroToModule I M ▸ Set.mem_range_self z
+    rw [h _ (hmem x), h _ (hmem y)]
+
+/-- If every power of `I` contains a non-zero-divisor on `M`, then degree zero of local
+cohomology vanishes. -/
+theorem isZero_localCohomology_zero_of_isSMulRegular (I : Ideal A) (M : ModuleCat.{u} A)
+    (h : ∀ n : ℕ, ∃ a ∈ I ^ n, IsSMulRegular M a) : IsZero ((localCohomology I 0).obj M) := by
+  refine (isZero_localCohomology_zero_iff I M).2 fun m ⟨n, hn⟩ => ?_
+  obtain ⟨a, ha, hreg⟩ := h n
+  exact hreg ((hn a ha).trans (smul_zero a).symm)
 
 end TauCeti.Supports

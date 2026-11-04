@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[1],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":6,"after":[5],"title":"feat: flat base change of Noetherian local cohomology"},{"n":7,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":8,"after":[2],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
@@ -31,7 +31,7 @@ imported it, and `main` now carries every declaration it stubbed:
   landed with exactly this statement, under the name
   `AlgebraicGeometry.Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`
   (`TauCeti/AlgebraicGeometry/Cohomology/QuasiSeparated.lean`, PR #22975, merged by Bors). The
-  earlier stub `TauCeti.QCoh.higherDirectImage_vanishing` therefore had to go. Split 7 should use
+  earlier stub `TauCeti.QCoh.higherDirectImage_vanishing` therefore had to go. Split 9 should use
   the landed name. PR #27295 (localization of quasi-coherent cohomology) is still open, and nothing
   here needs it.
 
@@ -123,6 +123,61 @@ These lemmas compare them in positive degrees, for both vanishing and injectivit
 "`H^q_I(M) = 0` when `(q : ℕ∞) < depth_I M`" (as `IsZero` of the `ModuleCat` object) and
 "`H^d_I(M) ≠ 0` only for `d : ℕ` with `depth_I M = d`" (as `Nontrivial`).
 
+### Session 4: degree-zero examples and the scheme wrapper
+
+`TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean` gains 25 lines (now 199):
+
+- `isZero_localCohomology_zero_iff`: `IsZero ((localCohomology I 0).obj M)` iff every element of
+  `M` killed by a power of `I` is zero;
+- `isZero_localCohomology_zero_of_isSMulRegular`: `H⁰_I(M) = 0` once every `Iⁿ` contains an
+  `M`-regular element.
+
+`TauCeti/Examples/Algebra/Homology/LocalCohomology.lean` (170 lines, new), in namespace
+`TauCeti.Supports`:
+
+- `isZero_localCohomology_zero_self_of_ne_bot`: `H⁰_I(A) = 0` for a domain `A` and `I ≠ ⊥`;
+  `isZero_localCohomology_zero_maximalIdeal`: `H⁰_m(R) = 0` for a DVR (the `H⁰` halves of
+  `test_depth_dvr` and `localCohomology_module_comparison_dvr`);
+- `NilIdealExample.relations k` (the ideal `(x_j^{j+2})` of `k[x₀, x₁, …]`),
+  `NilIdealExample.CoordRing k` (the quotient `A`), `NilIdealExample.ideal k` (`I = (x₀, x₁, …)`),
+  over any commutative ring `k` (nontrivial where needed);
+- `mem_relations_iff` (monomial-ideal membership), `exists_X_pow_mul_notMem_relations`,
+  `one_notMem_relations`, the `Nontrivial (CoordRing k)` instance,
+  `exists_mem_pow_mul_ne_zero` (the README's fresh-variable argument: every nonzero class has a
+  nonzero product with an element of `Iⁿ`), `ideal_le_nilradical`;
+- `zeroLocus_ideal`: `V(I) = Spec A`; `not_isNoetherianRing`: `A` is not Noetherian (its
+  nilradical is not nilpotent); `isZero_localCohomology_zero`: native `H⁰_I(A) = 0`.
+
+  These are the native half of `localCohomology_module_comparison_nil_ideal`. The geometric half
+  (`H⁰_{V(I)}(Spec A, 𝒪) = A ≠ 0`) follows from `V(I) = Spec A`, `sectionsWithSupport_top` and
+  `cohomologyWithSupportZeroLinearEquiv` below, and goes in split 9.
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines, new), in namespace
+`TauCeti.AlgebraicGeometry.Scheme.Modules` (beside `Scheme.Modules.Cohomology`). This is the
+README's `cohomologyWithSupport Z F q` with its `O(X)`-module structure, and
+`sectionsWithSupport`, for a closed `Z : Closeds X` (main's `Closeds` convention rather than a
+`Set` plus `IsClosed` proof):
+
+- `cohomologyWithSupport Z M q` (abbrev for `supportedH Z ⊤ q` of the underlying abelian sheaf);
+- `cohomologyWithSupportMap` with `_apply`, `_id`, `_comp`, `_zero`, `_add`;
+- `cohomologyWithSupportAction`, instance `cohomologyWithSupportModule` (a `Γ(X, ⊤)`-module, via
+  the scalar endomorphisms `globalSectionsSmul`, as `cohomologyModule` does for `Cohomology`),
+  `smul_cohomologyWithSupport`;
+- `cohomologyWithSupportMapLinear` with `_apply`;
+- `sectionsWithSupport Z M : Submodule Γ(X, ⊤) Γ(M, ⊤)`, `mem_sectionsWithSupport_iff`,
+  `sectionsWithSupport_top` (`@[simp]`: every global section is supported in `X`);
+- `cohomologyWithSupportZeroLinearEquiv : H_Z⁰(X, M) ≃ₗ[Γ(X, ⊤)] Γ_Z(X, M)` with
+  `coe_cohomologyWithSupportZeroLinearEquiv_apply` (README `cohomologyWithSupport_zero`);
+- `cohomologyWithSupportTopEquiv : H_X^q(X, M) ≃+ H^q(X, M)` and instance
+  `subsingleton_cohomologyWithSupport_bot` (README `cohomologyWithSupport_univ`; at `q = 1` these
+  give `test_support_all` and `test_support_empty`).
+
+`TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean` gains (+11 lines)
+`AlgebraicGeometry.Scheme.Modules.globalSectionsSmul_app_top_apply`:
+`(M.globalSectionsSmul r).app ⊤ s = r • s`, the general fact the submodule and the degree-zero
+linearity need. It sits beside `globalSectionsSmul_naturality`. `Support.lean` takes about 150–200 s
+to compile, comparable to `Cohomology/Module/Basic.lean` (120 s).
+
 ## What `main` already has (found in session 2)
 
 `sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
@@ -140,13 +195,19 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
   `supportedHEdgeEquiv`.
 - `localCohomology_colimit_ext_comparison` (split 5); `Supports.localCohomology_flat_baseChange`
   and flat excision (split 6).
-- Split 7:
+- `cohomologyWithSupportTopEquiv` is only additive. `Γ(X, ⊤)`-linearity needs the naturality in
+  `M` of `supportedHTopEquiv` and of `cohomologyOnTopIso`; it can be added to split 8 or 9.
+- `localCohomologySheaf Z F q` as a sheaf of `𝒪_X`-modules: `main` has the abelian
+  `supportedHSheaf` and the `R`-linear `supportedModuleHPresheaf`, but no scheme wrapper yet.
+- Split 9:
   - `localCohomology_module_comparison`, using
     `Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`;
-  - the scheme wrappers with the `O(X)`-module structure, thin wrappers of `main`'s topological API;
-  - the checks `test_support_all` (from `supportedHTopEquiv` at `n = 1`), `test_support_empty`,
-    `test_support_affine_line_origin`, `test_support_not_restriction`, `test_depth_dvr`,
-    `localCohomology_module_comparison_nil_ideal` and `localCohomology_module_comparison_dvr`.
+  - the checks `test_support_all` and `test_support_empty` (now one line each, from
+    `cohomologyWithSupportTopEquiv` and `subsingleton_cohomologyWithSupport_bot`),
+    `test_support_affine_line_origin`, `test_support_not_restriction`, `test_depth_dvr` (the
+    `H¹_m(R) ≅ K/R` half is still open), `localCohomology_module_comparison_nil_ideal` (the
+    geometric `H⁰ = A` half, on top of the native half from split 7) and
+    `localCohomology_module_comparison_dvr`.
 
 ## Split plan
 
@@ -173,6 +234,19 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
    `localCohomology_colimit_ext_comparison`.
 6. **feat: flat base change of Noetherian local cohomology**. After: 5 (not yet written).
    `Supports.localCohomology_flat_baseChange`, flat excision.
-7. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–6 (not
-   yet written). `localCohomology_module_comparison`, the scheme wrappers and the remaining §2.7
-   checks. This is the only split that completes the target.
+7. **feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal**. After: 1
+   (done, 170 lines). `TauCeti/Examples/Algebra/Homology/LocalCohomology.lean`:
+   `isZero_localCohomology_zero_self_of_ne_bot`, `isZero_localCohomology_zero_maximalIdeal`, and
+   in `NilIdealExample`: `relations`, `CoordRing`, `ideal`, `mem_relations_iff`,
+   `exists_X_pow_mul_notMem_relations`, `one_notMem_relations`, the `Nontrivial` instance,
+   `exists_mem_pow_mul_ne_zero`, `ideal_le_nilradical`, `zeroLocus_ideal`,
+   `not_isNoetherianRing`, `isZero_localCohomology_zero`. (Split 1 carries the 25-line
+   `isZero_localCohomology_zero_iff` and `isZero_localCohomology_zero_of_isSMulRegular` that
+   this uses.)
+8. **feat: cohomology with supports of a sheaf of modules on a scheme**. After: 2 (done, about
+   235 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (223 lines) plus
+   `globalSectionsSmul_app_top_apply` in `TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean`;
+   the declarations listed under session 4.
+9. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–8 (not
+   yet written). `localCohomology_module_comparison`, the remaining scheme wrappers and the
+   remaining §2.7 checks. This is the only split that completes the target.
