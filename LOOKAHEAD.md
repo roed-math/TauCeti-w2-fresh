@@ -40,6 +40,25 @@ The earlier stubs and what replaced them:
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
 
+## Changes in the eighth session (2026-11-04, 01:15 UTC)
+
+- `main` is unchanged at `333c9e49143`, so there is nothing new to merge.
+- **Over an affine base, relative ampleness is ampleness** (`LineBundleClass.isRelativelyAmple_iff_isAmple`).
+  This closes the remaining item "over an affine base, ampleness ⇒ relative ampleness". The
+  earlier note expected Stacks' extension of sections from `X_s`, but the argument is short. For
+  `V` an affine open of a separated base, `V ⟶ S` is an affine morphism. Its base change, the
+  inclusion of `f⁻¹ V`, is then an affine open immersion. Ampleness pulls back along such a map
+  (split 4). So `LineBundleClass.IsAmple.isRelativelyAmple` holds more generally: if `S` is
+  separated and `f` is quasi-compact, an ample class is relatively ample for `f`.
+- **Relative ampleness is preserved by pullback along affine open immersions**
+  (`IsRelativelyAmple.pullback_of_isOpenImmersion`). `isRelativelyAmple_pullback_iff_of_isIso`
+  is now a two-line corollary of it, replacing the earlier direct proof.
+- **Relative ampleness is preserved by composition with an affine morphism**
+  (`IsRelativelyAmple.comp`), **and it restricts to opens of the base**
+  (`IsRelativelyAmple.restrict`: `a ∣_{f⁻¹ U}` is relatively ample for `f ∣_ U`). The second is
+  one direction of locality on the base.
+- All of this is in `RelativelyAmple.lean` (split 5, now 328 lines).
+
 ## Changes in the seventh session (2026-11-04, 00:50 UTC)
 
 - `main` is unchanged at `333c9e49143`, so there is nothing new to merge.
@@ -131,12 +150,16 @@ The earlier stubs and what replaced them:
 5. **Relatively ample and very ample line bundles and projective morphisms** (after: 1, 2, 3, 4).
    It imports splits 1, 2 and 4. It comes after split 3 so that it is the split that completes
    the target's global-generation and ampleness layer.
-   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (260 lines, new).
+   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (328 lines, new).
    - Declarations: `CommMon.relativeProjTwistingSheafOne`; `InvertibleSheaf.IsRelativelyVeryAmple`,
      `IsRelativelyVeryAmple.of_iso`, `isRelativelyVeryAmple_relativeProjTwistingSheaf`,
      `IsRelativelyVeryAmple.pullback`, `IsRelativelyVeryAmple.isSeparated`;
      `LineBundleClass.IsRelativelyAmple` (Stacks 01VH), `IsRelativelyAmple.of_pow`,
-     `IsRelativelyAmple.isAmple` (over an affine base), `isRelativelyAmple_pullback_iff_of_isIso`,
+     `IsRelativelyAmple.isAmple` (over an affine base), `IsAmple.isRelativelyAmple` (over a
+     separated base, for quasi-compact `f`), `isRelativelyAmple_iff_isAmple` (over an affine base),
+     `IsRelativelyAmple.pullback_of_isOpenImmersion`, `isRelativelyAmple_pullback_iff_of_isIso`,
+     `IsRelativelyAmple.comp` (with an affine morphism), `IsRelativelyAmple.restrict` (to opens of
+     the base),
      `LineBundleClass.isRelativelyAmple_one_iff` (the trivial class is relatively ample exactly
      for quasi-affine morphisms), `isRelativelyAmple_one` (affine morphisms),
      `isRelativelyAmple_of_pow_eq_one`, `InvertibleSheaf.isRelativelyAmple_of_tensorPow`;
@@ -149,15 +172,18 @@ The earlier stubs and what replaced them:
 
 Proved, with no stubs: tensor powers of line bundles, with their classes, exponent laws and
 pullbacks. Global generation of `𝒪_X`, and of pullbacks, tensor products and tensor powers of
-globally generated line bundles. Relatively very ample line bundles: `𝒪(1)` is relatively very
-ample on `Proj_S A`, relative very ampleness is stable under isomorphism and under pullback along
+globally generated line bundles. Relatively very ample line bundles: `𝒪(1)` is relatively very ample
+on `Proj_S A`, relative very ampleness is stable under isomorphism and under pullback along
 immersions, and a relatively very ample bundle forces separatedness. Relative ampleness in the
 Stacks sense: descent from positive powers, the trivial class and quasi-affine morphisms, affine
-morphisms and torsion classes; over an affine base it implies ampleness, and it is invariant under
-isomorphisms of the source over the base. Ampleness is preserved by pullback along affine open
-immersions, in particular along isomorphisms, because the nonvanishing locus of a section restricted
-along an open immersion is the preimage of the original locus. Projective morphisms: they are closed under precomposition with
-closed immersions, they carry a relatively very ample line bundle, and they are **proper**.
+morphisms and torsion classes. Over an affine base it is ampleness, and over a separated base
+ampleness implies it for quasi-compact morphisms. It is preserved by pullback along affine open
+immersions of the source, and so it is invariant under isomorphisms of the source over the base. It
+is also preserved by composition with affine morphisms and by restriction to opens of the base.
+Ampleness is preserved by pullback along affine open immersions, in particular along isomorphisms,
+because the nonvanishing locus of a section restricted along an open immersion is the preimage of
+the original locus. Projective morphisms: they are closed under precomposition with closed
+immersions, they carry a relatively very ample line bundle, and they are **proper**.
 
 Remains for the target:
 - **Relatively very ample + quasi-compact ⇒ relatively ample**, and so projective ⇒ the
@@ -172,11 +198,11 @@ Remains for the target:
   that extends sections from `X_s` after multiplying by powers of `s`.
 - The converse "`a` relatively ample ⇒ `aⁿ` relatively ample". `IsAmple` on `main` lacks it too
   (`main` has only `IsAmple.of_pow`).
-- Over an affine base, ampleness ⇒ relative ampleness (the direction relative ⇒ absolute is
-  `IsRelativelyAmple.isAmple`). This needs ampleness restricted to quasi-compact opens `U`. The
-  hard step, Stacks' extension of sections from `X_s`, finds a global section of a power with
-  `x ∈ X_t ⊆ U`.
-- Relative ampleness is stable under pullback along immersions, and implies separatedness.
+- The converse of `IsRelativelyAmple.restrict`: relative ampleness can be checked on an open
+  cover of the base. This needs ampleness on `f⁻¹ V` checked on the preimages of an affine open
+  cover of `V`, which is the Stacks extension of sections from `X_s`.
+- Relative ampleness is stable under pullback along immersions that are not open, and under base
+  change. It also implies separatedness.
 - `ℙ(ℰ) = Proj_S(Sym ℰ)` is projective for `ℰ` of finite type. This needs `Sym ℰ` generated in
   degree one on affine sections: on an affine open, sections of `Symⁿ ℰ` are `Symⁿ` of sections.
 - Stability of projectivity under composition and base change (Segre embedding and base change
