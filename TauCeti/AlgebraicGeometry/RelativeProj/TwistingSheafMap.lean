@@ -40,6 +40,9 @@ charts).
 * `CategoryTheory.CommMon.relativeProjTwistingSheafMapChart_transition`: the chart components are
   compatible with the transition morphisms of the twisting sheaves of the charts, so that they
   glue.
+* `CategoryTheory.CommMon.homEquiv_relativeProjTwistingSheafMap_comp_π`: the morphism
+  `𝒪(n) ⟶ f_* 𝒪(n)` adjoint to the glued morphism, followed by the projection to a chart, is the
+  chart component.
 
 ## Implementation notes
 
@@ -198,6 +201,26 @@ def _root_.CategoryTheory.CommMon.relativeProjTwistingSheafMap :
   (A.relativeProjTwistingSheafGlueData n).lift
     (CommMon.relativeProjTwistingSheafMapComponent φ hφ n)
     (CommMon.relativeProjTwistingSheafMapComponent_transition φ hφ n)
+
+/-- The morphism `𝒪(n) ⟶ f_* 𝒪(n)` adjoint to the glued morphism of twisting sheaves, followed by
+the projection of `𝒪(n)` on `Proj_X(A)` to a chart, is the chart component. -/
+theorem _root_.CategoryTheory.CommMon.homEquiv_relativeProjTwistingSheafMap_comp_π
+    (U : X.AffineZariskiSite) :
+    ((Scheme.Modules.pullbackPushforwardAdjunction (X := colimit A.relativeProjGluingData.functor)
+      (Y := colimit B.relativeProjGluingData.functor) (CommMon.relativeProjMap φ hφ)).homEquiv _ _
+        (CommMon.relativeProjTwistingSheafMap φ hφ n)) ≫
+      (Scheme.Modules.pushforward (X := colimit A.relativeProjGluingData.functor)
+        (Y := colimit B.relativeProjGluingData.functor) (CommMon.relativeProjMap φ hφ)).map
+        ((A.relativeProjTwistingSheafGlueData n).π U) =
+      (B.relativeProjTwistingSheafGlueData n).π U ≫
+        CommMon.relativeProjTwistingSheafMapChart φ hφ n U := by
+  -- `relativeProjMap` is typed on `relativeProj`, the glued modules on `colimit _`, so the
+  -- naturality of the adjunction is applied as a term rather than by `rw`
+  exact ((Scheme.Modules.pullbackPushforwardAdjunction _).homEquiv_naturality_right _ _).symm.trans
+    ((congrArg ((Scheme.Modules.pullbackPushforwardAdjunction _).homEquiv _ _)
+      ((A.relativeProjTwistingSheafGlueData n).lift_π _
+        (CommMon.relativeProjTwistingSheafMapComponent_transition φ hφ n) U)).trans
+      (Equiv.apply_symm_apply _ _))
 
 end
 

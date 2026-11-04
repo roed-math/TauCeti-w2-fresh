@@ -30,6 +30,8 @@ free on the corresponding generators, and the comparison map matches the generat
   generator `fⁿ` is the standard generator `(g f)ⁿ`.
 * `AlgebraicGeometry.Proj.twistingSheaf.comap_chartSectionsLinearEquiv`: in standard chart
   coordinates, the pullback of sections of `𝒪(n)` is the pullback of functions.
+* `AlgebraicGeometry.Proj.twistingSheaf.twistingSheafMap_app_chartGenerator`: the morphism of
+  twisting sheaves sends the standard generator `fⁿ` to the standard generator `(g f)ⁿ`.
 
 ## References
 
@@ -86,5 +88,14 @@ theorem twistingSheafMap_app_chartSectionsLinearEquiv {W : (Proj 𝒜).Opens}
         (le_basicOpen_map g hg hW Set.Subset.rfl) ((map g hg).app W a) := by
   rw [twistingSheafMap_app, Scheme.Hom.app_eq_appLE]
   exact comap_chartSectionsLinearEquiv g hg n hf hW Set.Subset.rfl a
+
+/-- The morphism of twisting sheaves induced by `g` sends the standard generator `fⁿ` on an open
+`W ≤ D₊(f)` to the standard generator `(g f)ⁿ` on its preimage. -/
+theorem twistingSheafMap_app_chartGenerator {W : (Proj 𝒜).Opens} (hW : W ≤ basicOpen 𝒜 f) :
+    Scheme.Modules.Hom.app (twistingSheafMap g hg n) W (chartGenerator n f hf W hW) =
+      chartGenerator n (g f) (Graded.map_mem g hf) (map g hg ⁻¹ᵁ W)
+        (le_basicOpen_map g hg hW Set.Subset.rfl) := by
+  rw [twistingSheafMap_app]
+  exact comap_chartGenerator g hg n hf hW Set.Subset.rfl
 
 end AlgebraicGeometry.Proj.twistingSheaf
