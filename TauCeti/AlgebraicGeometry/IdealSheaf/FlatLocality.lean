@@ -23,6 +23,12 @@ inclusions (`AlgebraicGeometry.Scheme.IdealSheafData.comap_le_comap_iff_of_flat_
 closed subscheme of `Y` is determined by its base change along an fppf covering. This is the
 uniqueness half of faithfully flat descent for closed subschemes.
 
+Similarly, factorization of a morphism through a closed subscheme can be checked after an effective
+epimorphism: precomposing with an effective epimorphism does not change the kernel of a morphism
+(`AlgebraicGeometry.Scheme.Hom.ker_comp_of_effectiveEpi`), so a morphism `h` covered by a morphism
+`h'` factoring through the inverse image of a closed subscheme factors through that closed
+subscheme (`AlgebraicGeometry.Scheme.IdealSheafData.le_ker_of_comap_le_ker`).
+
 The proof descends morphisms: the base change `X ×_Y Z ⟶ Z` of `f` to the closed subscheme `Z` of
 `I` is again flat, surjective and locally of finite presentation, hence an effective epimorphism of
 schemes, and the closed subscheme of `(I.comap f).map f` receives a morphism from `X ×_Y Z` which
@@ -36,6 +42,10 @@ is invariant under its kernel pair, so `Z` maps into that closed subscheme over 
   image along an fppf covering reflects inclusions of ideal sheaves.
 * `AlgebraicGeometry.Scheme.IdealSheafData.comap_injective_of_flat_of_surjective`: inverse image
   along an fppf covering is injective on ideal sheaves.
+* `AlgebraicGeometry.Scheme.Hom.ker_comp_of_effectiveEpi`: precomposition with an effective
+  epimorphism does not change the kernel.
+* `AlgebraicGeometry.Scheme.IdealSheafData.le_ker_of_comap_le_ker`: factorization through a closed
+  subscheme descends along effective epimorphisms.
 
 ## References
 
@@ -91,5 +101,35 @@ theorem _root_.AlgebraicGeometry.Scheme.IdealSheafData.comap_injective_of_flat_o
     Function.Injective fun I : Y.IdealSheafData ↦ I.comap f := fun I J h ↦ by
   exact le_antisymm ((comap_le_comap_iff_of_flat_of_surjective f).mp h.le)
     ((comap_le_comap_iff_of_flat_of_surjective f).mp h.ge)
+
+/-- **Kernels are unchanged by precomposition with an effective epimorphism.** For an effective
+epimorphism `q : Z' ⟶ Z` of schemes, for instance an fppf covering, and any `h : Z ⟶ Y`, the
+morphisms `q ≫ h` and `h` have the same kernel: if `q ≫ h` factors through a closed subscheme of
+`Y`, then so does `h`. -/
+theorem _root_.AlgebraicGeometry.Scheme.Hom.ker_comp_of_effectiveEpi {Z Z' : Scheme.{u}}
+    (q : Z' ⟶ Z) [EffectiveEpi q] (h : Z ⟶ Y) : (q ≫ h).ker = h.ker := by
+  refine le_antisymm ?_ (Scheme.Hom.le_ker_comp _ _)
+  let K := (q ≫ h).ker
+  let m : Z' ⟶ K.subscheme := IsClosedImmersion.lift K.subschemeι (q ≫ h) (by rw [ker_subschemeι])
+  -- The factorization of `q ≫ h` through the closed subscheme of `K` descends along `q`.
+  let k : Z ⟶ K.subscheme := EffectiveEpi.desc q m fun g₁ g₂ hg ↦ by
+    rw [← cancel_mono K.subschemeι]
+    simp only [Category.assoc, m, IsClosedImmersion.lift_fac, reassoc_of% hg]
+  have hk : k ≫ K.subschemeι = h := by
+    rw [← cancel_epi q, ← Category.assoc, EffectiveEpi.fac]
+    exact IsClosedImmersion.lift_fac _ _ _
+  calc K = K.subschemeι.ker := K.ker_subschemeι.symm
+    _ ≤ (k ≫ K.subschemeι).ker := Scheme.Hom.le_ker_comp _ _
+    _ = h.ker := by rw [hk]
+
+/-- **Factorization through a closed subscheme can be checked after an effective epimorphism.**
+Let `h' : Z' ⟶ X'` and `h : Z ⟶ Y` be morphisms with `h' ≫ g = q ≫ h` for an effective
+epimorphism `q : Z' ⟶ Z`. If `h'` factors through the inverse image along `g` of the closed
+subscheme of an ideal sheaf `I` on `Y`, then `h` factors through that closed subscheme. -/
+theorem _root_.AlgebraicGeometry.Scheme.IdealSheafData.le_ker_of_comap_le_ker
+    {X' Z Z' : Scheme.{u}} {g : X' ⟶ Y} {h : Z ⟶ Y} {h' : Z' ⟶ X'} (q : Z' ⟶ Z) [EffectiveEpi q]
+    (w : h' ≫ g = q ≫ h) {I : Y.IdealSheafData} (H : I.comap g ≤ h'.ker) : I ≤ h.ker := by
+  rw [← Scheme.Hom.ker_comp_of_effectiveEpi q, ← w, ← map_ker]
+  exact le_map_iff_comap_le.mpr H
 
 end TauCeti

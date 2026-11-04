@@ -404,6 +404,27 @@ theorem baseChangeFunctor_map_baseChangeFunctorHom {X : EllObj B} {T' T : Over X
   exact (X.curve.baseChangeMap_baseChangeIso_hom_assoc k.left (Over.w k) _).trans
     (congrArg ((X.curve.baseChangeIso T'.hom).hom ≫ ·) (pullback.mapSnd_fst _ _ _ _ _))
 
+/-- **Base change of `E` preserves fibre products of schemes over the base.** For a fibre square
+`T₃ = T₁ ×_T T₂` of schemes over the base `S` of `X = (S, E)`, the total spaces form the fibre
+square `E_{T₃} = E_{T₁} ×_{E_T} E_{T₂}`. -/
+theorem isPullback_baseChangeFunctor_map_total {X : EllObj B} {T T₁ T₂ T₃ : Over X.base}
+    {a : T₃ ⟶ T₁} {b : T₃ ⟶ T₂} {c : T₁ ⟶ T} {d : T₂ ⟶ T}
+    (h : IsPullback a.left b.left c.left d.left) :
+    IsPullback (X.baseChangeFunctor.map a).total (X.baseChangeFunctor.map b).total
+      (X.baseChangeFunctor.map c).total (X.baseChangeFunctor.map d).total := by
+  -- Paste the square of `a` over `h`, then cancel the square of `d`.
+  have hout := (X.baseChangeFunctor.map a).isPullback.paste_vert h
+  have wb : (X.baseChangeFunctor.obj T₃).curve.structureMap ≫ b.left =
+      (X.baseChangeFunctor.map b).total ≫ (X.baseChangeFunctor.obj T₂).curve.structureMap :=
+    (X.baseChangeFunctor.map b).isPullback.w.symm
+  have wc : (X.baseChangeFunctor.obj T₁).curve.structureMap ≫ c.left =
+      (X.baseChangeFunctor.map c).total ≫ (X.baseChangeFunctor.obj T).curve.structureMap :=
+    (X.baseChangeFunctor.map c).isPullback.w.symm
+  rw [wb, wc] at hout
+  have hw : a ≫ c = b ≫ d := Over.OverMorphism.ext h.w
+  refine hout.of_bot ?_ (X.baseChangeFunctor.map d).isPullback
+  rw [← comp_total, ← comp_total, ← Functor.map_comp, ← Functor.map_comp, hw]
+
 /-- The component at `T` of `baseChangeFunctorIso f`: the cartesian factorisation of
 `X.baseChangeFunctorHom T ≫ f` through `Y.baseChangeFunctorHom`, over the identity of `T`. -/
 private noncomputable def baseChangeFunctorIsoApp {X Y : EllObj B} (f : X ⟶ Y) (T : Over X.base) :
