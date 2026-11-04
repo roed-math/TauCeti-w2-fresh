@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-proper-pushforward","main":"7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b","status":"partial","suppliers":["chow-group"],"splits":[{"n":1,"after":[],"title":"feat: pushforward of cycles over a field and degree of zero-cycles"},{"n":2,"after":[],"title":"feat: cokernel length of injective endomorphisms"},{"n":3,"after":[2],"title":"feat: cokernel length is the order of the determinant over one-dimensional domains"},{"n":4,"after":[3],"title":"feat: the order of a norm is a length (Fulton A.3)"},{"n":5,"after":[1,4],"title":"feat: proper pushforward of a principal divisor is the divisor of the norm"},{"n":6,"after":[1,5],"title":"feat: principal divisors push forward to zero along dimension-dropping proper maps"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: proper pushforward of Chow groups and the degree of zero-cycles"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-proper-pushforward","main":"7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b","status":"partial","suppliers":["chow-group"],"splits":[{"n":1,"after":[],"title":"feat: pushforward of cycles over a field and degree of zero-cycles"},{"n":2,"after":[],"title":"feat: cokernel length of injective endomorphisms"},{"n":3,"after":[2],"title":"feat: cokernel length is the order of the determinant over one-dimensional domains"},{"n":4,"after":[3],"title":"feat: the order of a norm is a sum of local orders (Fulton A.3)"},{"n":5,"after":[1],"title":"feat: dimension-preserving morphisms have finite residue field extensions"},{"n":6,"after":[1,4,5],"title":"feat: proper pushforward of a principal divisor is the divisor of the norm"},{"n":7,"after":[1,6],"title":"feat: principal divisors push forward to zero along dimension-dropping proper maps"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: proper pushforward of Chow groups and the degree of zero-cycles"}]}-->
 
 # Lookahead: `chow-proper-pushforward` (SchemeAndStackFoundations §5.2)
 
@@ -17,10 +17,14 @@ pushforward of `n`-cycles over a field, its functoriality, the degree of zero-cy
 `deg f_* = deg` (split 1). The commutative algebra behind Fulton, Proposition 1.4(b) is proved
 in full (splits 2–4, no stubs): the determinant lemma of Fulton's Appendix A.2 (the order of a
 determinant is a cokernel length, over any Noetherian domain of dimension at most one), and the
-order of a norm of Appendix A.3, `ord_A N_{L/K}(b) = length_A (B ⧸ bB)
-= Σ_m [κ(B_m) : κ(A)] ord_{B_m}(b)` for a domain `B` finite over a local `A`. Still to do: the
-scheme-level statements of Proposition 1.4(a) and (b) and the descent to Chow groups
-(splits 5–7).
+order of a norm of Appendix A.3 in its final form, `ord_A N_{L/K}(r)
+= Σ_m [B ⧸ m : κ(A)] ord_{R_m}(r)` for every nonzero `r` in the fraction field of a domain `B`
+finite over a local `A`, with the orders taken in arbitrary localizations `R_m` of `B` (for
+instance the local rings of a scheme). Split 5 proves the first scheme-level input of
+Proposition 1.4: a dimension-preserving point has a finite residue field extension, so a dominant
+morphism of integral schemes of the same dimension, locally of finite type over `k`, makes
+`K(X)` finite over `K(Y)`. Still to do: the scheme-level statements of Proposition 1.4(a) and (b)
+and the descent to Chow groups (splits 6–8).
 
 ## The supplier `chow-group` and its stub
 
@@ -50,7 +54,9 @@ That PR also adds one general lemma that this target needs, and that lemma is th
 - Source: PR #27340's diff. Differences: none in the statement. The stub lives in
   `TauCeti/Lookahead/ChowProperPushforward/Stubs.lean` (namespace `TauCeti`), not in
   `TauCeti/Topology/KrullDimension/Basic.lean`. Only `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean`
-  imports it. When the port runs, it deletes the stub file and replaces that
+  imports it (used by `height_eq_toNat_trdeg_residueField` in split 1 and by
+  `functionFieldMap_finite_of_topologicalKrullDim_eq` in split 5). When the port runs, it
+  deletes the stub file and replaces that
   `public import TauCeti.Lookahead.ChowProperPushforward.Stubs` with the landed module
   (`TauCeti.Topology.KrullDimension.Basic`, if it is not already imported transitively).
 - Why it is a stub and not proved here: it is PR #27340's declaration. Proving it on this
@@ -141,10 +147,13 @@ argument (naming rubric), the rest in `TauCeti`:
   generated `A`-lattice `M` spanning a `K`-vector space `V` and a nonsingular `K`-linear `φ` with
   `φ M ⊆ M`, `ordFrac_A (det φ) = length (M ⧸ φ M)`.
 
-### Split 4: `feat: the order of a norm is a length (Fulton A.3)` (after: 3)
+### Split 4: `feat: the order of a norm is a sum of local orders (Fulton A.3)` (after: 3)
 
-Proved on this branch. File `TauCeti/RingTheory/Length/Norm.lean` (new, 304 lines):
+Proved on this branch. Files `TauCeti/RingTheory/Length/Norm.lean` (new, 450 lines) and
+`TauCeti/RingTheory/OrderOfVanishing.lean` (existing, +19 lines):
 
+- `TauCeti.Ring.ord_ringEquiv` (in `OrderOfVanishing.lean`): `Ring.ord` is invariant under ring
+  isomorphisms (a semilinear bijection of the quotients, `LinearMap.length_eq_of_bijective`);
 - `TauCeti.span_range_algebraMap_eq_top`: for `B` integral over `A`, `Frac B` is the `K`-span
   of `B`;
 - `TauCeti.ordFrac_norm_eq_coe_of_length_eq`: for `B` a domain finite over `A` (Noetherian domain
@@ -152,33 +161,65 @@ Proved on this branch. File `TauCeti/RingTheory/Length/Norm.lean` (new, 304 line
 - `Localization.localRingHom_surjective_of_surjective`,
   `TauCeti.length_localization_quotient_span_singleton` (`(R ⧸ bR)_q ≅ R_m ⧸ b R_m`, so its
   length is `ord_{R_m} b`), `Ideal.length_residueField_localization_quotient`;
-- `TauCeti.isFiniteLength_quotient_span_singleton` (`B ⧸ bB` has finite `A`-length);
+- `TauCeti.exists_maximalSpectrum_comap_mk_eq` (a maximal ideal containing `b` comes from
+  `B ⧸ bB`), `TauCeti.isFiniteLength_quotient_span_singleton` (`B ⧸ bB` has finite `A`-length),
+  `TauCeti.finite_setOf_mem_maximalSpectrum` (`b ≠ 0` lies in finitely many maximal ideals);
 - `TauCeti.length_quotient_span_singleton_eq_finsum` (sum over the maximal ideals of the Artinian
   ring `B ⧸ bB`) and `TauCeti.length_quotient_span_singleton_eq_finsum_ord`: for `A` local,
-  `length_A (B ⧸ bB) = Σᶠ m : MaximalSpectrum B, ord_{B_m}(b) * length_A κ(B_m)`.
+  `length_A (B ⧸ bB) = Σᶠ m : MaximalSpectrum B, ord_{B_m}(b) * length_A κ(B_m)`;
+- `TauCeti.length_residueField_localization_eq` (`length_A κ(B_m) = length_A (B ⧸ m)`),
+  `TauCeti.ordFrac_algebraMap_eq_ofAdd_ord` (the order of `b` in any localization `R m` of `B` at
+  `m` is its order in `B_m`), `TauCeti.mulSupport_ordFrac_pow_subset`;
+- `TauCeti.ordFrac_norm_algebraMap_eq_finprod` and, the main statement,
+  `TauCeti.ordFrac_norm_eq_finprod`: for `r ≠ 0` in `L`,
+  `Ring.ordFrac A (Algebra.norm K r) = ∏ᶠ m, Ring.ordFrac (R m) r ^ (length_A (B ⧸ m)).toNat`,
+  for any family `R m` of localizations of `B` at its maximal ideals with `R m → L` compatible.
+  The family carries the instance binders that `Ring.ordFrac (R m)` needs to be stated
+  (`IsDomain`, `IsNoetherianRing`, `Ring.KrullDimLE 1`, `IsFractionRing (R m) L`). They follow
+  from `IsLocalization.AtPrime` and the tower but are not instances; a generality reviewer may
+  ask for them to be derived. At the scheme level (split 6) the stalks carry all of them as
+  instances.
 
-### Split 5: `feat: proper pushforward of a principal divisor is the divisor of the norm` (after: 1, 4)
+### Split 5: `feat: dimension-preserving morphisms have finite residue field extensions` (after: 1)
+
+Proved on this branch, about 110 lines. Needs split 1 (`height_eq_toNat_trdeg_residueField`) and,
+through it, PR #27340 on `main`.
+
+- `TauCeti/AlgebraicGeometry/Morphisms/Dominant.lean`: `Scheme.Hom.functionFieldMap_def` (the
+  pullback of rational functions is `stalkSpecializes ≫ stalkMap` at the generic point; the
+  definition is not exposed, so downstream proofs need this unfolding lemma).
+- `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (namespace
+  `TauCeti.AlgebraicGeometry`):
+  - `essFiniteType_residueField` (instance): `κ(x)` is essentially of finite type over `k`;
+  - `residueDegree_ne_zero_of_height_apply_eq`: for `f` over `k` between schemes locally of finite
+    type, `height (f x) = height x` implies `f.residueDegree x ≠ 0` (the converse of split 1's
+    `height_apply_eq_height_of_residueDegree_ne_zero`);
+  - `functionFieldMap_finite_of_topologicalKrullDim_eq`: a dominant morphism of integral schemes
+    of the same dimension makes `K(X)` finite over `K(Y)`, the finiteness that the norm
+    `N_{K(W)/K(W')}` of Proposition 1.4(b) needs.
+
+### Split 6: `feat: proper pushforward of a principal divisor is the divisor of the norm` (after: 1, 4, 5)
 
 Not started. Let `f : W → W'` be a proper surjective morphism of integral schemes of the same
-dimension, locally of finite type over `k`. Then `κ(W)/κ(W')` is finite and
+dimension, locally of finite type over `k`. Then `κ(W)/κ(W')` is finite (split 5) and
 `f_* div r = div (Norm_{κ(W)/κ(W')} r)` (Fulton, Proposition 1.4(b)). At a codimension-one point
 `y` of `W'`, `f` is finite over a neighbourhood of `y` (proper and quasi-finite there), so with
 `A = 𝒪_{W',y}` and `B` the semilocal ring of `W` over `y`, split 4 gives the coefficient
-identity: `ordFrac_norm_eq_coe_of_length_eq` and `length_quotient_span_singleton_eq_finsum_ord`,
-with `B_m = 𝒪_{W,x}` for the points `x` of `W` over `y`. The scheme-level inputs still to prove
-are the finiteness of `κ(W)/κ(W')`, the finiteness of `f` over a neighbourhood of `y`, and the
-identification of the semilocal ring with its function field and local rings. Expected file: a
+identity: `ordFrac_norm_eq_finprod` with `R m = 𝒪_{W,x}` for the points `x` of `W` over `y`
+(whose orders are Mathlib's `Scheme.ord`) and `length_A (B ⧸ m) = [κ(x) : κ(y)]`. The
+scheme-level inputs still to prove are the finiteness of `f` over a neighbourhood of `y`, and the
+identification of the semilocal ring with its fraction field `K(W)` and its local rings. Expected file: a
 new `TauCeti/AlgebraicGeometry/Chow/Norm.lean`.
 
-### Split 6: `feat: principal divisors push forward to zero along dimension-dropping proper maps` (after: 1, 5)
+### Split 7: `feat: principal divisors push forward to zero along dimension-dropping proper maps` (after: 1, 6)
 
 Not started. If `dim f(W) < dim W`, then `f_* div r = 0` (Fulton, Proposition 1.4(a)). On
 `k`-cycles this is automatic for `dim f(W) < k` by the grading of `Chow.cyclesMap`. The case
 `dim f(W) = k` reduces to the fact that a principal divisor on a proper curve over the function
-field of `f(W)` (the generic fibre) has degree zero, which is split 5 applied to the finite map
+field of `f(W)` (the generic fibre) has degree zero, which is split 6 applied to the finite map
 from the curve to `ℙ¹` given by `r` (Fulton's proof of Proposition 1.4(a)).
 
-### Split 7 (final): `feat: proper pushforward of Chow groups and the degree of zero-cycles` (after: 1, 2, 3, 4, 5, 6)
+### Split 8 (final): `feat: proper pushforward of Chow groups and the degree of zero-cycles` (after: 1, 2, 3, 4, 5, 6, 7)
 
 Not started; this is the only split that completes the target. File: a new
 `TauCeti/AlgebraicGeometry/Chow/ProperPushforward.lean`.
@@ -188,7 +229,7 @@ Not started; this is the only split that completes the target. File: a new
   locally finite sum (its summands are determined by `RatEquivFamily.component_apply` and
   `component_apply_eq_zero_of_notMem_range`, so `component_def` is not needed), push it forward
   with `map_locallyFiniteSum`, and rewrite each summand as `(i_j ≫ f)_* div r_j` with
-  `map_height_comp_of_isClosedImmersion`. Splits 5 and 6 turn each summand into `0` or
+  `map_height_comp_of_isClosedImmersion`. Splits 6 and 7 turn each summand into `0` or
   `(i_V)_* div (N r_j)` on `V = f(W_j)`. Group the nonzero summands by `V`: only finitely many
   `W_j` meet the quasi-compact `f⁻¹(V)`, so the products of the norms over each `V` give a family
   of reduced images that is locally finite, as in `locallyFinite_support_map`.
@@ -200,6 +241,6 @@ Not started; this is the only split that completes the target. File: a new
 
 ## What remains (status `partial`)
 
-Proved: splits 1–4. Remaining: splits 5–7. In particular, the statement that proper pushforward
+Proved: splits 1–5. Remaining: splits 6–8. In particular, the statement that proper pushforward
 preserves rational equivalence (Fulton, Proposition 1.4; Theorem 1.4) is not proved, so `f_*` and `deg` are not yet
 defined on Chow groups.

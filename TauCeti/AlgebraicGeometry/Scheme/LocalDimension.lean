@@ -5,10 +5,13 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.AlgebraicGeometry.Morphisms.Dominant
 public import TauCeti.AlgebraicGeometry.Morphisms.FiniteType
 public import TauCeti.AlgebraicGeometry.Scheme.BaseAlgebra
 public import TauCeti.AlgebraicGeometry.Scheme.KrullDimension
 public import TauCeti.Lookahead.ChowProperPushforward.Stubs
+import Mathlib.FieldTheory.FinTrdeg
+import Mathlib.FieldTheory.IntermediateField.Adjoin.Algebra
 import Mathlib.RingTheory.AlgebraicIndependent.TranscendenceBasis
 import TauCeti.AlgebraicGeometry.ResidueDegree
 
@@ -54,6 +57,10 @@ All in the namespace `TauCeti.AlgebraicGeometry`:
 * `height_eq_toNat_trdeg_residueField`: the height of `x` is `trdeg_k κ(x)`.
 * `height_apply_eq_height_of_residueDegree_ne_zero`: a morphism over `k` preserves the height of
   a point with finite residue field extension.
+* `residueDegree_ne_zero_of_height_apply_eq`: conversely, a point with the height of its image has
+  finite residue field extension.
+* `functionFieldMap_finite_of_topologicalKrullDim_eq`: a dominant morphism of integral schemes of
+  the same dimension makes `K(X)` finite over `K(Y)`.
 
 ## References
 
@@ -214,6 +221,99 @@ theorem height_apply_eq_height_of_residueDegree_ne_zero {Y : Scheme.{u}} [Y.Over
   rw [height_eq_toNat_trdeg_residueField k, height_eq_toNat_trdeg_residueField k,
     ← trdeg_add_eq k (Y.residueField (f x)) (A := X.residueField x),
     trdeg_eq_zero (R := Y.residueField (f x)), add_zero]
+
+/-- The residue field `κ(x)` of a scheme locally of finite type over a field `k` is essentially of
+finite type over `k`: its `k`-algebra structure factors as `k ≅ κ(p x)` followed by the residue
+field map of the structure morphism `p`, which is essentially of finite type because the stalk
+maps of `p` are. -/
+instance essFiniteType_residueField (x : X) : Algebra.EssFiniteType k (X.residueField x) := by
+  rw [← RingHom.essFiniteType_algebraMap]
+  have h : algebraMap k (X.residueField x) =
+      ((Scheme.Spec.residueFieldIsoOfField ((X ↘ Spec (.of k)) x)).inv ≫
+        (X ↘ Spec (.of k)).residueFieldMap x).hom := by
+    rw [Scheme.Hom.residueFieldIsoOfField_inv_residueFieldMap]
+    ext c
+    rw [Scheme.algebraMap_residueField_eq_residue_comp_baseRingToStalk, RingHom.comp_apply,
+      Scheme.residue_baseRingToStalk, Scheme.Modules.baseRingToGlobalSections_apply]
+    rfl
+  rw [h, CommRingCat.hom_comp]
+  let he := (Scheme.Spec.residueFieldIsoOfField ((X ↘ Spec (.of k)) x)).commRingCatIsoToRingEquiv
+  exact (RingHom.FiniteType.of_surjective _ he.symm.surjective).essFiniteType.comp
+    (LocallyOfFiniteType.stalkMap (X ↘ Spec (.of k)) x).residueFieldMap
+
+/-- **Points of the same dimension have finite residue extensions.** Let `f : X ⟶ Y` be a morphism
+of schemes locally of finite type over a field `k`, and let `x ∈ X` be a point whose closure has
+the dimension of the closure of `f x`. Then `κ(x)` is finite over `κ(f x)`, that is,
+`f.residueDegree x ≠ 0`: the transcendence degree of `κ(x)` over `κ(f x)` is the difference of the
+two finite dimensions, hence zero, and an algebraic extension that is essentially of finite type is
+finite. This is the converse of `height_apply_eq_height_of_residueDegree_ne_zero`. -/
+theorem residueDegree_ne_zero_of_height_apply_eq {Y : Scheme.{u}} [Y.Over (Spec (.of k))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of k))] (f : X ⟶ Y) [f.IsOver (Spec (.of k))] {x : X}
+    (hx : Order.height (f x) = Order.height x) : f.residueDegree x ≠ 0 := by
+  let : Algebra (Y.residueField (f x)) (X.residueField x) := (f.residueFieldMap x).hom.toAlgebra
+  have : IsScalarTower k (Y.residueField (f x)) (X.residueField x) :=
+    IsScalarTower.of_algebraMap_eq fun c ↦ (f.residueFieldMap_algebraMap k x c).symm
+  have : LocallyOfFiniteType f := by
+    have : LocallyOfFiniteType (f ≫ Y ↘ Spec (.of k)) := by
+      rw [CategoryTheory.comp_over]; infer_instance
+    exact locallyOfFiniteType_of_comp f (Y ↘ Spec (.of k))
+  have : Algebra.EssFiniteType (Y.residueField (f x)) (X.residueField x) :=
+    RingHom.essFiniteType_algebraMap.1 (LocallyOfFiniteType.stalkMap f x).residueFieldMap
+  -- `trdeg_k κ(x) = trdeg_k κ(f x) + trdeg_{κ(f x)} κ(x)`, all finite.
+  have hsum := trdeg_add_eq k (Y.residueField (f x)) (A := X.residueField x)
+  have hfin : Algebra.trdeg k (X.residueField x) < Cardinal.aleph0 := trdeg_lt_aleph0 _ _
+  rw [← hsum, Cardinal.add_lt_aleph0_iff] at hfin
+  rw [height_eq_toNat_trdeg_residueField k, height_eq_toNat_trdeg_residueField k, ← hsum,
+    Cardinal.toNat_add hfin.1 hfin.2, Nat.cast_inj, left_eq_add, Cardinal.toNat_eq_zero] at hx
+  have : Algebra.IsAlgebraic (Y.residueField (f x)) (X.residueField x) :=
+    trdeg_eq_zero_iff.1 (hx.resolve_right hfin.2.not_ge)
+  exact (residueDegree_ne_zero_iff f x).2
+    Algebra.finite_of_essFiniteType_of_isAlgebraic
+
+/-- **Dominant maps of equal dimension are generically finite.** Let `f : X ⟶ Y` be a dominant
+morphism of integral schemes locally of finite type over a field `k`, with `dim X = dim Y`. Then
+the function field `K(X)` is finite over `K(Y)` along the pullback of rational functions: `f` sends
+the generic point of `X` to that of `Y`, the two closures have the same dimension, so the residue
+field extension there is finite (`residueDegree_ne_zero_of_height_apply_eq`). -/
+theorem functionFieldMap_finite_of_topologicalKrullDim_eq {Y : Scheme.{u}}
+    [Y.Over (Spec (.of k))] [LocallyOfFiniteType (Y ↘ Spec (.of k))] [IsIntegral X] [IsIntegral Y]
+    (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsDominant f]
+    (h : topologicalKrullDim X = topologicalKrullDim Y) :
+    f.functionFieldMap.hom.Finite := by
+  have hx : f (genericPoint X) = genericPoint Y := f.genericPoint_eq_of_isDominant
+  have hheight : Order.height (f (genericPoint X)) = Order.height (genericPoint X) := by
+    have hX := height_eq_topologicalKrullDim_closure_singleton (genericPoint X)
+    have hY := height_eq_topologicalKrullDim_closure_singleton (f (genericPoint X))
+    rw [isGenericPoint_def.1 (genericPoint_spec X),
+      (Homeomorph.Set.univ X).isHomeomorph.topologicalKrullDim_eq] at hX
+    rw [hx, isGenericPoint_def.1 (genericPoint_spec Y),
+      (Homeomorph.Set.univ Y).isHomeomorph.topologicalKrullDim_eq] at hY
+    rw [hx]
+    exact_mod_cast hY.trans (h.symm.trans hX.symm)
+  have hfin :=
+    (residueDegree_ne_zero_iff f _).1 (residueDegree_ne_zero_of_height_apply_eq k f hheight)
+  -- Identify `K(Y) ⟶ K(X)` with `κ(f η) ⟶ κ(η)` at the generic point `η` of `X`.
+  have hspec : ∀ {a b : Y} (hab : a = b),
+      Function.Surjective (Y.presheaf.stalkSpecializes (specializes_of_eq hab)).hom := by
+    rintro a _ rfl
+    rw [TopCat.Presheaf.stalkSpecializes_refl]
+    exact Function.surjective_id
+  have hcomm : (X.residue (genericPoint X)).hom.comp f.functionFieldMap.hom =
+      (f.residueFieldMap (genericPoint X)).hom.comp ((Y.residue (f (genericPoint X))).hom.comp
+        (Y.presheaf.stalkSpecializes (specializes_of_eq hx)).hom) := by
+    rw [← CommRingCat.hom_comp, ← CommRingCat.hom_comp, ← CommRingCat.hom_comp,
+      Scheme.Hom.functionFieldMap_def, Category.assoc, Category.assoc,
+      Scheme.residue_residueFieldMap]
+  let e := RingEquiv.ofBijective (X.residue (genericPoint X)).hom
+    ⟨(X.residue (genericPoint X)).hom.injective, X.residue_surjective _⟩
+  have : f.functionFieldMap.hom =
+      (e.symm : X.residueField (genericPoint X) →+* X.functionField).comp
+        ((X.residue (genericPoint X)).hom.comp f.functionFieldMap.hom) := by
+    ext a
+    exact (e.symm_apply_apply _).symm
+  rw [this, hcomm]
+  exact (RingHom.Finite.of_surjective _ e.symm.surjective).comp (hfin.comp
+    (RingHom.Finite.of_surjective _ ((Y.residue_surjective _).comp (hspec hx))))
 
 end AlgebraicGeometry
 

@@ -7,8 +7,10 @@ module
 
 public import Mathlib.RingTheory.Norm.Basic
 public import TauCeti.RingTheory.Length.Determinant
+import Mathlib.Data.ENat.BigOperators
 import Mathlib.RingTheory.Algebraic.Integral
 import Mathlib.RingTheory.LocalRing.Length
+import TauCeti.RingTheory.OrderOfVanishing
 
 /-!
 # The order of a norm
@@ -34,6 +36,10 @@ Appendix A.3):
 
 Together they give `ord_A N_{L/K}(b) = Σ_m [κ(B_m) : κ(A)] ord_{B_m}(b)`, the coefficient identity
 behind the pushforward of principal divisors along finite maps (Fulton, Proposition 1.4(b)).
+`TauCeti.ordFrac_norm_eq_finprod` states it for every nonzero `r` in `L`, multiplicatively in
+`ℤᵐ⁰`, with the orders taken in arbitrary localizations `R m` of `B` at its maximal ideals (such as
+the local rings of a scheme at the points of a fibre) and the residue degree read as the `A`-length
+of `B ⧸ m`. The orders are transported from `B_m` to `R m` by `TauCeti.Ring.ord_ringEquiv`.
 -/
 
 public section
@@ -210,6 +216,15 @@ theorem _root_.Ideal.length_residueField_localization_quotient {A R : Type*} [Co
         simp [φ, ψ] }
   exact e.length_eq.symm
 
+/-- A maximal ideal of `B` containing `b` is the preimage of a maximal ideal of `B ⧸ bB`. -/
+theorem exists_maximalSpectrum_comap_mk_eq {B : Type*} [CommRing B] {b : B}
+    {m : MaximalSpectrum B} (hbm : b ∈ m.asIdeal) :
+    ∃ q : MaximalSpectrum (B ⧸ Ideal.span {b}),
+      q.asIdeal.comap (Ideal.Quotient.mk _) = m.asIdeal := by
+  have hle : Ideal.span {b} ≤ m.asIdeal := (Ideal.span_singleton_le_iff_mem _).2 hbm
+  exact ⟨⟨_, Ideal.IsMaximal.map_of_surjective_of_ker_le Ideal.Quotient.mk_surjective
+    (by rwa [Ideal.mk_ker])⟩, Ideal.comap_map_mk hle⟩
+
 variable {A B : Type*} [CommRing A] [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A]
   [CommRing B] [IsDomain B] [Algebra A B] [Module.Finite A B]
 
@@ -288,11 +303,8 @@ theorem length_quotient_span_singleton_eq_finsum_ord [IsLocalRing A] {b : B} (hb
       refine hm ?_
       simp only [G, Ring.ord_of_isUnit ((IsLocalization.AtPrime.isUnit_to_map_iff _ _ b).2 hbm),
         zero_mul]
-    have hle : Ideal.span {b} ≤ m.asIdeal := (Ideal.span_singleton_le_iff_mem _).2 hbm
-    have : (m.asIdeal.map (Ideal.Quotient.mk (Ideal.span {b}))).IsMaximal :=
-      Ideal.IsMaximal.map_of_surjective_of_ker_le Ideal.Quotient.mk_surjective
-        (by rwa [Ideal.mk_ker])
-    exact ⟨⟨_, this⟩, MaximalSpectrum.ext (Ideal.comap_map_mk hle)⟩
+    obtain ⟨q, hq⟩ := exists_maximalSpectrum_comap_mk_eq hbm
+    exact ⟨q, MaximalSpectrum.ext hq⟩
   have hG : ∑ᶠ m, G m = ∑ᶠ q, G (c q) := by
     rw [← finsum_mem_range hc, finsum_mem_def, Set.indicator_eq_self.2 hsupp]
   rw [length_quotient_span_singleton_eq_finsum hb, hG]
@@ -300,5 +312,139 @@ theorem length_quotient_span_singleton_eq_finsum_ord [IsLocalRing A] {b : B} (hb
   rw [length_localization_quotient_span_singleton, Ideal.length_residueField_localization_quotient]
 
 end Local
+
+/-- For `B` finite over a Noetherian domain `A` of dimension at most one, a nonzero `b : B` lies in
+only finitely many maximal ideals of `B`: they are the maximal ideals of the Artinian ring
+`B ⧸ bB`. -/
+theorem finite_setOf_mem_maximalSpectrum (A : Type*) {B : Type*} [CommRing A] [IsDomain A]
+    [IsNoetherianRing A] [Ring.KrullDimLE 1 A] [CommRing B] [IsDomain B] [Algebra A B]
+    [Module.Finite A B] {b : B} (hb : b ≠ 0) :
+    {m : MaximalSpectrum B | b ∈ m.asIdeal}.Finite := by
+  have : IsArtinian A (B ⧸ Ideal.span {b}) :=
+    (isFiniteLength_iff_isNoetherian_isArtinian.1 (isFiniteLength_quotient_span_singleton hb)).2
+  have : IsArtinianRing (B ⧸ Ideal.span {b}) := isArtinian_of_tower A inferInstance
+  let c : MaximalSpectrum (B ⧸ Ideal.span {b}) → MaximalSpectrum B := fun q ↦
+    ⟨q.asIdeal.comap (Ideal.Quotient.mk _),
+      Ideal.comap_isMaximal_of_surjective _ Ideal.Quotient.mk_surjective⟩
+  refine (Set.finite_range c).subset fun m (hbm : b ∈ m.asIdeal) ↦ ?_
+  obtain ⟨q, hq⟩ := exists_maximalSpectrum_comap_mk_eq hbm
+  exact ⟨q, MaximalSpectrum.ext hq⟩
+
+section Fraction
+
+variable {A K B L : Type*} [CommRing A] [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A]
+  [IsLocalRing A] [Field K] [Algebra A K] [IsFractionRing A K] [CommRing B] [IsDomain B]
+  [Algebra A B] [Module.Finite A B] [Field L] [Algebra B L] [IsFractionRing B L] [Algebra K L]
+  [Algebra A L] [IsScalarTower A K L] [IsScalarTower A B L]
+  (R : MaximalSpectrum B → Type*) [∀ m, CommRing (R m)] [∀ m, IsDomain (R m)]
+  [∀ m, IsNoetherianRing (R m)] [∀ m, Ring.KrullDimLE 1 (R m)] [∀ m, Algebra B (R m)]
+  [∀ m, IsLocalization.AtPrime (R m) m.asIdeal] [∀ m, Algebra (R m) L]
+  [∀ m, IsScalarTower B (R m) L] [∀ m, IsFractionRing (R m) L]
+
+omit [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A] [IsLocalRing A] [Module.Finite A B]
+  [IsDomain B] in
+/-- The residue degree of a maximal ideal `m` of `B` over `A`, read as the `A`-length of
+`κ(B_m)`, is the `A`-length of `B ⧸ m`. -/
+theorem length_residueField_localization_eq (m : MaximalSpectrum B) :
+    Module.length A (IsLocalRing.ResidueField (Localization.AtPrime m.asIdeal)) =
+      Module.length A (B ⧸ m.asIdeal) := by
+  have := m.isMaximal
+  exact ((IsLocalization.AtPrime.equivQuotMaximalIdeal m.asIdeal
+    (Localization.AtPrime m.asIdeal)).toLinearEquiv.restrictScalars A).length_eq.symm
+
+omit [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A] [IsLocalRing A] [Module.Finite A B]
+  [IsDomain B] in
+/-- The order of `b ∈ B` in a localization `R m` of `B` at a maximal ideal `m`, computed on the
+fraction field `L`, is its order in `B_m`. -/
+theorem ordFrac_algebraMap_eq_ofAdd_ord (m : MaximalSpectrum B) {b : B} (hb : b ≠ 0) :
+    Ring.ordFrac (R m) (algebraMap B L b) = Multiplicative.ofAdd
+      ((Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b)).toNat : ℤ) := by
+  let e : Localization.AtPrime m.asIdeal ≃ₐ[B] R m :=
+    IsLocalization.algEquiv m.asIdeal.primeCompl _ _
+  have hy : algebraMap B (R m) b ≠ 0 := fun h ↦ hb <| IsFractionRing.injective B L <| by
+    rw [IsScalarTower.algebraMap_apply B (R m) L, h, map_zero, map_zero]
+  have hy' := mem_nonZeroDivisors_of_ne_zero hy
+  have he : Ring.ord (R m) (algebraMap B (R m) b) =
+      Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b) := by
+    rw [← e.commutes]
+    exact Ring.ord_ringEquiv e.toRingEquiv _
+  have hn : Ring.ord (R m) (algebraMap B (R m) b) =
+      ((Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b)).toNat : ℕ∞) := by
+    rw [← he, ENat.natCast_toNat (Ring.ord_ne_top hy')]
+  rw [IsScalarTower.algebraMap_apply B (R m) L, Ring.ordFrac_eq_ord (R m) hy,
+    Ring.ordMonoidWithZeroHom_eq_coe (R m) hy' hn]
+
+omit [IsFractionRing B L] [IsDomain B] in
+/-- The order of `b ∈ B` is trivial at every maximal ideal of `B` not containing `b`. -/
+theorem mulSupport_ordFrac_pow_subset (b : B) (d : MaximalSpectrum B → ℕ) :
+    Function.mulSupport (fun m ↦ Ring.ordFrac (R m) (algebraMap B L b) ^ d m) ⊆
+      {m | b ∈ m.asIdeal} := by
+  intro m hm
+  by_contra hbm
+  refine hm ?_
+  change Ring.ordFrac (R m) (algebraMap B L b) ^ d m = 1
+  rw [IsScalarTower.algebraMap_apply B (R m) L, Ring.ordFrac_of_isUnit (K := L)
+    ((IsLocalization.AtPrime.isUnit_to_map_iff (R m) m.asIdeal b).2 hbm), one_pow]
+
+/-- **The order of a norm, multiplicative form** (Fulton, *Intersection Theory*, Appendix A.3).
+Let `A` be a local Noetherian domain of dimension at most one with fraction field `K`, `B` a domain
+finite over `A` with fraction field `L`, and `R m` a localization of `B` at each maximal ideal
+`m`. For `b ≠ 0` in `B`, `ord_A N_{L/K}(b) = Σ_m [B ⧸ m : κ(A)] ord_{R m}(b)`, written
+multiplicatively in `ℤᵐ⁰`, with the residue degree read as the `A`-length of `B ⧸ m`. -/
+theorem ordFrac_norm_algebraMap_eq_finprod {b : B} (hb : b ≠ 0) :
+    Ring.ordFrac A (Algebra.norm K (algebraMap B L b)) =
+      ∏ᶠ m, Ring.ordFrac (R m) (algebraMap B L b) ^ (Module.length A (B ⧸ m.asIdeal)).toNat := by
+  classical
+  set S := (finite_setOf_mem_maximalSpectrum A hb).toFinset
+  have hfin : Module.length A (B ⧸ Ideal.span {b}) ≠ ⊤ :=
+    Module.length_ne_top_iff.2 (isFiniteLength_quotient_span_singleton hb)
+  -- The local lengths of `B ⧸ bB` vanish away from the maximal ideals containing `b`.
+  have hlen := length_quotient_span_singleton_eq_finsum_ord (A := A) hb
+  rw [finsum_eq_sum_of_support_subset _ (s := S) fun m hm ↦ by
+    simp only [S, Set.Finite.coe_toFinset, Set.mem_ofPred_eq]
+    by_contra hbm
+    exact hm (by
+      dsimp only
+      rw [Ring.ord_of_isUnit ((IsLocalization.AtPrime.isUnit_to_map_iff _ _ b).2 hbm), zero_mul])]
+    at hlen
+  have hS : ∀ m ∈ S, Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b) *
+      Module.length A (IsLocalRing.ResidueField (Localization.AtPrime m.asIdeal)) ≠ ⊤ :=
+    ENat.sum_ne_top.1 (hlen ▸ hfin)
+  rw [ordFrac_norm_eq_coe_of_length_eq (K := K) (L := L) hb (ENat.natCast_toNat hfin).symm,
+    finprod_eq_prod_of_mulSupport_subset _ (s := S) (by
+      simp only [S, Set.Finite.coe_toFinset]; exact mulSupport_ordFrac_pow_subset R b _),
+    hlen, ENat.toNat_sum hS]
+  simp only [ordFrac_algebraMap_eq_ofAdd_ord R _ hb, ENat.toNat_mul,
+    length_residueField_localization_eq, ← WithZero.coe_pow, ← ofAdd_nsmul, Nat.cast_sum,
+    Nat.cast_mul, nsmul_eq_mul, mul_comm, ofAdd_sum]
+  exact map_prod (WithZero.coeMonoidHom (α := Multiplicative ℤ)) _ _
+
+/-- **The order of a norm** (Fulton, *Intersection Theory*, Appendix A.3). Let `A` be a local
+Noetherian domain of dimension at most one with fraction field `K`, `B` a domain finite over `A`
+with fraction field `L`, and `R m` a localization of `B` at each maximal ideal `m`. For `r ≠ 0`
+in `L`, `ord_A N_{L/K}(r) = Σ_m [B ⧸ m : κ(A)] ord_{R m}(r)`, written multiplicatively in `ℤᵐ⁰`,
+with the residue degree read as the `A`-length of `B ⧸ m`. This is the coefficient identity behind
+the pushforward of principal divisors along finite maps (Fulton, Proposition 1.4(b)). -/
+theorem ordFrac_norm_eq_finprod {r : L} (hr : r ≠ 0) :
+    Ring.ordFrac A (Algebra.norm K r) =
+      ∏ᶠ m, Ring.ordFrac (R m) r ^ (Module.length A (B ⧸ m.asIdeal)).toNat := by
+  obtain ⟨b, c, hc, rfl⟩ := IsFractionRing.div_surjective (A := B) r
+  have hc0 : c ≠ 0 := nonZeroDivisors.ne_zero hc
+  have hb0 : b ≠ 0 := by rintro rfl; simp at hr
+  set d : MaximalSpectrum B → ℕ := fun m ↦ (Module.length A (B ⧸ m.asIdeal)).toNat
+  have hfin (x : B) (hx : x ≠ 0) :
+      (Function.mulSupport fun m ↦ Ring.ordFrac (R m) (algebraMap B L x) ^ d m).Finite :=
+    (finite_setOf_mem_maximalSpectrum A hx).subset (mulSupport_ordFrac_pow_subset R x d)
+  have hN : Algebra.norm K (algebraMap B L c)⁻¹ = (Algebra.norm K (algebraMap B L c))⁻¹ :=
+    eq_inv_of_mul_eq_one_left (by
+      rw [← map_mul, inv_mul_cancel₀ (by simpa using hc0), map_one])
+  simp_rw [div_eq_mul_inv, map_mul, hN, map_inv₀, mul_pow, inv_pow]
+  rw [finprod_mul_distrib (hfin b hb0) ?_, finprod_inv_distrib,
+    ordFrac_norm_algebraMap_eq_finprod R hb0, ordFrac_norm_algebraMap_eq_finprod R hc0]
+  change (Function.mulSupport fun m ↦ _).Finite
+  rw [Function.mulSupport_fun_inv]
+  exact hfin c hc0
+
+end Fraction
 
 end TauCeti
