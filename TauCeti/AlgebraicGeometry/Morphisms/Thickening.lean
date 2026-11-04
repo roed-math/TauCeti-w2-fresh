@@ -43,6 +43,13 @@ module of homomorphisms into `I`.
 * `TauCeti.AlgebraicGeometry.IsFirstOrderThickening.isThickening`: a first-order thickening is a
   thickening, and `TauCeti.AlgebraicGeometry.IsThickening.isUniversalHomeomorphism`: a thickening
   is a universal homeomorphism.
+* `TauCeti.AlgebraicGeometry.IsThickening.factor_firstOrder`: a thickening of order `n + 2` (its
+  ideal sheaf has vanishing `(n + 3)`-rd power) factors as a thickening of order `n + 1` followed
+  by a first-order thickening.
+* `TauCeti.AlgebraicGeometry.IsFirstOrderThickening.ker_appTop_mul_self`: a first-order
+  thickening of an affine scheme is surjective on global sections with square-zero kernel, so it is
+  `Spec` of a square-zero extension; conversely `IsFirstOrderThickening.SpecMap_mk` gives the
+  first-order thickening `Spec (B ⧸ I) ⟶ Spec B` of a square-zero ideal `I`.
 
 ## References
 
@@ -211,6 +218,71 @@ theorem SpecMap_iff {R S : CommRingCat.{u}} (φ : R ⟶ S) (hφ : Function.Surje
         (ConcreteCategory.bijective_of_isIso (Scheme.ΓSpecIso R).inv).1]
   exact ⟨fun h ↦ hker.1 h.ker_mul_self, fun h ↦ ⟨hker.2 h⟩⟩
 
+/-- The ideal sheaf of a first-order thickening is nilpotent. -/
+theorem isNilpotent_ker (i : Z ⟶ X) [IsFirstOrderThickening i] : IsNilpotent i.ker :=
+  ⟨2, (pow_two _).trans ker_mul_self⟩
+
+/-- A first-order thickening of an affine scheme is surjective on global sections. -/
+theorem appTop_surjective (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i] :
+    Function.Surjective i.appTop :=
+  (IsClosedImmersion.isAffine_surjective_of_isAffine i).2
+
+/-- The map on global sections of a first-order thickening of an affine scheme has square-zero
+kernel. -/
+theorem ker_appTop_mul_self (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i] :
+    RingHom.ker i.appTop.hom * RingHom.ker i.appTop.hom = ⊥ := by
+  have := (IsClosedImmersion.isAffine_surjective_of_isAffine i).1
+  -- Up to the isomorphisms `Z ≅ Spec Γ(Z, ⊤)` and `X ≅ Spec Γ(X, ⊤)`, `i` is `Spec.map i.appTop`.
+  have hi : Spec.map i.appTop = Z.isoSpec.inv ≫ i ≫ X.isoSpec.hom := by
+    rw [← Scheme.isoSpec_hom_naturality, Iso.inv_hom_id_assoc]
+  have : IsFirstOrderThickening (Spec.map i.appTop) := by
+    rw [hi]
+    infer_instance
+  exact (SpecMap_iff _ (appTop_surjective i)).1 this
+
+/-- For a square-zero ideal `I` of `B`, the closed immersion `Spec (B ⧸ I) ⟶ Spec B` is a
+first-order thickening. -/
+theorem SpecMap_mk {B : Type u} [CommRing B] (I : Ideal B) (hI : I ^ 2 = ⊥) :
+    IsFirstOrderThickening (Spec.map (CommRingCat.ofHom (Ideal.Quotient.mk I))) :=
+  (SpecMap_iff _ Ideal.Quotient.mk_surjective).2 (by
+    rw [CommRingCat.hom_ofHom, Ideal.mk_ker, ← pow_two, hI])
+
 end IsFirstOrderThickening
+
+open Scheme.IdealSheafData in
+/-- A closed immersion `i` whose ideal sheaf `𝓘` satisfies `𝓘 ^ (n + 3) = 0`, a thickening of order
+`n + 2`, factors through the closed subscheme cut out by `𝓘 ^ (n + 2)`: as a closed immersion whose
+ideal sheaf has vanishing `(n + 2)`-nd power, a thickening of order `n + 1`, followed by a
+first-order thickening. -/
+theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : ℕ)
+    (hi : i.ker ^ (n + 3) = ⊥) :
+    ∃ (Y : Scheme.{u}) (j : Z ⟶ Y) (k : Y ⟶ X), j ≫ k = i ∧ IsClosedImmersion j ∧
+      j.ker ^ (n + 2) = ⊥ ∧ IsFirstOrderThickening k := by
+  have hle : i.ker ^ (n + 2) ≤ i.ker := pow_le_of_le_one zero_le le_top (by omega)
+  let k := (i.ker ^ (n + 2)).subschemeι
+  let j : Z ⟶ (i.ker ^ (n + 2)).subscheme := i.toImage ≫ inclusion hle
+  have hjk : j ≫ k = i := by
+    simp only [j, k, Category.assoc, inclusion_subschemeι]
+    exact i.toImage_imageι
+  have : IsClosedImmersion (j ≫ k) := by
+    rw [hjk]
+    infer_instance
+  have : IsClosedImmersion j := IsClosedImmersion.of_comp_isClosedImmersion j k
+  -- Since `k` is a monomorphism, `j` is the base change of `i` along `k`, so its ideal sheaf is the
+  -- inverse image of that of `i`.
+  let φ : Z ⟶ pullback k i := pullback.lift j (𝟙 Z) (by simp [hjk])
+  have hφ : φ ≫ pullback.fst k i = j := pullback.lift_fst _ _ _
+  have : IsIso φ := ⟨⟨pullback.snd k i, pullback.lift_snd _ _ _, pullback.hom_ext (by
+    rw [Category.assoc, hφ, Category.id_comp, ← cancel_mono k, Category.assoc, hjk,
+      pullback.condition]) (by simp [φ])⟩⟩
+  have hj : j.ker = i.ker.comap k := by
+    rw [← ker_fst_of_isClosedImmersion, ← Scheme.Hom.ker_comp_of_isIso φ, hφ]
+  refine ⟨_, j, k, hjk, inferInstance, ?_, ⟨?_⟩⟩
+  · -- The inverse image along `k` of its own ideal sheaf vanishes.
+    rw [hj, ← comap_pow]
+    refine le_bot_iff.1 (le_map_iff_comap_le.1 ?_)
+    rw [Scheme.IdealSheafData.map_bot, ker_subschemeι]
+  · rw [ker_subschemeι, ← pow_add]
+    exact le_bot_iff.1 (hi ▸ pow_le_pow_of_le_one zero_le le_top (by omega))
 
 end TauCeti.AlgebraicGeometry
