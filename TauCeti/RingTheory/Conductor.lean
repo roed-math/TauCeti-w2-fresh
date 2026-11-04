@@ -43,6 +43,7 @@ its target glue to an ideal sheaf. Without finiteness only one inclusion holds.
 * `TauCeti.Algebra.conductor_eq_top_iff`: the conductor is the unit ideal exactly when
   `A → B` is surjective.
 * `TauCeti.Algebra.ker_algebraMap_le_conductor`: the kernel of `A → B` lies in the conductor.
+* `TauCeti.Algebra.conductor_congr`: isomorphic `A`-algebras have the same conductor.
 * `TauCeti.Algebra.map_conductor_le`: the extension of the conductor to a localization
   lies in the conductor of the localization.
 * `TauCeti.Algebra.conductor_eq_map`: for `B` finite over `A`, the conductor of a
@@ -101,6 +102,17 @@ theorem conductor_eq_top_iff : conductor A B = ⊤ ↔ Function.Surjective (alge
 zero. -/
 theorem ker_algebraMap_le_conductor : RingHom.ker (algebraMap A B) ≤ conductor A B :=
   fun a ha ↦ mem_conductor_iff.mpr fun _ ↦ ⟨0, by simp [(RingHom.mem_ker).mp ha]⟩
+
+/-- The conductor is invariant under isomorphisms of `A`-algebras. -/
+theorem conductor_congr {C : Type*} [Ring C] [Algebra A C] (e : B ≃ₐ[A] C) :
+    conductor A B = conductor A C := by
+  ext a
+  simp only [mem_conductor_iff]
+  refine ⟨fun h c ↦ ?_, fun h b ↦ ?_⟩
+  · obtain ⟨d, hd⟩ := h (e.symm c)
+    exact ⟨d, by simpa using congr_arg e hd⟩
+  · obtain ⟨d, hd⟩ := h (e b)
+    exact ⟨d, e.injective (by simpa using hd)⟩
 
 section Localization
 

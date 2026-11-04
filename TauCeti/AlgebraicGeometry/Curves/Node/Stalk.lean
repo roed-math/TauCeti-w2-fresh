@@ -8,6 +8,7 @@ module
 public import TauCeti.AlgebraicGeometry.Curves.Node.Relative
 public import TauCeti.RingTheory.Node.Punctured
 public import TauCeti.RingTheory.Node.QuadraticRelation
+import TauCeti.AlgebraicGeometry.AffineScheme
 import TauCeti.AlgebraicGeometry.Morphisms.Syntomic.Basic
 import TauCeti.RingTheory.Unramified.LocalRing
 
@@ -33,7 +34,9 @@ over `𝒪_{X,x}` is the residue field: the normalization sequence at a node.
 These local statements spread to an affine neighbourhood `W` of `x`. Rescaling `u` by a unit, it is
 the germ of a section `r` of a standard syntomic chart, and `x` is a closed point. Shrinking the
 chart to a basic open (`TauCeti.exists_notMem_radical_span_singleton_eq`), `x` is the only zero of
-`r` on `W`, so `Γ(X, W)_r` is the ring of functions on `W ∖ {x}`. The integral closure of `Γ(X, W)`
+`r` on `W` and the only singular point of `W`, so `Γ(X, W)_r` is the ring of functions on
+`W ∖ Sing(X/K)`. As the singular subscheme is unramified over `K`, hence reduced, its ideal over
+`W` is the prime of `x`. The integral closure of `Γ(X, W)`
 in it is then finite, with conductor the prime of `x` and cokernel `Γ(X, W)` modulo that prime
 (`TauCeti.conductor_integralClosure_away_eq_of_maximalIdeal_eq_span`).
 
@@ -49,8 +52,9 @@ in it is then finite, with conductor the prime of `x` and cokernel `Γ(X, W)` mo
   nonzerodivisor, the conductor of the normalization `𝒪_{X,x}[𝔪/u]` is the maximal ideal, and the
   cokernel is the residue field.
 * `AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away`: a node `x` has an affine open
-  neighbourhood `W` and a section `r` vanishing on `W` only at `x`, such that the integral closure
-  of `Γ(X, W)` in `Γ(X, W)_r` is finite, with conductor and cokernel given by the prime of `x`.
+  neighbourhood `W` meeting the singular locus only in `x`, where its ideal is the prime of `x`,
+  and a nonzerodivisor `r` with `D(r) = W ∖ Sing(X/K)`, such that the integral closure of
+  `Γ(X, W)` in `Γ(X, W)_r` is finite, with conductor and cokernel given by the prime of `x`.
 
 ## References
 
@@ -80,7 +84,9 @@ private theorem exists_chart {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Sp
       (_ : Algebra.FiniteType K Γ(X, W)) (q : Ideal Γ(X, W)) (_ : q.IsPrime),
       Algebra.IsStandardSyntomicOfRelativeDimension 1 K Γ(X, W) ∧
       Algebra.FormallyUnramified K (Γ(X, W) ⧸ fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1) ∧
-      fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1 ≤ q ∧
+      (letI := hnodal.syntomic; (X.singularLocus K).ideal W) =
+        fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1 ∧
+      fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1 ≤ q ∧ q = (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal ∧
       letI := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
       IsLocalization.AtPrime (X.presheaf.stalk x) q := by
   let : SyntomicOfRelativeDimension 1 (X ↘ Spec (.of K)) := hnodal.syntomic
@@ -100,9 +106,19 @@ private theorem exists_chart {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Sp
   have hft := finiteType_sections_of_locallyOfFiniteType K X W
   let q := RingHom.ker (X.evaluation W x hxW).hom
   have : q.IsPrime := RingHom.ker_isPrime _
+  let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
+  have := W.2.isLocalization_stalk ⟨x, hxW⟩
+  -- The kernel of the evaluation at `x` is the prime of `x`.
+  have hqx : q = (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal := by
+    rw [← IsLocalization.AtPrime.under_maximalIdeal (X.presheaf.stalk x)
+      (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal]
+    ext f
+    simp only [q, Scheme.evaluation, Ideal.mem_comap, RingHom.mem_ker, CommRingCat.hom_comp,
+      RingHom.comp_apply]
+    exact IsLocalRing.residue_eq_zero_iff _
   refine ⟨W, hxW, _, hft, q, inferInstance, hstd,
     X.singularLocus_ideal (R := K) W ▸ X.formallyUnramified_quotient_singularLocus_ideal hnodal W,
-    ?_, ?_⟩
+    X.singularLocus_ideal (R := K) W, ?_, hqx, ?_⟩
   · -- The prime of `x` contains the first Fitting ideal of the differentials.
     let := (X.evaluation W x hxW).hom.toAlgebra
     -- View the prime of `x` as the kernel of the algebra map to the residue field, as the
@@ -111,15 +127,7 @@ private theorem exists_chart {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Sp
     rw [← Ideal.map_eq_bot_iff_le_ker, fittingIdeal_map_eq_bot_iff_lt_finrank]
     exact (Scheme.mem_support_singularLocus_iff (R := K) (X := X) hxW).1 hx
   · -- The stalk is the localization of `Γ(X, W)` at the prime of `x`.
-    let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
-    have h := W.2.isLocalization_stalk ⟨x, hxW⟩
-    convert h using 1
-    rw [← IsLocalization.AtPrime.under_maximalIdeal (X.presheaf.stalk x)
-      (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal]
-    ext f
-    simp only [q, Scheme.evaluation, Ideal.mem_comap, RingHom.mem_ker, CommRingCat.hom_comp,
-      RingHom.comp_apply]
-    exact IsLocalRing.residue_eq_zero_iff _
+    convert W.2.isLocalization_stalk ⟨x, hxW⟩ using 1
 
 /-- **The local ring at a node.** Let `X` be a nodal curve over a field `K` and `x` a point of its
 singular locus. Then the maximal ideal of `𝒪_{X,x}` is `(u, v)`, not principal, with `u` a
@@ -131,7 +139,7 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk
     ∃ u v a b : X.presheaf.stalk x, maximalIdeal _ = Ideal.span {u, v} ∧
       u ∈ nonZeroDivisors _ ∧ ¬ (maximalIdeal (X.presheaf.stalk x)).IsPrincipal ∧
       a * u ^ 2 + b * u * v + v ^ 2 = 0 ∧ IsUnit (discrim a b 1) := by
-  obtain ⟨W, hxW, _, _, q, _, hstd, _, hq, _⟩ := exists_chart X hnodal hx
+  obtain ⟨W, hxW, _, _, q, _, hstd, _, -, hq, -, _⟩ := exists_chart X hnodal hx
   obtain ⟨ι, σ, _, _, P, hP⟩ := hstd.exists_presentation
   have := Fintype.ofFinite ι
   have := Fintype.ofFinite σ
@@ -195,17 +203,22 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_conductor_stalk_eq_maximalIdeal
     ⟨affineBlowupQuotientEquiv hm hrel hu hprin⟩⟩
 
 /-- **The normalization of an affine neighbourhood of a node.** Let `X` be a nodal curve over a
-field `K` and `x` a point of its singular locus. Then `x` has an affine open neighbourhood `W` with
-a section `a ∈ Γ(X, W)` vanishing on `W` only at `x`: the radical of `(a)` is the prime of `x`, so
-that `Γ(X, W)_a` is the ring of functions on `W ∖ {x}`. The integral closure of `Γ(X, W)` in
-`Γ(X, W)_a` is finite over `Γ(X, W)`, its conductor is the prime of `x`, and its cokernel is
-`Γ(X, W)` modulo the prime of `x`: the normalization sequence on an affine neighbourhood of a node.
--/
+field `K` and `x` a point of its singular locus. Then `x` has an affine open neighbourhood `W`
+meeting the singular locus only in `x`, where the ideal of the singular locus is the prime of `x`,
+with a nonzerodivisor `a ∈ Γ(X, W)` vanishing on `W` only at `x`: the radical of `(a)` is the prime
+of `x`, and `D(a)` is the smooth part `W ∖ Sing(X/K)` of `W`, so that `Γ(X, W)_a` is its ring of
+functions. The integral closure of `Γ(X, W)` in `Γ(X, W)_a` is
+finite over `Γ(X, W)`, its conductor is the prime of `x`, and its cokernel is `Γ(X, W)` modulo the
+prime of `x`: the normalization sequence on an affine neighbourhood of a node. -/
 theorem _root_.AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away
     {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
     (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K))) {x : X}
     (hx : letI := hnodal.syntomic; x ∈ (X.singularLocus K).support) :
+    letI := hnodal.syntomic
     ∃ (W : X.affineOpens) (hxW : x ∈ W.1) (a : Γ(X, W)),
+      (X.basicOpen a : Set X) = (W.1 : Set X) \ (X.singularLocus K).support ∧
+      (X.singularLocus K).ideal W = (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal ∧
+      a ∈ nonZeroDivisors Γ(X, W) ∧
       (Ideal.span {a}).radical = (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal ∧
       Module.Finite Γ(X, W) (integralClosure Γ(X, W) (Localization.Away a)) ∧
       Algebra.conductor Γ(X, W) (integralClosure Γ(X, W) (Localization.Away a)) =
@@ -213,36 +226,46 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away
       Nonempty ((integralClosure Γ(X, W) (Localization.Away a) ⧸
         (1 : Submodule Γ(X, W) (integralClosure Γ(X, W) (Localization.Away a)))) ≃ₗ[Γ(X, W)]
           Γ(X, W) ⧸ (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal) := by
-  obtain ⟨W, hxW, _, _, q, _, -, _, hq, _⟩ := exists_chart X hnodal hx
+  let := hnodal.syntomic
+  obtain ⟨W, hxW, _, _, q, _, -, _, hsl, hq, hqx, _⟩ := exists_chart X hnodal hx
   let := X.presheaf.algebra_section_stalk ⟨x, hxW⟩
   have : q.IsMaximal := Ideal.IsPrime.isMaximal_of_formallyUnramified_quotient K hq
   have : IsNoetherianRing Γ(X, W) := Algebra.FiniteType.isNoetherianRing K _
   have := hnodal.syntomic.locallyOfFinitePresentation 1 (X ↘ Spec (.of K))
   have : IsLocallyNoetherian X := LocallyOfFiniteType.isLocallyNoetherian (X ↘ Spec (.of K))
+  -- The primes containing the Fitting ideal are maximal, so a basic open `D(g₂) ∋ x` meets the
+  -- singular locus only in `x`.
+  obtain ⟨g₂, hg₂q, hg₂⟩ := exists_notMem_forall_eq_of_isMaximal (q := q)
+    (I := fittingIdeal Γ(X, W) Ω[Γ(X, W)⁄K] 1) fun P hP hIP hPq ↦
+      (Ideal.IsPrime.isMaximal_of_formallyUnramified_quotient (p := P) K hIP).eq_of_le
+        (Ideal.IsPrime.ne_top inferInstance) hPq
   obtain ⟨u, v, a, b, hm, hu, hprin, hrel, hd⟩ := X.exists_quadratic_relation_stalk hnodal hx
   -- Write `u = r / s` with `r, s ∈ Γ(X, W)` and `s ∉ q`; then `r` generates `𝔪` with `v`.
   obtain ⟨⟨r, s⟩, hrs⟩ := IsLocalization.surj q.primeCompl u
   obtain ⟨a, b, hm, hu, hrel, hd⟩ := exists_quadratic_relation_mul_unit hm hu hrel hd
     (IsLocalization.map_units (X.presheaf.stalk x) s).unit
   rw [IsUnit.unit_spec, hrs] at hm hu hrel
-  -- Shrink `W` to a basic open `D(g) ∋ x` on which `r` vanishes only at `x`.
-  obtain ⟨g, hgq, hg⟩ := exists_notMem_radical_span_singleton_eq (q := q) (X.presheaf.stalk x)
-    (radical_span_singleton_eq_maximalIdeal hm hrel)
-  have hxg : x ∈ X.basicOpen g := by
+  -- Shrink `W` to a basic open `D(g₁ g₂) ∋ x` on which `r` vanishes only at `x`.
+  obtain ⟨g₁, hg₁q, hg₁⟩ := exists_notMem_radical_span_singleton_eq (q := q)
+    (X.presheaf.stalk x) (radical_span_singleton_eq_maximalIdeal hm hrel)
+  have hgq : g₁ * g₂ ∉ q := Ideal.IsPrime.mul_notMem inferInstance hg₁q hg₂q
+  have hxg : x ∈ X.basicOpen (g₁ * g₂) := by
     rw [X.mem_basicOpen _ _ hxW]
-    exact IsLocalization.map_units (X.presheaf.stalk x) (⟨g, hgq⟩ : q.primeCompl)
-  have := W.2.isLocalization_basicOpen g
-  obtain ⟨hQ, hrad⟩ := hg Γ(X, X.basicOpen g)
-  let W' : X.affineOpens := ⟨X.basicOpen g, W.2.basicOpen g⟩
+    exact IsLocalization.map_units (X.presheaf.stalk x) (⟨g₁ * g₂, hgq⟩ : q.primeCompl)
+  have := W.2.isLocalization_basicOpen (g₁ * g₂)
+  obtain ⟨hQ, hrad⟩ := hg₁ g₂ hg₂q Γ(X, X.basicOpen (g₁ * g₂))
+  let W' : X.affineOpens := ⟨X.basicOpen (g₁ * g₂), W.2.basicOpen (g₁ * g₂)⟩
   let := X.presheaf.algebra_section_stalk (⟨x, hxg⟩ : W'.1)
   have := W'.2.isLocalization_stalk ⟨x, hxg⟩
-  -- Restriction to `D(g)` followed by the germ is the germ. Below, `Γ(X, W'.1)` and
-  -- `Γ(X, X.basicOpen g)` are the same ring, as `W'` is defined by `W'.1 = X.basicOpen g`.
-  have hres (f : Γ(X, W)) : algebraMap Γ(X, X.basicOpen g) (X.presheaf.stalk x)
-      (algebraMap Γ(X, W) Γ(X, X.basicOpen g) f) = algebraMap Γ(X, W) (X.presheaf.stalk x) f :=
+  -- Restriction to `D(g₁ g₂)` followed by the germ is the germ. Below, `Γ(X, W'.1)` and
+  -- `Γ(X, X.basicOpen (g₁ * g₂))` are the same ring, as `W'` is defined by
+  -- `W'.1 = X.basicOpen (g₁ * g₂)`.
+  have hres (f : Γ(X, W)) : algebraMap Γ(X, X.basicOpen (g₁ * g₂)) (X.presheaf.stalk x)
+      (algebraMap Γ(X, W) Γ(X, X.basicOpen (g₁ * g₂)) f) =
+        algebraMap Γ(X, W) (X.presheaf.stalk x) f :=
     X.presheaf.germ_res_apply _ _ _ f
-  -- The prime of `x` in `D(g)` is the extension of `q`.
-  have hQx : q.map (algebraMap Γ(X, W) Γ(X, X.basicOpen g)) =
+  -- The prime of `x` in `D(g₁ g₂)` is the extension of `q`.
+  have hQx : q.map (algebraMap Γ(X, W) Γ(X, X.basicOpen (g₁ * g₂))) =
       (W'.2.primeIdealOf ⟨x, hxg⟩).asIdeal := by
     refine hQ.eq_of_le (Ideal.IsPrime.ne_top inferInstance) ?_
     rw [Ideal.map_le_iff_le_comap]
@@ -254,7 +277,77 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away
     rw [← hres f] at hf
     exact hf
   rw [hQx] at hQ hrad
-  refine ⟨W', hxg, algebraMap Γ(X, W) Γ(X, X.basicOpen g) r, hrad,
+  -- On `D(g₁ g₂)`, the only singular point is `x`.
+  have hsing (y : X) (hy : y ∈ W'.1) (hys : y ∈ (X.singularLocus K).support) : y = x := by
+    have hyW : y ∈ W.1 := X.basicOpen_le _ hy
+    have hP : (W.2.primeIdealOf ⟨y, hyW⟩).asIdeal = q := by
+      refine hg₂ _ inferInstance (fun f hf ↦ ?_) ?_
+      · rw [← hsl] at hf
+        by_contra hfP
+        exact (X.mem_zeroLocus_iff _ y).mp
+          (((X.singularLocus K).mem_support_iff_of_mem hyW).mp hys) f hf
+          ((IsAffineOpen.mem_basicOpen_iff_notMem_primeIdealOf W.2 hyW f).mpr hfP)
+      · have hy' : y ∈ X.basicOpen (g₁ * g₂) := hy
+        rw [X.basicOpen_mul] at hy'
+        exact (IsAffineOpen.mem_basicOpen_iff_notMem_primeIdealOf W.2 hyW g₂).mp hy'.2
+    calc y = W.2.fromSpec (W.2.primeIdealOf ⟨y, hyW⟩) :=
+          (W.2.fromSpec_primeIdealOf ⟨y, hyW⟩).symm
+      _ = W.2.fromSpec (W.2.primeIdealOf ⟨x, hxW⟩) :=
+        congr_arg _ (PrimeSpectrum.ext (hP.trans hqx))
+      _ = x := W.2.fromSpec_primeIdealOf _
+  let r' := algebraMap Γ(X, W) Γ(X, X.basicOpen (g₁ * g₂)) r
+  have hbasic : (X.basicOpen r' : Set X) = (W'.1 : Set X) \ (X.singularLocus K).support := by
+    ext y
+    refine ⟨fun hy ↦ ⟨X.basicOpen_le r' hy, fun hys ↦ ?_⟩, fun ⟨hy, hys⟩ ↦ ?_⟩
+    · obtain rfl := hsing y (X.basicOpen_le r' hy) hys
+      exact (IsAffineOpen.mem_basicOpen_iff_notMem_primeIdealOf W'.2 hxg r').mp hy
+        (hrad ▸ Ideal.le_radical (Ideal.mem_span_singleton_self r'))
+    · rw [SetLike.mem_coe, IsAffineOpen.mem_basicOpen_iff_notMem_primeIdealOf W'.2 hy]
+      intro hr
+      have hle : (W'.2.primeIdealOf ⟨x, hxg⟩).asIdeal ≤ (W'.2.primeIdealOf ⟨y, hy⟩).asIdeal := by
+        rw [← hrad, Ideal.IsPrime.radical_le_iff inferInstance, Ideal.span_singleton_le_iff_mem]
+        exact hr
+      have hyx : y = x :=
+        calc y = W'.2.fromSpec (W'.2.primeIdealOf ⟨y, hy⟩) :=
+            (W'.2.fromSpec_primeIdealOf ⟨y, hy⟩).symm
+          _ = W'.2.fromSpec (W'.2.primeIdealOf ⟨x, hxg⟩) := congr_arg _ (PrimeSpectrum.ext
+            (hQ.eq_of_le (Ideal.IsPrime.ne_top inferInstance) hle).symm)
+          _ = x := W'.2.fromSpec_primeIdealOf _
+      exact hys (hyx ▸ hx)
+  -- The singular subscheme is reduced, so over `D(g₁ g₂)` its ideal is the prime of `x`.
+  have hideal : (X.singularLocus K).ideal W' = (W'.2.primeIdealOf ⟨x, hxg⟩).asIdeal := by
+    let : Algebra K Γ(X, W'.1) := ((X.baseRingToStructurePresheaf K).app (op W'.1)).hom.toAlgebra
+    have := finiteType_sections_of_locallyOfFiniteType K X W'
+    have : Algebra.FormallyUnramified K (Γ(X, W'.1) ⧸ (X.singularLocus K).ideal W') :=
+      X.formallyUnramified_quotient_singularLocus_ideal hnodal W'
+    have : Algebra.EssFiniteType K (Γ(X, W'.1) ⧸ (X.singularLocus K).ideal W') :=
+      .comp K Γ(X, W'.1) _
+    have hI := ((X.singularLocus K).ideal W').isRadical_iff_quotient_reduced.mpr
+      (Algebra.FormallyUnramified.isReduced_of_field K _)
+    -- A point of `D(g₁ g₂)` whose prime contains the ideal is singular, so it is `x`.
+    have hP (y : W'.1) (hyI : (X.singularLocus K).ideal W' ≤ (W'.2.primeIdealOf y).asIdeal) :
+        y.1 = x :=
+      hsing y.1 y.2 (((X.singularLocus K).mem_support_iff_of_mem y.2).mpr
+        ((X.mem_zeroLocus_iff _ y.1).mpr fun f hf hyf ↦
+          (IsAffineOpen.mem_basicOpen_iff_notMem_primeIdealOf W'.2 y.2 f).mp hyf (hyI hf)))
+    refine le_antisymm (fun f hf ↦ ?_) ?_
+    · by_contra hfx
+      exact (X.mem_zeroLocus_iff _ x).mp (((X.singularLocus K).mem_support_iff_of_mem hxg).mp hx)
+        f hf ((IsAffineOpen.mem_basicOpen_iff_notMem_primeIdealOf W'.2 hxg f).mpr hfx)
+    · rw [← hI.radical, Ideal.radical_eq_sInf]
+      refine le_sInf fun P ⟨hIP, hPp⟩ ↦ ?_
+      -- Every prime of `Γ(X, D(g₁ g₂))` is the prime of a point.
+      let y : W'.1 := ⟨W'.2.fromSpec ⟨P, hPp⟩, W'.2.range_fromSpec.subset (Set.mem_range_self _)⟩
+      have : IsOpenImmersion W'.2.fromSpec := W'.2.isOpenImmersion_fromSpec
+      have hyP : W'.2.primeIdealOf y = ⟨P, hPp⟩ :=
+        W'.2.fromSpec.isOpenEmbedding.injective (W'.2.fromSpec_primeIdealOf y)
+      have hyx : y = ⟨x, hxg⟩ := Subtype.ext (hP y (by rw [hyP]; exact hIP))
+      rw [← hyx, hyP]
+  -- `r` is a nonzerodivisor at `x`, and a unit at every other point of `D(g₁ g₂)`.
+  have : (W'.2.primeIdealOf ⟨x, hxg⟩).asIdeal.IsMaximal := hQ
+  have hnzd : r' ∈ nonZeroDivisors Γ(X, X.basicOpen (g₁ * g₂)) :=
+    mem_nonZeroDivisors_of_radical_span_singleton_eq hrad (X.presheaf.stalk x) (by rwa [hres])
+  refine ⟨W', hxg, r', hbasic, hideal, hnzd, hrad,
     conductor_integralClosure_away_eq_of_maximalIdeal_eq_span _ (X.presheaf.stalk x) hrad
       (y := v) ?_ ?_ hprin ?_ hd⟩ <;>
     rwa [hres]

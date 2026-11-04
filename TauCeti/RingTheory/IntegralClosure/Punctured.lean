@@ -30,10 +30,13 @@ normalization of a neighbourhood of the node in its complement has cokernel `A /
 
 ## Main results
 
+* `TauCeti.mem_nonZeroDivisors_of_radical_span_singleton_eq`: if `√(u)` is a maximal ideal `q`,
+  then `u` is a nonzerodivisor as soon as it is one in `A_q`.
 * `TauCeti.exists_notMem_forall_eq_of_isMaximal`: in a Noetherian ring, if `q` is the only prime
-  below `q` containing `u`, then some basic open `D(g) ∋ q` meets `V(u)` only in `q`.
+  below `q` containing an ideal `I`, then some basic open `D(g) ∋ q` meets `V(I)` only in `q`.
 * `TauCeti.exists_notMem_radical_span_singleton_eq`: if `u` generates an ideal of radical `𝔪` in
-  `A_q`, then on some basic open `D(g) ∋ q` the closed point `q` is the radical of `(u)`.
+  `A_q`, then on some basic open `D(g) ∋ q`, and on every smaller one, the closed point `q` is the
+  radical of `(u)`.
 * `TauCeti.isLocalizedModule_id_of_pow_smul_eq_zero`: a `u`-power torsion module is its own
   localization at `q`.
 * `TauCeti.integralClosureQuotientEquiv`: the cokernel of `A → C` is the cokernel of the integral
@@ -68,27 +71,42 @@ theorem isCoprime_pow_of_radical_span_singleton_eq (hu : (Ideal.span {u}).radica
       hle (Ideal.subset_span (by simp)))
   exact IsCoprime.pow_right (Ideal.mem_span_pair.mp (htop ▸ Submodule.mem_top))
 
-/-- **Punctured neighbourhoods.** Let `A` be Noetherian, `q` a maximal ideal and `u : A` such that
-`q` is the only prime below `q` containing `u`, so that `V(u)` is the closed point near `q`. Then
-there is `g ∉ q` such that `q` is the only prime of `A` containing `u` but not `g`: on the basic
-open `D(g)`, the vanishing locus of `u` is the closed point `q`. -/
-theorem exists_notMem_forall_eq_of_isMaximal [IsNoetherianRing A]
-    (h : ∀ P : Ideal A, P.IsPrime → u ∈ P → P ≤ q → P = q) :
-    ∃ g ∉ q, ∀ P : Ideal A, P.IsPrime → u ∈ P → g ∉ P → P = q := by
+/-- **Nonzerodivisors from the closed point.** If `√(u)` is a maximal ideal `q` and `u` is a
+nonzerodivisor in the localization `A_q`, then `u` is a nonzerodivisor in `A`: away from `q`, `u`
+is a unit. -/
+theorem mem_nonZeroDivisors_of_radical_span_singleton_eq (hu : (Ideal.span {u}).radical = q)
+    (Aq : Type*) [CommRing Aq] [Algebra A Aq] [IsLocalization.AtPrime Aq q]
+    (hu' : algebraMap A Aq u ∈ nonZeroDivisors Aq) : u ∈ nonZeroDivisors A := by
+  refine mem_nonZeroDivisors_iff_right.mpr fun f hf ↦ ?_
+  -- `f` is killed by some `s ∉ q`, and `s` is coprime to `u`.
+  have : algebraMap A Aq f = 0 :=
+    (mem_nonZeroDivisors_iff_right.mp hu') _ (by rw [← map_mul, hf, map_zero])
+  obtain ⟨⟨s, hs⟩, hsf⟩ := (IsLocalization.map_eq_zero_iff q.primeCompl Aq f).mp this
+  obtain ⟨α, β, h⟩ := isCoprime_pow_of_radical_span_singleton_eq hu hs 1
+  calc f = (α * s + β * u ^ 1) * f := by rw [h, one_mul]
+    _ = α * (s * f) + β * (f * u) := by ring
+    _ = 0 := by rw [hsf, hf, mul_zero, mul_zero, add_zero]
+
+/-- **Punctured neighbourhoods.** Let `A` be Noetherian, `q` a maximal ideal and `I` an ideal such
+that `q` is the only prime below `q` containing `I`, so that `V(I)` is the closed point near `q`.
+Then there is `g ∉ q` such that `q` is the only prime of `A` containing `I` but not `g`: on the
+basic open `D(g)`, the vanishing locus of `I` is the closed point `q`. -/
+theorem exists_notMem_forall_eq_of_isMaximal [IsNoetherianRing A] {I : Ideal A}
+    (h : ∀ P : Ideal A, P.IsPrime → I ≤ P → P ≤ q → P = q) :
+    ∃ g ∉ q, ∀ P : Ideal A, P.IsPrime → I ≤ P → g ∉ P → P = q := by
   classical
-  have hfin := (Ideal.span {u}).finite_minimalPrimes_of_isNoetherianRing
-  have hout : ∀ P ∈ (Ideal.span {u}).minimalPrimes, P ≠ q → ∃ g ∈ P, g ∉ q := by
+  have hfin := I.finite_minimalPrimes_of_isNoetherianRing
+  have hout : ∀ P ∈ I.minimalPrimes, P ≠ q → ∃ g ∈ P, g ∉ q := by
     intro P hP hPq
     by_contra! hle
-    exact hPq (h P hP.1.1 ((Ideal.span_singleton_le_iff_mem _).mp hP.1.2) hle)
+    exact hPq (h P hP.1.1 hP.1.2 hle)
   choose! gP hgP hgPq using hout
   let S := hfin.toFinset.filter (· ≠ q)
   refine ⟨∏ P ∈ S, gP P, fun hmem ↦ ?_, fun P' hP' hu hg ↦ ?_⟩
   · obtain ⟨P, hP, hPq⟩ := Ideal.IsPrime.prod_mem_iff.mp hmem
     simp only [S, Finset.mem_filter, Set.Finite.mem_toFinset] at hP
     exact hgPq P hP.1 hP.2 hPq
-  · obtain ⟨P, hP, hPP'⟩ := Ideal.exists_minimalPrimes_le
-      ((Ideal.span_singleton_le_iff_mem _).mpr hu)
+  · obtain ⟨P, hP, hPP'⟩ := Ideal.exists_minimalPrimes_le hu
     by_cases hPq : P = q
     · exact ((inferInstance : q.IsMaximal).eq_of_le hP'.ne_top (hPq ▸ hPP')).symm
     · exact (hg (Ideal.mem_of_dvd _ (Finset.dvd_prod_of_mem gP (by simp [S, hP, hPq]))
@@ -96,12 +114,13 @@ theorem exists_notMem_forall_eq_of_isMaximal [IsNoetherianRing A]
 
 /-- **Isolating a closed point in `V(u)`.** Let `A` be Noetherian, `q` a maximal ideal and `u : A`
 generating an ideal of radical `𝔪` in the localization `A_q`. Then some `g ∉ q` cuts out a basic
-open `D(g) ∋ q` meeting `V(u)` only in `q`: in every localization `B` of `A` away from `g`, the
-extension of `q` is a maximal ideal, and it is the radical of `(u)`. -/
+open `D(g) ∋ q` meeting `V(u)` only in `q`, and so does every smaller basic open `D(g h) ∋ q`: in
+every localization `B` of `A` away from `g h` with `h ∉ q`, the extension of `q` is a maximal
+ideal, and it is the radical of `(u)`. -/
 theorem exists_notMem_radical_span_singleton_eq [IsNoetherianRing A] (Aq : Type*) [CommRing Aq]
     [Algebra A Aq] [IsLocalization.AtPrime Aq q] [IsLocalRing Aq]
     (hu : (Ideal.span {algebraMap A Aq u}).radical = maximalIdeal Aq) :
-    ∃ g ∉ q, ∀ (B : Type*) [CommRing B] [Algebra A B] [IsLocalization.Away g B],
+    ∃ g ∉ q, ∀ h ∉ q, ∀ (B : Type*) [CommRing B] [Algebra A B] [IsLocalization.Away (g * h) B],
       (q.map (algebraMap A B)).IsMaximal ∧
         (Ideal.span {algebraMap A B u}).radical = q.map (algebraMap A B) := by
   have huq : u ∈ q := by
@@ -109,7 +128,9 @@ theorem exists_notMem_radical_span_singleton_eq [IsNoetherianRing A] (Aq : Type*
     exact Ideal.le_radical (Ideal.mem_span_singleton_self _)
   -- In `A_q`, a prime containing `u` contains `√(u) = 𝔪`, so `q` is the only prime below `q`
   -- containing `u`.
-  obtain ⟨g, hgq, hg⟩ := exists_notMem_forall_eq_of_isMaximal (u := u) fun P hP huP hPq ↦ by
+  obtain ⟨g, hgq, hg⟩ := exists_notMem_forall_eq_of_isMaximal (I := Ideal.span {u})
+      fun P hP huP hPq ↦ by
+    rw [Ideal.span_singleton_le_iff_mem] at huP
     have hdisj : Disjoint (q.primeCompl : Set A) P :=
       Set.disjoint_left.mpr fun _ hs hsP ↦ hs (hPq hsP)
     have := IsLocalization.isPrime_of_isPrime_disjoint q.primeCompl Aq P hP hdisj
@@ -119,18 +140,22 @@ theorem exists_notMem_radical_span_singleton_eq [IsNoetherianRing A] (Aq : Type*
     refine Ideal.comap_mono ?_
     rw [← hu, Ideal.IsPrime.radical_le_iff this, Ideal.span_singleton_le_iff_mem]
     exact Ideal.mem_map_of_mem _ huP
-  refine ⟨g, hgq, fun B _ _ _ ↦ ?_⟩
-  have hdisj : Disjoint (Submonoid.powers g : Set A) q :=
-    (Ideal.disjoint_powers_iff_notMem g (inferInstance : q.IsMaximal).isPrime.isRadical).mpr hgq
-  have hQ := IsLocalization.isPrime_of_isPrime_disjoint (Submonoid.powers g) B q inferInstance
-    hdisj
+  refine ⟨g, hgq, fun h hhq B _ _ _ ↦ ?_⟩
+  have hdisj : Disjoint (Submonoid.powers (g * h) : Set A) q :=
+    (Ideal.disjoint_powers_iff_notMem _ (inferInstance : q.IsMaximal).isPrime.isRadical).mpr
+      ((inferInstance : q.IsMaximal).isPrime.mul_notMem hgq hhq)
+  have hQ := IsLocalization.isPrime_of_isPrime_disjoint (Submonoid.powers (g * h)) B q
+    inferInstance hdisj
   -- A prime of `B` containing `u` lies over a prime of `A` containing `u` but not `g`.
   have key (P : Ideal B) (hP : P.IsPrime) (huP : algebraMap A B u ∈ P) :
       P = q.map (algebraMap A B) := by
-    have hgP : g ∉ P.comap (algebraMap A B) := fun h ↦
-      hP.ne_top (Ideal.eq_top_of_isUnit_mem _ h (IsLocalization.Away.algebraMap_isUnit g))
-    rw [← IsLocalization.map_under (Submonoid.powers g) B P]
-    exact congr_arg _ (hg _ (hP.comap (algebraMap A B)) huP hgP)
+    have hgP : g ∉ P.comap (algebraMap A B) := fun hg ↦
+      hP.ne_top (Ideal.eq_top_of_isUnit_mem _ hg
+        (isUnit_of_mul_isUnit_left (by
+          simpa using IsLocalization.Away.algebraMap_isUnit (S := B) (g * h))))
+    rw [← IsLocalization.map_under (Submonoid.powers (g * h)) B P]
+    exact congr_arg _ (hg _ (hP.comap (algebraMap A B))
+      ((Ideal.span_singleton_le_iff_mem _).mpr huP) hgP)
   have hmax : (q.map (algebraMap A B)).IsMaximal := by
     obtain ⟨M, hM, hle⟩ := Ideal.exists_le_maximal _ hQ.ne_top
     exact key M hM.isPrime (hle (Ideal.mem_map_of_mem _ huq)) ▸ hM

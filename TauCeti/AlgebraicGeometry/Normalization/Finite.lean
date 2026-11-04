@@ -7,6 +7,7 @@ module
 
 public import Mathlib.AlgebraicGeometry.Morphisms.Finite
 public import Mathlib.AlgebraicGeometry.Normalization
+public import TauCeti.AlgebraicGeometry.IdealSheaf.Conductor
 public import TauCeti.AlgebraicGeometry.Scheme.GenericPoint
 public import TauCeti.RingTheory.Japanese
 
@@ -33,6 +34,12 @@ Japanese rings.
 * `AlgebraicGeometry.Scheme.Hom.isFinite_fromNormalization_iff`: the normalization of `Y` in `X` is
   finite over `Y` if and only if, over every affine open `U` of `Y`, the integral closure of
   `Γ(Y, U)` in `Γ(X, f ⁻¹ᵁ U)` is a finite `Γ(Y, U)`-module.
+* `AlgebraicGeometry.Scheme.Hom.isFinite_fromNormalization_of_iSup_eq_top`: it suffices to check
+  this over the members of an affine open cover of `Y`.
+* `AlgebraicGeometry.Scheme.Hom.normalizationObjAlgEquiv`: over an affine open `U`, the sections
+  of the normalization are the integral closure, as a `Γ(Y, U)`-algebra.
+* `AlgebraicGeometry.Scheme.Hom.conductor_fromNormalization_ideal`: over an affine open, the
+  conductor of a finite normalization is that of the integral closure.
 * `TauCeti.AlgebraicGeometry.isFinite_fromNormalization_fromSpecStalk_genericPoint_iff`: the
   normalization of an integral scheme in its function field is finite if and only if the ring of
   sections of every nonempty affine open is N-1.
@@ -58,6 +65,20 @@ universe u
 
 variable {X Y : Scheme.{u}} (f : X ⟶ Y) [QuasiCompact f] [QuasiSeparated f]
 
+/-- Over an affine open `U` of `Y`, the map on sections of the normalization of `Y` in `X` is
+finite if and only if the integral closure of `Γ(Y, U)` in `Γ(X, f ⁻¹ᵁ U)` is a finite
+`Γ(Y, U)`-module. -/
+theorem finite_fromNormalization_app_iff {U : Y.Opens} (hU : IsAffineOpen U) :
+    (f.fromNormalization.app U).hom.Finite ↔
+      letI := (f.app U).hom.toAlgebra
+      Module.Finite Γ(Y, U) (integralClosure Γ(Y, U) Γ(X, f ⁻¹ᵁ U)) := by
+  let := (f.app U).hom.toAlgebra
+  -- Over an affine open `U`, the map on sections is the algebra map to the integral closure,
+  -- followed by the isomorphism `normalizationObjIso`.
+  rw [fromNormalization_app _ hU, CommRingCat.hom_comp,
+    RingHom.finite_respectsIso.cancel_right_isIso, CommRingCat.hom_ofHom]
+  exact RingHom.finite_algebraMap
+
 /-- The normalization of `Y` in `X`, along `f`, is finite over `Y` if and only if, over every affine
 open `U` of `Y`, the integral closure of `Γ(Y, U)` in `Γ(X, f ⁻¹ᵁ U)` is a finite
 `Γ(Y, U)`-module. -/
@@ -65,17 +86,69 @@ theorem isFinite_fromNormalization_iff :
     IsFinite f.fromNormalization ↔ ∀ U : Y.Opens, IsAffineOpen U →
       letI := (f.app U).hom.toAlgebra
       Module.Finite Γ(Y, U) (integralClosure Γ(Y, U) Γ(X, f ⁻¹ᵁ U)) := by
-  -- Over an affine open `U`, the map on sections is the algebra map to the integral closure,
-  -- followed by the isomorphism `normalizationObjIso`.
-  have key : ∀ U (hU : IsAffineOpen U), (f.fromNormalization.app U).hom.Finite ↔
+  refine ⟨fun _ U hU ↦ (f.finite_fromNormalization_app_iff hU).mp
+    (f.fromNormalization.finite_app U hU), fun h ↦ ?_⟩
+  exact { finite_app U hU := (f.finite_fromNormalization_app_iff hU).mpr (h U hU) }
+
+/-- **Finiteness of the normalization is local on the target.** If `Y` is covered by affine opens
+`Uᵢ` over which the integral closure of `Γ(Y, Uᵢ)` in `Γ(X, f ⁻¹ᵁ Uᵢ)` is a finite
+`Γ(Y, Uᵢ)`-module, then the normalization of `Y` in `X` is finite over `Y`. -/
+theorem isFinite_fromNormalization_of_iSup_eq_top {ι : Type*} (U : ι → Y.affineOpens)
+    (hU : ⨆ i, (U i : Y.Opens) = ⊤)
+    (h : ∀ i, letI := (f.app (U i)).hom.toAlgebra
+      Module.Finite Γ(Y, U i) (integralClosure Γ(Y, U i) Γ(X, f ⁻¹ᵁ U i))) :
+    IsFinite f.fromNormalization := by
+  -- The affine property of finite morphisms has to be named for instance search to find it.
+  observe hP : HasAffineProperty @IsFinite.{u}
+    (fun X _ f _ ↦ IsAffine X ∧ RingHom.Finite (f.appTop).hom)
+  have : IsZariskiLocalAtTarget @IsFinite.{u} :=
+    @HasAffineProperty.instIsZariskiLocalAtTarget _ _ hP
+  refine IsZariskiLocalAtTarget.of_iSup_eq_top (P := @IsFinite) (fun i ↦ (U i).1) hU fun i ↦ ?_
+  have : IsAffine (U i).1.toScheme := (U i).2
+  rw [@HasAffineProperty.iff_of_isAffine _ _ hP]
+  refine ⟨(U i).2.preimage _, ?_⟩
+  -- Over `U i`, the restriction is the map on sections over `U i`, up to an isomorphism.
+  rw [morphismRestrict_appTop]
+  have hi : (U i).1.ι ''ᵁ ⊤ = U i := Scheme.Opens.ι_image_top _
+  have hUi : IsAffineOpen ((U i).1.ι ''ᵁ ⊤) := by
+    rw [hi]
+    exact (U i).2
+  refine RingHom.Finite.comp (.of_surjective _ (asIso _).commRingCatIsoToRingEquiv.surjective)
+    ((f.finite_fromNormalization_app_iff hUi).mpr ?_)
+  convert h i using 0
+  rw [hi]
+
+/-- Over an affine open `U` of `Y`, the sections of the normalization of `Y` in `X` are the
+integral closure of `Γ(Y, U)` in `Γ(X, f ⁻¹ᵁ U)`, as a `Γ(Y, U)`-algebra. -/
+noncomputable def normalizationObjAlgEquiv (U : Y.affineOpens) :
+    letI := (f.app U).hom.toAlgebra
+    letI := (f.fromNormalization.app U).hom.toAlgebra
+    Γ(f.normalization, f.fromNormalization ⁻¹ᵁ U) ≃ₐ[Γ(Y, U)]
+      integralClosure Γ(Y, U) Γ(X, f ⁻¹ᵁ U) :=
+  letI := (f.app U).hom.toAlgebra
+  letI := (f.fromNormalization.app U).hom.toAlgebra
+  { (f.normalizationObjIso U.2).commRingCatIsoToRingEquiv with
+    commutes' c := by
+      change (f.fromNormalization.app U ≫ (f.normalizationObjIso U.2).hom) c = _
+      rw [f.fromNormalization_app_assoc U.2, Iso.inv_hom_id, Category.comp_id]
+      rfl }
+
+/-- `normalizationObjAlgEquiv` is Mathlib's `normalizationObjIso`. -/
+theorem normalizationObjAlgEquiv_apply (U : Y.affineOpens)
+    (x : Γ(f.normalization, f.fromNormalization ⁻¹ᵁ U)) :
+    f.normalizationObjAlgEquiv U x = (f.normalizationObjIso U.2).hom x :=
+  (rfl)
+
+/-- Over an affine open `U` of `Y`, the conductor of a finite normalization of `Y` in `X` is the
+conductor of the integral closure of `Γ(Y, U)` in `Γ(X, f ⁻¹ᵁ U)`. -/
+theorem conductor_fromNormalization_ideal [IsFinite f.fromNormalization] (U : Y.affineOpens) :
+    f.fromNormalization.conductor.ideal U =
       letI := (f.app U).hom.toAlgebra
-      Module.Finite Γ(Y, U) (integralClosure Γ(Y, U) Γ(X, f ⁻¹ᵁ U)) := fun U hU ↦ by
-    let := (f.app U).hom.toAlgebra
-    rw [fromNormalization_app _ hU, CommRingCat.hom_comp,
-      RingHom.finite_respectsIso.cancel_right_isIso, CommRingCat.hom_ofHom]
-    exact RingHom.finite_algebraMap
-  refine ⟨fun _ U hU ↦ (key U hU).mp (f.fromNormalization.finite_app U hU), fun h ↦ ?_⟩
-  exact { finite_app U hU := (key U hU).mpr (h U hU) }
+      TauCeti.Algebra.conductor Γ(Y, U) (integralClosure Γ(Y, U) Γ(X, f ⁻¹ᵁ U)) :=
+  letI := (f.app U).hom.toAlgebra
+  letI := (f.fromNormalization.app U).hom.toAlgebra
+  (f.fromNormalization.conductor_ideal U).trans
+    (TauCeti.Algebra.conductor_congr (f.normalizationObjAlgEquiv U))
 
 end AlgebraicGeometry.Scheme.Hom
 
