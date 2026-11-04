@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): ampleness under pullback by affine open immersions, powers, and products with globally generated bundles"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): the twisting sheaf O(1) is ample on a quasi-compact Proj"},{"n":6,"after":[1,2,3,4,5],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles and projective morphisms"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"8e29268de79c45d1730fa54d62137f70cd24b4e3","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): ampleness under pullback by affine open immersions, powers, and products with globally generated bundles"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): the twisting sheaf O(1) is ample on a quasi-compact Proj"},{"n":6,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles, projective morphisms, projective bundles and blowups"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
-Built on `main` at `333c9e49143de812ed1452b412193ee9c05501e7`. Status: **partial**. Target text
+Built on `main` at `8e29268de79c45d1730fa54d62137f70cd24b4e3`. Status: **partial**. Target text
 (StableReduction README, Layer 2): "Extend Tau Ceti's invertible-sheaf API with tensor powers,
 Cartier divisors, pullback, degree on components, global generation, and relative ampleness.
 Build projective morphisms and relative `Proj` of a finitely generated graded quasi-coherent
@@ -39,6 +39,41 @@ The earlier stubs and what replaced them:
    `CommMon.IsGeneratedInDegreeOne A` with exactly that body, plus `isGeneratedInDegreeOne_iff`,
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
+
+## Changes in the tenth session (2026-11-04, 02:30 UTC)
+
+- `main` moved to `8e29268de79` and is merged in with no conflicts. Nothing it added replaces a
+  declaration of this branch. It did add `Scheme.Modules.symmetricPowerSectionsIso`
+  (`Modules/SymmetricPower/Sections.lean`): on an affine `U`, `Symⁿ Γ(F, U) ≅ Γ(Symⁿ F, U)`.
+  This closes the earlier remaining item "`ℙ(ℰ)` is projective".
+- **`Sym F` is generated in degree one on affine sections**
+  (`adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra`). It is added to `main`'s
+  `Modules/Quasicoherent/GradedAlgebra/SymmetricAlgebra/Adjunction.lean`, because the proof uses
+  that file's private section-level lift `Sym Γ(F, U) → ⨁ n, Γ(Aₙ, U)`. That lift is surjective
+  on an affine `U` when every degree of the sheaf-level lift is an isomorphism, which holds for
+  the lift of `F ≅ Sym¹ F`, the identity of `Sym F`. The degree-`n` part of the section-level
+  lift is the sheaf-level lift composed with `symmetricPowerSectionsIso`.
+- **Generation in degree one from generation over `Γ(X, U)`**
+  (`CommMon.isGeneratedInDegreeOne_of_adjoin_eq_top`, split 1). It is used for both `Sym F` and
+  the Rees algebra.
+- **Projective bundles.** The new file `RelativeProj/SymmetricAlgebra.lean` (split 6) proves
+  `isGeneratedInDegreeOne_gradedSymmetricAlgebra`. For `F` of finite type it also proves
+  `finiteType_sections_gradedSymmetricAlgebra`, plus `finite_sections_gradedSymmetricAlgebra_zero`
+  and `isProper_relativeProjToBase_gradedSymmetricAlgebra`. In `RelativelyAmple.lean`:
+  `ℙ(F) ⟶ S` is projective (the instance `isProjective_relativeProjToBase_gradedSymmetricAlgebra`).
+  `𝒪(1)` on it is relatively very ample, and relatively ample for `F` of finite type.
+- **Blowups are projective.** The new file `Blowup/Projective.lean` proves that the Rees algebra
+  of an ideal sheaf is generated in degree one. So the blowup along an ideal sheaf of finite type
+  is projective (`isProjective_blowupToBase`, Stacks 02NS), and its `𝒪(1)` is relatively ample.
+  The two inline bullets of `main`'s `isProper_blowupToBase` become the named lemmas
+  `finiteType_sections_reesAlgebra` and `finite_sections_reesAlgebra_zero`, so they are not
+  duplicated.
+- Verified: `lake build` green (62714 jobs) and `lookahead-check` ok. No `sorry` anywhere on the
+  branch. Rubric audit: renamed the blowup ampleness theorem after its statement and wrapped
+  lines over 100 characters.
+- The splits are renumbered. The new split 6 is the projective-bundle file. The old split 6 is
+  now split 7: it still carries `RelativelyAmple.lean` and completes the target, and it also takes
+  `Blowup/Projective.lean` and the `Blowup/IdealSheaf.lean` refactor.
 
 ## Changes in the ninth session (2026-11-04, 01:35 UTC)
 
@@ -156,9 +191,10 @@ The earlier stubs and what replaced them:
 
 1. **Name the generated-in-degree-one condition** (after: none). This is a refactor that touches
    only `main` code.
-   - File: `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf.lean` (+22/−4).
+   - File: `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf.lean` (+48/−4).
    - Declarations: `CategoryTheory.CommMon.IsGeneratedInDegreeOne`, `CommMon.isGeneratedInDegreeOne_iff`,
-     and `CommMon.isInvertible_relativeProjTwistingSheaf` restated with the new predicate.
+     `CommMon.isGeneratedInDegreeOne_of_adjoin_eq_top` (generation over `Γ(X, U)` suffices), and
+     `CommMon.isInvertible_relativeProjTwistingSheaf` restated with the new predicate.
    - Roadmap line: `Roadmap: SchemeAndStackFoundations` (§0.3 defines "generated in degree one").
    - Subject: `refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition`
 2. **Tensor powers of line bundles** (after: none).
@@ -204,10 +240,24 @@ The earlier stubs and what replaced them:
      files): `nonvanishingLocus_toTwistingSheaf`, `isAmple_twistingSheaf_one`,
      `isAmple_twistingSheaf`.
    - Subject: `feat(AlgebraicGeometry/ProjectiveSpectrum): the twisting sheaf O(1) is ample on a quasi-compact Proj`
-6. **Relatively ample and very ample line bundles and projective morphisms** (after: 1, 2, 3, 4,
-   5). It imports splits 1, 4 and 5, and through them 2 and 3. It is the only split that
-   completes the target's relative-ampleness layer.
-   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (399 lines, new).
+6. **The symmetric algebra is generated in degree one and its relative `Proj` is proper** (after: 1).
+   - Files: `main`'s `Modules/Quasicoherent/GradedAlgebra/SymmetricAlgebra/Adjunction.lean`
+     (+103; it now imports `Modules/SymmetricPower/Sections.lean` and
+     `LinearAlgebra/SymmetricAlgebra/Homogeneous.lean`); `RelativeProj/SymmetricAlgebra.lean`
+     (115 lines, new).
+   - Declarations: `TauCeti.AlgebraicGeometry.adjoin_gradedSectionsGrading_one_gradedSymmetricAlgebra`
+     (with three private lemmas in `Adjunction.lean`), `isGeneratedInDegreeOne_gradedSymmetricAlgebra`,
+     `finiteType_sections_gradedSymmetricAlgebra`, `finite_sections_gradedSymmetricAlgebra_zero`,
+     `isProper_relativeProjToBase_gradedSymmetricAlgebra`.
+   - Roadmap line: `Roadmap: SchemeAndStackFoundations` (§0.3 relative `Proj`).
+   - Subject: `feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper`
+7. **Relatively ample and very ample line bundles, projective morphisms, projective bundles and
+   blowups** (after: 1, 2, 3, 4, 5, 6). It imports splits 1, 4, 5 and 6, and through them 2
+   and 3. It is the only split that completes the target's relative-ampleness layer.
+   - Files: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple.lean` (438 lines, new);
+     `TauCeti/AlgebraicGeometry/Blowup/Projective.lean` (105 lines, new); `main`'s
+     `Blowup/IdealSheaf.lean` (+24/−12: the two inline bullets of `isProper_blowupToBase` become
+     `finiteType_sections_reesAlgebra` and `finite_sections_reesAlgebra_zero`).
    - Declarations: `CommMon.relativeProjTwistingSheafOne`; `InvertibleSheaf.IsRelativelyVeryAmple`,
      `IsRelativelyVeryAmple.of_iso`, `isRelativelyVeryAmple_relativeProjTwistingSheaf`,
      `IsRelativelyVeryAmple.pullback`, `IsRelativelyVeryAmple.isSeparated`;
@@ -223,8 +273,15 @@ The earlier stubs and what replaced them:
      `isRelativelyAmple_of_pow_eq_one`, `InvertibleSheaf.isRelativelyAmple_tensorPow_iff`;
      `LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne`; `IsProjective` (class),
      `isProjective_relativeProjToBase`, the instance `IsProjective (j ≫ f)` for a closed immersion
-     `j`, `IsProjective.exists_isRelativelyVeryAmple`, and the instance `IsProjective.isProper`.
-   - Subject: `feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles and projective morphisms`
+     `j`, `IsProjective.exists_isRelativelyVeryAmple`, and the instance `IsProjective.isProper`;
+     projective bundles: `InvertibleSheaf.isRelativelyVeryAmple_relativeProjTwistingSheaf_gradedSymmetricAlgebra`,
+     `LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra`, and
+     the instance `isProjective_relativeProjToBase_gradedSymmetricAlgebra`. In `Blowup/Projective.lean`
+     (namespace `AlgebraicGeometry.Scheme.IdealSheafData`, like its neighbours):
+     `adjoin_gradedSectionsGrading_one_reesAlgebra`, `isGeneratedInDegreeOne_reesAlgebra`,
+     `isProjective_blowupToBase` (Stacks 02NS), `isRelativelyVeryAmple_relativeProjTwistingSheaf_reesAlgebra`
+     and `isRelativelyAmple_relativeProjTwistingSheafOne_reesAlgebra`.
+   - Subject: `feat(AlgebraicGeometry/LineBundle): relatively ample and very ample line bundles, projective morphisms, projective bundles and blowups`
 
 ## What is proved and what remains
 
@@ -252,6 +309,12 @@ Proved, with no stubs:
 - `𝒪(1)` is relatively ample on a quasi-compact relative `Proj` generated in degree one.
 - Projective morphisms are closed under precomposition with closed immersions, carry a relatively
   very ample line bundle, and are **proper**.
+- `Sym F` is generated in degree one for every quasicoherent `F`. For `F` of finite type, the
+  projective bundle `ℙ(F) = Proj_S(Sym F) ⟶ S` is projective (hence proper), and its `𝒪(1)` is
+  relatively very ample and relatively ample. A closed immersion into `ℙ(F)` over `S` is
+  therefore projective: this is the Stacks definition of projective morphisms.
+- The Rees algebra of an ideal sheaf is generated in degree one. The blowup along an ideal sheaf
+  of finite type is projective, and its `𝒪(1)` is relatively ample.
 
 Remains for the target:
 - **Relatively very ample + quasi-compact ⇒ relatively ample**, and so: for `f` projective, the
@@ -276,8 +339,6 @@ Remains for the target:
 - Relative ampleness is stable under pullback along immersions that are not open, and under base
   change. It also implies separatedness: ample ⇒ separated, by `X_s ∩ X_t = (X_s)_{t/s}` and a
   separatedness criterion via affine covers, which Mathlib lacks.
-- `ℙ(ℰ) = Proj_S(Sym ℰ)` is projective for `ℰ` of finite type. This needs `Sym ℰ` generated in
-  degree one on affine sections: on an affine open, sections of `Symⁿ ℰ` are `Symⁿ` of sections.
 - Stability of projectivity under composition and base change (Segre embedding and base change
   of the relative `Proj`).
 - Cartier divisors and degree on components connected to these notions. Much of this is on

@@ -9,6 +9,7 @@ public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
 public import TauCeti.AlgebraicGeometry.LineBundle.Ample
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.Ample
 public import TauCeti.AlgebraicGeometry.RelativeProj.Proper
+public import TauCeti.AlgebraicGeometry.RelativeProj.SymmetricAlgebra
 public import TauCeti.AlgebraicGeometry.RelativeProj.TwistingSheaf
 
 /-!
@@ -68,6 +69,10 @@ Project defined through `ℙ(ℰ)`.
 * `TauCeti.AlgebraicGeometry.IsProjective.exists_isRelativelyVeryAmple`: a projective morphism
   has a relatively very ample line bundle.
 * `TauCeti.AlgebraicGeometry.IsProjective.isProper`: a projective morphism is proper.
+* `TauCeti.AlgebraicGeometry.isProjective_relativeProjToBase_gradedSymmetricAlgebra`: the
+  projective bundle `ℙ(F) = Proj_S(Sym F)` of a quasicoherent sheaf `F` of finite type is
+  projective, and `𝒪(1)` on it is relatively ample
+  (`LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra`).
 
 ## References
 
@@ -393,6 +398,40 @@ instance IsProjective.isProper (f : X ⟶ S) [IsProjective f] : IsProper f := by
   obtain ⟨A, _, -, h, h₀, i, hi, rfl⟩ := IsProjective.exists_isClosedImmersion (f := f)
   have := CommMon.isProper_relativeProjToBase h h₀
   infer_instance
+
+/-! ### Projective bundles -/
+
+section ProjectiveBundle
+
+variable (F : QuasicoherentSheaf S)
+
+/-- **`𝒪(1)` is relatively very ample on a projective bundle**: on `ℙ(F) = Proj_S(Sym F)` for a
+quasicoherent sheaf `F`, since `Sym F` is generated in degree one. -/
+theorem InvertibleSheaf.isRelativelyVeryAmple_relativeProjTwistingSheaf_gradedSymmetricAlgebra :
+    (((gradedSymmetricAlgebra S).obj F).obj.relativeProjTwistingSheafOne
+      (isGeneratedInDegreeOne_gradedSymmetricAlgebra F)).IsRelativelyVeryAmple
+      ((gradedSymmetricAlgebra S).obj F).obj.relativeProjToBase :=
+  isRelativelyVeryAmple_relativeProjTwistingSheaf _ _
+
+/-- **`𝒪(1)` is relatively ample on a projective bundle**: on `ℙ(F) = Proj_S(Sym F)` for a
+quasicoherent sheaf `F` of finite type, whose structure morphism is proper. -/
+theorem LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra
+    [F.obj.IsFiniteType] :
+    (LineBundleClass.mk (((gradedSymmetricAlgebra S).obj F).obj.relativeProjTwistingSheafOne
+      (isGeneratedInDegreeOne_gradedSymmetricAlgebra F))).IsRelativelyAmple
+      ((gradedSymmetricAlgebra S).obj F).obj.relativeProjToBase :=
+  have := isProper_relativeProjToBase_gradedSymmetricAlgebra F
+  isRelativelyAmple_relativeProjTwistingSheafOne _ _
+
+/-- **A projective bundle is projective**: for a quasicoherent sheaf `F` of finite type,
+`ℙ(F) = Proj_S(Sym F) ⟶ S` is projective. -/
+instance isProjective_relativeProjToBase_gradedSymmetricAlgebra [F.obj.IsFiniteType] :
+    IsProjective ((gradedSymmetricAlgebra S).obj F).obj.relativeProjToBase :=
+  isProjective_relativeProjToBase _ (isGeneratedInDegreeOne_gradedSymmetricAlgebra F)
+    (fun _ hU ↦ finiteType_sections_gradedSymmetricAlgebra F hU)
+    (fun U _ ↦ finite_sections_gradedSymmetricAlgebra_zero F U)
+
+end ProjectiveBundle
 
 end AlgebraicGeometry
 

@@ -186,21 +186,33 @@ theorem isPullback_blowupChart_fromSpec {U : X.Opens} (hU : IsAffineOpen U) :
     (by simp) (by simp)
     (by rw [← hU.isoSpec_inv_ι, Iso.hom_inv_id_assoc, Iso.refl_hom, Category.comp_id]) (by simp)
 
+/-- Over an affine open `U` with `I(U)` finitely generated, the sections `⨁ n, Γ(Iⁿ, U)` of the
+Rees algebra form a `Γ(X, U)`-algebra of finite type, since they are the Rees algebra of `I(U)`. -/
+theorem finiteType_sections_reesAlgebra {U : X.Opens} (hU : IsAffineOpen U)
+    (hI : (I.ideal ⟨U, hU⟩).FG) :
+    Algebra.FiniteType Γ(X, U) (⨁ n, Γ(I.reesAlgebra.obj.X n, U)) :=
+  have : Algebra.FiniteType Γ(X, U) (_root_.reesAlgebra (I.ideal ⟨U, hU⟩)) :=
+    ⟨(_root_.reesAlgebra _).fg_top.mpr (reesAlgebra.fg hI)⟩
+  Algebra.FiniteType.equiv this (I.reesAlgebraSectionsEquiv hU).symm
+
+/-- Over every open `U`, the degree-zero sections `Γ(I⁰, U)` of the Rees algebra form a finite
+`Γ(X, U)`-module: the unit `𝒪_X ⟶ I⁰` of the Rees algebra is an isomorphism. -/
+theorem finite_sections_reesAlgebra_zero (U : X.Opens) :
+    Module.Finite Γ(X, U) Γ(I.reesAlgebra.obj.X 0, U) := by
+  refine Module.Finite.of_surjective (Functor.LaxMonoidal.ε (Scheme.Modules.sectionsFunctor U) ≫
+    (Scheme.Modules.sectionsFunctor U).map I.reesAlgebra.obj.toMon.one).hom ?_
+  have : IsIso (Functor.LaxMonoidal.ε (Scheme.Modules.sectionsFunctor U)) := by
+    rw [Scheme.Modules.sectionsFunctor_ε]
+    exact IsIso.id _
+  exact (ConcreteCategory.bijective_of_isIso _).2
+
 /-- **The blowup along an ideal sheaf of finite type is proper.** If the ideal `I(U)` is finitely
 generated for every affine open `U` of `X`, then `Bl_I X ⟶ X` is proper. -/
 theorem isProper_blowupToBase (hI : ∀ U : X.affineOpens, (I.ideal U).FG) :
-    IsProper I.blowupToBase := by
-  refine CommMon.isProper_relativeProjToBase (fun U hU ↦ ?_) (fun U hU ↦ ?_)
-  · have : Algebra.FiniteType Γ(X, U) (_root_.reesAlgebra (I.ideal ⟨U, hU⟩)) :=
-      ⟨(_root_.reesAlgebra _).fg_top.mpr (reesAlgebra.fg (hI ⟨U, hU⟩))⟩
-    exact Algebra.FiniteType.equiv this (I.reesAlgebraSectionsEquiv hU).symm
-  · -- the unit `𝒪_X ⟶ I⁰` of the Rees algebra is an isomorphism, so `Γ(I⁰, U) ≅ Γ(X, U)`
-    refine Module.Finite.of_surjective (Functor.LaxMonoidal.ε (Scheme.Modules.sectionsFunctor U) ≫
-      (Scheme.Modules.sectionsFunctor U).map I.reesAlgebra.obj.toMon.one).hom ?_
-    have : IsIso (Functor.LaxMonoidal.ε (Scheme.Modules.sectionsFunctor U)) := by
-      rw [Scheme.Modules.sectionsFunctor_ε]
-      exact IsIso.id _
-    exact (ConcreteCategory.bijective_of_isIso _).2
+    IsProper I.blowupToBase :=
+  CommMon.isProper_relativeProjToBase
+    (fun _ hU ↦ I.finiteType_sections_reesAlgebra hU (hI ⟨_, hU⟩))
+    (fun U _ ↦ I.finite_sections_reesAlgebra_zero U)
 
 end Blowup
 
