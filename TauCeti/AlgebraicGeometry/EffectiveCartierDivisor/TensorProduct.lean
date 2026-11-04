@@ -32,7 +32,11 @@ of `I_D`, inverting gives `[𝒪_X(D + E)] = [𝒪_X(D)] * [𝒪_X(E)]`, which i
 * `Scheme.IdealSheafData.tensorProductSheafIso`: `I ⊗ J ≅ I * J` when `J` is effective Cartier,
   with `Scheme.IdealSheafData.tensorProductSheafIso_hom_tmul` computing it on pure tensors;
 * `TauCeti.AlgebraicGeometry.LineBundleClass.mk_toInvertibleSheaf_mul`: the line-bundle class of
-  the ideal sheaf of `D + E` is the product of the classes of the ideal sheaves of `D` and `E`.
+  the ideal sheaf of `D + E` is the product of the classes of the ideal sheaves of `D` and `E`;
+* `TauCeti.AlgebraicGeometry.LineBundleClass.mk_toInvertibleSheaf_pow`: the line-bundle class of
+  the ideal sheaf of `n D` is the `n`-th power of the class of the ideal sheaf of `D`, and
+  `TauCeti.AlgebraicGeometry.LineBundleClass.mk_toInvertibleSheaf_top`: the unit ideal sheaf, of
+  the zero divisor, has trivial class.
 
 ## References
 
@@ -220,5 +224,37 @@ theorem mk_toInvertibleSheaf_mul (hI : I.IsEffectiveCartier) (hJ : J.IsEffective
   refine ⟨?_⟩
   simp only [IsEffectiveCartier.toInvertibleSheaf_obj, InvertibleSheaf.tensorProduct_obj]
   exact (tensorProductSheafIso I hJ).symm
+
+/-- The line-bundle class of the ideal sheaf of an effective Cartier divisor depends only on the
+ideal sheaf. This transports it along an equality of ideal sheaves. -/
+theorem mk_toInvertibleSheaf_congr (hI : I.IsEffectiveCartier) (hJ : J.IsEffectiveCartier)
+    (h : I = J) : mk hI.toInvertibleSheaf = mk hJ.toInvertibleSheaf := by
+  subst h
+  rfl
+
+/-- The unit ideal sheaf, the ideal sheaf of the zero divisor, has trivial line-bundle class. -/
+@[simp]
+theorem mk_toInvertibleSheaf_top (h : (⊤ : X.IdealSheafData).IsEffectiveCartier) :
+    mk h.toInvertibleSheaf = 1 := by
+  rw [mk_eq_one_iff, IsEffectiveCartier.toInvertibleSheaf_obj]
+  refine ⟨(unitIsoOfForallIdealEqSpan (⊤ : X.IdealSheafData) (a := 1) (fun W ↦ ?_)
+    (fun W ↦ ?_)).symm⟩
+  · rw [map_one]
+    exact isUnit_one.isSMulRegular _
+  · rw [map_one, Ideal.span_singleton_one]
+    rfl
+
+/-- The line-bundle class of the ideal sheaf of `n D` is the `n`-th power of the class of the
+ideal sheaf of `D`. -/
+theorem mk_toInvertibleSheaf_pow (hI : I.IsEffectiveCartier) (n : ℕ) :
+    mk (TauCeti.isEffectiveCartier_pow hI n).toInvertibleSheaf = mk hI.toInvertibleSheaf ^ n := by
+  induction n with
+  | zero =>
+    rw [mk_toInvertibleSheaf_congr _ (isEffectiveCartier_top X) (pow_zero I),
+      mk_toInvertibleSheaf_top, pow_zero]
+  | succ n hn =>
+    rw [mk_toInvertibleSheaf_congr _ (TauCeti.isEffectiveCartier_mul
+      (TauCeti.isEffectiveCartier_pow hI n) hI) (pow_succ I n),
+      mk_toInvertibleSheaf_mul (TauCeti.isEffectiveCartier_pow hI n) hI, hn, pow_succ]
 
 end TauCeti.AlgebraicGeometry.LineBundleClass

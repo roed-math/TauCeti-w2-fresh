@@ -26,7 +26,8 @@ projective model of `W` over `K`.
 
 * `WeierstrassCurve.isIntegral_projModel`: over an integral domain, the projective Weierstrass
   model is an integral scheme.
-* `WeierstrassCurve.geometricallyIntegral_projModelOver`: over any commutative ring, the structure
+* `WeierstrassCurve.geometricallyIntegral_projModelOver` and
+  `WeierstrassCurve.geometricallyIntegral_over_projModel`: over any commutative ring, the structure
   morphism of the projective Weierstrass model is geometrically integral.
 
 ## References
@@ -88,5 +89,11 @@ needed. -/
 instance geometricallyIntegral_projModelOver : GeometricallyIntegral W.projModelOver :=
   ⟨geometrically_iff_of_commRing.mpr fun K _ _ _ _ _ h ↦
     .of_isIso ((W.isPullback_projModelBaseChange (algebraMap R K)).isoIsPullback _ _ h).hom⟩
+
+/-- The projective Weierstrass model is geometrically integral over `Spec R`, as a scheme over
+`Spec R`. -/
+instance geometricallyIntegral_over_projModel :
+    GeometricallyIntegral (W.projModel ↘ Spec (.of R)) :=
+  inferInstanceAs (GeometricallyIntegral W.projModelOver)
 
 end WeierstrassCurve
