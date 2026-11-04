@@ -33,11 +33,12 @@ Over a principal ideal domain every module has such a presentation, by a free mo
 kernel, which is again free; applied to the tensor product, this computes `Tor₁` in the Künneth
 and universal coefficient theorems.
 
-The file also records two general facts. The natural transformation `LₙF ⟶ LₙG` induced by
+The file also records three general facts. The natural transformation `LₙF ⟶ LₙG` induced by
 `α : F ⟶ G` is additive in `α` (`CategoryTheory.NatTrans.leftDerived_add`), so that a derived
 functor depending on a parameter through a natural transformation, such as `Tor` in its underived
 variable, is an additive functor of that parameter. An exact additive functor has no positive left
-derived functors (`CategoryTheory.Functor.isZero_leftDerived_succ`).
+derived functors (`CategoryTheory.Functor.isZero_leftDerived_succ`). The comparison `L₀F ⟶ F` is
+natural in `F` (`CategoryTheory.NatTrans.leftDerived_zero_comp_fromLeftDerivedZero`).
 
 ## References
 
@@ -266,6 +267,29 @@ theorem NatTrans.leftDerived_add {F G : C ⥤ D} [F.Additive] [G.Additive] (α �
     simp
   simp only [NatTrans.app_add, (projectiveResolution X).leftDerived_app_eq, h, Functor.map_add,
     Preadditive.add_comp, Preadditive.comp_add]
+
+/-- The comparison `L₀F ⟶ F` is natural in the functor: for `α : F ⟶ G`, the map `L₀F ⟶ L₀G`
+induced by `α` followed by `L₀G ⟶ G` is `L₀F ⟶ F` followed by `α`. -/
+@[reassoc]
+theorem NatTrans.leftDerived_zero_comp_fromLeftDerivedZero {F G : C ⥤ D} [F.Additive]
+    [G.Additive] (α : F ⟶ G) :
+    NatTrans.leftDerived α 0 ≫ G.fromLeftDerivedZero = F.fromLeftDerivedZero ≫ α := by
+  ext X
+  let P := projectiveResolution X
+  rw [NatTrans.comp_app, NatTrans.comp_app, P.leftDerived_app_eq α 0,
+    P.fromLeftDerivedZero_eq G, P.fromLeftDerivedZero_eq F]
+  simp only [Category.assoc, Iso.inv_hom_id_assoc]
+  congr 1
+  -- `isoHomologyι₀` is the inclusion of homology into the opcycles in degree zero
+  change HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex α _).app P.complex) 0 ≫
+      HomologicalComplex.homologyι _ 0 ≫ P.fromLeftDerivedZero' G =
+    (HomologicalComplex.homologyι _ 0 ≫ P.fromLeftDerivedZero' F) ≫ α.app X
+  rw [HomologicalComplex.homologyι_naturality_assoc, Category.assoc]
+  congr 1
+  rw [← cancel_epi (HomologicalComplex.pOpcycles _ _), HomologicalComplex.p_opcyclesMap_assoc,
+    ProjectiveResolution.pOpcycles_comp_fromLeftDerivedZero',
+    ProjectiveResolution.pOpcycles_comp_fromLeftDerivedZero'_assoc]
+  exact (α.naturality (P.π.f 0)).symm
 
 /-- An exact additive functor has no positive left derived functors. -/
 theorem Functor.isZero_leftDerived_succ (F : C ⥤ D) [F.Additive] [F.PreservesHomology]

@@ -10,6 +10,7 @@ public import Mathlib.Algebra.Category.ModuleCat.Colimits
 public import Mathlib.Algebra.Category.ModuleCat.FilteredColimits
 public import Mathlib.CategoryTheory.Abelian.LeftDerived
 public import Mathlib.CategoryTheory.Limits.Preserves.Opposites
+import TauCeti.CategoryTheory.Abelian.LeftDerived
 
 /-!
 # Degree zero of local cohomology
@@ -59,6 +60,36 @@ noncomputable def extZeroIso (M : ModuleCat.{u} A) :
   ((Functor.leftOpRightOpEquiv _ _).inverse.mapIso
       ((linearYoneda A (ModuleCat.{u} A)).obj M).rightOp.leftDerivedZeroIsoSelf).unop.symm ≪≫
     Functor.rightOpLeftOpIso _
+
+/-- The inverse of `extZeroIso` is the map from `Hom` to the derived-functor `Ext⁰` given by the
+degree-zero comparison of left derived functors. -/
+theorem extZeroIso_inv_app (M N : ModuleCat.{u} A) :
+    (extZeroIso M).inv.app (Opposite.op N) =
+      (((linearYoneda A (ModuleCat.{u} A)).obj M).rightOp.fromLeftDerivedZero.app N).unop := by
+  simp only [extZeroIso]
+  rfl
+
+/-- `extZeroIso` is natural in the second argument as well: the identification of `Ext⁰(N, M)`
+with `Hom(N, M)` carries the map induced by `f : M ⟶ M'` to postcomposition with `f`. -/
+theorem extZeroIso_hom_naturality_right (N : ModuleCat.{u} A) {M M' : ModuleCat.{u} A}
+    (f : M ⟶ M') :
+    ((Ext A (ModuleCat.{u} A) 0).obj (Opposite.op N)).map f ≫
+        (extZeroIso M').hom.app (Opposite.op N) =
+      (extZeroIso M).hom.app (Opposite.op N) ≫
+        ((linearYoneda A (ModuleCat.{u} A)).map f).app (Opposite.op N) := by
+  have h := congrArg (fun φ => (NatTrans.app φ N).unop)
+    (NatTrans.leftDerived_zero_comp_fromLeftDerivedZero
+      ((linearYoneda A (ModuleCat.{u} A)).map f).rightOp)
+  dsimp at h
+  rw [← extZeroIso_inv_app, ← extZeroIso_inv_app] at h
+  rw [← cancel_epi ((extZeroIso M).inv.app (Opposite.op N)), Iso.inv_hom_id_app_assoc]
+  -- the maps of `Ext⁰(N, -)` are induced on left derived functors
+  change (extZeroIso M).inv.app _ ≫ ((NatTrans.leftDerived
+      ((linearYoneda A (ModuleCat.{u} A)).map f).rightOp 0).app N).unop ≫
+    (extZeroIso M').hom.app _ = _
+  refine (Category.assoc _ _ _).symm.trans ((congrArg (· ≫ _) h).trans ?_)
+  exact (Category.assoc _ _ _).trans
+    ((congrArg (_ ≫ ·) ((extZeroIso M').inv_hom_id_app _)).trans (Category.comp_id _))
 
 
 /-- A linear map out of `A ⧸ J` vanishing on the class of `1` is zero. -/

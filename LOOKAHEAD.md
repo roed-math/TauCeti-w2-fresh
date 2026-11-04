@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[5],"title":"feat: long exact sequence of local cohomology in positive degrees"},{"n":8,"after":[1,5,7],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":9,"after":[8],"title":"feat: flat base change of Noetherian local cohomology"},{"n":10,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":11,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":12,"after":[11],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":13,"after":[6,10,12],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":9,"after":[8],"title":"feat: flat base change of Noetherian local cohomology"},{"n":10,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":11,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":12,"after":[11],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":13,"after":[6,10,12],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
@@ -416,44 +416,58 @@ localization away from `a`:
   `H¹_m(R) ≅ K ⧸ R`, natively. This is the content of the README check `test_depth_dvr`, now
   complete; split 14 collects it under the check's name.
 
-### Session 10: the long exact sequence of native local cohomology in positive degrees
+### Session 10: the long exact sequence of native local cohomology
 
 Merged `main` at `52f9d081237d` (one docstring conflict in `ProjectiveResolution.lean`, where
 `main` had added `hasProjectiveDimensionLT`; both texts are kept).
 
-`TauCeti/Algebra/Category/ModuleCat/FilteredColimits.lean` (new, 117 lines, split 7), in
-namespace `TauCeti.ModuleCat`, for a filtered diagram `D : J ⥤ ModuleCat R ⥤ ModuleCat R`:
+`TauCeti/CategoryTheory/Abelian/LeftDerived.lean` (a `main` file) gains 25 lines:
+`CategoryTheory.NatTrans.leftDerived_zero_comp_fromLeftDerivedZero` (`@[reassoc]`): the
+comparison `L₀F ⟶ F` is natural in the functor `F`. Mathlib has its naturality in the object
+only.
+
+`TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean` gains 31 lines (now 230):
+`extZeroIso_inv_app` (the inverse of `extZeroIso` is `fromLeftDerivedZero`; it must live here,
+since `extZeroIso` is not exposed) and `extZeroIso_hom_naturality_right` (`Ext⁰(N, M) ≅ Hom(N, M)`
+is natural in `M` as well as in `N`).
+
+`TauCeti/Algebra/Category/ModuleCat/FilteredColimits.lean` (new, 139 lines), in namespace
+`TauCeti.ModuleCat`, for a filtered diagram `D : J ⥤ ModuleCat R ⥤ ModuleCat R`:
 `exists_colimit_ι_app_eq` (every element of `(colimit D).obj X` comes from a stage),
 `exists_map_app_eq_zero` (zero in the colimit is zero at a later stage), **`exists_eq_of_stages`**
-(maps induced stage by stage by natural maps are exact once every stage is) and
-**`comp_eq_zero_of_stages`** (they compose to zero once every stage does). These are generic, so
-they live beside `TauCeti/Algebra/Category/ModuleCat/Colimits.lean` rather than in the
-local-cohomology file.
+(maps induced stage by stage by natural maps are exact once every stage is),
+**`comp_eq_zero_of_stages`** (they compose to zero once every stage does) and
+**`injective_of_stages`**. These are generic, so they live beside
+`TauCeti/Algebra/Category/ModuleCat/Colimits.lean` rather than in the local-cohomology file.
 
-`TauCeti/Algebra/Homology/LocalCohomology/Exact.lean` (new, 319 lines, split 7), in namespace
+`TauCeti/Algebra/Homology/LocalCohomology/Exact.lean` (new, 396 lines), in namespace
 `TauCeti.Supports`, for a short exact sequence `hS : S.ShortExact` of `A`-modules over any
-commutative ring:
+commutative ring and every degree `n`:
 
-- stage level, for the derived-functor `Ext(N, -)`, through session 9's `extSuccLinearEquiv` and
-  Mathlib's `Ext.covariant_sequence_exact₁/₂/₃`: `exists_Ext_map_f_eq`, `Ext_map_f_comp_map_g`;
-  the connecting map **`extSuccδ N hS p : Extᵖ⁺¹(N, X₃) ⟶ Extᵖ⁺²(N, X₁)`** (Yoneda product with
-  `hS.extClass`), `extSuccLinearEquiv_extSuccδ`, `extSuccδ_naturality` (natural in `N`),
-  `exists_Ext_map_g_eq`, `exists_extSuccδ_eq`, `Ext_map_g_comp_extSuccδ`,
-  `extSuccδ_comp_Ext_map_f`;
-- colimit level: `localCohomologyDiagramδ` (the stages as a natural transformation along
-  `A ⧸ Iⁿ`), `ι_app_localCohomology_map`, **`localCohomologySuccδ I hS p :
-  H^{p+1}_I(X₃) ⟶ H^{p+2}_I(X₁)`**, `ι_app_localCohomologySuccδ`;
-- exactness: `exists_localCohomology_map_f_eq`, `exists_localCohomology_map_g_eq`,
-  `exists_localCohomologySuccδ_eq` (elementwise), `localCohomology_map_f_comp_map_g`,
-  `localCohomology_map_g_comp_localCohomologySuccδ`,
-  `localCohomologySuccδ_comp_localCohomology_map_f`, and **`localCohomology_sequence_exact₂`,
-  `localCohomology_sequence_exact₃`, `localCohomology_sequence_exact₁`** (`ShortComplex.Exact` at
-  `H^{p+1}_I(X₂)`, `H^{p+1}_I(X₃)` and `H^{p+2}_I(X₁)`, named after Mathlib's
-  `Ext.covariant_sequence_exact₁/₂/₃`).
+- **`extLinearEquiv N Y n`**: the derived-functor `Extⁿ(N, Y)` is `A`-linearly the
+  derived-category `Extⁿ(N, Y)` in **every** degree (degree `0` through `extZeroIso` and
+  `Ext.linearEquiv₀`, positive degrees through session 9's `extSuccLinearEquiv`);
+  `extLinearEquiv_zero_apply`, `extLinearEquiv_Ext_obj_map` (natural in `Y`) and
+  `extLinearEquiv_Ext_map` (natural in `N`);
+- stage level, through Mathlib's `Ext.covariant_sequence_exact₁/₂/₃` and
+  `Ext.postcomp_mk₀_injective_of_mono`: `Ext_zero_map_f_injective`, `exists_Ext_map_f_eq`,
+  `Ext_map_f_comp_map_g`; the connecting map **`extδ N hS n : Extⁿ(N, X₃) ⟶ Extⁿ⁺¹(N, X₁)`**
+  (Yoneda product with `hS.extClass`), `extLinearEquiv_extδ`, `extδ_naturality` (natural in
+  `N`), `exists_Ext_map_g_eq`, `exists_extδ_eq`, `Ext_map_g_comp_extδ`, `extδ_comp_Ext_map_f`;
+- colimit level: `ι_app_localCohomology_map`, `localCohomologyDiagramδ` (the stages as a natural
+  transformation along `A ⧸ Iⁿ`), **`localCohomologyδ I hS n : Hⁿ_I(X₃) ⟶ Hⁿ⁺¹_I(X₁)`**,
+  `ι_app_localCohomologyδ`;
+- exactness: **`localCohomology_zero_map_f_injective`** (`0 → H⁰_I(X₁) → H⁰_I(X₂)`),
+  `exists_localCohomology_map_f_eq`, `exists_localCohomology_map_g_eq`,
+  `exists_localCohomologyδ_eq` (elementwise), `localCohomology_map_f_comp_map_g`,
+  `localCohomology_map_g_comp_localCohomologyδ`, `localCohomologyδ_comp_localCohomology_map_f`,
+  and **`localCohomology_sequence_exact₂`, `localCohomology_sequence_exact₃`,
+  `localCohomology_sequence_exact₁`** (`ShortComplex.Exact` at `Hⁿ_I(X₂)`, `Hⁿ_I(X₃)` and
+  `Hⁿ⁺¹_I(X₁)`, named after Mathlib's `Ext.covariant_sequence_exact₁/₂/₃`).
 
-This is the long exact sequence that split 8 (`localCohomology_colimit_ext_comparison`, by
-dimension shifting against `isZero_localCohomology_succ_of_injective`) needs on the native side,
-except for its degree-zero end (see "What remains").
+So the native functors `H^•_I` form a `δ`-functor on `A`-modules, for every commutative ring. With
+`isZero_localCohomology_succ_of_injective` (effaceability) and split 1 (`H⁰_I = Γ_I`) this is
+everything split 8 needs on the native side.
 
 ## What `main` already has (found in session 2)
 
@@ -471,17 +485,15 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
 - `rHZ_adjunction` and `localToGlobal`: derived-category statements; `main` has only the edge map
   `supportedHEdgeEquiv`.
 - `localCohomology_colimit_ext_comparison` (split 8); `Supports.localCohomology_flat_baseChange`
-  and flat excision (split 9). The native side's effaceability
-  (`isZero_localCohomology_succ_of_injective`) is done, and so is its long exact sequence in
-  positive degrees (session 10, split 7). Still missing on the native side: the degree-zero end
-  `0 → H⁰_I(X₁) → H⁰_I(X₂) → H⁰_I(X₃) → H¹_I(X₁)`. It needs the derived-functor `Ext⁰(N, -)`
-  identified with `Hom(N, -)` naturally in the **second** argument (`extZeroIso` is natural only
-  in the first); Mathlib has no naturality of `Functor.fromLeftDerivedZero` in the functor, which
-  is the missing lemma. With it, split 7's `ModuleCat.exists_eq_of_stages`/`comp_eq_zero_of_stages` give the
-  degree-zero exactness exactly as in positive degrees, and the native functors form an
-  effaceable `δ`-functor agreeing with `Γ_I` in degree zero (split 1). The geometric side needs
-  that `J~` is flasque for an injective module `J` over a Noetherian ring (Hartshorne III.3.4) and
-  its own long exact sequence (`main`'s `relativeH'` sequences in the coefficients).
+  and flat excision (split 9). The native side is now an effaceable `δ`-functor
+  (`isZero_localCohomology_succ_of_injective`, and session 10's long exact sequence in all
+  degrees) agreeing with `Γ_I` in degree zero (split 1). What split 8 still has to build: the
+  right-derived functor of the `I`-power-torsion functor (as a functor on `ModuleCat A`, for
+  instance `Functor.rightDerived` of a torsion functor, whose naturality in `M` the session-1
+  `localCohomologyZeroToModule` does not yet record) and the comparison by dimension shifting
+  against an embedding into an injective module. The geometric side needs that `J~` is flasque
+  for an injective module `J` over a Noetherian ring (Hartshorne III.3.4) and its own long exact
+  sequence (`main`'s `relativeH'` sequences in the coefficients).
 - `localCohomologySheaf Z F q` as a sheaf of `𝒪_X`-modules: `main` has the abelian
   `supportedHSheaf` and the `R`-linear `supportedModuleHPresheaf`, but no scheme wrapper yet.
 - `Γ(X, ⊤)`-linearity is done for the structure sheaf on `V(r)`
@@ -540,9 +552,12 @@ before session 9 are now 8–14.
 6. **feat: degree-one local cohomology along a nonzerodivisor**. After: 5 (done, 311 lines).
    `TauCeti/Algebra/Homology/LocalCohomology/Principal.lean`: the declarations listed
    under session 9.
-7. **feat: long exact sequence of local cohomology in positive degrees**. After: 5 (done, 436
-   lines). `TauCeti/Algebra/Category/ModuleCat/FilteredColimits.lean` and
-   `TauCeti/Algebra/Homology/LocalCohomology/Exact.lean`: the declarations listed under session 10.
+7. **feat: long exact sequence of local cohomology**. After: 1, 5 (done, about 590 lines).
+   `TauCeti/Algebra/Category/ModuleCat/FilteredColimits.lean` (139 lines),
+   `TauCeti/Algebra/Homology/LocalCohomology/Exact.lean` (396 lines), +25 lines in
+   `TauCeti/CategoryTheory/Abelian/LeftDerived.lean` and +31 lines in
+   `TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean`: the declarations listed under
+   session 10.
 8. **feat: Noetherian local cohomology computes derived power torsion**. After: 1, 5, 7 (not yet
    written). `localCohomology_colimit_ext_comparison`.
 9. **feat: flat base change of Noetherian local cohomology**. After: 8 (not yet written).

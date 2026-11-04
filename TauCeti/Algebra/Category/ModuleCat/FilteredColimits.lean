@@ -16,9 +16,9 @@ import Mathlib.CategoryTheory.Limits.ConcreteCategory.WithAlgebraicStructures
 For a filtered diagram `D : J ⥤ ModuleCat R ⥤ ModuleCat R`, the value of `colimit D` at a module
 `X` is the filtered colimit of the values `(D.obj j).obj X`. So its elements come from stages, and
 an element of a stage vanishes in the colimit once it vanishes at a later stage. Consequently maps
-between such values that are induced stage by stage by natural maps inherit exactness, and the
-vanishing of composites, from the stages. This is how exactness properties of a system of functors,
-such as `Ext(R ⧸ Iⁿ, -)`, pass to its colimit, such as local cohomology.
+between such values that are induced stage by stage by natural maps inherit exactness, the
+vanishing of composites and injectivity from the stages. This is how exactness properties of a
+system of functors, such as `Ext(R ⧸ Iⁿ, -)`, pass to its colimit, such as local cohomology.
 
 ## Main results
 
@@ -30,6 +30,8 @@ such as `Ext(R ⧸ Iⁿ, -)`, pass to its colimit, such as local cohomology.
   is.
 * `TauCeti.ModuleCat.comp_eq_zero_of_stages`: maps induced stage by stage compose to zero once
   they do at every stage.
+* `TauCeti.ModuleCat.injective_of_stages`: a map induced stage by stage is injective once every
+  stage is.
 -/
 
 public section
@@ -113,5 +115,25 @@ theorem comp_eq_zero_of_stages {D₁ D₂ D₃ : J ⥤ ModuleCat.{u} R ⥤ Modul
   have hj : (colimit.ι D₁ j).app X₁ ≫ Φ ≫ Ψ = 0 := by
     rw [reassoc_of% (hΦ j), hΨ j, reassoc_of% (h j), zero_comp]
   exact ConcreteCategory.congr_hom hj x
+
+/-- A map between values of filtered colimits of functors between module categories, induced stage
+by stage by a natural map `φ`, is injective as soon as every stage of `φ` is. -/
+theorem injective_of_stages {D₁ D₂ : J ⥤ ModuleCat.{u} R ⥤ ModuleCat.{u} R}
+    {X₁ X₂ : ModuleCat.{u} R} (φ : D₁ ⋙ (evaluation _ _).obj X₁ ⟶ D₂ ⋙ (evaluation _ _).obj X₂)
+    (Φ : (colimit D₁).obj X₁ ⟶ (colimit D₂).obj X₂)
+    (hΦ : ∀ j, (colimit.ι D₁ j).app X₁ ≫ Φ = φ.app j ≫ (colimit.ι D₂ j).app X₂)
+    (h : ∀ j, Function.Injective (φ.app j)) : Function.Injective Φ := by
+  refine (injective_iff_map_eq_zero Φ.hom).2 fun x hx => ?_
+  obtain ⟨j, x, rfl⟩ := exists_colimit_ι_app_eq D₁ X₁ x
+  have h₀ : (colimit.ι D₂ j).app X₂ (φ.app j x) = 0 :=
+    (ConcreteCategory.congr_hom (hΦ j) x).symm.trans hx
+  obtain ⟨k, i, hk⟩ := exists_map_app_eq_zero D₂ _ h₀
+  have hk' : φ.app k ((D₁.map i).app X₁ x) = 0 :=
+    (ConcreteCategory.congr_hom (φ.naturality i) x).trans hk
+  have hx' : (D₁.map i).app X₁ x = 0 := h k (hk'.trans (map_zero _).symm)
+  refine (ConcreteCategory.congr_hom (congrArg (NatTrans.app · X₁) (colimit.w D₁ i)) x).symm.trans
+    ?_
+  change (colimit.ι D₁ k).app X₁ ((D₁.map i).app X₁ x) = 0
+  rw [hx', map_zero]
 
 end TauCeti.ModuleCat
