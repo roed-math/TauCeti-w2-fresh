@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.Affine
+public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.Lifts
 
 /-!
 # Examples of formally smooth and formally étale morphisms
@@ -15,11 +16,14 @@ These examples test the lifting definitions of formal smoothness and formal éta
 * identities are formally étale;
 * affine space `𝔸(n; S) ⟶ S` is formally smooth over every base;
 * for a field `k`, the origin `Spec k ⟶ 𝔸¹_k` is not formally smooth, since the ideal `(x)` of
-  `k[x]` is not idempotent.
+  `k[x]` is not idempotent;
+* along a first-order thickening `T ⟶ T'` with `T'` affine, the lifts of a morphism `T ⟶ 𝔸¹_S`
+  form a torsor under the global sections of the ideal sheaf.
 
 ## References
 
 * [Stacks Project, Definition 37.11.1](https://stacks.math.columbia.edu/tag/02H0).
+* [Stacks Project, Lemma 37.9.5](https://stacks.math.columbia.edu/tag/04FJ).
 -/
 
 public section
@@ -48,3 +52,10 @@ theorem TauCeti.AlgebraicGeometry.not_formallySmooth_origin (k : Type u) [Field 
   have : (X : k[X]) ^ 2 ∣ X ^ 1 := by simpa [pow_two] using h.dvd
   have := (pow_dvd_pow_iff X_ne_zero not_isUnit_X).1 this
   omega
+
+/-- Along a first-order thickening `i : T ⟶ T'` with `T'` affine, the lifts of `g : T ⟶ 𝔸¹_S`
+over `h : T' ⟶ S` form a torsor under the global sections of the ideal sheaf of `i`. -/
+noncomputable example {S T T' : Scheme.{u}} [IsAffine T'] (i : T ⟶ T') [IsFirstOrderThickening i]
+    (g : T ⟶ 𝔸(PUnit; S)) (h : T' ⟶ S) (sq : CommSq g i (𝔸(PUnit; S) ↘ S) h) :
+    AddTorsor (PUnit → RingHom.ker i.appTop.hom) sq.LiftStruct :=
+  inferInstance
