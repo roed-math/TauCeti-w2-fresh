@@ -1,8 +1,9 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: Noetherian local cohomology computes derived power torsion"},{"n":9,"after":[8],"title":"feat: flat base change of Noetherian local cohomology"},{"n":10,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":11,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":12,"after":[11],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":13,"after":[6,10,12],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"57ab0f657d7fb33d7c9425bf696bec3045b0fd75","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[8],"title":"feat: flat base change of Noetherian local cohomology"},{"n":10,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":11,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":12,"after":[11],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":13,"after":[6,10,12],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
-Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54` (session 10 merged `main` again).
+Built on `main` at `57ab0f657d7fb33d7c9425bf696bec3045b0fd75` (session 11 merged `main` again,
+without conflicts).
 Status: **partial**. Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
 splits numbered 5–11 before session 9 are now 8–14; the session notes below use the new numbers.
 
@@ -469,6 +470,60 @@ So the native functors `H^•_I` form a `δ`-functor on `A`-modules, for every c
 `isZero_localCohomology_succ_of_injective` (effaceability) and split 1 (`H⁰_I = Γ_I`) this is
 everything split 8 needs on the native side.
 
+### Session 11: local cohomology is derived power torsion (any commutative ring)
+
+`TauCeti/Algebra/Homology/LocalCohomology/DerivedTorsion.lean` (new, about 530 lines, split 8), in
+namespace `TauCeti.Supports`. It works over **every** commutative ring: the identification of the
+native colimit-of-`Ext` functor with derived `I`-power torsion needs no Noetherian hypothesis
+(Stacks 0954 computes `colim_k Ext^q(A ⧸ Iᵏ, M)` from an injective resolution of `M` and exactness
+of filtered colimits). Noetherianity is needed only for the next step, derived torsion versus
+`RΓ_{V(I)}` (Stacks 0955), which is not done yet. Declarations:
+
+- `powerTorsion I M := ⨆ n, Submodule.torsionBySet A M (Iⁿ)`, `mem_powerTorsion_iff`,
+  `map_mem_powerTorsion`;
+- `powerTorsionFunctor I : ModuleCat A ⥤ ModuleCat A` (`Γ_I`, exposed), `powerTorsionFunctor_obj`,
+  `coe_powerTorsionFunctor_map_apply`, its `Additive` instance and a `PreservesFiniteLimits`
+  instance (left exactness, through Mathlib's `preservesFiniteLimits_iff_forall_exact_map_and_mono`);
+- `localCohomologyZeroLinearEquiv I M : H⁰_I(M) ≃ₗ[A] Γ_I(M)` (from split 1's
+  `localCohomologyZeroToModule`) and `coe_localCohomologyZeroLinearEquiv_apply`;
+- for an injective resolution `R` of `M` (Mathlib's `InjectiveResolution.extMk` API in
+  `Mathlib/CategoryTheory/Abelian/Injective/Ext.lean`): `torsionSc I R p` (the short complex of
+  `Γ_I(R)` at `p + 1`), `TorsionHomology I R p` (its `ker ⧸ im`), `torsionCycle f hf` (the cycle
+  `f(1)` of a cocycle `f : A ⧸ Iᵏ ⟶ R^{p+1}`), `coe_coe_torsionCycle`,
+  `mk_torsionCycle_eq_zero_iff`, `quotientCocycles`, `quotientCocyclesToExt`,
+  `quotientCocyclesToHomology`, `quotientCocyclesToExt_surjective`,
+  `ker_quotientCocyclesToExt_le`, the stage map `extToTorsionHomology I R p k`
+  (`Ext^{p+1}(A ⧸ Iᵏ, M) → H^{p+1}(Γ_I(R))`, `[f] ↦ [f(1)]`), `extToTorsionHomology_extMk`,
+  `extToTorsionHomology_comp` (compatibility with the transition maps), the cocone
+  `torsionHomologyCocone I R p` with `torsionHomologyCocone_ι_app_apply`;
+- **`localCohomologySuccLinearEquivHomology I R p : H^{p+1}_I(M) ≃ₗ[A] TorsionHomology I R p`**
+  (surjective since every element of `Γ_I(R^{p+1})` is killed by some `Iᵏ`; injective since a
+  coboundary `f(1) = d z` with `Iⁿ z = 0` is a coboundary of `Hom(A ⧸ I^{max k n}, R)`), with
+  `localCohomologySuccLinearEquivHomology_ι_extMk`;
+- naturality at the level of resolutions: `torsionHomologyMap φ` (the map on `TorsionHomology`
+  induced by a morphism `φ : InjectiveResolution.Hom R R' g`), `torsionHomologyMap_mk_torsionCycle`
+  (through session 9's `ShortComplex.moduleCatHomologyIso_hom_homologyMap_inv_mk`) and
+  **`localCohomologySuccLinearEquivHomology_naturality`** (through Mathlib's
+  `InjectiveResolution.extMk_comp_mk₀` and split 7's `extLinearEquiv_Ext_obj_map`,
+  `ι_app_localCohomology_map`, `ModuleCat.exists_colimit_ι_app_eq`);
+- `torsionHomologyIsoRightDerived I R p : TorsionHomology I R p ≅ R^{p+1}Γ_I(M)` (through
+  `moduleCatHomologyIso`, `homologyIsoSc'` and `InjectiveResolution.isoRightDerivedObj`) and
+  `torsionHomologyMap_comp_torsionHomologyIsoRightDerived_hom` (through session 9's
+  `homologyMap_comp_homologyIsoSc'_hom` and Mathlib's `isoRightDerivedObj_inv_naturality`);
+- **`localCohomologySuccLinearEquiv I p M : H^{p+1}_I(M) ≃ₗ[A] R^{p+1}Γ_I(M)`**,
+  `localCohomologySuccLinearEquiv_naturality`, and the natural isomorphism
+  **`localCohomologySuccIsoRightDerived I p : localCohomology I (p + 1) ≅
+  (powerTorsionFunctor I).rightDerived (p + 1)`**;
+- degree zero: `localCohomologyZeroToModule_ι_app` (+27 lines in split 1's `DegreeZero.lean`,
+  where the unexposed `localCohomologyZeroToModule` can be unfolded: on the image of a stage it
+  evaluates the `Hom` at `1`) and `localCohomologyZeroLinearEquiv_naturality`;
+- **`localCohomologyIsoRightDerived I q : localCohomology I q ≅
+  (powerTorsionFunctor I).rightDerived q`**, the natural isomorphism in every degree (degree zero
+  through `localCohomologyZeroLinearEquiv` and `rightDerivedZeroIsoSelf`).
+
+This is the first half of `localCohomology_colimit_ext_comparison`, proved without the
+Noetherian hypothesis.
+
 ## What `main` already has (found in session 2)
 
 `sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
@@ -484,8 +539,13 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
   connecting maps of short exact sequences is not stated yet.
 - `rHZ_adjunction` and `localToGlobal`: derived-category statements; `main` has only the edge map
   `supportedHEdgeEquiv`.
-- `localCohomology_colimit_ext_comparison` (split 8); `Supports.localCohomology_flat_baseChange`
-  and flat excision (split 9). The native side is now an effaceable `δ`-functor
+- `localCohomology_colimit_ext_comparison` (split 8): session 11 proved its first half, the
+  natural isomorphism `localCohomologyIsoRightDerived I q : localCohomology I q ≅
+  (powerTorsionFunctor I).rightDerived q`, built from an injective resolution as the README asks,
+  for every commutative ring and every degree. Still missing is its second half: for Noetherian
+  `A`, derived torsion is `RΓ_{V(I)}` on `Spec A` (Stacks 0955), which needs `J~` flasque for
+  injective `J` (Hartshorne III.3.4).
+  `Supports.localCohomology_flat_baseChange` and flat excision (split 9) remain. The native side is now an effaceable `δ`-functor
   (`isZero_localCohomology_succ_of_injective`, and session 10's long exact sequence in all
   degrees) agreeing with `Γ_I` in degree zero (split 1). What split 8 still has to build: the
   right-derived functor of the `I`-power-torsion functor (as a functor on `ModuleCat A`, for
@@ -558,8 +618,11 @@ before session 9 are now 8–14.
    `TauCeti/CategoryTheory/Abelian/LeftDerived.lean` and +31 lines in
    `TauCeti/Algebra/Homology/LocalCohomology/DegreeZero.lean`: the declarations listed under
    session 10.
-8. **feat: Noetherian local cohomology computes derived power torsion**. After: 1, 5, 7 (not yet
-   written). `localCohomology_colimit_ext_comparison`.
+8. **feat: local cohomology computes derived power torsion**. After: 1, 5, 7 (started in session
+   11, done for the derived-torsion half). `TauCeti/Algebra/Homology/LocalCohomology/DerivedTorsion.lean`
+   (about 530 lines) and +27 lines in `DegreeZero.lean` (`localCohomologyZeroToModule_ι_app`): the
+   session-11 declarations, ending with `localCohomologyIsoRightDerived`. The `RΓ_{V(I)}` half of
+   `localCohomology_colimit_ext_comparison` (Noetherian) may need its own split before 14.
 9. **feat: flat base change of Noetherian local cohomology**. After: 8 (not yet written).
    `Supports.localCohomology_flat_baseChange`, flat excision.
 10. **feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal**. After: 1

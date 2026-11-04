@@ -141,6 +141,33 @@ noncomputable def localCohomologyZeroIso :
 noncomputable def localCohomologyZeroToModule : (localCohomology I 0).obj M ⟶ M :=
   (localCohomologyZeroIso I M).hom ≫ colimit.desc _ (evalOneCocone I M)
 
+/-- On the image of a stage, `localCohomologyZeroToModule` evaluates the corresponding
+homomorphism `A ⧸ Iⁿ ⟶ M` at `1`. -/
+theorem localCohomologyZeroToModule_ι_app (j : (ℕᵒᵖ)ᵒᵖ)
+    (y : ((localCohomology.diagram (localCohomology.idealPowersDiagram I) 0).obj j).obj M) :
+    (localCohomologyZeroToModule I M).hom
+        (((colimit.ι (localCohomology.diagram (localCohomology.idealPowersDiagram I) 0) j).app
+          M).hom y) =
+      ((extZeroIso M).hom.app (Opposite.op
+        ((localCohomology.ringModIdeals (localCohomology.idealPowersDiagram I)).obj j.unop))
+          y).hom (Submodule.Quotient.mk 1) := by
+  have h : (colimit.ι (localCohomology.diagram (localCohomology.idealPowersDiagram I) 0) j).app M ≫
+      localCohomologyZeroToModule I M =
+        (extZeroIso M).hom.app (Opposite.op
+          ((localCohomology.ringModIdeals (localCohomology.idealPowersDiagram I)).obj j.unop)) ≫
+            (evalOneCocone I M).ι.app j := by
+    -- `localCohomology I 0` is only definitionally the colimit of the `Ext⁰` diagram
+    change (colimit.ι (localCohomology.diagram (localCohomology.idealPowersDiagram I) 0) j).app M ≫
+        ((colimitObjIsoColimitCompEvaluation
+          (localCohomology.diagram (localCohomology.idealPowersDiagram I) 0) M).hom ≫
+        (HasColimit.isoOfNatIso (Functor.isoWhiskerLeft
+          (localCohomology.ringModIdeals (localCohomology.idealPowersDiagram I)).op
+            (extZeroIso M))).hom) ≫ colimit.desc (homDiagram I M) (evalOneCocone I M) = _
+    rw [← Category.assoc, ← Category.assoc, colimitObjIsoColimitCompEvaluation_ι_app_hom]
+    erw [HasColimit.ι_isoOfNatIso_hom, Category.assoc, colimit.ι_desc]
+    rfl
+  exact ConcreteCategory.congr_hom h y
+
 /-- The cocone `evalOneCocone` evaluates a representative at `1`. -/
 theorem desc_evalOneCocone_ι_apply (n : (ℕᵒᵖ)ᵒᵖ) (φ : (homDiagram I M).obj n) :
     (colimit.desc _ (evalOneCocone I M)).hom ((colimit.ι (homDiagram I M) n).hom φ) =
