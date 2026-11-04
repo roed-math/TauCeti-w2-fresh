@@ -791,7 +791,7 @@ The earlier stubs and what replaced them:
       - `TauCeti/AlgebraicGeometry/Morphisms/Projective.lean` (309 lines, new; imports
         `LineBundle/RelativelyAmple/Comp.lean`);
       - `TauCeti/AlgebraicGeometry/Blowup/Projective.lean` (130 lines, new);
-      - `TauCeti/AlgebraicGeometry/Morphisms/ProjectiveOver.lean` (150 lines, new; imports
+      - `TauCeti/AlgebraicGeometry/Morphisms/ProjectiveOver.lean` (151 lines, new; imports
         `Morphisms/Projective.lean` and `ProjectiveSpectrum/ProjectiveOver.lean`);
       - `main`'s `Modules/SymmetricPower/Affine.lean` (+16/−9: the private
         `symmetricToOpenSemilinear` becomes the public `tildeToOpenₛₗ` with `tildeToOpenₛₗ_apply`);
