@@ -421,15 +421,19 @@ localization away from `a`:
 Merged `main` at `52f9d081237d` (one docstring conflict in `ProjectiveResolution.lean`, where
 `main` had added `hasProjectiveDimensionLT`; both texts are kept).
 
-`TauCeti/Algebra/Homology/LocalCohomology/Exact.lean` (new, 400 lines, split 7), in namespace
+`TauCeti/Algebra/Category/ModuleCat/FilteredColimits.lean` (new, 117 lines, split 7), in
+namespace `TauCeti.ModuleCat`, for a filtered diagram `D : J ⥤ ModuleCat R ⥤ ModuleCat R`:
+`exists_colimit_ι_app_eq` (every element of `(colimit D).obj X` comes from a stage),
+`exists_map_app_eq_zero` (zero in the colimit is zero at a later stage), **`exists_eq_of_stages`**
+(maps induced stage by stage by natural maps are exact once every stage is) and
+**`comp_eq_zero_of_stages`** (they compose to zero once every stage does). These are generic, so
+they live beside `TauCeti/Algebra/Category/ModuleCat/Colimits.lean` rather than in the
+local-cohomology file.
+
+`TauCeti/Algebra/Homology/LocalCohomology/Exact.lean` (new, 319 lines, split 7), in namespace
 `TauCeti.Supports`, for a short exact sequence `hS : S.ShortExact` of `A`-modules over any
 commutative ring:
 
-- filtered colimits of functors `J ⥤ ModuleCat A ⥤ ModuleCat A`: `exists_colimit_ι_app_eq`
-  (every element comes from a stage), `exists_map_app_eq_zero` (zero in the colimit is zero at a
-  later stage), **`exists_eq_of_stages`** (maps induced stage by stage by natural maps are exact
-  once every stage is) and **`comp_eq_zero_of_stages`** (they compose to zero once every stage
-  does);
 - stage level, for the derived-functor `Ext(N, -)`, through session 9's `extSuccLinearEquiv` and
   Mathlib's `Ext.covariant_sequence_exact₁/₂/₃`: `exists_Ext_map_f_eq`, `Ext_map_f_comp_map_g`;
   the connecting map **`extSuccδ N hS p : Extᵖ⁺¹(N, X₃) ⟶ Extᵖ⁺²(N, X₁)`** (Yoneda product with
@@ -473,7 +477,7 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
   `0 → H⁰_I(X₁) → H⁰_I(X₂) → H⁰_I(X₃) → H¹_I(X₁)`. It needs the derived-functor `Ext⁰(N, -)`
   identified with `Hom(N, -)` naturally in the **second** argument (`extZeroIso` is natural only
   in the first); Mathlib has no naturality of `Functor.fromLeftDerivedZero` in the functor, which
-  is the missing lemma. With it, split 7's `exists_eq_of_stages`/`comp_eq_zero_of_stages` give the
+  is the missing lemma. With it, split 7's `ModuleCat.exists_eq_of_stages`/`comp_eq_zero_of_stages` give the
   degree-zero exactness exactly as in positive degrees, and the native functors form an
   effaceable `δ`-functor agreeing with `Γ_I` in degree zero (split 1). The geometric side needs
   that `J~` is flasque for an injective module `J` over a Noetherian ring (Hartshorne III.3.4) and
@@ -536,9 +540,9 @@ before session 9 are now 8–14.
 6. **feat: degree-one local cohomology along a nonzerodivisor**. After: 5 (done, 311 lines).
    `TauCeti/Algebra/Homology/LocalCohomology/Principal.lean`: the declarations listed
    under session 9.
-7. **feat: long exact sequence of local cohomology in positive degrees**. After: 5 (done, 400
-   lines). `TauCeti/Algebra/Homology/LocalCohomology/Exact.lean`: the declarations listed under
-   session 10.
+7. **feat: long exact sequence of local cohomology in positive degrees**. After: 5 (done, 436
+   lines). `TauCeti/Algebra/Category/ModuleCat/FilteredColimits.lean` and
+   `TauCeti/Algebra/Homology/LocalCohomology/Exact.lean`: the declarations listed under session 10.
 8. **feat: Noetherian local cohomology computes derived power torsion**. After: 1, 5, 7 (not yet
    written). `localCohomology_colimit_ext_comparison`.
 9. **feat: flat base change of Noetherian local cohomology**. After: 8 (not yet written).

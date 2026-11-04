@@ -10,10 +10,9 @@ public import Mathlib.Algebra.Homology.DerivedCategory.Ext.ExactSequences
 public import Mathlib.Algebra.Homology.DerivedCategory.Ext.Linear
 public import Mathlib.Algebra.Homology.LocalCohomology
 public import TauCeti.Algebra.Homology.Ext.Comparison
-import Mathlib.Algebra.Category.ModuleCat.FilteredColimits
 import Mathlib.Algebra.Category.ModuleCat.Projective
 import Mathlib.Algebra.Homology.DerivedCategory.Ext.EnoughProjectives
-import Mathlib.CategoryTheory.Limits.ConcreteCategory.WithAlgebraicStructures
+import TauCeti.Algebra.Category.ModuleCat.FilteredColimits
 
 /-!
 # Local cohomology of a short exact sequence in positive degrees
@@ -32,7 +31,8 @@ Stage by stage, `TauCeti.extSuccLinearEquiv` identifies the derived-functor `Ext
 the derived-category `Extᵖ⁺¹(N, -)`, naturally in both arguments. There the long exact sequence of
 `Ext` in the second argument is Mathlib's `Ext.covariant_sequence_exact₁`, `₂` and `₃`, and the
 connecting map is the Yoneda product with the class `hS.extClass` of the extension. Exactness
-then passes to the filtered colimit over `n`.
+then passes to the filtered colimit over `n`, by `TauCeti.ModuleCat.exists_eq_of_stages` and
+`TauCeti.ModuleCat.comp_eq_zero_of_stages`.
 
 ## Main definitions
 
@@ -49,9 +49,6 @@ then passes to the filtered colimit over `n`.
   elementwise form `TauCeti.Supports.exists_localCohomology_map_g_eq`.
 * `TauCeti.Supports.localCohomology_sequence_exact₁`: exactness at `H^{p+2}_I(X₁)`, with the
   elementwise form `TauCeti.Supports.exists_localCohomologySuccδ_eq`.
-* `TauCeti.Supports.exists_eq_of_stages`, `TauCeti.Supports.comp_eq_zero_of_stages`: maps between
-  values of filtered colimits of functors between module categories, induced stage by stage, are
-  exact (resp. compose to zero) when every stage is.
 -/
 
 public section
@@ -63,84 +60,6 @@ open CategoryTheory CategoryTheory.Abelian Limits Opposite
 namespace TauCeti.Supports
 
 variable {A : Type u} [CommRing A]
-
-section Colimit
-
-variable {J : Type} [SmallCategory J] [IsFiltered J]
-
-/-- Every element of the value at `X` of a filtered colimit of functors between module categories
-comes from some stage. -/
-theorem exists_colimit_ι_app_eq (D : J ⥤ ModuleCat.{u} A ⥤ ModuleCat.{u} A)
-    (X : ModuleCat.{u} A) (x : (colimit D).obj X) :
-    ∃ (j : J) (y : (D.obj j).obj X), (colimit.ι D j).app X y = x := by
-  have : PreservesColimit (D ⋙ (evaluation _ _).obj X) (forget (ModuleCat.{u} A)) :=
-    have := preservesFilteredColimitsOfSize_shrink.{0, u, 0, u} (forget (ModuleCat.{u} A))
-    inferInstance
-  obtain ⟨j, y, hy⟩ := Concrete.colimit_exists_rep (D ⋙ (evaluation _ _).obj X)
-    ((colimitObjIsoColimitCompEvaluation D X).hom x)
-  refine ⟨j, y, ?_⟩
-  rw [← colimitObjIsoColimitCompEvaluation_ι_inv, ModuleCat.comp_apply, hy,
-    Iso.hom_inv_id_apply]
-
-/-- An element of a stage of a filtered colimit of functors between module categories that
-vanishes in the colimit already vanishes at a later stage. -/
-theorem exists_map_app_eq_zero (D : J ⥤ ModuleCat.{u} A ⥤ ModuleCat.{u} A)
-    {X : ModuleCat.{u} A} {j : J} (y : (D.obj j).obj X) (hy : (colimit.ι D j).app X y = 0) :
-    ∃ (k : J) (i : j ⟶ k), (D.map i).app X y = 0 := by
-  have : PreservesColimit (D ⋙ (evaluation _ _).obj X) (forget (ModuleCat.{u} A)) :=
-    have := preservesFilteredColimitsOfSize_shrink.{0, u, 0, u} (forget (ModuleCat.{u} A))
-    inferInstance
-  have h₁ : (colimitObjIsoColimitCompEvaluation D X).inv
-      (colimit.ι (D ⋙ (evaluation _ _).obj X) j y) = 0 :=
-    (ConcreteCategory.congr_hom (colimitObjIsoColimitCompEvaluation_ι_inv D j X) y).trans hy
-  have h : colimit.ι (D ⋙ (evaluation _ _).obj X) j y = 0 := by
-    rw [← Iso.inv_hom_id_apply (colimitObjIsoColimitCompEvaluation D X)
-      (colimit.ι (D ⋙ (evaluation _ _).obj X) j y), h₁, map_zero]
-  exact Concrete.colimit_rep_eq_zero A (D ⋙ (evaluation _ _).obj X) j y h
-
-/-- Exactness passes to filtered colimits of functors between module categories: maps `Φ` and `Ψ`
-between values of colimits, induced stage by stage by natural maps `φ` and `ψ`, are exact at the
-middle term as soon as every stage is. -/
-theorem exists_eq_of_stages {D₁ D₂ D₃ : J ⥤ ModuleCat.{u} A ⥤ ModuleCat.{u} A}
-    {X₁ X₂ X₃ : ModuleCat.{u} A}
-    (φ : D₁ ⋙ (evaluation _ _).obj X₁ ⟶ D₂ ⋙ (evaluation _ _).obj X₂)
-    (ψ : D₂ ⋙ (evaluation _ _).obj X₂ ⟶ D₃ ⋙ (evaluation _ _).obj X₃)
-    (Φ : (colimit D₁).obj X₁ ⟶ (colimit D₂).obj X₂) (Ψ : (colimit D₂).obj X₂ ⟶ (colimit D₃).obj X₃)
-    (hΦ : ∀ j, (colimit.ι D₁ j).app X₁ ≫ Φ = φ.app j ≫ (colimit.ι D₂ j).app X₂)
-    (hΨ : ∀ j, (colimit.ι D₂ j).app X₂ ≫ Ψ = ψ.app j ≫ (colimit.ι D₃ j).app X₃)
-    (h : ∀ (j : J) (y : (D₂.obj j).obj X₂), ψ.app j y = 0 → ∃ x, φ.app j x = y)
-    (y : (colimit D₂).obj X₂) (hy : Ψ y = 0) : ∃ x, Φ x = y := by
-  obtain ⟨j, y, rfl⟩ := exists_colimit_ι_app_eq D₂ X₂ y
-  have h₀ : (colimit.ι D₃ j).app X₃ (ψ.app j y) = 0 :=
-    (ConcreteCategory.congr_hom (hΨ j) y).symm.trans hy
-  obtain ⟨k, i, hk⟩ := exists_map_app_eq_zero D₃ _ h₀
-  have hk' : ψ.app k ((D₂.map i).app X₂ y) = 0 :=
-    (ConcreteCategory.congr_hom (ψ.naturality i) y).trans hk
-  obtain ⟨x, hx⟩ := h k _ hk'
-  refine ⟨(colimit.ι D₁ k).app X₁ x, ?_⟩
-  refine (ConcreteCategory.congr_hom (hΦ k) x).trans ?_
-  change (colimit.ι D₂ k).app X₂ (φ.app k x) = _
-  rw [hx]
-  exact ConcreteCategory.congr_hom (congrArg (NatTrans.app · X₂) (colimit.w D₂ i)) y
-
-/-- A composite of maps between values of filtered colimits of functors between module categories,
-induced stage by stage by natural maps `φ` and `ψ`, vanishes as soon as `φ ≫ ψ` vanishes at every
-stage. -/
-theorem comp_eq_zero_of_stages {D₁ D₂ D₃ : J ⥤ ModuleCat.{u} A ⥤ ModuleCat.{u} A}
-    {X₁ X₂ X₃ : ModuleCat.{u} A}
-    (φ : D₁ ⋙ (evaluation _ _).obj X₁ ⟶ D₂ ⋙ (evaluation _ _).obj X₂)
-    (ψ : D₂ ⋙ (evaluation _ _).obj X₂ ⟶ D₃ ⋙ (evaluation _ _).obj X₃)
-    (Φ : (colimit D₁).obj X₁ ⟶ (colimit D₂).obj X₂) (Ψ : (colimit D₂).obj X₂ ⟶ (colimit D₃).obj X₃)
-    (hΦ : ∀ j, (colimit.ι D₁ j).app X₁ ≫ Φ = φ.app j ≫ (colimit.ι D₂ j).app X₂)
-    (hΨ : ∀ j, (colimit.ι D₂ j).app X₂ ≫ Ψ = ψ.app j ≫ (colimit.ι D₃ j).app X₃)
-    (h : ∀ j, φ.app j ≫ ψ.app j = 0) : Φ ≫ Ψ = 0 := by
-  ext x
-  obtain ⟨j, x, rfl⟩ := exists_colimit_ι_app_eq D₁ X₁ x
-  have hj : (colimit.ι D₁ j).app X₁ ≫ Φ ≫ Ψ = 0 := by
-    rw [reassoc_of% (hΦ j), hΨ j, reassoc_of% (h j), zero_comp]
-  exact ConcreteCategory.congr_hom hj x
-
-end Colimit
 
 section Ext
 
@@ -296,7 +215,7 @@ include hS in
 theorem exists_localCohomology_map_f_eq (y : (localCohomology I (p + 1)).obj S.X₂)
     (hy : (localCohomology I (p + 1)).map S.g y = 0) :
     ∃ x, (localCohomology I (p + 1)).map S.f x = y :=
-  exists_eq_of_stages
+  ModuleCat.exists_eq_of_stages
     (D₁ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₂ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₃ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
@@ -311,7 +230,7 @@ from `H^{p+1}_I(X₂)`. -/
 theorem exists_localCohomology_map_g_eq (y : (localCohomology I (p + 1)).obj S.X₃)
     (hy : localCohomologySuccδ I hS p y = 0) :
     ∃ x, (localCohomology I (p + 1)).map S.g x = y :=
-  exists_eq_of_stages
+  ModuleCat.exists_eq_of_stages
     (D₁ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₂ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₃ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 2))
@@ -326,7 +245,7 @@ of the connecting map. -/
 theorem exists_localCohomologySuccδ_eq (y : (localCohomology I (p + 2)).obj S.X₁)
     (hy : (localCohomology I (p + 2)).map S.f y = 0) :
     ∃ x, localCohomologySuccδ I hS p x = y :=
-  exists_eq_of_stages
+  ModuleCat.exists_eq_of_stages
     (D₁ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₂ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 2))
     (D₃ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 2))
@@ -340,7 +259,7 @@ theorem exists_localCohomologySuccδ_eq (y : (localCohomology I (p + 2)).obj S.X
 degrees. -/
 theorem localCohomology_map_f_comp_map_g :
     (localCohomology I (p + 1)).map S.f ≫ (localCohomology I (p + 1)).map S.g = 0 :=
-  comp_eq_zero_of_stages
+  ModuleCat.comp_eq_zero_of_stages
     (D₁ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₂ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₃ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
@@ -353,7 +272,7 @@ theorem localCohomology_map_f_comp_map_g :
 /-- The composite of `H^{p+1}_I(X₂) → H^{p+1}_I(X₃)` with the connecting map vanishes. -/
 theorem localCohomology_map_g_comp_localCohomologySuccδ :
     (localCohomology I (p + 1)).map S.g ≫ localCohomologySuccδ I hS p = 0 :=
-  comp_eq_zero_of_stages
+  ModuleCat.comp_eq_zero_of_stages
     (D₁ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₂ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₃ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 2))
@@ -366,7 +285,7 @@ theorem localCohomology_map_g_comp_localCohomologySuccδ :
 /-- The composite of the connecting map with `H^{p+2}_I(X₁) → H^{p+2}_I(X₂)` vanishes. -/
 theorem localCohomologySuccδ_comp_localCohomology_map_f :
     localCohomologySuccδ I hS p ≫ (localCohomology I (p + 2)).map S.f = 0 :=
-  comp_eq_zero_of_stages
+  ModuleCat.comp_eq_zero_of_stages
     (D₁ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 1))
     (D₂ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 2))
     (D₃ := localCohomology.diagram (localCohomology.idealPowersDiagram I) (p + 2))
