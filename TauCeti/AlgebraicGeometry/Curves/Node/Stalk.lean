@@ -205,11 +205,11 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_conductor_stalk_eq_maximalIdeal
 /-- **The normalization of an affine neighbourhood of a node.** Let `X` be a nodal curve over a
 field `K` and `x` a point of its singular locus. Then `x` has an affine open neighbourhood `W`
 meeting the singular locus only in `x`, where the ideal of the singular locus is the prime of `x`,
-with a nonzerodivisor `a ∈ Γ(X, W)` vanishing on `W` only at `x`: the radical of `(a)` is the prime
-of `x`, and `D(a)` is the smooth part `W ∖ Sing(X/K)` of `W`, so that `Γ(X, W)_a` is its ring of
-functions. The integral closure of `Γ(X, W)` in `Γ(X, W)_a` is
-finite over `Γ(X, W)`, its conductor is the prime of `x`, and its cokernel is `Γ(X, W)` modulo the
-prime of `x`: the normalization sequence on an affine neighbourhood of a node. -/
+which is maximal, with a nonzerodivisor `a ∈ Γ(X, W)` vanishing on `W` only at `x`: the radical of
+`(a)` is the prime of `x`, and `D(a)` is the smooth part `W ∖ Sing(X/K)` of `W`, so that
+`Γ(X, W)_a` is its ring of functions. The integral closure of `Γ(X, W)` in `Γ(X, W)_a` is finite
+over `Γ(X, W)`, its conductor is the prime of `x`, and its cokernel is `Γ(X, W)` modulo the prime
+of `x`: the normalization sequence on an affine neighbourhood of a node. -/
 theorem _root_.AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away
     {K : Type u} [Field K] (X : Scheme.{u}) [X.Over (Spec (.of K))]
     (hnodal : AtWorstNodalOfRelativeDimensionOne (X ↘ Spec (.of K))) {x : X}
@@ -218,6 +218,7 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away
     ∃ (W : X.affineOpens) (hxW : x ∈ W.1) (a : Γ(X, W)),
       (X.basicOpen a : Set X) = (W.1 : Set X) \ (X.singularLocus K).support ∧
       (X.singularLocus K).ideal W = (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal ∧
+      (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal.IsMaximal ∧
       a ∈ nonZeroDivisors Γ(X, W) ∧
       (Ideal.span {a}).radical = (W.2.primeIdealOf ⟨x, hxW⟩).asIdeal ∧
       Module.Finite Γ(X, W) (integralClosure Γ(X, W) (Localization.Away a)) ∧
@@ -347,7 +348,7 @@ theorem _root_.AlgebraicGeometry.Scheme.exists_affineOpen_integralClosure_away
   have : (W'.2.primeIdealOf ⟨x, hxg⟩).asIdeal.IsMaximal := hQ
   have hnzd : r' ∈ nonZeroDivisors Γ(X, X.basicOpen (g₁ * g₂)) :=
     mem_nonZeroDivisors_of_radical_span_singleton_eq hrad (X.presheaf.stalk x) (by rwa [hres])
-  refine ⟨W', hxg, r', hbasic, hideal, hnzd, hrad,
+  refine ⟨W', hxg, r', hbasic, hideal, this, hnzd, hrad,
     conductor_integralClosure_away_eq_of_maximalIdeal_eq_span _ (X.presheaf.stalk x) hrad
       (y := v) ?_ ?_ hprin ?_ hd⟩ <;>
     rwa [hres]

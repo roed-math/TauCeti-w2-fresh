@@ -44,6 +44,7 @@ its target glue to an ideal sheaf. Without finiteness only one inclusion holds.
   `A → B` is surjective.
 * `TauCeti.Algebra.ker_algebraMap_le_conductor`: the kernel of `A → B` lies in the conductor.
 * `TauCeti.Algebra.conductor_congr`: isomorphic `A`-algebras have the same conductor.
+* `TauCeti.Algebra.quotientOneEquiv`: isomorphic `A`-algebras have isomorphic cokernels `B / A`.
 * `TauCeti.Algebra.map_conductor_le`: the extension of the conductor to a localization
   lies in the conductor of the localization.
 * `TauCeti.Algebra.conductor_eq_map`: for `B` finite over `A`, the conductor of a
@@ -113,6 +114,17 @@ theorem conductor_congr {C : Type*} [Ring C] [Algebra A C] (e : B ≃ₐ[A] C) :
     exact ⟨d, by simpa using congr_arg e hd⟩
   · obtain ⟨d, hd⟩ := h (e b)
     exact ⟨d, e.injective (by simpa using hd)⟩
+
+/-- An isomorphism of `A`-algebras induces an isomorphism `B / A ≃ C / A` of the cokernels of the
+structure maps. -/
+def quotientOneEquiv {C : Type*} [Ring C] [Algebra A C] (e : B ≃ₐ[A] C) :
+    (B ⧸ (1 : Submodule A B)) ≃ₗ[A] C ⧸ (1 : Submodule A C) :=
+  Submodule.Quotient.equiv _ _ e.toLinearEquiv (Submodule.map_one e.toAlgHom)
+
+@[simp]
+theorem quotientOneEquiv_mk {C : Type*} [Ring C] [Algebra A C] (e : B ≃ₐ[A] C) (b : B) :
+    quotientOneEquiv e (Submodule.Quotient.mk b) = Submodule.Quotient.mk (e b) :=
+  (rfl)
 
 section Localization
 

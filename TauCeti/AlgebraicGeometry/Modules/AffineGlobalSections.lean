@@ -11,6 +11,7 @@ public import TauCeti.AlgebraicGeometry.Modules.GlobalSections
 public import TauCeti.AlgebraicGeometry.Modules.Localization
 public import Mathlib.Algebra.Category.ModuleCat.EpiMono
 public import Mathlib.Algebra.Homology.ShortComplex.ExactFunctor
+public import Mathlib.Algebra.Homology.ShortComplex.ModuleCat
 import TauCeti.AlgebraicGeometry.AffineScheme
 
 /-!
@@ -19,7 +20,8 @@ import TauCeti.AlgebraicGeometry.AffineScheme
 Mathlib's `AlgebraicGeometry.tildeEquiv` identifies quasicoherent modules on `Spec R` with
 `R`-modules. Consequently an epimorphism between quasicoherent modules is surjective on global
 sections, even when the epimorphism is taken in the category of all sheaves of modules.
-The same surjectivity holds over every affine open of an arbitrary scheme.
+The same surjectivity holds over every affine open of an arbitrary scheme. Sections over any
+open are left exact (`AlgebraicGeometry.Scheme.Modules.exact_app_of_exact`).
 
 Consequently, global sections preserve short exact sequences whose middle and right terms are
 quasicoherent. This is the affine exactness step used in Serre's affine acyclicity theorem; see
@@ -87,6 +89,21 @@ theorem shortExact_map_moduleSpecΓFunctor_of_isQuasicoherent
   exact { exact := h.1, mono_f := h.2, epi_g := hΓ }
 
 variable {X : Scheme.{u}} {P Q : X.Modules}
+
+/-- **Sections are left exact.** An exact sequence `0 → M₁ → M₂ → M₃` of sheaves of modules is
+exact on sections over every open: the sections of `M₁` over `U` are the sections of `M₂` over `U`
+that die in `M₃`. -/
+theorem _root_.AlgebraicGeometry.Scheme.Modules.exact_app_of_exact
+    {S : ShortComplex (SheafOfModules.{u} X.ringCatSheaf)} (hS : S.Exact) [Mono S.f]
+    (U : X.Opens) :
+    Function.Exact (Scheme.Modules.Hom.app S.f U) (Scheme.Modules.Hom.app S.g U) := by
+  have h : Limits.PreservesLimitsOfShape Limits.WalkingParallelPair
+      (SheafOfModules.forget.{u} X.ringCatSheaf ⋙ PresheafOfModules.evaluation.{u} _ (.op U)) :=
+    inferInstance
+  exact (ShortComplex.ShortExact.moduleCat_exact_iff_function_exact _).mp
+    (hS.map_of_mono_of_preservesKernel
+      (SheafOfModules.forget.{u} X.ringCatSheaf ⋙ PresheafOfModules.evaluation.{u} _ (.op U))
+      inferInstance h.preservesLimit)
 
 /-- An epimorphism between quasicoherent module sheaves is surjective on sections over every
 affine open. The epimorphism is taken in the ambient category of module sheaves. -/
