@@ -64,6 +64,11 @@ Results connecting unit and coprimality data over `ZMod d`, independent of one a
 * `TauCeti.ZMod.unitOfIsCoprime_div_eq_iff` — two quotients `a / b` and `a' / b'` of integer
   units modulo `n` agree exactly when `n ∣ a b' - a' b`. Its consumer is the cusp label of
   `Γ₀(N)` in `TauCeti/NumberTheory/ModularForms/CongruenceSubgroups/Cusp/Count.lean`.
+* `TauCeti.ZMod.isCoprime_of_forall_mul_eq_zero` — residues `a`, `b` modulo `N ≠ 0` whose only
+  common annihilator is `0` generate the unit ideal. Its consumer is
+  `TauCeti.exists_zmodProdMulAutEquiv_apply_eq` in
+  `TauCeti/LinearAlgebra/Matrix/GeneralLinearGroup/ZModProdAut.lean`: a vector of `(ℤ/Nℤ)²` of
+  additive order `N` is the first column of an invertible matrix.
 -/
 
 public section
@@ -291,6 +296,37 @@ theorem orderOf_unitOfCoprime_pow_sub_one (q N : ℕ) (hq : 1 < q) (hN : N ≠ 0
     have hdpos := orderOf_pos u
     have : 1 < q ^ orderOf u := one_lt_pow₀ hq hdpos.ne'
     omega) hsmall) hm_dvd
+
+/-- **Residues with no common annihilator are coprime.** If the only residue `k` modulo `N ≠ 0`
+with `k a = 0` and `k b = 0` is `0`, then `a` and `b` generate the unit ideal of `ZMod N`. The
+greatest common divisor `g` of `a`, `b` and `N` makes `N / g` a common annihilator, so `g = 1`,
+and Bézout's identity for `gcd(a, b)`, a unit modulo `N`, writes `1` as a combination. -/
+theorem isCoprime_of_forall_mul_eq_zero {N : ℕ} [NeZero N] {a b : _root_.ZMod N}
+    (h : ∀ k : _root_.ZMod N, k * a = 0 → k * b = 0 → k = 0) : IsCoprime a b := by
+  set d := Nat.gcd a.val b.val
+  set g := Nat.gcd d N
+  have hgN : g ∣ N := Nat.gcd_dvd_right d N
+  -- `N / g` annihilates every residue whose representative is divisible by `g`
+  have hk (x : _root_.ZMod N) (hx : g ∣ x.val) : ((N / g : ℕ) : _root_.ZMod N) * x = 0 := by
+    rw [← _root_.ZMod.natCast_zmod_val x, ← Nat.cast_mul, _root_.ZMod.natCast_eq_zero_iff]
+    conv_lhs => rw [← Nat.div_mul_cancel hgN]
+    exact Nat.mul_dvd_mul_left _ hx
+  have h0 := h _ (hk a ((Nat.gcd_dvd_left d N).trans (Nat.gcd_dvd_left _ _)))
+    (hk b ((Nat.gcd_dvd_left d N).trans (Nat.gcd_dvd_right _ _)))
+  rw [_root_.ZMod.natCast_eq_zero_iff] at h0
+  have hg1 : g = 1 := by
+    have hpos : 0 < N / g := Nat.div_pos (Nat.le_of_dvd (NeZero.pos N) hgN)
+      (Nat.gcd_pos_of_pos_right _ (NeZero.pos N))
+    have := Nat.le_antisymm (Nat.div_le_self N g) (Nat.le_of_dvd hpos h0)
+    exact (Nat.div_eq_self.mp this).resolve_left (NeZero.ne N)
+  -- `gcd(a, b)` is a unit modulo `N`, and a combination of `a` and `b`
+  obtain ⟨u, hu⟩ := ((_root_.ZMod.isUnit_iff_coprime d N).mpr hg1).exists_left_inv
+  have hd : (d : _root_.ZMod N) =
+      a * (Nat.gcdA a.val b.val : _root_.ZMod N) + b * (Nat.gcdB a.val b.val) := by
+    have := congrArg (Int.cast : ℤ → _root_.ZMod N) (Nat.gcd_eq_gcd_ab a.val b.val)
+    push_cast at this
+    simpa using this
+  exact ⟨u * Nat.gcdA a.val b.val, u * Nat.gcdB a.val b.val, by rw [← hu, hd]; ring⟩
 
 end ZMod
 

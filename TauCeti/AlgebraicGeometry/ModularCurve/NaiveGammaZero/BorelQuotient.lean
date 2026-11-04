@@ -8,6 +8,9 @@ module
 public import TauCeti.AlgebraicGeometry.ModularCurve.NaiveGammaZero.Basic
 public import TauCeti.LinearAlgebra.Matrix.GeneralLinearGroup.Borel
 public import TauCeti.Lookahead.GammaZeroNaive.Stubs
+import TauCeti.Algebra.Algebra.NatCast
+import TauCeti.AlgebraicGeometry.Morphisms.FormallyUnramified
+import TauCeti.AlgebraicGeometry.ResidueField
 
 /-!
 # The Borel quotient of the naive `[Γ(N)]` carrier
@@ -30,7 +33,11 @@ naive full level structures over a field with the same image in the carrier diff
 element (`ModuliProblem.exists_gammaNaiveAction_hom_app_eq_of_comp_gammaZeroNaiveCarrierπ_eq`).
 Conversely, the naive `[Γ₀(N)]`-structure `⟨P⟩` attached to a point of the `[Γ(N)]` carrier is
 constant on Borel orbits
-(`ModuliProblem.gammaNaiveToGammaZeroNaive_app_homEquiv_comp_repAction_hom`).
+(`ModuliProblem.gammaNaiveToGammaZeroNaive_app_homEquiv_comp_repAction_hom`), and two points of the
+`[Γ(N)]` carrier with values in any `T` whose naive full level structures generate the same naive
+cyclic subgroup have the same image in the `[Γ₀(N)]` carrier
+(`ModuliProblem.comp_gammaZeroNaiveCarrierπ_eq_of_gammaNaiveToGammaZeroNaive_app_eq`): they differ
+by a Borel element over every geometric point, and the carrier is separated and unramified.
 
 ## Main definitions
 
@@ -50,6 +57,9 @@ constant on Borel orbits
   structures.
 * `ModuliProblem.gammaNaiveToGammaZeroNaive_app_homEquiv_comp_repAction_hom`: the naive
   `[Γ₀(N)]`-structure of a point of the `[Γ(N)]` carrier is invariant under the Borel subgroup.
+* `ModuliProblem.comp_gammaZeroNaiveCarrierπ_eq_of_gammaNaiveToGammaZeroNaive_app_eq`: points of
+  the `[Γ(N)]` carrier with the same naive `[Γ₀(N)]`-structure have the same image in the naive
+  `[Γ₀(N)]` carrier.
 
 ## References
 
@@ -233,6 +243,66 @@ theorem gammaNaiveToGammaZeroNaive_app_homEquiv_comp_repAction_hom (X : EllObj B
   rw [RelRepData.homEquiv_comp_repAction_hom, gammaNaiveBorelAction_apply]
   exact ConcreteCategory.congr_hom (NatTrans.congr_app
     (gammaNaiveAction_hom_comp_gammaNaiveToGammaZeroNaive hN (GL2Borel.apply_one_zero g.unop)) _) _
+
+/-- **Bases generating the same naive cyclic subgroup have the same image in the naive
+`[Γ₀(N)]` carrier.** For points `x₁` and `x₂` of the naive `[Γ(N)]` carrier with values in `T`,
+classifying naive full level structures `(P₁, Q₁)` and `(P₂, Q₂)` on `E_T` with `⟨P₁⟩ = ⟨P₂⟩`,
+the composites `T ⟶ Y ⟶ Y/Borel` agree. Over every geometric point of `T` the two bases differ by
+a Borel matrix (`EllipticCurveGeom.IsFiberwiseInjective.exists_mem_GL2Borel_eq_comp`), so the
+composites agree there; the carrier is separated and unramified over `S`, so morphisms into it
+that agree on the geometric points, which jointly form a surjection onto `T`, agree. -/
+theorem comp_gammaZeroNaiveCarrierπ_eq_of_gammaNaiveToGammaZeroNaive_app_eq (X : EllObj B)
+    {T : Over X.base} {x₁ x₂ : T ⟶ (gammaNaiveRelRepData (N := N)).rep X}
+    (h : (gammaNaiveToGammaZeroNaive B N hN).app _
+        ((gammaNaiveRelRepData.representableBy X).homEquiv x₁) =
+      (gammaNaiveToGammaZeroNaive B N hN).app _
+        ((gammaNaiveRelRepData.representableBy X).homEquiv x₂)) :
+    x₁ ≫ gammaZeroNaiveCarrierπ hN X = x₂ ≫ gammaZeroNaiveCarrierπ hN X := by
+  let R := (gammaNaiveRelRepData (B := B) (N := N)).representableBy X
+  -- Over the geometric point of `T` at `t`, the two bases differ by a Borel matrix.
+  have hgeom (t : T.left) :
+      T.left.fromSpecAlgebraicClosure t ≫ (x₁ ≫ gammaZeroNaiveCarrierπ hN X).left =
+        T.left.fromSpecAlgebraicClosure t ≫ (x₂ ≫ gammaZeroNaiveCarrierπ hN X).left := by
+    let L := AlgebraicClosure (T.left.residueField t)
+    let T' := Over.mk (T.left.fromSpecAlgebraicClosure t ≫ T.hom)
+    let t' : T' ⟶ T := Over.homMk (T.left.fromSpecAlgebraicClosure t)
+    have hNL : (N : L) ≠ 0 := ((T.hom ≫ X.structureMap).natCast_residueField_ne_zero
+      (x := t) (hN _)).isUnit.natCast_ne_zero_of_algebra
+    obtain ⟨α₁, hα₁⟩ : ∃ α : (gammaNaive B N).obj (op (X.baseChangeFunctor.obj T')),
+        R.homEquiv (t' ≫ x₁) = α := ⟨_, rfl⟩
+    obtain ⟨α₂, hα₂⟩ : ∃ α : (gammaNaive B N).obj (op (X.baseChangeFunctor.obj T')),
+        R.homEquiv (t' ≫ x₂) = α := ⟨_, rfl⟩
+    have hα : (gammaNaiveToGammaZeroNaive B N hN).app _ α₁ =
+        (gammaNaiveToGammaZeroNaive B N hN).app _ α₂ := by
+      rw [← hα₁, ← hα₂, R.homEquiv_comp, R.homEquiv_comp]
+      exact (NatTrans.naturality_apply _ _ _).trans
+        ((congrArg _ h).trans (NatTrans.naturality_apply _ _ _).symm)
+    have hdiv := congrArg (fun a ↦ (gammaZeroNaiveEquiv _ a).1) hα
+    simp only [gammaZeroNaiveEquiv_gammaNaiveToGammaZeroNaive_app] at hdiv
+    obtain ⟨g, hgB, hg⟩ :=
+      (naiveLevelEquiv _ α₁).2.exists_mem_GL2Borel_eq_comp hNL (naiveLevelEquiv _ α₂).2 hdiv
+    have hx : (t' ≫ x₁) ≫ (gammaNaiveRelRepData.repAction (gammaNaiveBorelAction B N) X
+        (.op ⟨g, hgB⟩)).asIso.hom = t' ≫ x₂ := R.homEquiv.injective <| by
+      rw [RelRepData.homEquiv_comp_repAction_hom, hα₁, hα₂, gammaNaiveBorelAction_apply]
+      refine (naiveLevelEquiv _).injective (Subtype.ext ?_)
+      rw [naiveLevelEquiv_gammaNaiveAction_hom_app]
+      exact hg.symm
+    have := congrArg (fun z ↦ (z ≫ gammaZeroNaiveCarrierπ hN X).left) hx
+    simpa [t'] using this
+  -- Morphisms into the separated unramified carrier agreeing at all geometric points agree.
+  have : Surjective (Sigma.desc fun t : T.left ↦ T.left.fromSpecAlgebraicClosure t) := by
+    refine ⟨fun t ↦ ?_⟩
+    obtain ⟨p⟩ : Nonempty (Spec (.of (AlgebraicClosure (T.left.residueField t)))) :=
+      inferInstance
+    refine ⟨(Sigma.ι (fun t : T.left ↦ Spec (.of (AlgebraicClosure (T.left.residueField t)))) t) p,
+      ?_⟩
+    rw [← Scheme.Hom.comp_apply, Sigma.ι_comp_desc]
+    exact Scheme.fromSpecAlgebraicClosure_apply _ _ _
+  refine Over.OverMorphism.ext (ext_of_isDominant_of_isSeparated_of_formallyUnramified
+    (gammaZeroNaiveCarrier hN X).obj.hom ?_
+    (Sigma.desc fun t : T.left ↦ T.left.fromSpecAlgebraicClosure t) ?_)
+  · rw [Over.w, Over.w]
+  · exact Sigma.hom_ext _ _ fun t ↦ by simpa only [Sigma.ι_comp_desc_assoc] using hgeom t
 
 end AlgebraicGeometry.ModuliProblem
 

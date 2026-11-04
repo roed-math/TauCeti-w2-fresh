@@ -89,6 +89,11 @@ both problems are finite over `Ell/B` (`ModuliProblem.hasProperty_isFinite_gamma
 `ModuliProblem.hasProperty_surjective_gammaNaiveRelRepData`): over an algebraic closure of a residue
 field of the base, the `N`-torsion of an elliptic curve is `(ℤ/Nℤ)²`, so every group embedding in
 `(ℤ/Nℤ)²` gives a naive structure there (`ModuliProblem.hasProperty_surjective_naiveLevel`).
+There every point of exact order `N` is the first point of a basis of `E[N]`, so the forgetful
+morphism from the representing scheme of `[Γ(N)]` to that of `[Γ₁(N)]` is étale and surjective
+(`ModuliProblem.surjective_repMap_gammaNaiveToGammaOneNaive_left`),
+and every naive `[Γ₁(N)]`-structure extends étale-locally to a naive `[Γ(N)]`-structure
+(`ModuliProblem.exists_etale_gammaNaiveToGammaOneNaive_app_eq`).
 
 ## Main definitions
 
@@ -157,6 +162,11 @@ field of the base, the `N`-torsion of an elliptic curve is `(ℤ/Nℤ)²`, so ev
   `TauCeti.AlgebraicGeometry.ModuliProblem.hasProperty_surjective_gammaNaiveRelRepData`: if `N` is
   invertible on `B`, naive structures by a group embedding in `(ℤ/Nℤ)²`, in particular the naive
   problems `[Γ₁(N)]` and `[Γ(N)]`, are surjective over `Ell/B`.
+* `TauCeti.AlgebraicGeometry.ModuliProblem.surjective_repMap_gammaNaiveToGammaOneNaive_left` and
+  `TauCeti.AlgebraicGeometry.ModuliProblem.exists_etale_gammaNaiveToGammaOneNaive_app_eq`: if `N`
+  is invertible on `B`, the forgetful morphism of representing schemes `(P, Q) ↦ P` is surjective,
+  and every naive `[Γ₁(N)]`-structure is étale-locally the first point of a naive
+  `[Γ(N)]`-structure.
 
 ## References
 
@@ -856,6 +866,71 @@ residue field of its base. -/
 theorem hasProperty_surjective_gammaNaiveRelRepData (hN : ∀ b : B, (N : B.residueField b) ≠ 0) :
     (gammaNaiveRelRepData (B := B) (N := N)).HasProperty @Surjective :=
   hasProperty_surjective_naiveLevel _ hN (ψ := MonoidHom.id _) Function.injective_id
+
+/-- **Every point of exact order `N` is geometrically the first point of a basis.** Where `N` is
+invertible on `B`, the forgetful morphism `(P, Q) ↦ P` from the representing scheme of `[Γ(N)]` to
+that of `[Γ₁(N)]` is surjective: over an algebraic closure of the residue field of a point, the
+point of exact order `N` it classifies is the first point of a basis of the `N`-torsion
+(`EllipticCurveGeom.IsFiberwiseInjective.exists_isFiberwiseInjective_prod`). -/
+theorem surjective_repMap_gammaNaiveToGammaOneNaive_left
+    (hN : ∀ b : B, (N : B.residueField b) ≠ 0) (X : EllObj B) :
+    Surjective (gammaNaiveRelRepData.repMap gammaOneNaiveRelRepData
+      (gammaNaiveToGammaOneNaive B N) X).left := by
+  refine ⟨fun y ↦ ?_⟩
+  let R₁ := (gammaOneNaiveRelRepData (B := B) (N := N)).representableBy X
+  let L := AlgebraicClosure ((gammaOneNaiveRelRepData.rep X).left.residueField y)
+  let t := (gammaOneNaiveRelRepData.rep X).left.fromSpecAlgebraicClosure y
+  let T' := Over.mk (t ≫ (gammaOneNaiveRelRepData.rep X).hom)
+  let t' : T' ⟶ gammaOneNaiveRelRepData.rep X := Over.homMk t
+  have hNL : (N : L) ≠ 0 :=
+    (((gammaOneNaiveRelRepData.rep X).hom ≫ X.structureMap).natCast_residueField_ne_zero
+      (x := y) (hN _)).isUnit.natCast_ne_zero_of_algebra
+  -- Extend the point of exact order `N` classified by `t'` to a basis `φ`, classified by `v`.
+  obtain ⟨φ, hφ, hφ1⟩ :=
+    (naiveLevelEquiv _ (R₁.homEquiv t')).2.exists_isFiberwiseInjective_prod _ hNL
+  obtain ⟨v, hv₀⟩ : ∃ v : T' ⟶ gammaNaiveRelRepData.rep X,
+      (gammaNaiveRelRepData.representableBy X).homEquiv v =
+        (naiveLevelEquiv (X.baseChangeFunctor.obj T')).symm ⟨φ, hφ⟩ :=
+    ⟨_, Equiv.apply_symm_apply _ _⟩
+  have hv : v ≫ gammaNaiveRelRepData.repMap gammaOneNaiveRelRepData
+      (gammaNaiveToGammaOneNaive B N) X = t' := R₁.homEquiv.injective <| by
+    rw [RelRepData.homEquiv_comp_repMap, hv₀]
+    refine (naiveLevelEquiv _).injective (Subtype.ext ((zmodMonoidHomEquiv N _).injective
+      (Subtype.ext ?_)))
+    have h := naiveLevelEquiv_gammaNaiveToGammaOneNaive_app_apply
+      (X := X.baseChangeFunctor.obj T') (α := (naiveLevelEquiv _).symm ⟨φ, hφ⟩) (z := .ofAdd 1)
+    rw [Equiv.apply_symm_apply] at h
+    simp only [coe_zmodMonoidHomEquiv_apply]
+    exact h.trans hφ1
+  obtain ⟨p⟩ : Nonempty T'.left := inferInstanceAs (Nonempty (Spec (.of L)))
+  refine ⟨v.left p, ?_⟩
+  rw [← Scheme.Hom.comp_apply, ← Over.comp_left, hv]
+  exact Scheme.fromSpecAlgebraicClosure_apply _ _ _
+
+/-- **Naive `[Γ₁(N)]`-structures extend étale-locally to naive `[Γ(N)]`-structures** where `N` is
+invertible on `B`: for a point `P` of exact order `N` in every fibre of `E/S` there is an étale
+surjection `T ⟶ S` and a naive `[Γ(N)]`-structure `(P', Q)` on `E_T` whose first point `P'` is the
+pull-back of `P`. The scheme `T` is the fibre over `P` of the forgetful morphism `(P, Q) ↦ P` from
+the representing scheme of `[Γ(N)]` to that of `[Γ₁(N)]`
+(`RelRepData.exists_isPullback_repMap_left`), which is étale as a morphism between schemes étale
+over `S`, and surjective (`surjective_repMap_gammaNaiveToGammaOneNaive_left`). -/
+theorem exists_etale_gammaNaiveToGammaOneNaive_app_eq (hN : ∀ b : B, (N : B.residueField b) ≠ 0)
+    (X : EllObj B) (α : (gammaOneNaive B N).obj (op X)) :
+    ∃ (T : Over X.base) (_ : Etale T.hom) (_ : Surjective T.hom)
+      (β : (gammaNaive B N).obj (op (X.baseChangeFunctor.obj T))),
+      (gammaNaiveToGammaOneNaive B N).app _ β =
+        (gammaOneNaive B N).map (X.baseChangeFunctorHom T).op α := by
+  let f := gammaNaiveRelRepData.repMap gammaOneNaiveRelRepData (gammaNaiveToGammaOneNaive B N) X
+  have := (RelRepData.hasProperty_iff _).mp (hasProperty_etale_gammaNaiveRelRepData hN) X
+  have := (RelRepData.hasProperty_iff _).mp (hasProperty_etale_gammaOneNaiveRelRepData hN) X
+  have : Etale (f.left ≫ (gammaOneNaiveRelRepData.rep X).hom) := by
+    rwa [Over.w f]
+  have hfe : Etale f.left := Etale.of_comp f.left (gammaOneNaiveRelRepData.rep X).hom
+  obtain ⟨T, u, σ, h, β, hβ⟩ := gammaNaiveRelRepData.exists_isPullback_repMap_left
+    gammaOneNaiveRelRepData (gammaNaiveToGammaOneNaive B N) X α
+  exact ⟨T, MorphismProperty.of_isPullback h hfe,
+    MorphismProperty.of_isPullback h (surjective_repMap_gammaNaiveToGammaOneNaive_left hN X),
+    β, hβ⟩
 
 end GammaNaive
 

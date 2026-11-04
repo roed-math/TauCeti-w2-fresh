@@ -51,6 +51,12 @@ along which the level structure classified by `f : T ⟶ 𝒫_{E/S}` becomes its
 bases, it acts on `𝒫_{E/S}` without fixed points with values in nonempty schemes
 (`RelRepData.eq_one_of_comp_repAction_hom_left_eq`).
 
+A morphism `φ : 𝒫 ⟶ 𝒬` of relatively representable problems induces morphisms of representing
+schemes `𝒫_{E/S} ⟶ 𝒬_{E/S}` (`RelRepData.repMap`), and a `𝒬`-structure on `E/S` lifts along `φ`
+over the base change of `𝒫_{E/S} ⟶ 𝒬_{E/S}` along the section it classifies
+(`RelRepData.exists_isPullback_repMap_left`): when `𝒫_{E/S} ⟶ 𝒬_{E/S}` is étale and surjective,
+every `𝒬`-structure lifts to a `𝒫`-structure étale-locally.
+
 ## Main definitions
 
 * `TauCeti.AlgebraicGeometry.ModuliProblem B`: moduli problems over `Ell/B`.
@@ -63,6 +69,8 @@ bases, it acts on `𝒫_{E/S}` without fixed points with values in nonempty sche
   schemes holds for every representing morphism.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.repAction`: the action of a group acting on
   a relatively representable problem on its representing schemes.
+* `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.repMap`: the morphism of representing schemes
+  induced by a morphism of relatively representable problems.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.IsRigid`: rigidity.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.isoTensorUnitOfUnique`: a moduli problem with exactly
   one level structure on every object is the trivial problem `[Γ(1)]`.
@@ -80,6 +88,9 @@ bases, it acts on `𝒫_{E/S}` without fixed points with values in nonempty sche
   property stable under base change and composition.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.eq_one_of_comp_repAction_hom_left_eq`: a
   free action on level structures is free on points of the representing schemes.
+* `TauCeti.AlgebraicGeometry.ModuliProblem.RelRepData.exists_isPullback_repMap_left`: a level
+  structure lifts along a morphism of problems over a base change of the morphism of representing
+  schemes.
 * `TauCeti.AlgebraicGeometry.ModuliProblem.isRigid_of_representableBy`: a representable moduli
   problem is rigid.
 
@@ -322,6 +333,63 @@ theorem eq_one_of_comp_repAction_hom_left_eq
   rw [← D.homEquiv_comp_repAction_hom, hx']
 
 end Action
+
+section Map
+
+variable (D' : Q.RelRepData) (φ : P ⟶ Q)
+
+/-- **The morphism of representing schemes** `𝒫_{E/S} ⟶ 𝒬_{E/S}` over `S` induced by a morphism
+`φ : 𝒫 ⟶ 𝒬` of relatively representable moduli problems: it classifies the image under `φ` of the
+universal `𝒫`-structure, so that it sends the `𝒫`-structure classified by `u : T ⟶ 𝒫_{E/S}` to its
+image under `φ` (`homEquiv_comp_repMap`). -/
+noncomputable def repMap (X : EllObj B) : D.rep X ⟶ D'.rep X :=
+  (D'.representableBy X).homEquiv.symm (φ.app _ (D.universal X))
+
+/-- The morphism of representing schemes induced by `φ` classifies the image under `φ` of the
+universal level structure. -/
+theorem homEquiv_repMap (X : EllObj B) :
+    (D'.representableBy X).homEquiv (D.repMap D' φ X) = φ.app _ (D.universal X) :=
+  Equiv.apply_symm_apply _ _
+
+/-- The morphism of representing schemes induced by `φ` acts on classified level structures as
+`φ`. -/
+@[simp]
+theorem homEquiv_comp_repMap (X : EllObj B) {T : Over X.base} (u : T ⟶ D.rep X) :
+    (D'.representableBy X).homEquiv (u ≫ D.repMap D' φ X) =
+      φ.app _ ((D.representableBy X).homEquiv u) := by
+  rw [(D'.representableBy X).homEquiv_comp, homEquiv_repMap]
+  conv_rhs => rw [← Category.comp_id u, (D.representableBy X).homEquiv_comp]
+  exact (NatTrans.naturality_apply φ _ _).symm
+
+/-- **Lifting along a morphism of moduli problems, through the representing schemes.** For a
+morphism `φ : 𝒫 ⟶ 𝒬` of relatively representable problems and a `𝒬`-structure `α` on `X = (E/S)`,
+the base change `T ⟶ S` of the morphism of representing schemes `𝒫_{E/S} ⟶ 𝒬_{E/S}` along the
+section `S ⟶ 𝒬_{E/S}` classifying `α` carries a `𝒫`-structure whose image under `φ` is the
+pull-back of `α`. So every property of `𝒫_{E/S} ⟶ 𝒬_{E/S}` stable under base change, such as
+being étale and surjective, passes to `T ⟶ S`. -/
+theorem exists_isPullback_repMap_left (X : EllObj B) (α : Q.obj (op X)) :
+    ∃ (T : Over X.base) (u : T.left ⟶ (D.rep X).left) (σ : X.base ⟶ (D'.rep X).left),
+      IsPullback u T.hom (D.repMap D' φ X).left σ ∧
+        ∃ β : P.obj (op (X.baseChangeFunctor.obj T)),
+          φ.app _ β = Q.map (X.baseChangeFunctorHom T).op α := by
+  let f := D.repMap D' φ X
+  obtain ⟨σ, hσ⟩ : ∃ σ, (D'.representableBy X).homEquiv σ =
+      Q.map (X.baseChangeFunctorHom (Over.mk (𝟙 X.base))).op α :=
+    ⟨_, Equiv.apply_symm_apply _ _⟩
+  let T := Over.mk (pullback.snd f.left σ.left)
+  let u : T ⟶ D.rep X := Over.homMk (pullback.fst _ _) <| by
+    rw [← Over.w f, pullback.condition_assoc, Over.w σ]
+    exact Category.comp_id _
+  let k : T ⟶ Over.mk (𝟙 X.base) := Over.homMk (pullback.snd _ _)
+  have huk : u ≫ f = k ≫ σ := Over.OverMorphism.ext pullback.condition
+  refine ⟨T, u.left, σ.left, .of_hasPullback _ _, (D.representableBy X).homEquiv u,
+    (D.homEquiv_comp_repMap D' φ X u).symm.trans ?_⟩
+  rw [huk, (D'.representableBy X).homEquiv_comp, hσ,
+    ← EllObj.baseChangeFunctor_map_baseChangeFunctorHom k, op_comp, Functor.map_comp_apply]
+  -- the fibre `Q.fibre X` is `X.baseChangeFunctor.op ⋙ Q` by definition
+  rfl
+
+end Map
 
 end RelRepData
 

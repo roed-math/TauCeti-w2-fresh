@@ -8,6 +8,7 @@ module
 public import Mathlib.AlgebraicGeometry.Morphisms.Etale
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.CyclicSubgroup
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.NaiveExactOrder.Basic
+public import TauCeti.LinearAlgebra.Matrix.GeneralLinearGroup.Borel
 import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.ExactOrder.Comparison
 
 /-!
@@ -27,7 +28,9 @@ of naive exact order `N` generates a naive cyclic subgroup of order `N` over the
 (`EllipticCurveGeom.IsOfNaiveExactOrder.isNaiveCyclicSubgroup_multiplesDivisor`), since it then
 has Drinfeld exact order (`EllipticCurveGeom.IsOfNaiveExactOrder.isOfExactOrder`). Naive cyclic
 subgroups are stable under arbitrary base change (`EllipticCurveGeom.IsNaiveCyclicSubgroup.comap`):
-the étale surjection and the local generator pull back.
+the étale surjection and the local generator pull back. Over a separably closed field in which `N`
+is invertible, two bases `(P, Q)` and `(P', Q')` of `E[N]` with `⟨P⟩ = ⟨P'⟩` differ by a matrix of
+the Borel subgroup (`EllipticCurveGeom.IsFiberwiseInjective.exists_mem_GL2Borel_eq_comp`).
 
 ## Main definitions
 
@@ -40,6 +43,8 @@ the étale surjection and the local generator pull back.
   invertible, a point of naive exact order `N` generates a naive cyclic subgroup.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.IsNaiveCyclicSubgroup.comap`: naive cyclic
   subgroups are stable under base change.
+* `EllipticCurveGeom.IsFiberwiseInjective.exists_mem_GL2Borel_eq_comp`: over a separably closed
+  field, bases generating the same cyclic subgroup differ by a Borel matrix.
 
 ## References
 
@@ -143,6 +148,39 @@ theorem IsNaiveCyclicSubgroup.comap (h : E.IsNaiveCyclicSubgroup I N) :
   exact (multiplesDivisor_pointsPullback hk h0k P N).symm
 
 end BaseChange
+
+section SepClosed
+
+variable {K : Type u} [Field K] [IsSepClosed K] {E : EllipticCurveGeom (Spec (.of K))}
+
+/-- **Bases generating the same cyclic subgroup differ by a Borel matrix.** Over a separably
+closed field `K` in which `N` is invertible, let `(P, Q)` and `(P', Q')` be naive
+`[Γ(N)]`-structures `φ` and `ψ` with `⟨P⟩ = ⟨P'⟩`. The unique `g ∈ GL₂(ℤ/Nℤ)` with `ψ = φ ∘ g`
+(`IsFiberwiseInjective.existsUnique_eq_comp`) lies in the Borel subgroup: `P' = g₀₀ P + g₁₀ Q`
+lies in the support of `⟨P'⟩ = ⟨P⟩`, so it is a multiple of `P`, and `g₁₀ = 0`. -/
+theorem IsFiberwiseInjective.exists_mem_GL2Borel_eq_comp [NeZero N] (hN : (N : K) ≠ 0)
+    {φ ψ : Multiplicative (ZMod N × ZMod N) →* (𝟙_ (Over (Spec (.of K))) ⟶ Over.mk E.structureMap)}
+    (hφ : E.IsFiberwiseInjective φ) (hψ : E.IsFiberwiseInjective ψ)
+    (h : E.multiplesDivisor (φ (.ofAdd (1, 0))) N = E.multiplesDivisor (ψ (.ofAdd (1, 0))) N) :
+    ∃ g ∈ GL2Borel (ZMod N), ψ = φ.comp (zmodProdMulAutEquiv N g).toMonoidHom := by
+  obtain ⟨g, hg, -⟩ := hφ.existsUnique_eq_comp E hN hψ
+  refine ⟨g, GL2Borel.mem_iff.mpr ?_, hg⟩
+  obtain ⟨p⟩ : Nonempty (Spec (.of K)) := inferInstance
+  -- `P'` lies in the support of `⟨P'⟩ = ⟨P⟩`, so it is a multiple `P ^ (a + 1)` of `P`
+  have hmem : (ψ (.ofAdd (1, 0))).left p ∈
+      ((E.multiplesDivisor (φ (.ofAdd (1, 0))) N).support : Set E.carrier) := by
+    rw [h, multiplesDivisor_eq_pointsDivisor, mem_support_pointsDivisor_iff]
+    exact ⟨⟨0, NeZero.pos N⟩, pow_one _⟩
+  rw [multiplesDivisor_eq_pointsDivisor, mem_support_pointsDivisor_iff] at hmem
+  obtain ⟨a, ha⟩ := hmem
+  simp only at ha
+  rw [← map_pow, hg, MonoidHom.comp_apply, MulEquiv.coe_toMonoidHom,
+    zmodProdMulAutEquiv_apply] at ha
+  have := congrArg (fun z ↦ z.toAdd.2)
+    ((isFiberwiseInjective_iff_injective E φ).mp hφ ha)
+  simpa using this.symm
+
+end SepClosed
 
 end EllipticCurveGeom
 

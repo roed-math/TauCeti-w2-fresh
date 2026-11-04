@@ -38,6 +38,8 @@ invertible, the injective homomorphisms `(ℤ/Nℤ)² →* E(K)` are exactly tho
 (`EllipticCurveGeom.isFiberwiseInjective_iff_range_eq_ker`), every elliptic curve there has
 one (`EllipticCurveGeom.exists_isFiberwiseInjective`), and any two differ by a unique matrix in
 `GL₂(ℤ/Nℤ)` acting on `(ℤ/Nℤ)²` (`EllipticCurveGeom.IsFiberwiseInjective.existsUnique_eq_comp`).
+Every point of exact order `N` there is the first point of such a basis
+(`EllipticCurveGeom.IsFiberwiseInjective.exists_isFiberwiseInjective_prod`).
 Over a base on which `N` is invertible these are the naive `[Γ₁(N)]`- and `[Γ(N)]`-structures,
 which are compared with Drinfeld level structures in Katz–Mazur §3.7.
 
@@ -99,6 +101,8 @@ The group law on points of `E` is written multiplicatively, following `EllipticC
   `E[N](K)`.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.IsFiberwiseInjective.existsUnique_eq_comp`:
   there, `GL₂(ℤ/Nℤ)` acts simply transitively on the naive `[Γ(N)]`-structures.
+* `IsFiberwiseInjective.exists_isFiberwiseInjective_prod`: there, every naive
+  `[Γ₁(N)]`-structure is the first point of a naive `[Γ(N)]`-structure.
 
 ## References
 
@@ -527,6 +531,38 @@ theorem IsFiberwiseInjective.existsUnique_eq_comp (hN : (N : K) ≠ 0)
   rw [MulEquiv.eq_symm_apply]
   refine MulEquiv.ext fun a ↦ hφi ?_
   simpa using (DFunLike.congr_fun hg a).symm.trans (DFunLike.congr_fun hσ a)
+
+/-- **A point of exact order `N` extends to a basis of `E[N]`** over a separably closed field `K`
+in which `N` is invertible: for a naive `[Γ₁(N)]`-structure `ψ : ℤ/Nℤ →* E(K)` there is a naive
+`[Γ(N)]`-structure `φ : (ℤ/Nℤ)² →* E(K)` with first point `φ (1, 0) = ψ 1`. The point `P = ψ 1`
+lies in `E[N](K)`, the image of any basis `φ₀`, as `φ₀ v` for a vector `v` of order `N`, and `v`
+is the first column of a matrix `g ∈ GL₂(ℤ/Nℤ)`; then `φ = φ₀ ∘ g`. -/
+theorem IsFiberwiseInjective.exists_isFiberwiseInjective_prod (hN : (N : K) ≠ 0)
+    {ψ : Multiplicative (ZMod N) →* (𝟙_ (Over (Spec (.of K))) ⟶ Over.mk E.structureMap)}
+    (hψ : E.IsFiberwiseInjective ψ) :
+    ∃ φ : Multiplicative (ZMod N × ZMod N) →*
+      (𝟙_ (Over (Spec (.of K))) ⟶ Over.mk E.structureMap),
+      E.IsFiberwiseInjective φ ∧ φ (.ofAdd (1, 0)) = ψ (.ofAdd 1) := by
+  have : NeZero N := ⟨by rintro rfl; exact hN Nat.cast_zero⟩
+  obtain ⟨φ₀, hφ₀⟩ := E.exists_isFiberwiseInjective hN
+  have hφ₀i := (isFiberwiseInjective_iff_injective E φ₀).mp hφ₀
+  have hψi := (isFiberwiseInjective_iff_injective E ψ).mp hψ
+  -- `P = ψ 1` lies in `E[N](K)`, the image of the basis `φ₀`
+  obtain ⟨w, hw⟩ : ψ (.ofAdd 1) ∈ φ₀.range := by
+    have h1 : (Multiplicative.ofAdd (1 : ZMod N)) ^ N = 1 := by
+      rw [← ofAdd_nsmul, nsmul_one, ZMod.natCast_self, ofAdd_zero]
+    rw [(isFiberwiseInjective_iff_range_eq_ker E hN φ₀).mp hφ₀, MonoidHom.mem_ker,
+      IsMonHom.monoidHom_apply, comp_mulBy, zpow_natCast, ← map_pow, h1, map_one]
+  -- `P` has order `N`, so `w` has zero annihilator and is the first column of a matrix `g`
+  obtain ⟨g, hg⟩ := exists_zmodProdMulAutEquiv_apply_eq (v := w.toAdd) fun k hk ↦ by
+    have hk' : ψ (.ofAdd k) = 1 := by
+      rw [← ZMod.natCast_zmod_val k, ← nsmul_one, ofAdd_nsmul, map_pow, ← hw, ← map_pow,
+        ← ofAdd_toAdd w, ← ofAdd_nsmul, ← Nat.cast_smul_eq_nsmul (ZMod N),
+        ZMod.natCast_zmod_val, hk, ofAdd_zero, map_one]
+    simpa using hψi (hk'.trans (map_one ψ).symm)
+  refine ⟨φ₀.comp (zmodProdMulAutEquiv N g).toMonoidHom,
+    (isFiberwiseInjective_iff_injective _ _).mpr (hφ₀i.comp (MulEquiv.injective _)), ?_⟩
+  simp [hg, hw]
 
 end SepClosed
 

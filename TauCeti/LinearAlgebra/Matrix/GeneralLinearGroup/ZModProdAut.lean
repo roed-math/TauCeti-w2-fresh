@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.Module.ZMod
 public import Mathlib.LinearAlgebra.Basis.Fin
 public import TauCeti.LinearAlgebra.Matrix.GeneralLinearGroup.Basis
+import TauCeti.Data.ZMod.Units
 
 /-!
 # `GL₂(ℤ/Nℤ)` is the automorphism group of `(ℤ/Nℤ)²`
@@ -34,6 +35,8 @@ structures on elliptic curves.
   vectors by it.
 * `TauCeti.coe_zmodProdMulAutEquiv_symm_apply`: the matrix of an automorphism `σ` has columns
   `σ (1, 0)` and `σ (0, 1)`.
+* `TauCeti.exists_zmodProdMulAutEquiv_apply_eq`: for `N ≠ 0`, every vector of `(ℤ/Nℤ)²` of
+  additive order `N` is the image of `(1, 0)` under an automorphism, so it extends to a basis.
 
 ## References
 
@@ -83,5 +86,17 @@ theorem coe_zmodProdMulAutEquiv_symm_apply (σ : MulAut (Multiplicative (ZMod N 
   obtain ⟨g, rfl⟩ := (zmodProdMulAutEquiv N).surjective σ
   ext i j
   fin_cases i <;> fin_cases j <;> simp
+
+/-- **A vector of order `N` extends to a basis of `(ℤ/Nℤ)²`.** For `N ≠ 0`, if the only scalar
+killing `v` is `0`, then `v` is the image of `(1, 0)` under an automorphism of `(ℤ/Nℤ)²`: the
+coordinates of `v` are coprime (`TauCeti.ZMod.isCoprime_of_forall_mul_eq_zero`), say
+`x v₁ + y v₂ = 1`, and the matrix with columns `v` and `(-y, x)` has determinant `1`. -/
+theorem exists_zmodProdMulAutEquiv_apply_eq [NeZero N] {v : ZMod N × ZMod N}
+    (hv : ∀ k : ZMod N, k • v = 0 → k = 0) :
+    ∃ g : GL (Fin 2) (ZMod N), zmodProdMulAutEquiv N g (.ofAdd (1, 0)) = .ofAdd v := by
+  obtain ⟨x, y, hxy⟩ := ZMod.isCoprime_of_forall_mul_eq_zero (a := v.1) (b := v.2)
+    fun k ha hb ↦ hv k (Prod.ext ha hb)
+  let g : SL(2, ZMod N) := ⟨!![v.1, -y; v.2, x], by rw [Matrix.det_fin_two_of, ← hxy]; ring⟩
+  exact ⟨g, by simp [g, Matrix.SpecialLinearGroup.toGL]⟩
 
 end TauCeti
