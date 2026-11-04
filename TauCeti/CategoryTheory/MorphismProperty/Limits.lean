@@ -30,6 +30,8 @@ where `f` itself has `P`.
 * `CategoryTheory.MorphismProperty.pullback_fst_pullback_fst_iff`: for `P` closed under
   isomorphisms, `P (pullback.fst f' (pullback.fst f g)) ↔ P (pullback.fst (f' ≫ f) g)`;
   `pullback_fst_of_comp_eq` is the resulting inheritance along `e ≫ f`.
+* `CategoryTheory.MorphismProperty.pullback_map_pullback_map_iff`: the same for the base change of
+  a morphism `g` over `Z`, along `f'` after `f` and along `f' ≫ f`.
 -/
 
 public section
@@ -94,5 +96,20 @@ theorem pullback_fst_pullback_fst_iff [P.RespectsIso] {Z : C} (f' : W ⟶ X) (f 
 theorem pullback_fst_of_comp_eq {Z : C} (f : X ⟶ Z) (g : Y ⟶ Z) (e : W ⟶ X) {a : W ⟶ Z}
     (hfac : e ≫ f = a) (h : P (pullback.fst f g)) : P (pullback.fst a g) :=
   (pullback_fst_pullback_fst_iff e f g hfac).mp (P.pullback_fst _ _ h)
+
+omit [P.IsStableUnderBaseChange] in
+/-- The base change of a morphism `g : X ⟶ Y` over `Z` along `f' ≫ f` is the base change along
+`f'` of its base change along `f`, so the two have the same properties closed under
+isomorphisms. -/
+theorem pullback_map_pullback_map_iff [P.RespectsIso] {S T Z : C} (f' : T ⟶ S) (f : S ⟶ Z)
+    {a : T ⟶ Z} (hfac : f' ≫ f = a) {p : X ⟶ Z} {q : Y ⟶ Z} (g : X ⟶ Y) (hg : g ≫ q = p) :
+    P (pullback.map f' (pullback.fst f p) f' (pullback.fst f q) (𝟙 _)
+        (pullback.map f p f q (𝟙 _) g (𝟙 _) (by simp) (by simp [hg])) (𝟙 _) (by simp)
+        (by simp)) ↔
+      P (pullback.map a p a q (𝟙 _) g (𝟙 _) (by simp) (by simp [hg])) := by
+  subst hfac
+  refine P.arrow_mk_iso_iff (Arrow.isoMk (pullbackRightPullbackFstIso f p f')
+    (pullbackRightPullbackFstIso f q f') ?_)
+  apply pullback.hom_ext <;> simp
 
 end CategoryTheory.MorphismProperty
