@@ -13,6 +13,7 @@ import TauCeti.AlgebraicGeometry.GroupScheme.ClosedSubgroup.Criterion
 import TauCeti.AlgebraicGeometry.IdealSheaf.BaseChange
 import TauCeti.AlgebraicGeometry.IdealSheaf.Comap
 import TauCeti.AlgebraicGeometry.IdealSheaf.Section
+import TauCeti.Data.ZMod.FinEquiv
 
 /-!
 # Points of exact order `N` on an elliptic curve
@@ -64,6 +65,10 @@ Following `EllipticCurveGeom.mulBy`, the group law on points of `E` is written m
   for `IsOfExactOrder`, in terms of the ideal sheaf of `[P] + ⋯ + [NP]`.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.multiplesDivisor_eq_pointsDivisor`:
   `[P] + ⋯ + [NP]` is the divisor of the family of points `P, 2P, …, NP`.
+* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.multiplesDivisor_eq_pointsDivisor_zmod`: for
+  `φ : ℤ/Nℤ →* E(S)`, `[P] + ⋯ + [NP]` with `P = φ x` is the divisor of the points `φ (x a)`.
+* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.multiplesDivisor_units`: unit multiples `φ u` of
+  `φ 1` generate the same divisor.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.isRelativeEffectiveCartier_multiplesDivisor`:
   `[P] + ⋯ + [NP]` is a relative effective Cartier divisor on `E` over `S`.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.coe_support_multiplesDivisor`: the support of
@@ -169,6 +174,39 @@ theorem multiplesDivisor_eq_pointsDivisor (P : 𝟙_ (Over S) ⟶ Over.mk E.stru
     E.multiplesDivisor P N = E.pointsDivisor fun a : Fin N ↦ P ^ (a.val + 1) := by
   rw [multiplesDivisor, pointsDivisor_def,
     Fin.prod_univ_eq_prod_range (fun a ↦ (P ^ (a + 1)).left.ker)]
+
+section Generator
+
+variable {N : ℕ} [NeZero N]
+
+/-- For a homomorphism `φ : ℤ/Nℤ →* E(S)` and `x ∈ ℤ/Nℤ`, the divisor `[P] + ⋯ + [NP]` of
+`P = φ x` is the divisor `∑_a [φ (x a)]` indexed by the residues `a` modulo `N`. -/
+theorem multiplesDivisor_eq_pointsDivisor_zmod
+    (φ : Multiplicative (ZMod N) →* (𝟙_ (Over S) ⟶ Over.mk E.structureMap)) (x : ZMod N) :
+    E.multiplesDivisor (φ (.ofAdd x)) N = E.pointsDivisor fun a : ZMod N ↦ φ (.ofAdd (x * a)) := by
+  rw [multiplesDivisor_eq_pointsDivisor]
+  let e : Fin N ≃ ZMod N := (ZMod.finEquiv N).toEquiv.trans (Equiv.addRight 1)
+  have he (a : Fin N) : φ (.ofAdd x) ^ (a.val + 1) = φ (.ofAdd (x * e a)) := by
+    rw [← map_pow]
+    congr 1
+    apply Multiplicative.toAdd.injective
+    simp only [toAdd_pow, toAdd_ofAdd, nsmul_eq_mul, Nat.cast_add, Nat.cast_one, e,
+      Equiv.trans_apply, RingEquiv.toEquiv_eq_coe, RingEquiv.coe_toEquiv, Equiv.coe_addRight,
+      ZMod.finEquiv_apply, mul_comm x]
+  simp_rw [he]
+  exact E.pointsDivisor_comp_equiv (fun a : ZMod N ↦ φ (.ofAdd (x * a))) e
+
+/-- **Unit multiples of a point have the same divisor of multiples**: for a homomorphism
+`φ : ℤ/Nℤ →* E(S)` and a unit `u` of `ℤ/Nℤ`, the divisors `[uP] + ⋯ + [N uP]` and
+`[P] + ⋯ + [NP]` of `uP = φ u` and `P = φ 1` agree. -/
+theorem multiplesDivisor_units
+    (φ : Multiplicative (ZMod N) →* (𝟙_ (Over S) ⟶ Over.mk E.structureMap)) (u : (ZMod N)ˣ) :
+    E.multiplesDivisor (φ (.ofAdd (u : ZMod N))) N = E.multiplesDivisor (φ (.ofAdd 1)) N := by
+  rw [multiplesDivisor_eq_pointsDivisor_zmod, multiplesDivisor_eq_pointsDivisor_zmod]
+  simp_rw [_root_.one_mul]
+  exact E.pointsDivisor_comp_equiv (fun a : ZMod N ↦ φ (.ofAdd a)) (Units.mulLeft u)
+
+end Generator
 
 /-- The divisor `[P] + [2P] + ⋯ + [NP]` is a relative effective Cartier divisor on `E` over `S`. -/
 theorem isRelativeEffectiveCartier_multiplesDivisor (P : 𝟙_ (Over S) ⟶ Over.mk E.structureMap)

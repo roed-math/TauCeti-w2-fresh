@@ -9,7 +9,6 @@ public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.ExactOrder.Nai
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.NaiveExactOrder.Basic
 import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.FiniteSubgroup
 import TauCeti.Data.ZMod.MonoidHomEquiv
-import TauCeti.Data.ZMod.FinEquiv
 
 /-!
 # Comparison of naive and Drinfeld exact order
@@ -50,18 +49,9 @@ theorem IsOfNaiveExactOrder.isOfExactOrder
     rw [this, map_one]
   have hgrp := hφ.exists_grpObj_isMonHom_pointsDivisor hN hkill
   have hI : E.multiplesDivisor P N = E.pointsDivisor φ := by
-    rw [multiplesDivisor_eq_pointsDivisor]
-    let e : Fin N ≃ Multiplicative (ZMod N) :=
-      ((ZMod.finEquiv N).toEquiv.trans (Equiv.addRight 1)).trans Multiplicative.ofAdd
-    have he (a : Fin N) : P ^ (a.val + 1) = φ (e a) := by
-      rw [← hφ1, ← map_pow]
-      congr 1
-      apply Multiplicative.toAdd.injective
-      simp only [toAdd_pow, toAdd_ofAdd, nsmul_eq_mul, Nat.cast_add, Nat.cast_one,
-        _root_.mul_one, e, Equiv.trans_apply, RingEquiv.toEquiv_eq_coe,
-        RingEquiv.coe_toEquiv, Equiv.coe_addRight, ZMod.finEquiv_apply]
-    simp_rw [he]
-    exact E.pointsDivisor_comp_equiv φ e
+    rw [← hφ1, multiplesDivisor_eq_pointsDivisor_zmod]
+    simp_rw [_root_.one_mul]
+    exact E.pointsDivisor_comp_equiv φ Multiplicative.ofAdd
   -- Transport the subgroup predicate as a whole; rewriting its dependent structure fields
   -- separately would retain the old inclusion's proof argument.
   let H (I : E.carrier.IdealSheafData) : Prop :=

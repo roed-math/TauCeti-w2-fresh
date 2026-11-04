@@ -208,22 +208,10 @@ theorem IsCyclicSubgroup.comap {I : E.carrier.IdealSheafData} {N : ℕ}
   -- Pull the covering back along `f`, and on each piece pull the generator back.
   refine ⟨𝒰.pullback₁ f, fun i ↦ ?_⟩
   obtain ⟨E₁, g₁, hg₁, h0₁, P, hP, hI⟩ := h𝒰 i
-  let p₁ : (𝒰.pullback₁ f).X i ⟶ S' := (𝒰.pullback₁ f).f i
-  let p₂ : (𝒰.pullback₁ f).X i ⟶ 𝒰.X i := pullback.snd f (𝒰.f i)
-  have hp : p₁ ≫ f = p₂ ≫ 𝒰.f i := pullback.condition
-  -- The base change of `E'` to `S' ×_S Sᵢ`, with its projection to `E'`.
-  let E₂ := E'.baseChange p₁
-  let g₂ : E₂.carrier ⟶ E'.carrier := (E'.baseChangeIso p₁).hom ≫ pullback.fst _ _
-  have hg₂ : IsPullback g₂ E₂.structureMap E'.structureMap p₁ := E'.isPullback_baseChange p₁
-  have h0₂ : E₂.zero ≫ g₂ = p₁ ≫ E'.zero := by
-    simp [g₂, E₂, E'.zero_baseChangeIso_hom_assoc]
-  -- The induced morphism from `E₂` to `E₁`, lying over `p₂`.
-  have hk := isPullback_baseChangeLift hg₁ (hg₂.paste_horiz hg) hp.symm
-  have h0k := zero_baseChangeLift hg₁ (hg₂.paste_horiz hg).toCommSq hp.symm h0₁
-    (by simp [h0, reassoc_of% h0₂])
+  obtain ⟨E₂, g₂, k, hg₂, h0₂, hk, h0k, hkg⟩ := exists_isPullback_pullback_snd hg₁ h0₁ hg h0
   refine ⟨E₂, g₂, hg₂, h0₂, pointsPullback hk h0k P, hP.pointsPullback hk h0k, ?_⟩
-  rw [multiplesDivisor_pointsPullback hk h0k, ← hI, ← Scheme.IdealSheafData.comap_comp,
-    ← Scheme.IdealSheafData.comap_comp, baseChangeLift_fst]
+  rw [← Scheme.IdealSheafData.comap_comp, ← hkg, Scheme.IdealSheafData.comap_comp, hI]
+  exact (multiplesDivisor_pointsPullback hk h0k P N).symm
 
 end BaseChange
 

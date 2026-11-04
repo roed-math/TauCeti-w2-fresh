@@ -42,6 +42,8 @@ Smoothness of relative dimension one, properness and the local-model condition
 
 * `TauCeti.AlgebraicGeometry.IsLocallyWeierstrass.baseChange`: the local-model condition for a
   morphism with a section is stable under base change.
+* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.exists_isPullback_pullback_snd`: two base changes
+  of `E` meet over the fibre product of their bases.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.isPullback_baseChange`: the base change of `E` along
   `f` is a pullback of the structure morphism of `E` along `f`.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.baseChangeMap_id` and
@@ -273,6 +275,38 @@ theorem zero_baseChangeLift (hg₂ : CommSq g₂ E₂.structureMap E.structureMa
   hg₁.hom_ext (by simp [h0₁, h0₂, reassoc_of% hh]) (by simp)
 
 end BaseChangeLift
+
+variable {E} in
+/-- **Two base changes of an elliptic curve meet over the fibre product of their bases.** Let
+`g₁ : E₁ ⟶ E` and `g' : E' ⟶ E` exhibit `E₁` and `E'` as base changes of `E` along `t : T ⟶ S`
+and `f : S' ⟶ S`, compatibly with zero sections. Then the base change `E₂` of `E'` along the first
+projection `S' ×_S T ⟶ S'` maps to `E₁` by a base change square over the second projection,
+compatibly with zero sections and with the morphisms to `E`. This is the step by which data given
+on `E₁` pulls back to `E'` after base change along `S' ×_S T ⟶ S'`. -/
+theorem exists_isPullback_pullback_snd {T S' : Scheme.{u}} {E₁ : EllipticCurveGeom T}
+    {E' : EllipticCurveGeom S'} {t : T ⟶ S} {f : S' ⟶ S} {g₁ : E₁.carrier ⟶ E.carrier}
+    {g' : E'.carrier ⟶ E.carrier} (hg₁ : IsPullback g₁ E₁.structureMap E.structureMap t)
+    (h0₁ : E₁.zero ≫ g₁ = t ≫ E.zero) (hg' : IsPullback g' E'.structureMap E.structureMap f)
+    (h0' : E'.zero ≫ g' = f ≫ E.zero) :
+    ∃ (E₂ : EllipticCurveGeom (pullback f t)) (g₂ : E₂.carrier ⟶ E'.carrier)
+      (k : E₂.carrier ⟶ E₁.carrier),
+      IsPullback g₂ E₂.structureMap E'.structureMap (pullback.fst f t) ∧
+      E₂.zero ≫ g₂ = pullback.fst f t ≫ E'.zero ∧
+      IsPullback k E₂.structureMap E₁.structureMap (pullback.snd f t) ∧
+      E₂.zero ≫ k = pullback.snd f t ≫ E₁.zero ∧ k ≫ g₁ = g₂ ≫ g' := by
+  -- The base change of `E'` to `S' ×_S T`, with its projection to `E'`.
+  let E₂ := E'.baseChange (pullback.fst f t)
+  let g₂ : E₂.carrier ⟶ E'.carrier := (E'.baseChangeIso _).hom ≫ pullback.fst _ _
+  have hg₂ : IsPullback g₂ E₂.structureMap E'.structureMap (pullback.fst f t) :=
+    E'.isPullback_baseChange _
+  have h0₂ : E₂.zero ≫ g₂ = pullback.fst f t ≫ E'.zero := by
+    simp [g₂, E₂, E'.zero_baseChangeIso_hom_assoc]
+  -- The induced morphism from `E₂` to `E₁`, lying over the second projection.
+  have hp : pullback.snd f t ≫ t = pullback.fst f t ≫ f := pullback.condition.symm
+  exact ⟨E₂, g₂, baseChangeLift hg₁ (hg₂.paste_horiz hg').toCommSq hp, hg₂, h0₂,
+    isPullback_baseChangeLift hg₁ (hg₂.paste_horiz hg') hp,
+    zero_baseChangeLift hg₁ (hg₂.paste_horiz hg').toCommSq hp h0₁ (by simp [h0', reassoc_of% h0₂]),
+    baseChangeLift_fst _ _ _⟩
 
 end EllipticCurveGeom
 
