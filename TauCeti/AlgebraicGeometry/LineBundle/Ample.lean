@@ -35,11 +35,11 @@ that is, when `X` is quasi-affine (`LineBundleClass.isAmple_one_iff`). In partic
 on every affine scheme, and so is every torsion class there
 (`LineBundleClass.isAmple_of_pow_eq_one`).
 
-Ampleness is preserved by pullback along an open immersion `e : X ⟶ Y` that is an affine
-morphism, for instance an isomorphism: a global section `s` of a line bundle on `Y` pulls back to
-a global section on `X` with nonvanishing locus `e⁻¹ Y_s`, which is affine when `Y_s` is
-(`LineBundleClass.IsAmple.pullback_of_isOpenImmersion`). In particular ampleness is invariant
-under isomorphisms of schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
+Ampleness is preserved by pullback along an affine morphism `e : X ⟶ Y`, for instance a closed
+immersion or an isomorphism: a global section `s` of a line bundle on `Y` pulls back to a global
+section on `X` with nonvanishing locus `e⁻¹ Y_s`, which is affine when `Y_s` is
+(`LineBundleClass.IsAmple.pullback`). In particular ampleness is invariant under isomorphisms of
+schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
 
 ## Main definitions
 
@@ -57,8 +57,8 @@ under isomorphisms of schemes (`LineBundleClass.isAmple_pullback_iff_of_isIso`).
   times a globally generated line bundle is ample.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_one_iff`: the structure sheaf is ample
   exactly when `X` is quasi-affine.
-* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback_of_isOpenImmersion`: ampleness is
-  preserved by pullback along affine open immersions.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.pullback`: ampleness is preserved by
+  pullback along affine morphisms.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_pullback_iff_of_isIso`: ampleness is
   invariant under pullback along isomorphisms of schemes.
 
@@ -206,29 +206,22 @@ theorem isAmple_of_pow_eq_one [X.IsQuasiAffine] {a : LineBundleClass X} {n : ℕ
     (h : a ^ n = 1) : a.IsAmple :=
   IsAmple.of_pow hn (h ▸ isAmple_one)
 
-/-- **Ampleness is preserved by pullback along an affine open immersion.** If `a` is ample on `Y`
-and `e : X ⟶ Y` is an open immersion that is an affine morphism, then the pullback of `a` to `X`
-is ample: the nonvanishing locus of a pulled-back global section is the preimage of the original
-one. This applies in particular to isomorphisms. -/
-theorem IsAmple.pullback_of_isOpenImmersion {Y : Scheme.{u}} {a : LineBundleClass Y}
-    (h : a.IsAmple) (e : X ⟶ Y) [IsOpenImmersion e] [IsAffineHom e] : (pullback e a).IsAmple where
+/-- **Ampleness is preserved by pullback along an affine morphism.** If `a` is ample on `Y` and
+`e : X ⟶ Y` is an affine morphism, for instance a closed immersion or an isomorphism, then the
+pullback of `a` to `X` is ample: the nonvanishing locus of a pulled-back global section is the
+preimage of the original one (`Scheme.Modules.nonvanishingLocus_pullbackSections`), which is
+affine when the original one is. -/
+theorem IsAmple.pullback {Y : Scheme.{u}} {a : LineBundleClass Y} (h : a.IsAmple) (e : X ⟶ Y)
+    [IsAffineHom e] : (pullback e a).IsAmple where
   compactSpace := by
     have := h.compactSpace
     exact ⟨by simpa using QuasiCompact.isCompact_preimage (f := e) _ isOpen_univ isCompact_univ⟩
   exists_isAffineOpen_nonvanishingLocus x := by
     obtain ⟨n, hn, L, hL, s, hx, hs⟩ := h.exists_isAffineOpen_nonvanishingLocus (e x)
-    let φ := (Scheme.Modules.restrictFunctorIsoPullback e).app L.obj
-    have : SheafOfModules.isInvertible X (L.obj.restrict e) :=
-      (SheafOfModules.isInvertible X).prop_of_iso φ.symm inferInstance
-    -- The section `s`, restricted along `e` and carried to the pullback `e^* L`.
-    let s' : Γ(((InvertibleSheaf.pullback e).obj L).obj, ⊤) := φ.hom.app ⊤
-      ((L.obj.restrictAppIso e ⊤).inv (L.obj.presheaf.map (homOfLE le_top).op s))
+    let s' : Γ(((InvertibleSheaf.pullback e).obj L).obj, ⊤) := e.pullbackSections L.obj ⊤ s
     have hs' : ((InvertibleSheaf.pullback e).obj L).obj.nonvanishingLocus s' =
-        e ⁻¹ᵁ L.obj.nonvanishingLocus s := by
-      refine (Scheme.Modules.nonvanishingLocus_hom_app φ _).trans ?_
-      rw [Scheme.Modules.nonvanishingLocus_restrictAppIso_inv,
-        Scheme.Modules.nonvanishingLocus_map, Scheme.Hom.preimage_inf, e.preimage_image_eq,
-        top_inf_eq]
+        e ⁻¹ᵁ L.obj.nonvanishingLocus s :=
+      Scheme.Modules.nonvanishingLocus_pullbackSections e s
     refine ⟨n, hn, (InvertibleSheaf.pullback e).obj L, ?_, s', hs' ▸ hx, hs' ▸ hs.preimage e⟩
     rw [← pullback_mk, hL, ← pullbackHom_apply, map_pow, pullbackHom_apply]
 
@@ -236,7 +229,7 @@ theorem IsAmple.pullback_of_isOpenImmersion {Y : Scheme.{u}} {a : LineBundleClas
 pullback of `a` to `X` is ample exactly when `a` is ample. -/
 theorem isAmple_pullback_iff_of_isIso {Y : Scheme.{u}} (e : X ⟶ Y) [IsIso e]
     (a : LineBundleClass Y) : (pullback e a).IsAmple ↔ a.IsAmple := by
-  refine ⟨fun h ↦ ?_, fun h ↦ h.pullback_of_isOpenImmersion e⟩
-  simpa using h.pullback_of_isOpenImmersion (inv e)
+  refine ⟨fun h ↦ ?_, fun h ↦ h.pullback e⟩
+  simpa using h.pullback (inv e)
 
 end TauCeti.AlgebraicGeometry.LineBundleClass

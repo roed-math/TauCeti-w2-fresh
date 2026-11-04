@@ -33,6 +33,8 @@ covers is how minimal free resolutions are built.
 
 * `TauCeti.IsLocalRing.exists_mem_span_singleton_eq_top_of_finrank_eq_one`: a free module of
   rank one over a local ring is spanned by one element of any spanning set.
+* `TauCeti.IsLocalRing.span_singleton_eq_top_iff_one_tmul_ne_zero`: an element of a free module
+  of rank one over a local ring generates it exactly when it is nonzero in the fibre.
 * `TauCeti.IsLocalRing.exists_basis_of_linearIndependent_residue_coord`: a family of `n`
   elements of a free module of rank `n` whose coordinates have linearly independent residues is a
   basis.
@@ -73,6 +75,25 @@ theorem exists_mem_span_singleton_eq_top_of_finrank_eq_one [Module.Free R M]
   have h1 := Submodule.span_le.mpr hs' (hs ▸ Submodule.mem_top : e 1 ∈ Submodule.span R s)
   rw [Submodule.mem_comap, LinearEquiv.coe_coe, LinearEquiv.symm_apply_apply] at h1
   exact (_root_.IsLocalRing.maximalIdeal.isMaximal R).ne_top ((Ideal.eq_top_iff_one _).mpr h1)
+
+/-- **An element generates a free module of rank one exactly when it does not vanish in the
+fibre.** If `M` is free of rank one over the local ring `R` with residue field `k`, then `m`
+spans `M` if and only if `1 ⊗ m` is nonzero in `k ⊗ M`. -/
+theorem span_singleton_eq_top_iff_one_tmul_ne_zero [Module.Free R M]
+    (h : Module.finrank R M = 1) (m : M) :
+    Submodule.span R {m} = ⊤ ↔ (1 : _root_.IsLocalRing.ResidueField R) ⊗ₜ[R] m ≠ 0 := by
+  obtain ⟨e⟩ := Module.nonempty_linearEquiv_of_finrank_eq_one h
+  obtain ⟨a, rfl⟩ := e.surjective m
+  -- Under `k ⊗ M ≃ k ⊗ R ≃ k`, the vector `1 ⊗ e a` is the residue of `a`.
+  have he : (1 : _root_.IsLocalRing.ResidueField R) ⊗ₜ[R] e a =
+      e.lTensor _ ((TensorProduct.rid R _).symm (_root_.IsLocalRing.residue R a)) := by
+    rw [TensorProduct.rid_symm_apply, LinearEquiv.lTensor_tmul, ← mul_one a, ← smul_eq_mul,
+      map_smul, ← TensorProduct.smul_tmul, Algebra.smul_def, mul_one, smul_eq_mul, mul_one]
+    rfl
+  rw [he, LinearEquiv.map_ne_zero_iff, LinearEquiv.map_ne_zero_iff,
+    _root_.IsLocalRing.residue_ne_zero_iff_isUnit, ← Ideal.span_singleton_eq_top,
+    ← Submodule.map_eq_top_iff (e := e), Ideal.span, Submodule.map_span, Set.image_singleton]
+  rfl
 
 /-- **A family with linearly independent residues is a basis.** If `M` has a basis `b` indexed by
 `ι`, and `v` is a family of `|ι|` elements whose coordinates in `b`, read in the residue field,

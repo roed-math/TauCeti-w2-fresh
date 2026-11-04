@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
+public import TauCeti.AlgebraicGeometry.Fibers
 public import TauCeti.AlgebraicGeometry.LineBundle.Ample
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.Ample
 public import TauCeti.AlgebraicGeometry.RelativeProj.Proper
@@ -51,10 +52,12 @@ Project defined through `ℙ(ℰ)`.
   relative ampleness is ampleness.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsAmple.isRelativelyAmple`: over a separated base, an
   ample class is relatively ample for every quasi-compact morphism.
-* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback_of_isOpenImmersion`:
-  relative ampleness is preserved by pullback along affine open immersions; in particular it is
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.pullback`: relative ampleness is
+  preserved by pullback along affine morphisms of the source; in particular it is
   invariant under isomorphisms of the source over the base
   (`LineBundleClass.isRelativelyAmple_pullback_iff_of_isIso`).
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.isAmple_fiber`: a relatively ample
+  class is ample on every fibre.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.comp`: relative ampleness is
   preserved by composition with an affine morphism.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.restrict`: relative ampleness
@@ -66,8 +69,8 @@ Project defined through `ℙ(ℰ)`.
   `𝒪(1)` is relatively very ample on the relative `Proj` of an algebra generated in degree one.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.IsRelativelyVeryAmple.pullback`: relative very
   ampleness is preserved by pullback along an immersion.
-* `TauCeti.AlgebraicGeometry.IsProjective.exists_isRelativelyVeryAmple`: a projective morphism
-  has a relatively very ample line bundle.
+* `TauCeti.AlgebraicGeometry.IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple`: a
+  projective morphism has a line bundle that is relatively very ample and relatively ample.
 * `TauCeti.AlgebraicGeometry.IsProjective.isProper`: a projective morphism is proper.
 * `TauCeti.AlgebraicGeometry.isProjective_relativeProjToBase_gradedSymmetricAlgebra`: the
   projective bundle `ℙ(F) = Proj_S(Sym F)` of a quasicoherent sheaf `F` of finite type is
@@ -194,7 +197,7 @@ theorem IsRelativelyAmple.isAmple [IsAffine S] {a : LineBundleClass X} {f : X �
     (h : a.IsRelativelyAmple f) : a.IsAmple := by
   -- `f ⁻¹ᵁ ⊤` is `⊤` by definition (`Scheme.Hom.preimage_top`).
   have h' : (pullback (⊤ : X.Opens).ι a).IsAmple := h.isAmple_pullback ⊤ (isAffineOpen_top S)
-  simpa using h'.pullback_of_isOpenImmersion X.topIso.inv
+  simpa using h'.pullback X.topIso.inv
 
 /-- **Ampleness over a separated base implies relative ampleness.** If the base `S` is separated,
 `f : X ⟶ S` is quasi-compact and `a` is ample, then `a` is relatively ample for `f`: the inclusion
@@ -209,7 +212,7 @@ theorem IsAmple.isRelativelyAmple [S.IsSeparated] {a : LineBundleClass X} (h : a
     have : IsAffineHom V.ι := IsAffineHom.of_comp V.ι (Limits.terminal.from S)
     have : IsAffineHom (f ⁻¹ᵁ V).ι :=
       MorphismProperty.of_isPullback (isPullback_morphismRestrict f V) this
-    exact h.pullback_of_isOpenImmersion _
+    exact h.pullback _
 
 /-- Over an affine base, relative ampleness is ampleness. -/
 theorem isRelativelyAmple_iff_isAmple [IsAffine S] (a : LineBundleClass X) (f : X ⟶ S) :
@@ -219,11 +222,11 @@ theorem isRelativelyAmple_iff_isAmple [IsAffine S] (a : LineBundleClass X) (f : 
   have : QuasiCompact f := (quasiCompact_iff_compactSpace f).mpr inferInstance
   exact h.isRelativelyAmple f
 
-/-- **Relative ampleness is preserved by pullback along an affine open immersion.** If `a` is
-relatively ample for `f` and `j : Y ⟶ X` is an open immersion that is an affine morphism, for
-instance an isomorphism, then the pullback of `a` along `j` is relatively ample for `j ≫ f`. -/
-theorem IsRelativelyAmple.pullback_of_isOpenImmersion {a : LineBundleClass X} {f : X ⟶ S}
-    (h : a.IsRelativelyAmple f) (j : Y ⟶ X) [IsOpenImmersion j] [IsAffineHom j] :
+/-- **Relative ampleness is preserved by pullback along an affine morphism.** If `a` is relatively
+ample for `f` and `j : Y ⟶ X` is an affine morphism, for instance a closed immersion or an
+isomorphism, then the pullback of `a` along `j` is relatively ample for `j ≫ f`. -/
+theorem IsRelativelyAmple.pullback {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) (j : Y ⟶ X) [IsAffineHom j] :
     (pullback j a).IsRelativelyAmple (j ≫ f) where
   quasiCompact := by
     have := h.quasiCompact
@@ -233,11 +236,26 @@ theorem IsRelativelyAmple.pullback_of_isOpenImmersion {a : LineBundleClass X} {f
     -- type of the pulled-back class depends on the open, so the lemma cannot be rewritten with.
     -- The inclusion of `j ⁻¹ᵁ f ⁻¹ᵁ V` followed by `j` is `j ∣_ f ⁻¹ᵁ V` followed by the
     -- inclusion of `f ⁻¹ᵁ V`.
-    change (pullback (j ⁻¹ᵁ f ⁻¹ᵁ V).ι (pullback j a)).IsAmple
+    change (LineBundleClass.pullback (j ⁻¹ᵁ f ⁻¹ᵁ V).ι
+      (LineBundleClass.pullback j a)).IsAmple
     have : IsAffineHom (j ∣_ f ⁻¹ᵁ V) :=
       MorphismProperty.of_isPullback (isPullback_morphismRestrict j _).flip inferInstance
     rw [pullback_comp, ← morphismRestrict_ι, ← pullback_comp]
-    exact (h.isAmple_pullback V hV).pullback_of_isOpenImmersion _
+    exact (h.isAmple_pullback V hV).pullback _
+
+/-- **A relatively ample class is ample on every fibre.** If `a` is relatively ample for
+`f : X ⟶ S`, then its pullback to the fibre `f⁻¹(s)` is ample for every point `s` of `S`: relative
+ampleness pulls back along the affine inclusion of the fibre, and the fibre is the whole preimage
+of any affine open containing `s`. -/
+theorem IsRelativelyAmple.isAmple_fiber {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) (s : S) : (LineBundleClass.pullback (f.fiberι s) a).IsAmple := by
+  obtain ⟨V, hV, hsV, -⟩ := exists_isAffineOpen_mem_and_subset (x := s) (U := ⊤) trivial
+  have htop : (f.fiberι s ≫ f) ⁻¹ᵁ V = ⊤ := by
+    rw [Scheme.Hom.fiber_fac, Scheme.Hom.comp_preimage,
+      Scheme.fromSpecResidueField_preimage_eq_top s hsV, Scheme.Hom.preimage_top]
+  have h' := (h.pullback (f.fiberι s)).isAmple_pullback V hV
+  rw [htop] at h'
+  simpa using h'.pullback (f.fiber s).topIso.inv
 
 /-- **Relative ampleness is invariant under isomorphisms over the base.** If `e : X' ⟶ X` is an
 isomorphism, then the pullback of `a` along `e` is relatively ample for `e ≫ f` exactly when `a`
@@ -245,8 +263,8 @@ is relatively ample for `f`. -/
 theorem isRelativelyAmple_pullback_iff_of_isIso {X' : Scheme.{u}} (e : X' ⟶ X) [IsIso e]
     (a : LineBundleClass X) (f : X ⟶ S) :
     (pullback e a).IsRelativelyAmple (e ≫ f) ↔ a.IsRelativelyAmple f := by
-  refine ⟨fun h ↦ ?_, fun h ↦ h.pullback_of_isOpenImmersion e⟩
-  simpa [pullback_comp] using h.pullback_of_isOpenImmersion (inv e)
+  refine ⟨fun h ↦ ?_, fun h ↦ h.pullback e⟩
+  simpa [pullback_comp] using h.pullback (inv e)
 
 /-- **Relative ampleness is preserved by composition with an affine morphism.** If `a` is
 relatively ample for `f : X ⟶ S` and `g : S ⟶ T` is affine, then `a` is relatively ample for
@@ -264,7 +282,7 @@ theorem IsRelativelyAmple.comp {T : Scheme.{u}} {a : LineBundleClass X} {f : X �
 for the restriction `f ∣_ U : f⁻¹ U ⟶ U`. -/
 theorem IsRelativelyAmple.restrict {a : LineBundleClass X} {f : X ⟶ S}
     (h : a.IsRelativelyAmple f) (U : S.Opens) :
-    (pullback (f ⁻¹ᵁ U).ι a).IsRelativelyAmple (f ∣_ U) where
+    (LineBundleClass.pullback (f ⁻¹ᵁ U).ι a).IsRelativelyAmple (f ∣_ U) where
   quasiCompact := by
     have := h.quasiCompact
     infer_instance
@@ -384,13 +402,19 @@ instance (j : Y ⟶ X) [IsClosedImmersion j] (f : X ⟶ S) [IsProjective f] :
   obtain ⟨A, _, hA, h, h₀, i, hi, rfl⟩ := IsProjective.exists_isClosedImmersion (f := f)
   exact ⟨A, _, hA, h, h₀, j ≫ i, inferInstance, Category.assoc _ _ _⟩
 
-/-- **A projective morphism has a relatively very ample line bundle**: the pullback of `𝒪(1)`
-along the closed immersion into the relative `Proj`. -/
-theorem IsProjective.exists_isRelativelyVeryAmple (f : X ⟶ S) [IsProjective f] :
-    ∃ L : InvertibleSheaf X, L.IsRelativelyVeryAmple f := by
-  obtain ⟨A, _, hA, -, -, i, hi, rfl⟩ := IsProjective.exists_isClosedImmersion (f := f)
-  exact ⟨(InvertibleSheaf.pullback i).obj (A.relativeProjTwistingSheafOne hA),
-    A, _, hA, i, inferInstance, rfl, ⟨Iso.refl _⟩⟩
+/-- **A projective morphism has a relatively very ample and relatively ample line bundle**: the
+pullback of `𝒪(1)` along the closed immersion into the relative `Proj`. It is relatively ample
+because `𝒪(1)` is relatively ample on the relative `Proj`, whose structure morphism is proper, and
+relative ampleness pulls back along the closed immersion, an affine morphism. -/
+theorem IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple (f : X ⟶ S) [IsProjective f] :
+    ∃ L : InvertibleSheaf X,
+      L.IsRelativelyVeryAmple f ∧ (LineBundleClass.mk L).IsRelativelyAmple f := by
+  obtain ⟨A, _, hA, h, h₀, i, hi, rfl⟩ := IsProjective.exists_isClosedImmersion (f := f)
+  have := CommMon.isProper_relativeProjToBase h h₀
+  refine ⟨(InvertibleSheaf.pullback i).obj (A.relativeProjTwistingSheafOne hA),
+    ⟨A, _, hA, i, inferInstance, rfl, ⟨Iso.refl _⟩⟩, ?_⟩
+  rw [← LineBundleClass.pullback_mk]
+  exact (LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne A hA).pullback i
 
 /-- **A projective morphism is proper**: it is a closed immersion followed by the structure
 morphism of a relative `Proj` of a graded algebra of finite type with finite degree-zero part. -/

@@ -34,6 +34,8 @@ pullback (`Scheme.Hom.pullbackSectionsEquiv`), the source because `M_x` is the b
 
 * `AlgebraicGeometry.Scheme.Modules.residueFieldPullbackSectionsEquiv`: the identification
   `κ(x) ⊗_{𝒪_{X,x}} M_x ≃ Γ(Spec κ(x), ι^* M)` for quasi-coherent `M`.
+* `AlgebraicGeometry.Scheme.Modules.injective_pullbackSections_SpecMap`: pulling back global
+  sections along `Spec κ(y) ⟶ Spec κ(x)`, for a homomorphism of residue fields, is injective.
 
 ## References
 
@@ -259,5 +261,32 @@ theorem residueFieldPullbackSectionsEquiv_tmul_germ [M.IsQuasicoherent] {V : X.O
         (fromSpecResidueField_preimage_eq_top x hx).ge m := by
   rw [residueFieldPullbackSectionsEquiv, LinearEquiv.ofBijective_apply, fibreMap,
     LinearMap.liftBaseChange_tmul, fibreStalkMap_germ]
+
+/-- **Pulling back along an extension of residue fields is injective.** For a homomorphism
+`φ : κ(x) ⟶ κ(y)` of residue fields and a quasi-coherent module `N` on `Spec κ(x)`, pulling back
+global sections along `Spec κ(y) ⟶ Spec κ(x)` is injective: it is the base change
+`κ(y) ⊗_{κ(x)} -`, and a nonzero algebra over a field is faithfully flat. -/
+theorem injective_pullbackSections_SpecMap {Y : Scheme.{u}} (y : Y)
+    (φ : X.residueField x ⟶ Y.residueField y) (N : (Spec (X.residueField x)).Modules)
+    [N.IsQuasicoherent] : Function.Injective (Scheme.Hom.pullbackSections (Spec.map φ) N ⊤) := by
+  have hk : IsField Γ(Spec (X.residueField x), ⊤) :=
+    (Scheme.ΓSpecIso _).commRingCatIsoToRingEquiv.toMulEquiv.isField
+      (Field.toIsField (X.residueField x))
+  let := ((Spec.map φ).app ⊤).hom.toAlgebra
+  have : Nontrivial Γ(Spec (Y.residueField y), Spec.map φ ⁻¹ᵁ ⊤) :=
+    (Scheme.ΓSpecIso _).commRingCatIsoToRingEquiv.symm.nontrivial
+  -- A nonzero algebra over a field is faithfully flat.
+  have : Module.FaithfullyFlat Γ(Spec (X.residueField x), ⊤)
+      Γ(Spec (Y.residueField y), Spec.map φ ⁻¹ᵁ ⊤) := by
+    let := hk.toField
+    infer_instance
+  intro s t hst
+  have hU := isAffineOpen_top (Spec (X.residueField x))
+  have hV := hU.preimage (Spec.map φ)
+  rw [← Scheme.Hom.pullbackSectionsEquiv_one_tmul _ _ hU hV,
+    ← Scheme.Hom.pullbackSectionsEquiv_one_tmul _ _ hU hV] at hst
+  exact Module.FaithfullyFlat.tensorProduct_mk_injective (A := Γ(Spec (X.residueField x), ⊤))
+    (B := Γ(Spec (Y.residueField y), Spec.map φ ⁻¹ᵁ ⊤)) Γ(N, ⊤)
+    ((Scheme.Hom.pullbackSectionsEquiv _ _ hU hV).injective hst)
 
 end AlgebraicGeometry.Scheme.Modules

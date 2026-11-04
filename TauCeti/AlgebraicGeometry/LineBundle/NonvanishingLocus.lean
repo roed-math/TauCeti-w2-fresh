@@ -9,6 +9,8 @@ public import Mathlib.AlgebraicGeometry.Morphisms.Affine
 public import TauCeti.Algebra.Category.ModuleCat.Sheaf.TensorProduct.Stalk
 public import TauCeti.AlgebraicGeometry.LineBundle.Stalk
 public import TauCeti.AlgebraicGeometry.LineBundle.TensorProduct
+public import TauCeti.AlgebraicGeometry.Modules.Pullback.ResidueField
+public import TauCeti.RingTheory.LocalRing.Module
 
 /-!
 # The nonvanishing locus of a section of an invertible sheaf
@@ -49,8 +51,10 @@ of the restriction of `s`. In other words, `s` trivializes `M` over `X_s`.
   sheaves have the same nonvanishing loci of sections over each open;
 * `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_unit`: on the structure sheaf, `X_r` is the
   basic open set of the regular function `r`;
-* `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_restrictAppIso_inv`: along an open
-  immersion `f`, the nonvanishing locus of a restricted section is the preimage `f⁻¹ Y_s`;
+* `AlgebraicGeometry.Scheme.Modules.mem_nonvanishingLocus_iff_pullbackSectionsLE_ne_zero`: a
+  section vanishes nowhere at `x` exactly when its value in the fibre at `x` is nonzero;
+* `AlgebraicGeometry.Scheme.Modules.nonvanishingLocus_pullbackSections`: along any morphism `g`,
+  the nonvanishing locus of a pulled-back section is the preimage `g⁻¹ X_s`;
 * `AlgebraicGeometry.Scheme.Modules.exists_nonvanishingLocus_tensorProduct_eq_inf`: the
   sheafified tensor product `s ⊗ t` of sections satisfies `X_{s ⊗ t} = X_s ∩ X_t`, and
   `TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocus_tensorProduct` restates it
@@ -342,54 +346,66 @@ theorem _root_.AlgebraicGeometry.IsAffineOpen.nonvanishingLocus {U : X.Opens} (h
     rw [Scheme.basicOpen_res, hX, nonvanishingLocus_eq_basicOpen t (homOfLE hgV)]
     exact (hU.basicOpen g).basicOpen _
 
-section Restrict
+section Pullback
 
-variable {Y : Scheme.{u}} (f : X ⟶ Y) [IsOpenImmersion f] {M : Y.Modules}
-  [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible Y M]
-  [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible X (M.restrict f)]
+/-- **A section vanishes nowhere exactly where it is nonzero in the fibre.** A point `x` of `U`
+lies in the nonvanishing locus of a section `s` over `U` exactly when the pullback of `s` along
+`Spec κ(x) ⟶ X`, an element of the fibre `κ(x) ⊗ M_x`, is nonzero. -/
+theorem mem_nonvanishingLocus_iff_pullbackSectionsLE_ne_zero {U : X.Opens} (s : Γ(M, U)) {x : X}
+    (hx : x ∈ U) :
+    x ∈ M.nonvanishingLocus s ↔ Scheme.Hom.pullbackSectionsLE (X.fromSpecResidueField x) M U ⊤
+      (fromSpecResidueField_preimage_eq_top x hx).ge s ≠ 0 := by
+  have := TauCeti.AlgebraicGeometry.InvertibleSheaf.isQuasicoherent_obj ⟨M, ‹_›⟩
+  rw [mem_nonvanishingLocus_iff_of_mem hx,
+    TauCeti.IsLocalRing.span_singleton_eq_top_iff_one_tmul_ne_zero
+      (finrank_stalk_of_isInvertible M x),
+    ← one_smul (X.residueField x) (Scheme.Hom.pullbackSectionsLE _ M U ⊤ _ s),
+    ← residueFieldPullbackSectionsEquiv_tmul_germ, LinearEquiv.map_ne_zero_iff]
+  rfl
 
-/-- **The nonvanishing locus of a restricted section is the preimage.** Along an open immersion
-`f : X ⟶ Y`, a section `s` of `M` over `f(U)` restricts to a section of `M|_X` over `U`, whose
-nonvanishing locus is `f⁻¹ Y_s`. -/
-theorem nonvanishingLocus_restrictAppIso_inv {U : X.Opens} (s : Γ(M, f ''ᵁ U)) :
-    (M.restrict f).nonvanishingLocus ((M.restrictAppIso f U).inv s) =
-      f ⁻¹ᵁ M.nonvanishingLocus s := by
-  -- Over an open `W' ⊆ U`, multiplication by the restriction of the restricted section is
-  -- multiplication by the restriction of `s` to `f(W')`, precomposed with the ring isomorphism
-  -- `Γ(X, W') ≅ Γ(Y, f(W'))`.
-  have hbij {W' : X.Opens} (j : W' ⟶ U) :
-      (Function.Bijective fun r : Γ(X, W') ↦
-        r • (M.restrict f).presheaf.map j.op ((M.restrictAppIso f U).inv s)) ↔
-        Function.Bijective fun r : Γ(Y, f ''ᵁ W') ↦
-          r • M.presheaf.map (homOfLE (f.image_mono j.le)).op s := by
-    have he : Function.Bijective (f.appIso W').inv :=
-      (ConcreteCategory.isIso_iff_bijective _).mp inferInstance
-    have hR : Function.Bijective (M.restrictAppIso f W').hom :=
-      (ConcreteCategory.isIso_iff_bijective _).mp inferInstance
-    rw [← Function.Bijective.of_comp_iff' hR, ← Function.Bijective.of_comp_iff _ he]
-    refine iff_of_eq (congrArg _ (funext fun r ↦ ?_))
-    simp
-  -- An open `W ⊆ U` lies in the nonvanishing locus of the restricted section exactly when its
-  -- image lies in the nonvanishing locus of `s`.
-  have key {W : X.Opens} (i : W ⟶ U) :
-      W ≤ (M.restrict f).nonvanishingLocus ((M.restrictAppIso f U).inv s) ↔
-        f ''ᵁ W ≤ M.nonvanishingLocus s := by
-    rw [le_nonvanishingLocus_iff _ i,
-      le_nonvanishingLocus_iff s (homOfLE (f.image_mono i.le))]
-    refine ⟨fun h V' k ↦ ?_, fun h W' j ↦ (hbij (j ≫ i)).mpr (h _ (homOfLE (f.image_mono j.le)))⟩
-    obtain ⟨W', rfl⟩ : ∃ W', f ''ᵁ W' = V' :=
-      ⟨f ⁻¹ᵁ V', (f.image_preimage_eq_opensRange_inf V').trans
-        (inf_eq_right.mpr (k.le.trans (f.image_le_opensRange W)))⟩
-    exact (hbij _).mp (h W' (homOfLE ((f.image_le_image_iff _ _).mp k.le)))
-  refine le_antisymm ?_ ?_
-  · have h := (key (homOfLE (nonvanishingLocus_le _))).mp le_rfl
-    rw [← f.preimage_image_eq (nonvanishingLocus _ _)]
-    exact Scheme.Hom.preimage_mono _ h
-  · have hU : f ⁻¹ᵁ M.nonvanishingLocus s ≤ U :=
-      (f.preimage_image_eq U).le.trans' (Scheme.Hom.preimage_mono _ (nonvanishingLocus_le s))
-    exact (key (homOfLE hU)).mpr (f.image_preimage_le _)
+/-- **The nonvanishing locus of a pulled-back section is the preimage.** For a morphism
+`g : Y ⟶ X` and a section `s` of the invertible sheaf `M` over `U`, the pullback of `s` to a
+section of `g^* M` over `g⁻¹ U` has nonvanishing locus `g⁻¹ X_s`. At a point `y` over `x = g y`,
+the fibre of `g^* M` at `y` is the base change of the fibre of `M` at `x` along `κ(x) → κ(y)`,
+which carries `s(x)` to `s(y)` and is injective. -/
+theorem nonvanishingLocus_pullbackSections {Y : Scheme.{u}} (g : Y ⟶ X)
+    [TauCeti.AlgebraicGeometry.SheafOfModules.isInvertible Y ((pullback g).obj M)]
+    {U : X.Opens} (s : Γ(M, U)) :
+    ((pullback g).obj M).nonvanishingLocus (g.pullbackSections M U s) =
+      g ⁻¹ᵁ M.nonvanishingLocus s := by
+  have := TauCeti.AlgebraicGeometry.InvertibleSheaf.isQuasicoherent_obj ⟨M, ‹_›⟩
+  have := TauCeti.AlgebraicGeometry.InvertibleSheaf.isQuasicoherent_obj ⟨(pullback g).obj M, ‹_›⟩
+  refine TopologicalSpace.Opens.ext (Set.ext fun y ↦ ?_)
+  -- Membership in the preimage `g ⁻¹ᵁ X_s` is membership of `g y` in `X_s` by definition.
+  change y ∈ ((pullback g).obj M).nonvanishingLocus _ ↔ g y ∈ M.nonvanishingLocus s
+  by_cases hy : g y ∈ U
+  swap
+  · exact iff_of_false (fun h ↦ hy (show y ∈ g ⁻¹ᵁ U from nonvanishingLocus_le _ h))
+      (fun h ↦ hy (nonvanishingLocus_le _ h))
+  rw [mem_nonvanishingLocus_iff_pullbackSectionsLE_ne_zero _ (show y ∈ g ⁻¹ᵁ U from hy),
+    mem_nonvanishingLocus_iff_pullbackSectionsLE_ne_zero _ hy,
+    ← Scheme.Hom.pullbackSectionsLE_self]
+  have hiso {Z : Scheme.{u}} {A B : Z.Modules} (φ : A ≅ B) {V : Z.Opens} (a : Γ(A, V)) :
+      φ.hom.app V a ≠ 0 ↔ a ≠ 0 :=
+    map_ne_zero_iff _ ((ConcreteCategory.isIso_iff_bijective _).mp inferInstance).1
+  -- `Spec κ(y) ⟶ Y ⟶ X` factors as `Spec κ(y) ⟶ Spec κ(x) ⟶ X`.
+  have hc : Y.fromSpecResidueField y ≫ g =
+      Spec.map (g.residueFieldMap y) ≫ X.fromSpecResidueField (g y) :=
+    (Scheme.Hom.SpecMap_residueFieldMap_fromSpecResidueField g y).symm
+  have hW : (⊤ : (Spec (Y.residueField y)).Opens) ≤ Spec.map (g.residueFieldMap y) ⁻¹ᵁ ⊤ :=
+    le_rfl
+  rw [← hiso ((pullbackComp _ g).app M), Iso.app_hom,
+    Scheme.Hom.pullbackSectionsLE_comp_hom, ← hiso ((pullbackCongr hc).app M), Iso.app_hom,
+    Scheme.Hom.pullbackSectionsLE_congr,
+    ← Scheme.Hom.pullbackSectionsLE_comp_hom _ _ _ _ _ _ hW, ← Iso.app_hom, hiso]
+  refine map_ne_zero_iff _ fun a b hab ↦ ?_
+  rw [Scheme.Hom.pullbackSectionsLE_apply, Scheme.Hom.pullbackSectionsLE_apply,
+    show homOfLE hW = 𝟙 _ from rfl] at hab
+  -- The preimage of `⊤` is `⊤` only up to definitional unfolding, so `Functor.map_id` needs `erw`.
+  erw [op_id, CategoryTheory.Functor.map_id] at hab
+  exact injective_pullbackSections_SpecMap (g y) y _ _ hab
 
-end Restrict
+end Pullback
 
 section TensorProduct
 

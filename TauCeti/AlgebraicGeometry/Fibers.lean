@@ -25,6 +25,10 @@ subscheme of the total space. The special fibre over any local ring is a closed 
 For a domain, the generic fibre is canonically isomorphic to Mathlib's scheme-theoretic fibre at
 the generic point. Iterated scalar extension is also canonically isomorphic to direct scalar
 extension, compatibly with both pullback projections.
+
+For Mathlib's scheme-theoretic fibre `f⁻¹(y)` of a morphism `f : X ⟶ Y` at a point `y`, the
+inclusion `f⁻¹(y) ⟶ X` is an affine morphism, being the base change of the affine morphism
+`Spec κ(y) ⟶ Y`.
 -/
 
 public section
@@ -392,5 +396,28 @@ lemma genericFiberTowerIso_inv_hom :
     (isPullback_genericFiber R L toBase)
 
 end Tower
+
+section SchemeFiber
+
+variable {X Y : Scheme.{u}}
+
+/-- The morphism `Spec κ(y) ⟶ Y` is affine: the preimage of an open is everything if the open
+contains `y` and empty otherwise. -/
+instance isAffineHom_fromSpecResidueField (y : Y) : IsAffineHom (Y.fromSpecResidueField y) where
+  isAffine_preimage V _ := by
+    by_cases hy : y ∈ V
+    · have : Y.fromSpecResidueField y ⁻¹ᵁ V = ⊤ :=
+        top_unique fun p _ ↦ show Y.fromSpecResidueField y p ∈ V by simpa using hy
+      exact this ▸ isAffineOpen_top _
+    · have : Y.fromSpecResidueField y ⁻¹ᵁ V = ⊥ :=
+        eq_bot_iff.mpr fun p (hp : Y.fromSpecResidueField y p ∈ V) ↦ hy (by simpa using hp)
+      exact this ▸ isAffineOpen_bot _
+
+/-- The inclusion of the fibre `f⁻¹(y)` into `X` is affine, as the base change of the affine
+morphism `Spec κ(y) ⟶ Y`. -/
+instance isAffineHom_fiberι (f : X ⟶ Y) (y : Y) : IsAffineHom (f.fiberι y) :=
+  MorphismProperty.of_isPullback (IsPullback.of_hasPullback f _).flip inferInstance
+
+end SchemeFiber
 
 end TauCeti
