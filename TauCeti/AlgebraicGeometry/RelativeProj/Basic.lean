@@ -268,6 +268,18 @@ theorem _root_.CategoryTheory.CommMon.isPullback_relativeProjCover (U : X.Affine
       (A.relativeProjCover.f U) U.toOpens.ι A.relativeProjToBase :=
   A.relativeProjGluingData.isPullback_natTrans_ι_toBase U
 
+/-- Over an affine open `U` of `X`, the relative `Proj` is `Proj (⨁ n, Γ(Aₙ, U))`, as the base
+change of its structure morphism along `U.2.fromSpec : Spec Γ(X, U) ⟶ X`. -/
+theorem _root_.CategoryTheory.CommMon.isPullback_relativeProjCover_fromSpec
+    (U : X.AffineZariskiSite) :
+    IsPullback (Proj.toSpecCoeff (A.gradedSectionsGrading U.toOpens))
+      (A.relativeProjCover.f U) U.2.fromSpec A.relativeProjToBase :=
+  (A.isPullback_relativeProjCover U).of_iso (.refl _) U.2.isoSpec (.refl _) (.refl _)
+    (by simp) (by exact (Category.comp_id _).trans (Category.id_comp _).symm)
+    ((Category.comp_id _).trans ((Iso.hom_inv_id_assoc U.2.isoSpec U.toOpens.ι).symm.trans
+      (congrArg (U.2.isoSpec.hom ≫ ·) (IsAffineOpen.isoSpec_inv_ι U.2))))
+    (by exact (Category.comp_id _).trans (Category.id_comp _).symm)
+
 end Gluing
 
 end
