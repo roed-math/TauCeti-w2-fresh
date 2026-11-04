@@ -76,7 +76,7 @@ private noncomputable def chartPushforwardIso {V : X.AffineZariskiSite} {U : Y.A
     Scheme.Modules.pushforward (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
         (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2)) ⋙
         Scheme.Modules.pushforward (A.obj.relativeProjCover.f U) ≅
-      Scheme.Modules.pushforward ((pullback g A).obj.relativeProjCover.f V) ⋙
+      Scheme.Modules.pushforward (((pullback g).obj A).obj.relativeProjCover.f V) ⋙
         Scheme.Modules.pushforward (relativeProjPullbackHom g A) :=
   Scheme.Modules.pushforwardComp _ _ ≪≫
     Scheme.Modules.pushforwardCongr (relativeProjCover_f_relativeProjPullbackHom g A V U hV).symm ≪≫
@@ -96,38 +96,47 @@ private theorem relativeProjTwistingSheafChartHom_eq_comp {V : X.AffineZariskiSi
   refine Scheme.Modules.hom_ext _ _ fun W ↦ ConcreteCategory.hom_ext _ _ fun s ↦ ?_
   exact (A.relativeProjTwistingSheafChartHom_app_apply g n hV W s).trans rfl
 
-/-- The transpose of the projection of `𝒪_A(n)` to the chart over `U` followed by the map of
-twisting sheaves of the charts, along `ι_U` and then `Proj.map`, is an isomorphism. -/
-private theorem isIso_homEquiv_symm_π_comp_map {V : X.AffineZariskiSite}
+/-- The transpose of the projection of the twisting sheaf `𝒪(n)` of a relative `Proj` to a chart,
+along the restriction to that chart, is an isomorphism: it identifies the restriction of `𝒪(n)`
+with the twisting sheaf of the chart. -/
+private theorem isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π {Z : Scheme.{u}}
+    (B : GradedQuasicoherentAlgebra Z) (W : Z.AffineZariskiSite) :
+    IsIso (((Scheme.Modules.restrictAdjunction (B.obj.relativeProjCover.f W)).homEquiv
+      (B.obj.relativeProjTwistingSheafGlueData n).glued
+        ((B.obj.relativeProjTwistingSheafGlueData n).obj W)).symm
+          ((B.obj.relativeProjTwistingSheafGlueData n).π W)) := by
+  have := (B.obj.relativeProjTwistingSheafGlueData n).isIso_restrictGluedHom
+    (B.obj.bijective_relativeProjTwistingSheafGlueData_map_app n) W
+  rw [ModulesGlueData.restrictGluedHom_eq] at this
+  exact this
+
+/-- The transpose of the map of twisting sheaves of the charts along `Proj.map` of the pullback
+of sections is an isomorphism. -/
+private theorem isIso_homEquiv_symm_twistingSheafMap {V : X.AffineZariskiSite}
     {U : Y.AffineZariskiSite} (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
-    IsIso ((((Scheme.Modules.restrictAdjunction (A.obj.relativeProjCover.f U)).comp
-      (Scheme.Modules.pullbackPushforwardAdjunction
-        (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
-          (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2)))).homEquiv _ _).symm
-      ((A.obj.relativeProjTwistingSheafGlueData n).π U ≫
-        (Scheme.Modules.pushforward (A.obj.relativeProjCover.f U)).map
-          (Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV)
-            (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2) n))) := by
-  let D := A.obj.relativeProjTwistingSheafGlueData n
-  have hU : IsIso (((Scheme.Modules.restrictAdjunction (A.obj.relativeProjCover.f U)).homEquiv
-      D.glued (D.obj U)).symm (D.π U)) := by
-    have := D.isIso_restrictGluedHom (A.obj.bijective_relativeProjTwistingSheafGlueData_map_app n) U
-    rw [D.restrictGluedHom_eq] at this
-    exact this
-  have hP : IsIso (((Scheme.Modules.pullbackPushforwardAdjunction
+    IsIso (((Scheme.Modules.pullbackPushforwardAdjunction
       (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
-        (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2))).homEquiv (D.obj U)
-          _).symm (Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV)
+        (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2))).homEquiv
+          ((A.obj.relativeProjTwistingSheafGlueData n).obj U) _).symm
+      (Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV)
         (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2) n)) :=
-    (congrArg IsIso (Proj.pullbackTwistingSheafMap_eq _ _ n)).mp
-      (isIso_pullbackTwistingSheafMap_pullbackGradedSectionsGradedHom g A hV U.2 V.2 n)
-  exact (congrArg IsIso (Adjunction.comp_homEquiv_symm_comp_map
-    (Scheme.Modules.restrictAdjunction (A.obj.relativeProjCover.f U))
-    (Scheme.Modules.pullbackPushforwardAdjunction (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
-      (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2))) (D.π U)
-    (Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV)
-      (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2) n))).mpr
-    (IsIso.comp_isIso' (Functor.map_isIso _ _) hP)
+  (congrArg IsIso (Proj.pullbackTwistingSheafMap_eq _ _ n)).mp
+    (isIso_pullbackTwistingSheafMap_pullbackGradedSectionsGradedHom g A hV U.2 V.2 n)
+
+/-- On the chart over `V ≤ g⁻¹ U`, the comparison of twisting sheaves is the transpose of the
+projection to the chart over `U` followed by the map of twisting sheaves of the charts. -/
+private theorem relativeProjPullbackTwistingSheafHom_comp_π {V : X.AffineZariskiSite}
+    {U : Y.AffineZariskiSite} (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
+    relativeProjPullbackTwistingSheafHom g A n ≫
+        (((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).π V =
+      ((Scheme.Modules.pullbackPushforwardAdjunction (relativeProjPullbackHom g A)).homEquiv
+        _ _).symm (((A.obj.relativeProjTwistingSheafGlueData n).π U ≫
+          (Scheme.Modules.pushforward (A.obj.relativeProjCover.f U)).map
+            (Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV)
+              (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2) n)) ≫
+          (chartPushforwardIso hV).hom.app _) :=
+  (relativeProjPullbackTwistingSheafHom_π g A n hV).trans
+    (congrArg _ (relativeProjTwistingSheafChartHom_eq_comp g A n hV))
 
 end GradedQuasicoherentAlgebra
 

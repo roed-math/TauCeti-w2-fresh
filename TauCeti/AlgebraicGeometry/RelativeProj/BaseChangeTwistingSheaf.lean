@@ -68,8 +68,8 @@ noncomputable def relativeProjTwistingSheafChartHom {V : X.AffineZariskiSite}
     {U : Y.AffineZariskiSite} (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
     A.obj.relativeProjTwistingSheaf n ⟶
       (Scheme.Modules.pushforward (relativeProjPullbackHom g A)).obj
-        ((Scheme.Modules.pushforward ((pullback g A).obj.relativeProjCover.f V)).obj
-          (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n)) :=
+        ((Scheme.Modules.pushforward (((pullback g).obj A).obj.relativeProjCover.f V)).obj
+          (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n)) :=
   (A.obj.relativeProjTwistingSheafGlueData n).π U ≫
     (Scheme.Modules.pushforward (A.obj.relativeProjCover.f U)).map
       (Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV)
@@ -77,13 +77,13 @@ noncomputable def relativeProjTwistingSheafChartHom {V : X.AffineZariskiSite}
     (Scheme.Modules.pushforwardComp (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
         (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2))
         (A.obj.relativeProjCover.f U)).hom.app
-        (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n) ≫
+        (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n) ≫
     (Scheme.Modules.pushforwardCongr
       (relativeProjCover_f_relativeProjPullbackHom g A V U hV).symm).hom.app
-        (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n) ≫
-    (Scheme.Modules.pushforwardComp ((pullback g A).obj.relativeProjCover.f V)
+        (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n) ≫
+    (Scheme.Modules.pushforwardComp (((pullback g).obj A).obj.relativeProjCover.f V)
       (relativeProjPullbackHom g A)).inv.app
-        (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n)
+        (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n)
 
 /-- On sections over `W`, the chart comparison is the map of twisting sheaves applied to the
 projection of the section to the chart over `U`, restricted along
@@ -92,8 +92,8 @@ theorem relativeProjTwistingSheafChartHom_app_apply {V : X.AffineZariskiSite}
     {U : Y.AffineZariskiSite} (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) (W : A.obj.relativeProj.Opens)
     (s : Γ(A.obj.relativeProjTwistingSheaf n, W)) :
     (A.relativeProjTwistingSheafChartHom g n hV).app W s =
-      (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n).presheaf.map
-        (eqToHom (show (pullback g A).obj.relativeProjCover.f V ⁻¹ᵁ
+      (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n).presheaf.map
+        (eqToHom (show ((pullback g).obj A).obj.relativeProjCover.f V ⁻¹ᵁ
             relativeProjPullbackHom g A ⁻¹ᵁ W =
           Proj.map (A.pullbackGradedSectionsGradedHom g hV)
             (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2) ⁻¹ᵁ
@@ -126,16 +126,17 @@ theorem relativeProjTwistingSheafChartHom_eq_of_le {V : X.AffineZariskiSite}
     (A.pullbackGradedSectionsGradedHom_comp_restrictGradedSectionsGradedHom g hV
       ((toOpensFunctor Y).map i) hV').symm n (V := A.obj.relativeProjCover.f U ⁻¹ᵁ W)
     (V' := A.obj.relativeProjCover.f U' ⁻¹ᵁ W)
-    (W := (pullback g A).obj.relativeProjCover.f V ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
+    (W := ((pullback g).obj A).obj.relativeProjCover.f V ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
     (congrArg (fun f ↦ f ⁻¹ᵁ W) (relativeProjCover_f_relativeProjPullbackHom g A V U hV))
     (congrArg (fun f ↦ f ⁻¹ᵁ W) (relativeProjCover_f_relativeProjPullbackHom g A V U' hV'))
     (congrArg (fun f ↦ f ⁻¹ᵁ W) (Limits.colimit.w A.obj.relativeProjGluingData.functor i).symm)
     (((A.obj.relativeProjTwistingSheafGlueData n).π U).app W s))
   refine h1.trans ?_
-  exact congrArg (fun t ↦ (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens)
-    n).presheaf.map (eqToHom _).op ((Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV')
-      (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV' U'.2 V.2) n).app
-        (A.obj.relativeProjCover.f U' ⁻¹ᵁ W) t)) key
+  exact congrArg (fun t ↦ (Proj.twistingSheaf
+    (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n).presheaf.map (eqToHom _).op
+      ((Proj.twistingSheafMap (A.pullbackGradedSectionsGradedHom g hV')
+        (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV' U'.2 V.2) n).app
+          (A.obj.relativeProjCover.f U' ⁻¹ᵁ W) t)) key
 
 /-- The chart comparisons are compatible with the transition maps of the twisting sheaf of the
 relative `Proj` of `g^* A`. -/
@@ -144,40 +145,40 @@ theorem relativeProjTwistingSheafChartHom_comp_transition {V V' : X.AffineZarisk
     (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) (hV' : V'.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
     A.relativeProjTwistingSheafChartHom g n hV ≫
         (Scheme.Modules.pushforward (relativeProjPullbackHom g A)).map
-          (((pullback g A).obj.relativeProjTwistingSheafGlueData n).transition a) =
+          ((((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).transition a) =
       A.relativeProjTwistingSheafChartHom g n hV' := by
   refine Scheme.Modules.hom_ext _ _ fun W ↦ ?_
   refine ConcreteCategory.hom_ext _ _ fun s ↦ ?_
   have h1 := Proj.twistingSheafMap_app_apply_res_of_eq_comp
     (A.pullbackGradedSectionsGradedHom g hV)
     (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV U.2 V.2)
-    ((pullback g A).obj.restrictGradedSectionsGradedHom ((toOpensFunctor X).map a))
-    ((pullback g A).obj.irrelevant_le_map_restrictGradedSectionsGradedHom_toOpensFunctor a)
+    (((pullback g).obj A).obj.restrictGradedSectionsGradedHom ((toOpensFunctor X).map a))
+    (((pullback g).obj A).obj.irrelevant_le_map_restrictGradedSectionsGradedHom_toOpensFunctor a)
     (A.pullbackGradedSectionsGradedHom g hV')
     (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV' U.2 V'.2)
     (A.restrictGradedSectionsGradedHom_comp_pullbackGradedSectionsGradedHom g hV
       ((toOpensFunctor X).map a)).symm n
     (V := A.obj.relativeProjCover.f U ⁻¹ᵁ W)
-    (V' := (pullback g A).obj.relativeProjCover.f V ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
-    (W := (pullback g A).obj.relativeProjCover.f V' ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
+    (V' := ((pullback g).obj A).obj.relativeProjCover.f V ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
+    (W := ((pullback g).obj A).obj.relativeProjCover.f V' ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
     (congrArg (fun f ↦ f ⁻¹ᵁ W) (relativeProjCover_f_relativeProjPullbackHom g A V' U hV'))
     (congrArg (fun f ↦ f ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W)
-      (Limits.colimit.w (pullback g A).obj.relativeProjGluingData.functor a).symm)
+      (Limits.colimit.w ((pullback g).obj A).obj.relativeProjGluingData.functor a).symm)
     (congrArg (fun f ↦ f ⁻¹ᵁ W) (relativeProjCover_f_relativeProjPullbackHom g A V U hV))
     (((A.obj.relativeProjTwistingSheafGlueData n).π U).app W s)
   -- as in `relativeProjTwistingSheafChartHom_eq` below, the section is stated over `h⁻¹ W`
-  let t : Γ((Scheme.Modules.pushforward ((pullback g A).obj.relativeProjCover.f V)).obj
-      (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n),
+  let t : Γ((Scheme.Modules.pushforward (((pullback g).obj A).obj.relativeProjCover.f V)).obj
+      (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n),
       relativeProjPullbackHom g A ⁻¹ᵁ W) := (A.relativeProjTwistingSheafChartHom g n hV).app W s
-  have h2 := ((pullback g A).obj.relativeProjTwistingSheafGlueData n).transition_app_apply a
+  have h2 := (((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).transition_app_apply a
     (relativeProjPullbackHom g A ⁻¹ᵁ W) t
   have h3 := A.relativeProjTwistingSheafChartHom_app_apply g n hV' W s
   have h4 := A.relativeProjTwistingSheafChartHom_app_apply g n hV W s
   refine h2.trans (Eq.trans ?_ (h3.trans h1).symm)
   exact congrArg (fun t ↦
-    (((pullback g A).obj.relativeProjTwistingSheafGlueData n).obj V').presheaf.map
-    (eqToHom _).op ((((pullback g A).obj.relativeProjTwistingSheafGlueData n).map a).app
-      ((pullback g A).obj.relativeProjCover.f V ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W) t)) h4
+    ((((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).obj V').presheaf.map
+    (eqToHom _).op (((((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).map a).app
+      (((pullback g).obj A).obj.relativeProjCover.f V ⁻¹ᵁ relativeProjPullbackHom g A ⁻¹ᵁ W) t)) h4
 
 /-- **The chart comparison does not depend on the affine open of `Y`** below which `V` lies. -/
 theorem relativeProjTwistingSheafChartHom_eq {V : X.AffineZariskiSite}
@@ -185,33 +186,34 @@ theorem relativeProjTwistingSheafChartHom_eq {V : X.AffineZariskiSite}
     (h₂ : V.toOpens ≤ g ⁻¹ᵁ U₂.toOpens) :
     A.relativeProjTwistingSheafChartHom g n h₁ = A.relativeProjTwistingSheafChartHom g n h₂ := by
   refine Scheme.Modules.hom_ext _ _ fun W ↦ ConcreteCategory.hom_ext _ _ fun s ↦ ?_
-  let x : Γ((Scheme.Modules.pushforward ((pullback g A).obj.relativeProjCover.f V)).obj
-      (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n),
+  let x : Γ((Scheme.Modules.pushforward (((pullback g).obj A).obj.relativeProjCover.f V)).obj
+      (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n),
       relativeProjPullbackHom g A ⁻¹ᵁ W) := (A.relativeProjTwistingSheafChartHom g n h₁).app W s
-  let y : Γ((Scheme.Modules.pushforward ((pullback g A).obj.relativeProjCover.f V)).obj
-      (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n),
+  let y : Γ((Scheme.Modules.pushforward (((pullback g).obj A).obj.relativeProjCover.f V)).obj
+      (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n),
       relativeProjPullbackHom g A ⁻¹ᵁ W) := (A.relativeProjTwistingSheafChartHom g n h₂).app W s
   -- sections of the pushforward along `h` over `W` are sections over `h⁻¹ W`; stating them so
   -- keeps the unifier from unfolding the pushforwards below
   change x = y
   refine ModulesGlueData.eq_of_transition_app_eq_of_le_cover
-    ((pullback g A).obj.relativeProjTwistingSheafGlueData n)
-    ((pullback g A).obj.bijective_relativeProjTwistingSheafGlueData_map_app n)
+    (((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n)
+    (((pullback g).obj A).obj.bijective_relativeProjTwistingSheafGlueData_map_app n)
     {k | ∃ U : Y.AffineZariskiSite, U ≤ U₁ ∧ U ≤ U₂ ∧ k.toOpens ≤ g ⁻¹ᵁ U.toOpens}
     (fun f ⟨U, hU₁, hU₂, hk⟩ ↦ ⟨U, hU₁, hU₂, (toOpens_mono (leOfHom f)).trans hk⟩) ?_
     fun k ⟨U, hU₁, hU₂, hk⟩ a ↦ ?_
   · rintro _ ⟨z, rfl⟩
-    have hz : (pullback g A).obj.relativeProjCover.f V z ∈
-        (pullback g A).obj.relativeProjToBase ⁻¹ᵁ V.toOpens := by
+    have hz : ((pullback g).obj A).obj.relativeProjCover.f V z ∈
+        ((pullback g).obj A).obj.relativeProjToBase ⁻¹ᵁ V.toOpens := by
       rw [CommMon.relativeProjToBase_preimage _ V]
       exact ⟨z, rfl⟩
-    set p := (pullback g A).obj.relativeProjToBase ((pullback g A).obj.relativeProjCover.f V z)
+    set p := ((pullback g).obj A).obj.relativeProjToBase
+      (((pullback g).obj A).obj.relativeProjCover.f V z)
     obtain ⟨a, b, e, hpa⟩ := exists_basicOpen_le_affine_inter U₁.2 U₂.2 (g p) ⟨h₁ hz, h₂ hz⟩
     obtain ⟨f, hf, hpf⟩ := V.2.exists_basicOpen_le
       (V := g ⁻¹ᵁ (U₁.basicOpen a).toOpens) ⟨p, hpa⟩ hz
     refine ⟨V.basicOpen f, ⟨U₁.basicOpen a, U₁.basicOpen_le a, ⟨b, e.symm⟩, hf⟩, ?_⟩
     -- the charts of the glued twisting sheaf are by definition those of the relative `Proj`
-    change _ ∈ ((pullback g A).obj.relativeProjCover.f (V.basicOpen f)).opensRange
+    change _ ∈ (((pullback g).obj A).obj.relativeProjCover.f (V.basicOpen f)).opensRange
     rw [← CommMon.relativeProjToBase_preimage _ (V.basicOpen f)]
     exact hpf
   · have hk₁ : k.toOpens ≤ g ⁻¹ᵁ U₁.toOpens :=
@@ -232,8 +234,8 @@ noncomputable def pullbackRelativeProjTwistingSheafChartHom {V : X.AffineZariski
     (hV : ∃ U : Y.AffineZariskiSite, V.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
     (Scheme.Modules.pullback (relativeProjPullbackHom g A)).obj
         (A.obj.relativeProjTwistingSheaf n) ⟶
-      (Scheme.Modules.pushforward ((pullback g A).obj.relativeProjCover.f V)).obj
-        (Proj.twistingSheaf ((pullback g A).obj.gradedSectionsGrading V.toOpens) n) :=
+      (Scheme.Modules.pushforward (((pullback g).obj A).obj.relativeProjCover.f V)).obj
+        (Proj.twistingSheaf (((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n) :=
   ((Scheme.Modules.pullbackPushforwardAdjunction _).homEquiv _ _).symm
     (A.relativeProjTwistingSheafChartHom g n hV.choose_spec)
 
@@ -254,7 +256,7 @@ theorem pullbackRelativeProjTwistingSheafChartHom_comp_transition {V V' : X.Affi
     (f : V' ⟶ V) (hV : ∃ U : Y.AffineZariskiSite, V.toOpens ≤ g ⁻¹ᵁ U.toOpens)
     (hV' : ∃ U : Y.AffineZariskiSite, V'.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
     A.pullbackRelativeProjTwistingSheafChartHom g n hV ≫
-        ((pullback g A).obj.relativeProjTwistingSheafGlueData n).transition f =
+        (((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).transition f =
       A.pullbackRelativeProjTwistingSheafChartHom g n hV' :=
   (Adjunction.homEquiv_naturality_right_symm _ _ _).symm.trans (congrArg _
     ((A.relativeProjTwistingSheafChartHom_comp_transition g n f hV.choose_spec
@@ -263,9 +265,9 @@ theorem pullbackRelativeProjTwistingSheafChartHom_comp_transition {V V' : X.Affi
 
 /-- The charts of the relative `Proj` of `g^* A` over the affine opens of `X` lying over some
 affine open of `Y` cover it. -/
-theorem exists_mem_opensRange_relativeProjCover_f (x : (pullback g A).obj.relativeProj) :
+theorem exists_mem_opensRange_relativeProjCover_f (x : ((pullback g).obj A).obj.relativeProj) :
     ∃ V ∈ {V : X.AffineZariskiSite | ∃ U : Y.AffineZariskiSite, V.toOpens ≤ g ⁻¹ᵁ U.toOpens},
-      x ∈ ((pullback g A).obj.relativeProjCover.f V).opensRange := by
+      x ∈ (((pullback g).obj A).obj.relativeProjCover.f V).opensRange := by
   obtain ⟨⟨⟨V, U⟩, hV⟩, y, rfl⟩ := (relativeProjPullbackCover g A).exists_eq x
   exact ⟨V, ⟨U, hV⟩, y, rfl⟩
 
@@ -275,9 +277,9 @@ onto that of `A`, glued from the chart comparisons over the affine opens `V ≤ 
 noncomputable def relativeProjPullbackTwistingSheafHom :
     (Scheme.Modules.pullback (relativeProjPullbackHom g A)).obj
         (A.obj.relativeProjTwistingSheaf n) ⟶
-      (pullback g A).obj.relativeProjTwistingSheaf n :=
-  ((pullback g A).obj.relativeProjTwistingSheafGlueData n).liftOfCover
-    ((pullback g A).obj.bijective_relativeProjTwistingSheafGlueData_map_app n)
+      ((pullback g).obj A).obj.relativeProjTwistingSheaf n :=
+  (((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).liftOfCover
+    (((pullback g).obj A).obj.bijective_relativeProjTwistingSheafGlueData_map_app n)
     {V | ∃ U : Y.AffineZariskiSite, V.toOpens ≤ g ⁻¹ᵁ U.toOpens}
     (fun f ⟨U, hU⟩ ↦ ⟨U, (toOpens_mono (leOfHom f)).trans hU⟩)
     (exists_mem_opensRange_relativeProjCover_f g A)
@@ -289,11 +291,11 @@ the map of twisting sheaves induced by pullback of sections from `U` to `V`. -/
 theorem relativeProjPullbackTwistingSheafHom_π {V : X.AffineZariskiSite}
     {U : Y.AffineZariskiSite} (hV : V.toOpens ≤ g ⁻¹ᵁ U.toOpens) :
     relativeProjPullbackTwistingSheafHom g A n ≫
-        ((pullback g A).obj.relativeProjTwistingSheafGlueData n).π V =
+        (((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).π V =
       ((Scheme.Modules.pullbackPushforwardAdjunction _).homEquiv _ _).symm
         (A.relativeProjTwistingSheafChartHom g n hV) :=
-  (((pullback g A).obj.relativeProjTwistingSheafGlueData n).liftOfCover_π
-    ((pullback g A).obj.bijective_relativeProjTwistingSheafGlueData_map_app n)
+  ((((pullback g).obj A).obj.relativeProjTwistingSheafGlueData n).liftOfCover_π
+    (((pullback g).obj A).obj.bijective_relativeProjTwistingSheafGlueData_map_app n)
     {V | ∃ U : Y.AffineZariskiSite, V.toOpens ≤ g ⁻¹ᵁ U.toOpens}
     (fun f ⟨U, hU⟩ ↦ ⟨U, (toOpens_mono (leOfHom f)).trans hU⟩)
     (exists_mem_opensRange_relativeProjCover_f g A)

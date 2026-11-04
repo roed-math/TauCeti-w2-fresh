@@ -22,7 +22,7 @@ adjunction `adj : F ⊣ G`:
 
 Together they show that the transposes of a morphism along two factorizations of a pushforward
 functor are isomorphisms simultaneously, as for the comparison maps of sheaves along a commutative
-square of schemes.
+square of schemes (`CategoryTheory.Adjunction.isIso_map_of_comp_eq_homEquiv_symm`).
 -/
 
 public section
@@ -59,5 +59,31 @@ theorem isIso_homEquiv_symm_comp_hom_app {F₁ F₂ : C ⥤ D} {R₁ R₂ : D �
     simp [ofNatIsoRight]
   rw [hχ, adj₁.homEquiv_naturality_right_symm, hγ]
   infer_instance
+
+/-- Let `adjU : Lu ⊣ Ru`, `adjM : Lm ⊣ Rm`, `adjH : Lh ⊣ Rh` and `adjV : Lv ⊣ Rv` be adjunctions
+whose right adjoints form a square `e : Rm ⋙ Ru ≅ Rv ⋙ Rh`. Let `φ : Lh M ⟶ N` be such that
+`φ ≫ πV` is the transpose along `adjH` of `(πU ≫ Ru.map t) ≫ e.hom.app P`. If the transposes of
+`πU`, `t` and `πV` are isomorphisms, then so is `Lv.map φ`.
+
+For sheaves of modules along a commutative square of open immersions `ι_U`, `ι_V` and morphisms
+`m`, `h`, this says that a morphism `h^* M ⟶ N` is an isomorphism over the image of `ι_V` as soon
+as it is, after the identifications `ι_U^* M ≅ Q` and `ι_V^* N ≅ P`, the pullback of a
+comparison `m^* Q ≅ P`. -/
+theorem isIso_map_of_comp_eq_homEquiv_symm {C₁ C₂ C₃ C₄ : Type*} [Category C₁] [Category C₂]
+    [Category C₃] [Category C₄] {Lu : C₁ ⥤ C₂} {Ru : C₂ ⥤ C₁} {Lm : C₂ ⥤ C₃} {Rm : C₃ ⥤ C₂}
+    {Lh : C₁ ⥤ C₄} {Rh : C₄ ⥤ C₁} {Lv : C₄ ⥤ C₃} {Rv : C₃ ⥤ C₄} (adjU : Lu ⊣ Ru)
+    (adjM : Lm ⊣ Rm) (adjH : Lh ⊣ Rh) (adjV : Lv ⊣ Rv) (e : Rm ⋙ Ru ≅ Rv ⋙ Rh) {M : C₁}
+    {Q : C₂} {P : C₃} {N : C₄} (πU : M ⟶ Ru.obj Q) (t : Q ⟶ Rm.obj P) (πV : N ⟶ Rv.obj P)
+    (φ : Lh.obj M ⟶ N) [hπU : IsIso ((adjU.homEquiv _ _).symm πU)]
+    [ht : IsIso ((adjM.homEquiv _ _).symm t)] [hπV : IsIso ((adjV.homEquiv _ _).symm πV)]
+    (h : φ ≫ πV = (adjH.homEquiv _ _).symm ((πU ≫ Ru.map t) ≫ e.hom.app P)) :
+    IsIso (Lv.map φ) := by
+  have h₁ : IsIso (((adjU.comp adjM).homEquiv _ _).symm (πU ≫ Ru.map t)) := by
+    rw [comp_homEquiv_symm_comp_map]
+    infer_instance
+  have h₂ := isIso_homEquiv_symm_comp_hom_app (adjH.comp adjV) (adjU.comp adjM) e
+    (πU ≫ Ru.map t) (hχ := h₁)
+  rw [comp_homEquiv, Equiv.symm_trans_apply, ← h, homEquiv_naturality_left_symm] at h₂
+  exact IsIso.of_isIso_comp_right _ ((adjV.homEquiv _ _).symm πV)
 
 end CategoryTheory.Adjunction

@@ -59,14 +59,15 @@ variable {X Y : Scheme.{u}} (g : X ⟶ Y) (A : GradedQuasicoherentAlgebra Y) {U 
 /-- The `Γ(Y, U)`-algebra structure on the sections `⨁ n, Γ(g^* Aₙ, V)` of `g^* A` over an open
 `V ≤ g⁻¹ U`, through the map of functions `g.appLE U V hV : Γ(Y, U) → Γ(X, V)`. -/
 abbrev algebraPullbackGradedSections :
-    Algebra Γ(Y, U) (⨁ n, Γ((pullback g A).obj.X n, V)) :=
-  ((algebraMap Γ(X, V) (⨁ n, Γ((pullback g A).obj.X n, V))).comp (g.appLE U V hV).hom).toAlgebra
+    Algebra Γ(Y, U) (⨁ n, Γ(((pullback g).obj A).obj.X n, V)) :=
+  ((algebraMap Γ(X, V) (⨁ n, Γ(((pullback g).obj A).obj.X n, V))).comp
+    (g.appLE U V hV).hom).toAlgebra
 
 /-- Pullback of sections is a homomorphism of `Γ(Y, U)`-algebras. -/
 theorem pullbackGradedSectionsGradedHom_algebraMap (r : Γ(Y, U)) :
     let := A.algebraPullbackGradedSections g hV
     A.pullbackGradedSectionsGradedHom g hV (algebraMap Γ(Y, U) (⨁ n, Γ(A.obj.X n, U)) r) =
-      algebraMap Γ(Y, U) (⨁ n, Γ((pullback g A).obj.X n, V)) r := by
+      algebraMap Γ(Y, U) (⨁ n, Γ(((pullback g).obj A).obj.X n, V)) r := by
   intro
   rw [pullbackGradedSectionsGradedHom_apply, pullbackGradedSections_algebraMap,
     RingHom.algebraMap_toAlgebra, RingHom.comp_apply]
@@ -76,10 +77,24 @@ tower over `g.appLE U V hV`. -/
 theorem isScalarTower_pullbackGradedSections :
     let := (g.appLE U V hV).hom.toAlgebra
     let := A.algebraPullbackGradedSections g hV
-    IsScalarTower Γ(Y, U) Γ(X, V) (⨁ n, Γ((pullback g A).obj.X n, V)) := by
+    IsScalarTower Γ(Y, U) Γ(X, V) (⨁ n, Γ(((pullback g).obj A).obj.X n, V)) := by
   intro _ _
   -- `algebraPullbackGradedSections` is defined by this composite of algebra maps
   exact .of_algebraMap_eq' rfl
+
+/-- Pulling back sections of a quasicoherent module `M` and transporting them along an equation
+`g^* M = N` is a base change. -/
+private lemma isBaseChange_eqToHom_app_pullbackSectionsLE (M : Y.Modules) [M.IsQuasicoherent]
+    {N : X.Modules} (h : (Scheme.Modules.pullback g).obj M = N) (hU : IsAffineOpen U)
+    (hV' : IsAffineOpen V) :
+    letI := (g.appLE U V hV).hom.toAlgebra
+    ∀ [Module Γ(Y, U) Γ(N, V)] [IsScalarTower Γ(Y, U) Γ(X, V) Γ(N, V)]
+      (f : Γ(M, U) →ₗ[Γ(Y, U)] Γ(N, V)),
+      (∀ s, f s = (eqToHom h).app V (g.pullbackSectionsLE M U V hV s)) →
+        IsBaseChange Γ(X, V) f := by
+  subst h
+  intro _ _ f hf
+  exact g.isBaseChange_pullbackSectionsLE M hV hU hV' f hf
 
 /-- **Affine base change of graded sections.** For affine opens `U` of `Y` and `V ≤ g⁻¹ U` of `X`,
 pulling back sections exhibits `⨁ n, Γ(g^* Aₙ, V)` as the base change
@@ -93,26 +108,26 @@ theorem isBaseChange_pullbackGradedSections (hU : IsAffineOpen U) (hV' : IsAffin
         (A.pullbackGradedSectionsGradedHom_algebraMap g hV)).toLinearMap := by
   intro _ _ _
   obtain ⟨e, he⟩ : ∃ e : Γ(X, V) ⊗[Γ(Y, U)] (⨁ n, Γ(A.obj.X n, U)) ≃ₗ[Γ(X, V)]
-      ⨁ n, Γ((pullback g A).obj.X n, V), ∀ x, e (1 ⊗ₜ x) = A.pullbackGradedSections g hV x := by
+      ⨁ n, Γ(((pullback g).obj A).obj.X n, V),
+        ∀ x, e (1 ⊗ₜ x) = A.pullbackGradedSections g hV x := by
     -- degree by degree, through the `Γ(Y, U)`-module structures along `g.appLE U V hV`
-    let (n : ℕ) : Module Γ(Y, U) Γ((Scheme.Modules.pullback g).obj (A.obj.X n), V) :=
+    let (n : ℕ) : Module Γ(Y, U) Γ(((pullback g).obj A).obj.X n, V) :=
       Module.compHom _ (algebraMap Γ(Y, U) Γ(X, V))
-    have (n : ℕ) :
-        IsScalarTower Γ(Y, U) Γ(X, V) Γ((Scheme.Modules.pullback g).obj (A.obj.X n), V) :=
+    have (n : ℕ) : IsScalarTower Γ(Y, U) Γ(X, V) Γ(((pullback g).obj A).obj.X n, V) :=
       IsScalarTower.of_compHom _ _ _
-    let ε (n : ℕ) :
-        Γ(A.obj.X n, U) →ₗ[Γ(Y, U)] Γ((Scheme.Modules.pullback g).obj (A.obj.X n), V) :=
-      { toFun := g.pullbackSectionsLE (A.obj.X n) U V hV
+    let ε (n : ℕ) : Γ(A.obj.X n, U) →ₗ[Γ(Y, U)] Γ(((pullback g).obj A).obj.X n, V) :=
+      { toFun := A.pullbackComponentSections g hV n
         map_add' := map_add _
-        map_smul' r s := (g.pullbackSectionsLE (A.obj.X n) U V hV).map_smulₛₗ r s }
+        map_smul' r s := (A.pullbackComponentSections g hV n).map_smulₛₗ r s }
     have hε := IsBaseChange.directSum fun n ↦
-      g.isBaseChange_pullbackSectionsLE (A.obj.X n) hV hU hV' (ε n) fun _ ↦ rfl
+      isBaseChange_eqToHom_app_pullbackSectionsLE g hV (A.obj.X n)
+        (pullback_obj_obj_X g A n).symm hU hV' (ε n)
+        (A.pullbackComponentSections_apply g hV n)
     have h (x : ⨁ n, Γ(A.obj.X n, U)) : DirectSum.lmap ε x = A.pullbackGradedSections g hV x := by
       induction x using DirectSum.induction_on with
-      -- the two direct sums agree up to unfolding `pullback_obj_X`
-      | zero => rw [map_zero, map_zero]; rfl
+      | zero => rw [map_zero, map_zero]
       | of n x => rw [DirectSum.lmap_of, pullbackGradedSections_of]; rfl
-      | add x y hx hy => rw [map_add, map_add, hx, hy]; rfl
+      | add x y hx hy => rw [map_add, map_add, hx, hy]
     exact ⟨hε.equiv, fun x ↦ (hε.equiv_tmul 1 x).trans ((one_smul _ _).trans (h x))⟩
   exact IsBaseChange.of_equiv e fun x ↦
     (he x).trans (A.pullbackGradedSectionsGradedHom_apply g hV x).symm
@@ -123,7 +138,7 @@ sections of `A` over `U`, so that `Proj.map` gives
 `Proj (⨁ n, Γ(g^* Aₙ, V)) ⟶ Proj (⨁ n, Γ(Aₙ, U))`. -/
 theorem irrelevant_le_map_pullbackGradedSectionsGradedHom (hU : IsAffineOpen U)
     (hV' : IsAffineOpen V) :
-    HomogeneousIdeal.irrelevant ((pullback g A).obj.gradedSectionsGrading V) ≤
+    HomogeneousIdeal.irrelevant (((pullback g).obj A).obj.gradedSectionsGrading V) ≤
       (HomogeneousIdeal.irrelevant (A.obj.gradedSectionsGrading U)).map
         (A.pullbackGradedSectionsGradedHom g hV) := by
   let := (g.appLE U V hV).hom.toAlgebra
@@ -141,7 +156,7 @@ formed by pullback of sections and the coefficient projections is cartesian. -/
 theorem isPullback_proj_pullbackGradedSections (hU : IsAffineOpen U) (hV' : IsAffineOpen V) :
     IsPullback (Proj.map (A.pullbackGradedSectionsGradedHom g hV)
         (A.irrelevant_le_map_pullbackGradedSectionsGradedHom g hV hU hV'))
-      (Proj.toSpecCoeff ((pullback g A).obj.gradedSectionsGrading V))
+      (Proj.toSpecCoeff (((pullback g).obj A).obj.gradedSectionsGrading V))
       (Proj.toSpecCoeff (A.obj.gradedSectionsGrading U)) (Spec.map (g.appLE U V hV)) := by
   let := (g.appLE U V hV).hom.toAlgebra
   let := A.algebraPullbackGradedSections g hV
