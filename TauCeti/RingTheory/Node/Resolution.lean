@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Lookahead.NormalizationExactSequence.Stubs
+public import TauCeti.RingTheory.Node.ExceptionalFiber
 public import TauCeti.RingTheory.Conductor
 public import Mathlib.LinearAlgebra.Isomorphisms
 public import Mathlib.RingTheory.LocalRing.MaximalIdeal.Basic

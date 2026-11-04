@@ -1,85 +1,49 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"normalization-exact-sequence","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["node-branch-splitting"],"splits":[{"n":1,"after":[],"title":"feat: the cokernel of an algebra modulo an ideal inside the base"},{"n":2,"after":[1],"title":"feat: one blowup normalizes a node: conductor, cokernel and regularity"},{"n":3,"after":[1,2],"title":"feat: the normalization exact sequence of a proper nodal curve"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"normalization-exact-sequence","main":"11a5574886a7b084337236bb1f858406b483c6cc","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the cokernel of an algebra modulo an ideal inside the base"},{"n":2,"after":[1],"title":"feat: one blowup normalizes a node: conductor, cokernel and regularity"},{"n":3,"after":[1,2],"title":"feat: the quadratic relation of the local ring at a node of a curve"},{"n":4,"after":[1,2,3],"title":"feat: the normalization exact sequence of a proper nodal curve"}]}-->
 
 # Lookahead: `normalization-exact-sequence` (StableReduction)
 
 Target (StableReduction `README.md`, Layer 1, *nodes, normalization, and dual graphs*): "Develop
 normalization, the conductor, and the normalization exact sequence for `𝒪_X`." Built on `main`
-at `333c9e49143`.
+at `11a5574886a`.
 
-Status: **partial**. The branch proves the local algebra at an arbitrary node, split or not:
-blowing up the closed point once gives a ring `B = A[𝔪/x]` that is the integral closure of `A`
-in `A_x` (the normalization of the node), all of whose local rings at maximal ideals are discrete
-valuation rings; its conductor over `A` is `𝔪`, and its cokernel `B / A` is the residue field
-(the `δ`-invariant is one), equal to the cokernel of `A` into the functions on the exceptional
-fibre. It also proves the general conductor-square identity of cokernels. What remains is the
-globalization to a proper nodal curve, listed at the end.
+Status: **partial**. The branch now proves the whole local half of the target, for an
+arbitrary node of a nodal curve over a field, split or not:
 
-## Stubbed declarations (supplier `node-branch-splitting`)
+* at a point `x` of `Sing(X/K)`, the maximal ideal of `𝒪_{X,x}` is `(u, v)` with
+  `a u² + b u v + v² = 0` and `b² - 4a` a unit (split 3);
+* blowing up the closed point once gives `B = 𝒪_{X,x}[𝔪/u]`. It is finite over `𝒪_{X,x}`, it is the
+  integral closure of `𝒪_{X,x}` in `𝒪_{X,x}[1/u]`, and its local rings at maximal ideals are
+  discrete valuation rings (splits 2–3);
+* when `u` is a nonzerodivisor (for instance when the local ring is reduced and not a field),
+  the conductor of `B` is `𝔪` and the cokernel `B / 𝒪_{X,x}` is the residue field. This is the
+  local normalization sequence `0 → A → B → κ → 0`, and its last term is also the cokernel of
+  `A` into the functions on the exceptional fibre (splits 1–3).
 
-The roadmap's `StableReduction/Suggested.lean` pins **no** declaration for this item (it states
-only `exists_regular_proper_model`). Every stub therefore restates the form of the supplier's
-open pull request **#23800** (`feat: the exceptional fibre of blowing up a node is étale of degree
-two`), which adds them to `TauCeti/RingTheory/Node/ExceptionalFiber.lean`. All four are theorems,
-stated with `sorry` in `TauCeti/Lookahead/NormalizationExactSequence/Stubs.lean`. There is no
-`Suggested.lean` signature to copy for any of them; the differences listed are between the stub
-and PR #23800's diff.
+What remains is listed at the end.
 
-1. `TauCeti.divBy_sq_add_mul_add_eq_zero`. PR #23800:
-   ```lean
-   variable {A : Type*} [CommRing A] {x y a b : A}
-     (S : Type*) [CommRing S] [Algebra A S] [IsLocalization.Away x S]
-   theorem divBy_sq_add_mul_add_eq_zero (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0) :
-       (divBy y x : S) ^ 2 + algebraMap A S b * divBy y x + algebraMap A S a = 0
-   ```
-   Stub: identical, with the same variable block (`S` explicit).
-2. `TauCeti.toSubmodule_affineBlowup_eq_span`. PR #23800 (after `variable {S} {I : Ideal A}`):
-   ```lean
-   theorem toSubmodule_affineBlowup_eq_span (hI : I = Ideal.span {x, y})
-       (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0) :
-       Subalgebra.toSubmodule (I.affineBlowup x S) = Submodule.span A {1, divBy y x}
-   ```
-   Stub: identical.
-3. `TauCeti.finite_affineBlowup`. PR #23800:
-   ```lean
-   theorem finite_affineBlowup (hI : I = Ideal.span {x, y})
-       (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0) :
-       Module.Finite A (I.affineBlowup x S)
-   ```
-   Stub: identical.
-4. `TauCeti.etale_tensor_affineBlowup`. PR #23800 (in `section Fiber`, after
-   `variable [IsLocalRing A]` and
-   `variable (hm : maximalIdeal A = Ideal.span {x, y}) (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0)`
-   with `include hm hrel`):
-   ```lean
-   theorem etale_tensor_affineBlowup (hd : IsUnit (discrim a b 1)) :
-       Algebra.Etale (ResidueField A) (ResidueField A ⊗[A] (maximalIdeal A).affineBlowup x S)
-   ```
-   Stub:
-   ```lean
-   theorem etale_tensor_affineBlowup (hm : maximalIdeal A = Ideal.span {x, y})
-       (hrel : a * x ^ 2 + b * x * y + y ^ 2 = 0) (hd : IsUnit (discrim a b 1)) :
-       Algebra.Etale (ResidueField A) (ResidueField A ⊗[A] (maximalIdeal A).affineBlowup x S)
-   ```
-   Difference: the PR's included section variables `hm hrel` are written as explicit binders
-   in the same order; the elaborated signature is the same.
+## Suppliers and stubs
 
-PR #23800's other declarations (`finrank_tensor_affineBlowup`, `adjoinRootEquivTensorAffineBlowup`,
-`TauCeti.AlgebraicGeometry.isIso_affineBlowupι_of_sq_mem`) are not consumed and not stubbed.
-When #23800 lands, delete `TauCeti/Lookahead/` and replace the import
-`TauCeti.Lookahead.NormalizationExactSequence.Stubs` in `TauCeti/RingTheory/Node/Resolution.lean`
-by `TauCeti.RingTheory.Node.ExceptionalFiber`.
+The supplier `node-branch-splitting` was stubbed at the previous tip (`7da6390eda43`). The stubs
+were four theorems restating the form of its pull request **#23800**: `divBy_sq_add_mul_add_eq_zero`,
+`toSubmodule_affineBlowup_eq_span`, `finite_affineBlowup` and `etale_tensor_affineBlowup`.
+`StableReduction/Suggested.lean` pins no declaration for this item; it states only
+`exists_regular_proper_model`. #23800 has since been merged by Bors into
+`TauCeti/RingTheory/Node/ExceptionalFiber.lean` on `main`, with the statements the stubs used.
+So this round deleted `TauCeti/Lookahead/` entirely. `TauCeti/RingTheory/Node/Resolution.lean` now
+imports `TauCeti.RingTheory.Node.ExceptionalFiber` directly, and the branch has **no stubs and no
+`sorry`**. Splits 1–3 build against `main` alone and can be opened now. The other merged parts of
+`node-branch-splitting` are used directly from `main`: the plane-curve presentation at a node
+(`TauCeti/RingTheory/Node/PlaneCurve.lean`), the Hessian criterion and the cotangent-space
+computation.
 
 ## Splits
 
-1. **`feat: the cokernel of an algebra modulo an ideal inside the base`** — after: none (can be
-   opened now; it needs no supplier).
+1. **`feat: the cokernel of an algebra modulo an ideal inside the base`** (after: none).
    File: `TauCeti/RingTheory/Conductor.lean` (+62 lines). Adds
-   `TauCeti.Algebra.map_conductor_le_one` (the extension of the conductor lies in the image of
-   `A`), `TauCeti.Algebra.quotientOneEquivOfLE` (for an ideal `I ⊆ A` of `B`,
-   `B / A ≃ₗ[A] (B / I) / A`, the conductor square of a normalization) and
+   `TauCeti.Algebra.map_conductor_le_one`, `TauCeti.Algebra.quotientOneEquivOfLE` (for an ideal
+   `I ⊆ A` of `B`, `B / A ≃ₗ[A] (B / I) / A`, the conductor square of a normalization) and
    `TauCeti.Algebra.quotientOneEquivOfLE_mk`.
-2. **`feat: one blowup normalizes a node: conductor, cokernel and regularity`** — after: 1 (and
-   the supplier #23800 on `main`).
+2. **`feat: one blowup normalizes a node: conductor, cokernel and regularity`** (after: 1).
    Files: new `TauCeti/RingTheory/Node/Resolution.lean` (428 lines), and
    `TauCeti/RingTheory/Ideal/AffineBlowup.lean` (+10 lines). Adds
    `Ideal.algebraMap_affineBlowup_injective`, `TauCeti.maximalIdeal_le_conductor_affineBlowup`,
@@ -88,27 +52,54 @@ by `TauCeti.RingTheory.Node.ExceptionalFiber`.
    `TauCeti.isRegularLocalRing_localization_affineBlowup`,
    `TauCeti.isDiscreteValuationRing_localization_affineBlowup` and
    `TauCeti.integralClosure_eq_affineBlowup`.
-3. **`feat: the normalization exact sequence of a proper nodal curve`** — after: 1, 2.
-   *Not on the branch.* Carries the target's exported theorems. For a proper nodal curve
-   `X/K`: the normalization `ν : X̃ → X` (locally the blowup of split 2 at each node, the
-   identity elsewhere), finite with regular source; `ν.conductor`
-   (`TauCeti/AlgebraicGeometry/IdealSheaf/Conductor.lean`) equals the ideal sheaf of
-   `Sing(X/K)`, by `conductor_affineBlowup_eq_maximalIdeal` and `Algebra.conductor_eq_map`; and
-   the sequence `0 → 𝒪_X → ν_*𝒪_X̃ → Q → 0` of
-   `TauCeti/AlgebraicGeometry/Modules/StructureSheafSequence.lean`, with `Q` identified, by split
-   1 over affine opens, with the direct image from `Sing(X/K)` of the functions on the branch
-   scheme modulo those on `Sing(X/K)`, an invertible `𝒪_{Sing}`-module since the branch scheme is
-   finite étale of degree two. If it exceeds 600 lines it splits further into the construction
-   of `ν` with its conductor, and the sequence.
+3. **`feat: the quadratic relation of the local ring at a node of a curve`** (after: 1, 2).
+   Files: new `TauCeti/RingTheory/Node/QuadraticRelation.lean` (321 lines) and new
+   `TauCeti/AlgebraicGeometry/Curves/Node/Stalk.lean` (136 lines). Adds
+   `TauCeti.exists_quadratic_relation_of_isUnit_discrim` (a nondegenerate binary quadratic
+   relation `a s² + b s t + c t² = 0` on generators of `𝔪` can be normalized so that `c = 1`;
+   over a local ring some coefficient among `a`, `c`, `a - b + c` is a unit),
+   `TauCeti.exists_quadratic_relation_of_ringEquiv`,
+   `TauCeti.exists_quadratic_relation_of_isUnit_det_hessian` (`P ⧸ (f)` with `f ∈ 𝔪_P²` of unit
+   Hessian), `TauCeti.mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes`,
+   `TauCeti.exists_quadratic_relation_of_formallyUnramified`,
+   `Algebra.Presentation.exists_quadratic_relation_of_formallyUnramified`,
+   `TauCeti.exists_integralClosure_eq_affineBlowup_of_formallyUnramified`,
+   `TauCeti.exists_conductor_affineBlowup_eq_maximalIdeal_of_formallyUnramified`,
+   `AlgebraicGeometry.Scheme.exists_quadratic_relation_stalk` and
+   `AlgebraicGeometry.Scheme.exists_integralClosure_stalk_eq_affineBlowup`.
+4. **`feat: the normalization exact sequence of a proper nodal curve`** (after: 1, 2, 3).
+   *Not on the branch.* This split carries the target's exported theorems and is the only one
+   that completes the target. For a proper nodal curve `X/K` it builds:
+   * the normalization `ν : X̃ → X`, as the relative normalization
+     (`Mathlib/AlgebraicGeometry/Normalization.lean`), finite, with stalks the blowup charts of
+     split 3 at nodes;
+   * `ν.conductor` (`TauCeti/AlgebraicGeometry/IdealSheaf/Conductor.lean`) equal to the ideal
+     sheaf of `Sing(X/K)`, stalkwise by `conductor_affineBlowup_eq_maximalIdeal`;
+   * the sequence `0 → 𝒪_X → ν_*𝒪_X̃ → Q → 0` of
+     `TauCeti/AlgebraicGeometry/Modules/StructureSheafSequence.lean`, with `Q` identified by
+     split 1 with the direct image from `Sing(X/K)` of the functions on the branch scheme modulo
+     those on `Sing(X/K)`. This is an invertible `𝒪_{Sing}`-module, since the branch scheme is
+     finite étale of degree two.
+
+   If it exceeds 600 lines it splits further: first the nonzerodivisor input below, then `ν`
+   with its conductor, then the sequence.
 
 ## What remains
 
-Proved here (splits 1–2): the normalization of a node in the local shape `𝔪 = (x, y)`,
-`a x² + b x y + y² = 0`, `b² - 4a` a unit, as one blowup, with its regularity, conductor and
-cokernel. Remaining:
+Proved here (splits 1–3): the normalization of the local ring at every node of a nodal curve
+over a field as one blowup, with its finiteness and regularity. Assuming the blowup coordinate
+`u` is a nonzerodivisor, it also proves the conductor `𝔪` and the cokernel `κ`. Remaining:
 
-* that the local ring of a nodal curve over a field at a node has that shape (a coordinate change
-  making the `y²`-coefficient a unit, `x` a nonzerodivisor, and `𝔪` not principal). PR #23800
-  lists this as remaining work of the supplier `node-branch-splitting`, which pins no form for it,
-  so it is not stubbed; if it does not land there it belongs to split 3;
-* split 3, the globalization over `Sing(X/K)` and the scheme-level exact sequence for `𝒪_X`.
+* **`u` is a nonzerodivisor in `𝒪_{X,x}`.** By
+  `mem_nonZeroDivisors_of_maximalIdeal_notMem_associatedPrimes` it suffices that `𝔪` is not an
+  associated prime. The stalk is Cohen–Macaulay
+  (`AlgebraicGeometry.Scheme.Hom.isCohenMacaulay_of_syntomic_of_field`), so its associated primes
+  are its minimal primes (`Module.satisfiesSerreS_one_iff`). It then remains to show that `𝔪` is
+  not minimal: the point `x` is closed, because `Sing(X/K)` is unramified over `K`, so on a chart
+  `S ⧸ Fitt₁` has dimension zero; and `Spec S` is pure one-dimensional
+  (`Algebra.IsStandardSyntomicOfRelativeDimension.isPureDimensional_primeSpectrum`), so a closed
+  point is not a minimal prime. With this,
+  `exists_conductor_affineBlowup_eq_maximalIdeal_of_formallyUnramified` applies at every node
+  without its reducedness hypothesis.
+* **Split 4:** the globalization over `Sing(X/K)` and the scheme-level exact sequence for `𝒪_X`,
+  as described above.
