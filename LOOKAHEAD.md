@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-base-change","main":"5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat: pullback of sections of a graded quasicoherent algebra as a graded ring map"},{"n":2,"after":[1],"title":"feat: affine base change of the graded sections of a pulled-back graded algebra"},{"n":3,"after":[2],"title":"feat: the relative Proj of a pulled-back graded algebra is the base change"},{"n":4,"after":[],"title":"feat: lift into a glued module from a covering family of charts"},{"n":5,"after":[3,4],"title":"feat: compare the twisting sheaves of the relative Proj of a pulled-back graded algebra"},{"n":6,"after":[],"title":"feat: base change of the sections of twisting sheaves over standard opens"},{"n":7,"after":[6],"title":"feat: twisting sheaves pull back along base changes of graded rings"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: base change of the relative Proj, compatibly with O(n)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-base-change","main":"52f9d081237dadaf6d4eae13629281f7faa37d54","status":"partial","suppliers":["relative-proj-twisting-sheaf"],"splits":[{"n":1,"after":[],"title":"feat: pullback of sections of a graded quasicoherent algebra as a graded ring map"},{"n":2,"after":[1],"title":"feat: affine base change of the graded sections of a pulled-back graded algebra"},{"n":3,"after":[2],"title":"feat: the relative Proj of a pulled-back graded algebra is the base change"},{"n":4,"after":[],"title":"feat: lift into a glued module from a covering family of charts"},{"n":5,"after":[3,4],"title":"feat: compare the twisting sheaves of the relative Proj of a pulled-back graded algebra"},{"n":6,"after":[],"title":"feat: base change of the sections of twisting sheaves over standard opens"},{"n":7,"after":[6],"title":"feat: twisting sheaves pull back along base changes of graded rings"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: base change of the relative Proj, compatibly with O(n)"}]}-->
 
 # Lookahead: `relative-proj-base-change` (SchemeAndStackFoundations, Layer 0, §0.3)
 
@@ -9,31 +9,17 @@ specified in the README only; `Suggested.lean` pins only `Proj.isPullback_baseCh
 already on `main` (`AlgebraicGeometry.Proj.isPullback_baseChange`,
 `Proj.isPullback_map_of_isBaseChange` in `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/BaseChange.lean`).
 
-Built on `main` at `5f78b5307b932e1e2ac7848dc7d4fedc6a52d6c1` (merged into the branch on 2026-11-04).
+Built on `main` at `52f9d081237dadaf6d4eae13629281f7faa37d54` (merged into the branch on 2026-11-04;
+the merge needed no change to the branch's files).
 Status: **partial** — splits 1–7 proved, sorry-free; split 8 has every input of its final step
 proved and checked, and the abstract criterion that combines them, but the kernel times out on the
 single application of that criterion (see *What remains*).
 
-## Changes since the previous session (tip `7196e72258f2`)
+## Changes since the previous session (tip `e615e1f23491`)
 
-* `main` landed the pullback of graded quasicoherent algebras
-  (`TauCeti.AlgebraicGeometry.GradedQuasicoherentAlgebra.pullback`, #25225), as a functor
-  `GradedQuasicoherentAlgebra X ⥤ GradedQuasicoherentAlgebra Y`. The branch's own split 1
-  (`pullback g A`, `@[expose]`, components definitionally `g^* Aₙ`) is therefore **dropped**, the
-  merge keeps `main`'s file unchanged, and every later split now uses `(pullback g).obj A`. On `main`
-  the components are only propositionally `g^* Aₙ` (`pullback_obj_obj_X`; `pullback`,
-  `pullbackObj` and `ofHomogeneous` are not exposed, and exposing `pullback` would force most of its
-  private API public). The graded pullback of sections now transports along `pullback_obj_obj_X`
-  degree by degree: new `pullbackComponentSections` (`Γ(Aₙ, U) → Γ((g^* A)ₙ, V)`, the pullback of
-  sections followed by `(eqToHom _).app V`), with the unit/multiplication compatibilities proved
-  from `main`'s `pullback_obj_one` and `pullback_obj_mul`; the degreewise base change goes through a
-  private `subst` lemma (`isBaseChange_eqToHom_app_pullbackSectionsLE`).
-* Split 9 (now 8) was restructured: the whole adjunction argument is one abstract lemma
-  `CategoryTheory.Adjunction.isIso_map_of_comp_eq_homEquiv_symm` (in
-  `TauCeti/CategoryTheory/Adjunction/HomEquiv.lean`), and the concrete inputs are separate small
-  lemmas (`isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π` for any graded algebra,
-  `isIso_homEquiv_symm_twistingSheafMap`, `relativeProjPullbackTwistingSheafHom_comp_π`), all of
-  which pass the kernel.
+No new Lean on the branch: `origin/main` was merged (clean) and the remaining kernel timeout of
+split 8 was **located** by staged scratch experiments; see *What remains* for the diagnosis and the
+fix that is half-way validated.
 
 ## Stubs
 
@@ -184,32 +170,72 @@ theorem isIso_restrictFunctor_map_relativeProjPullbackTwistingSheafHom {V : X.Af
     (relativeProjPullbackTwistingSheafHom_comp_π g A n hV)
 ```
 
-but the kernel times out on it (`(kernel) deterministic timeout`, about 4 minutes). Experiments
-this session, each in a scratch copy of the file: the same application with the equation as a
-hypothesis (times out); with the categories `C₁ … C₄` given explicitly, both in the
-`Proj (gradedSectionsGrading _)` spelling and in the `relativeProjCover.X _` spelling (both time
-out); `generalize`-ing `relativeProjPullbackTwistingSheafHom g A n` first (the elaborator times
-out in `isDefEq` while abstracting it). Stating it as a lemma about an arbitrary `φ` with the equation as a hypothesis also times out, so the definition of the comparison is not what the kernel unfolds. Each conversion that the application forces is
-cheap on its own: in a scratch file importing the split-8 module, `rfl` proves
-`(relativeProjCover.X U).Modules = (Proj (gradedSectionsGrading U.toOpens)).Modules` (for `A` and
-for `(pullback g).obj A`), `(relativeProjGluingData.functor.obj U).Modules = (Proj _).Modules`,
-`relativeProjCover.f U = colimit.ι _ U`, `relativeProjTwistingSheaf n = (glue data).glued`,
-`HEq ((glue data).obj U) (Proj.twistingSheaf _ n)` and the equalities of `pushforward` and
-`restrictFunctor` along `relativeProjCover.f U` and `colimit.ι _ U`, all eight in 24 seconds. So
-the cost comes from how the kernel orders these conversions inside the large application, most
-likely by unfolding `Adjunction.homEquiv` of `restrictAdjunction`/`pullbackPushforwardAdjunction`
-(or `DFunLike.coe` of its `symm`) when the implicit objects of the two sides are spelled
-differently, instead of converting the arguments. Next steps to try, in order:
-1. print the elaborated application (`#check @Adjunction.isIso_map_of_comp_eq_homEquiv_symm _ _ _ _`
-   with the arguments above, in a scratch file) and restate the three `IsIso` inputs and the
-   equation with exactly the implicit objects it chose (`homEquiv M Q` with the same `M`, `Q`,
-   `P`, `N` spellings), proving each restatement by `exact` in its own lemma, so that the final
-   application compares syntactically equal types;
-2. or state `chartPushforwardIso` and the `π` lemmas in the `colimit.ι`/`D.glued`/`D.obj` spelling
-   of `ModulesGlueData.π` only, and convert the conclusion `restrictFunctor (colimit.ι F' V)` to
-   `relativeProjCover.f V` in a separate one-line lemma;
-3. or specialise the abstract lemma in two steps (adjunctions and `e` first, objects universally
-   quantified; then the objects), to find which group of arguments is expensive.
+but the kernel times out on it (`(kernel) deterministic timeout`, about 4–5 minutes).
+
+**Diagnosis (session of 2026-11-04 evening).** Replacing the instance arguments one at a time by
+`sorry` (scratch copies of the split-8 file, `set_option profiler true`): with `hπU` and `ht` real
+and `hπV`, `h` sorried the kernel checks the application in about 1 s; adding the real `hπV` alone
+makes it time out. The implicit `P` of the abstract lemma is fixed by `t`
+(`Proj.twistingSheafMap … : _ ⟶ (Proj.map _)_* (Proj.twistingSheaf ℬ n)`), so `P` is spelled
+`Proj.twistingSheaf (gradedSectionsGrading …) n`, while
+`isIso_homEquiv_symm_relativeProjTwistingSheafGlueData_π` is stated with
+`homEquiv D'.glued (D'.obj V)`. The kernel converts `D'.obj V ≡ Proj.twistingSheaf … n`
+cheaply as bare objects or inside `Quiver.Hom`/`Eq` types (that is why `hπU`, whose `Q` is fixed
+by `πU` itself, and the `D.obj U` in `ht` are fine), but **inside the second argument of
+`(restrictAdjunction _).homEquiv`** (under `IsIso (DFunLike.coe …)`) the same conversion times out,
+even for a generic graded algebra `B` (a lemma `IsIso (homEquiv D.glued (Proj.twistingSheaf …)).symm
+(D.π W)` proved by `exact` of the `D.obj W` form times out too). Fixing `P := D'.obj V` instead
+moves the cost to `h`: a restatement of `relativeProjPullbackTwistingSheafHom_comp_π` with
+`(chartPushforwardIso hV).hom.app (D'.obj V)` and `homEquiv _ (Rv.obj (D'.obj V))` times out, while
+the analogous restatement of `ht` with a `D'.obj V`-typed copy of `Proj.twistingSheafMap` passes
+(80–140 s, too slow to keep). So every input must reach the application with `P` spelled exactly
+as the other inputs spell it, and no `D'.obj V`/`Proj.twistingSheaf` conversion may happen under
+`homEquiv`.
+
+**Fix in progress.** A variant of the abstract lemma that takes `hP : P = P'`, `t : Q ⟶ Rm.obj P'`,
+`πV : N ⟶ Rv.obj P` and `h : φ ≫ πV ≫ eqToHom (congrArg Rv.obj hP) = (adjH.homEquiv _ _).symm
+((πU ≫ Ru.map t) ≫ e.hom.app P')`, proved by `subst hP; rw [eqToHom_refl, Category.comp_id] at h`
+and the existing lemma, **passes the kernel instantly**:
+
+```lean
+theorem isIso_map_of_comp_eq_homEquiv_symm_of_eq {C₁ C₂ C₃ C₄ : Type*} [Category C₁] [Category C₂]
+    [Category C₃] [Category C₄] {Lu : C₁ ⥤ C₂} {Ru : C₂ ⥤ C₁} {Lm : C₂ ⥤ C₃} {Rm : C₃ ⥤ C₂}
+    {Lh : C₁ ⥤ C₄} {Rh : C₄ ⥤ C₁} {Lv : C₄ ⥤ C₃} {Rv : C₃ ⥤ C₄} (adjU : Lu ⊣ Ru)
+    (adjM : Lm ⊣ Rm) (adjH : Lh ⊣ Rh) (adjV : Lv ⊣ Rv) (e : Rm ⋙ Ru ≅ Rv ⋙ Rh) {M : C₁}
+    {Q : C₂} {P P' : C₃} {N : C₄} (hP : P = P') (πU : M ⟶ Ru.obj Q) (t : Q ⟶ Rm.obj P')
+    (πV : N ⟶ Rv.obj P) (φ : Lh.obj M ⟶ N) [hπU : IsIso ((adjU.homEquiv _ _).symm πU)]
+    [ht : IsIso ((adjM.homEquiv _ _).symm t)] [hπV : IsIso ((adjV.homEquiv _ _).symm πV)]
+    (h : φ ≫ πV ≫ eqToHom (congrArg Rv.obj hP) =
+      (adjH.homEquiv _ _).symm ((πU ≫ Ru.map t) ≫ e.hom.app P')) :
+    IsIso (Lv.map φ) := by
+  subst hP
+  rw [eqToHom_refl, Category.comp_id] at h
+  exact isIso_map_of_comp_eq_homEquiv_symm adjU adjM adjH adjV e πU t πV φ h
+```
+
+It is to be applied with `hP := CommMon.relativeProjTwistingSheafGlueData_obj _ n V` (the `simps`
+lemma `D'.obj V = Proj.twistingSheaf (gradedSectionsGrading V) n`), so that `hπV` keeps its
+`D'.obj V` form and `ht`, `h` keep their `Proj.twistingSheaf` form. The input `h` is
+`relativeProjPullbackTwistingSheafHom_comp_π` with `≫ eqToHom (congrArg (pushforward _).obj hP)`
+appended to the left side; prove it by rewriting with
+`show eqToHom (congrArg _ hP) = 𝟙 _ from eqToHom_refl _ _` and `Category.comp_id` (a plain
+`rw [eqToHom_refl]` does not match). **This did not yet close the gap**: the application of the `_of_eq` variant still times out in
+the kernel (about 5 minutes), whether `hP` is passed directly or as `(by exact …)` (elaborated
+after `t`), and even with `h` stated with fully explicit objects
+(`homEquiv (A.obj.relativeProjTwistingSheafGlueData n).glued ((pushforward ι_V).obj P')` and
+`(chartPushforwardIso hV).hom.app P'`, `P' = Proj.twistingSheaf
+(((pullback g).obj A).obj.gradedSectionsGrading V.toOpens) n`, which is also the spelling `t`
+produces, since `pullbackGradedSectionsGradedHom : A.obj.gradedSectionsGrading U →+*ᵍ
+((pullback g).obj A).obj.gradedSectionsGrading V`). So some other argument of that application is
+expensive; the next session should profile it argument by argument exactly as above (replace
+`hπU`, `ht`, `hπV`, `h` by `sorry` one at a time, in the `_of_eq` application, with `hP` real).
+Also: proving the eqToHom form of `h` by `rw [eqToHom_refl]` (or
+`rw [show eqToHom _ = 𝟙 _ from eqToHom_refl _ _]`, or `erw` after `rw [← h0]`) fails to find the
+pattern; a working proof is still to be found (e.g. a general lemma
+`f ≫ eqToHom p = f` for `p : X = X` applied with `exact`). Kernel
+experiments: use `lean` with `LEAN_PATH` from `lake env printenv LEAN_PATH` directly (parallel
+`lake env` calls contend for `.git/config` locks), and make the split-8 helpers temporarily
+non-private so a small scratch module can import them (the split-8 file itself takes ~5 minutes).
 
 After that, the rest is written and was accepted by the elaborator in the previous session:
 
