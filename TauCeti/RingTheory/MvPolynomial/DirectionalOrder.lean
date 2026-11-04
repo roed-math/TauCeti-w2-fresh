@@ -9,6 +9,7 @@ public import TauCeti.RingTheory.MvPolynomial.OrderAt
 public import Mathlib.Algebra.Polynomial.Degree.TrailingDegree
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 public import Mathlib.Algebra.MvPolynomial.Funext
+public import TauCeti.Algebra.MvPolynomial.PDeriv
 
 /-!
 # Detecting ambient order along affine lines
@@ -22,6 +23,11 @@ the product of their first nonzero homogeneous Taylor components remains nonzero
 
 These coefficient formulas supply the algebraic input for choosing uniform directions in
 families of constant ambient order, and hence for analytic preparation of discriminants.
+
+Over an infinite domain, a polynomial vanishing on the line through `a` in the direction of a
+coordinate axis has vanishing partial derivative along that axis at `a`
+(`MvPolynomial.eval_pderiv_eq_zero_of_forall_eval_add_smul_single`): its restriction to the line
+is the zero polynomial, and the chain rule identifies the derivative of the restriction.
 
 ## References
 
@@ -211,6 +217,29 @@ theorem exists_natTrailingDegree_aeval_C_add_C_mul_X_eq (p : MvPolynomial σ R)
     simpa only [hm] using hv () (Finset.mem_singleton_self ())
   refine ⟨v, Polynomial.trailingDegree_eq_top.not.1 (by simp [hdegree]), ?_⟩
   exact Polynomial.natTrailingDegree_eq_of_trailingDegree_eq_some hdegree
+
+/-- If a polynomial vanishes on the affine line through `a` in the direction of the `i`-th
+coordinate, then so does its partial derivative `∂p/∂Xᵢ` at `a`. -/
+theorem eval_pderiv_eq_zero_of_forall_eval_add_smul_single [Finite σ] [DecidableEq σ]
+    {p : MvPolynomial σ R} {a : σ → R} {i : σ}
+    (h : ∀ t : R, eval (a + t • Pi.single i 1) p = 0) : eval a (pderiv i p) = 0 := by
+  have := Fintype.ofFinite σ
+  -- Restrict `p` to the line `u ↦ a + u eᵢ`, as a polynomial in one variable `u`.
+  let f : σ → MvPolynomial Unit R := fun j ↦ C (a j) + C ((Pi.single i 1 : σ → R) j) * X ()
+  have heval (q : MvPolynomial σ R) (u : Unit → R) :
+      eval u (aeval f q) = eval (a + u () • Pi.single i 1) q := by
+    have hpt : (fun j ↦ eval u (f j)) = a + u () • Pi.single i 1 := by
+      funext j
+      simp [f, mul_comm]
+    rw [← hpt]
+    simpa only [aeval_eq_eval] using comp_aeval_apply (f := f) (aeval u) q
+  have hline : aeval f p = 0 := MvPolynomial.funext fun u ↦ by simp [heval, h]
+  have hderiv : pderiv () (aeval f p) = aeval f (pderiv i p) := by
+    rw [pderiv_aeval, Finset.sum_eq_single i (fun j _ hj ↦ by simp [f, hj]) (by simp)]
+    simp [f]
+  rw [hline, map_zero] at hderiv
+  have h0 := congrArg (eval fun _ ↦ 0) hderiv
+  rwa [heval, map_zero, zero_smul, add_zero, eq_comm] at h0
 
 end InfiniteDomain
 

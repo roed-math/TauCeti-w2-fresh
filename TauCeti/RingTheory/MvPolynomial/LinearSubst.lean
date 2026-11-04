@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.Algebra.Module.LinearMap.Polynomial
 public import Mathlib.LinearAlgebra.Matrix.Nondegenerate
 public import Mathlib.RepresentationTheory.Basic
 public import TauCeti.Algebra.MvPolynomial.PDeriv
@@ -49,6 +50,8 @@ forms of degree `n`, through which the modular group acts on period polynomials.
 * `MvPolynomial.IsHomogeneous.linearSubst`: the substitution preserves homogeneity.
 * `MvPolynomial.IsHomogeneous.linearSubst_smul`: rescaling the matrix by `c` rescales a form
   of degree `n` by `cⁿ`.
+* `Matrix.eval_aeval_toMvPolynomial`: substituting the rows of a rectangular matrix `A` as linear
+  forms gives the polynomial `x ↦ p(A x)`.
 * `MvPolynomial.eq_zero_of_add_self_eq_zero`: a polynomial is zero if adding it to itself is
   zero and multiplication by `2` is injective on coefficients.
 -/
@@ -254,3 +257,19 @@ theorem coe_linearSubstRep_apply [DecidableEq σ] {n : ℕ} (M : (Matrix σ σ R
   (rfl)
 
 end MvPolynomial
+
+namespace Matrix
+
+/-- Substituting the linear forms `∑ⱼ Aᵢⱼ Xⱼ` given by the rows of a rectangular matrix `A` into
+`p` gives the polynomial `x ↦ p(A x)`: this is the pullback of polynomial functions along the
+linear map `A`, generalizing `MvPolynomial.eval_linearSubst` to rectangular matrices. -/
+theorem eval_aeval_toMvPolynomial {m n R : Type*} [Fintype n] [CommSemiring R]
+    (A : Matrix m n R) (x : n → R) (p : MvPolynomial m R) :
+    MvPolynomial.eval x (MvPolynomial.aeval A.toMvPolynomial p) = MvPolynomial.eval (A *ᵥ x) p := by
+  have hpt : (fun i ↦ MvPolynomial.eval x (A.toMvPolynomial i)) = A *ᵥ x :=
+    funext (A.toMvPolynomial_eval_eq_apply · x)
+  rw [← hpt]
+  simpa only [MvPolynomial.aeval_eq_eval] using
+    MvPolynomial.comp_aeval_apply (f := A.toMvPolynomial) (MvPolynomial.aeval x) p
+
+end Matrix
