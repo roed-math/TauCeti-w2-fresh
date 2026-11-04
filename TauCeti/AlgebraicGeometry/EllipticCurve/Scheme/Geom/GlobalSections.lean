@@ -30,6 +30,11 @@ isomorphism.
 
 ## Main results
 
+* `TauCeti.AlgebraicGeometry.PointedWeierstrassChart.opensRange_toTotal`: the restriction of `X` to
+  the base of a chart is the open subscheme `π⁻¹(U)` over the image `U` of the base.
+* `TauCeti.AlgebraicGeometry.PointedWeierstrassAtlas.isBasis_range_opensRange_restrict`: the images
+  of the restrictions of the charts of an atlas to the affine opens of their bases form a basis of
+  the topology of `S`.
 * `TauCeti.AlgebraicGeometry.PointedWeierstrassChart.isIso_app_opensRange`: over the image of the
   base of a pointed Weierstrass chart of `π`, the functions on the preimage under `π` are the
   functions on the base.
@@ -64,21 +69,26 @@ instance isIso_appTop_toBase (c : PointedWeierstrassChart π zero) : IsIso c.toB
   have : IsIso (c.baseIso.hom.appTop ≫ c.toBase.appTop) := h ▸ inferInstance
   exact IsIso.of_isIso_comp_left c.baseIso.hom.appTop c.toBase.appTop
 
+/-- The restriction of `X` to the base of a pointed Weierstrass chart is an open subscheme of `X`:
+`toTotal` is the base change of the open immersion `baseMap`. -/
+instance isOpenImmersion_toTotal (c : PointedWeierstrassChart π zero) :
+    IsOpenImmersion c.toTotal :=
+  MorphismProperty.of_isPullback (P := @IsOpenImmersion) c.isPullback.flip c.baseMap_open
+
+/-- The image of the restriction of `X` to the base of a pointed Weierstrass chart is the preimage
+under `π` of the image of the base. -/
+theorem opensRange_toTotal (c : PointedWeierstrassChart π zero) :
+    c.toTotal.opensRange = π ⁻¹ᵁ c.baseMap.opensRange := by
+  simpa only [c.isPullback.isoPullback_hom_fst, Scheme.Hom.opensRange_pullbackFst] using
+    Scheme.Hom.opensRange_comp_of_isIso c.isPullback.isoPullback.hom (pullback.fst π c.baseMap)
+
 /-- Over the image `U` of the base of a pointed Weierstrass chart of `π`, the functions on `π⁻¹(U)`
 are the functions on `U`: `π` induces an isomorphism `Γ(S, U) ≅ Γ(X, π⁻¹(U))`. -/
 theorem isIso_app_opensRange (c : PointedWeierstrassChart π zero) :
     IsIso (π.app c.baseMap.opensRange) := by
-  have : IsOpenImmersion c.toTotal :=
-    MorphismProperty.of_isPullback (P := @IsOpenImmersion) c.isPullback.flip c.baseMap_open
   -- `π⁻¹(U)` is the image of the restriction of `X` to the base of `c`
-  have hrange : π ⁻¹ᵁ c.baseMap.opensRange ≤ c.toTotal.opensRange := by
-    intro x hx
-    obtain ⟨y, hy⟩ : x ∈ Set.range (pullback.fst π c.baseMap) := by
-      rw [Scheme.Pullback.range_fst]
-      exact hx
-    exact ⟨c.isPullback.isoPullback.inv y, by
-      rw [← Scheme.Hom.comp_apply, IsPullback.isoPullback_inv_fst, hy]⟩
-  have : IsIso (c.toTotal.app (π ⁻¹ᵁ c.baseMap.opensRange)) := c.toTotal.isIso_app _ hrange
+  have : IsIso (c.toTotal.app (π ⁻¹ᵁ c.baseMap.opensRange)) :=
+    c.toTotal.isIso_app _ c.opensRange_toTotal.ge
   have hb : IsIso (c.baseMap.app c.baseMap.opensRange) := c.baseMap.isIso_app _ le_rfl
   have htop : ∀ V, V = ⊤ → IsIso (c.toBase.app V) := by
     rintro _ rfl
@@ -94,6 +104,27 @@ theorem isIso_app_opensRange (c : PointedWeierstrassChart π zero) :
 
 end PointedWeierstrassChart
 
+/-- The images of the restrictions of the charts of a pointed Weierstrass atlas to the affine
+opens of their bases form a basis of the topology of the base. -/
+theorem PointedWeierstrassAtlas.isBasis_range_opensRange_restrict {S X : Scheme.{u}} {π : X ⟶ S}
+    {zero : S ⟶ X} (A : PointedWeierstrassAtlas π zero) :
+    Opens.IsBasis (Set.range fun p : Σ i : A.index, (A.chart i).base.affineOpens ↦
+      ((A.chart p.1).restrict p.2).baseMap.opensRange) := by
+  refine Opens.isBasis_iff_nbhd.mpr fun {V s} hs ↦ ?_
+  obtain ⟨i, x, rfl⟩ := A.covers s
+  obtain ⟨_, ⟨W, hW, rfl⟩, hxW, hWV⟩ :=
+    (A.chart i).base.isBasis_affineOpens.exists_subset_of_mem_open
+      ((A.chart i).baseMap.mem_preimage.mpr hs) ((A.chart i).baseMap ⁻¹ᵁ V).isOpen
+  -- the image of the restriction of the chart to `W` is the image of `W`
+  have hrange (t : S) : t ∈ ((A.chart i).restrict ⟨W, hW⟩).baseMap.opensRange ↔
+      t ∈ (A.chart i).baseMap '' W := by
+    rw [Scheme.Hom.mem_opensRange, ← Set.mem_range, ← PointedWeierstrassChart.restrictι_baseMap,
+      Scheme.Hom.comp_base, TopCat.coe_comp, Set.range_comp,
+      PointedWeierstrassChart.range_restrictι]
+  refine ⟨_, ⟨⟨i, ⟨W, hW⟩⟩, rfl⟩, (hrange _).mpr ⟨x, hxW, rfl⟩, fun t ht ↦ ?_⟩
+  obtain ⟨y, hy, rfl⟩ := (hrange t).mp ht
+  exact hWV hy
+
 namespace EllipticCurveGeom
 
 variable {S : Scheme.{u}} (E : EllipticCurveGeom S)
@@ -104,26 +135,9 @@ functions on `π⁻¹(U)` are the functions on `U`. Applied to the base change `
 gives the same statement after any base change `f : T ⟶ S`. -/
 instance isIso_structureMap_app (U : S.Opens) : IsIso (E.structureMap.app U) := by
   obtain ⟨A⟩ := E.localModel
-  -- the images of the restrictions of the charts to affine opens of their bases
-  let B : (Σ i : A.index, (A.chart i).base.affineOpens) → S.Opens :=
-    fun p ↦ ((A.chart p.1).restrict p.2).baseMap.opensRange
-  have hB : Opens.IsBasis (Set.range B) := by
-    refine Opens.isBasis_iff_nbhd.mpr fun {V s} hs ↦ ?_
-    obtain ⟨i, x, rfl⟩ := A.covers s
-    obtain ⟨_, ⟨W, hW, rfl⟩, hxW, hWV⟩ :=
-      (A.chart i).base.isBasis_affineOpens.exists_subset_of_mem_open
-        ((A.chart i).baseMap.mem_preimage.mpr hs) ((A.chart i).baseMap ⁻¹ᵁ V).isOpen
-    -- the image of the restriction of the chart to `W` is the image of `W`
-    have hrange (t : S) : t ∈ ((A.chart i).restrict ⟨W, hW⟩).baseMap.opensRange ↔
-        t ∈ (A.chart i).baseMap '' W := by
-      rw [Scheme.Hom.mem_opensRange, ← Set.mem_range, ← PointedWeierstrassChart.restrictι_baseMap,
-        Scheme.Hom.comp_base, TopCat.coe_comp, Set.range_comp,
-        PointedWeierstrassChart.range_restrictι]
-    refine ⟨B ⟨i, ⟨W, hW⟩⟩, ⟨_, rfl⟩, (hrange _).mpr ⟨x, hxW, rfl⟩, fun t ht ↦ ?_⟩
-    obtain ⟨y, hy, rfl⟩ := (hrange t).mp ht
-    exact hWV hy
-  -- `π` induces isomorphisms on sections over the basis `B`, hence over every open
-  exact E.structureMap.isIso_app_of_isBasis hB
+  -- `π` induces isomorphisms on sections over the images of the restricted charts, which form a
+  -- basis, hence over every open
+  exact E.structureMap.isIso_app_of_isBasis A.isBasis_range_opensRange_restrict
     (fun p ↦ ((A.chart p.1).restrict p.2).isIso_app_opensRange) U
 
 end EllipticCurveGeom

@@ -44,7 +44,8 @@ and `s` running over finitely many generators of `Γ(M, D₊(Z))`, and
 * `WeierstrassCurve.map_awayCoord_mul_map_awayCoord`: on the overlap, `(Z / Y) (Y / Z) = 1`.
 * `WeierstrassCurve.finite_sectionsQuotient`: the Čech description of `H¹` on the cover by `D₊(Y)`
   and `D₊(Z)` is finite over the global functions.
-* `WeierstrassCurve.surjective_baseRingToStructurePresheaf_app_top`: the global functions on the
+* `WeierstrassCurve.bijective_baseRingToGlobalSections` and
+  `WeierstrassCurve.surjective_baseRingToStructurePresheaf_app_top`: the global functions on the
   projective model are the constants.
 * `WeierstrassCurve.finite_cohomology_one`: `H¹(projModel W, M)` is a finitely generated
   `R`-module for every quasi-coherent sheaf `M` of finite type.
@@ -267,19 +268,25 @@ theorem finite_sectionsQuotient (M : W.projModel.Modules) [M.IsQuasicoherent] [M
   · rintro _ ⟨⟨i, s⟩, _, rfl⟩
     exact ⟨xV ^ i • s, sectionsRestrictionLinear_apply _ _ _⟩
 
-/-- **The global functions on the projective model are the constants**: the base ring maps onto
-them (`WeierstrassCurve.isIso_appTop_projModelOver`). -/
-theorem surjective_baseRingToStructurePresheaf_app_top :
-    Function.Surjective ((W.projModel.baseRingToStructurePresheaf R).app (op ⊤)) := by
+/-- **The global functions on the projective model are the constants**: the map from `R` to the
+global functions on the projective model is bijective. -/
+theorem bijective_baseRingToGlobalSections :
+    Function.Bijective (baseRingToGlobalSections R W.projModel) := by
   have : IsIso ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop) := by
     rw [over_projModel]
     infer_instance
+  convert ConcreteCategory.bijective_of_isIso
+    ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop) using 1
+  ext r
+  rw [baseRingToGlobalSections_apply, CommRingCat.comp_apply]
+
+/-- **The global functions on the projective model are the constants**: the base ring maps onto
+them (`WeierstrassCurve.bijective_baseRingToGlobalSections`). -/
+theorem surjective_baseRingToStructurePresheaf_app_top :
+    Function.Surjective ((W.projModel.baseRingToStructurePresheaf R).app (op ⊤)) := by
   intro z
-  obtain ⟨r, hr⟩ := (ConcreteCategory.bijective_of_isIso
-    ((Scheme.ΓSpecIso (.of R)).inv ≫ (W.projModel ↘ Spec (.of R)).appTop)).2 z
-  refine ⟨r, ?_⟩
-  rw [Scheme.baseRingToStructurePresheaf_app_top, CommRingCat.ofHom_apply,
-    baseRingToGlobalSections_apply, ← hr, CommRingCat.comp_apply]
+  obtain ⟨r, hr⟩ := W.bijective_baseRingToGlobalSections.2 z
+  exact ⟨r, by rw [Scheme.baseRingToStructurePresheaf_app_top, CommRingCat.ofHom_apply, hr]⟩
 
 /-- Cohomology of a sheaf on the projective model that is finitely generated over the global
 functions is finitely generated over the base ring, which maps onto them. -/

@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.Algebra.Module.Projective.RingEquiv
 public import TauCeti.AlgebraicGeometry.Cohomology.CohomologyAndBaseChange
 public import TauCeti.AlgebraicGeometry.Cohomology.Semicontinuity
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.BaseChange
@@ -51,6 +52,8 @@ gives `H¹(𝒪(n[0])) = 0` for `n > 0`. Since `H¹(projModel W, 𝒪(n[0]))` is
 * `WeierstrassCurve.projective_cohomology_zero_poleSheaf` and
   `WeierstrassCurve.rankAtStalk_cohomology_zero_poleSheaf`: `H⁰(𝒪(n[0]))` is a projective
   `R`-module of constant rank `n`.
+* `WeierstrassCurve.finite_projective_globalSections_poleSheaf`: the same for the global sections
+  of `𝒪(n[0])`, over the global functions on the projective model.
 
 ## References
 
@@ -215,5 +218,30 @@ theorem rankAtStalk_cohomology_zero_poleSheaf (hn : 0 < n) (p : PrimeSpectrum R)
   have := W.finitePresentation_cohomology_zero_poleSheaf hn
   rw [← Ideal.finrank_fiber_eq_rankAtStalk]
   exact W.finrank_fiber_cohomology_zero_poleSheaf hn p
+
+/-- For `W` elliptic and `n > 0`, the global sections of `𝒪(n[0])` form a finitely generated
+projective module of constant rank `n` over the global functions on the projective model. -/
+theorem finite_projective_globalSections_poleSheaf (hn : 0 < n) :
+    Module.Finite Γ(W.projModel, ⊤) Γ((W.poleSheaf n).obj, ⊤) ∧
+      Module.Projective Γ(W.projModel, ⊤) Γ((W.poleSheaf n).obj, ⊤) ∧
+      ∀ p : PrimeSpectrum Γ(W.projModel, ⊤),
+        Module.rankAtStalk Γ((W.poleSheaf n).obj, ⊤) p = n := by
+  have := W.projective_cohomology_zero_poleSheaf hn
+  have := W.finitePresentation_cohomology_zero_poleSheaf hn
+  have := W.flat_cohomology_zero_poleSheaf hn
+  let σ : R ≃+* Γ(W.projModel, ⊤) :=
+    RingEquiv.ofBijective _ W.bijective_baseRingToGlobalSections
+  have := RingHomInvPair.of_ringEquiv σ
+  have := RingHomInvPair.of_ringEquiv_symm σ
+  -- `R` acts on `H⁰` through the global functions, which are the constants
+  let e : Cohomology (W.poleSheaf n).obj 0 ≃ₛₗ[(σ : R →+* Γ(W.projModel, ⊤))]
+      Γ((W.poleSheaf n).obj, ⊤) :=
+    { (cohomologyZeroLinearEquiv (W.poleSheaf n).obj).toAddEquiv with
+      map_smul' r x := (cohomologyZeroLinearEquiv (W.poleSheaf n).obj).map_smul
+        (baseRingToGlobalSections R W.projModel r) x }
+  refine ⟨e.toLinearMap.finite_of_surjective e.surjective,
+    .of_equiv e, fun p ↦ ?_⟩
+  rw [e.rankAtStalk_eq,
+    W.rankAtStalk_cohomology_zero_poleSheaf hn]
 
 end WeierstrassCurve
