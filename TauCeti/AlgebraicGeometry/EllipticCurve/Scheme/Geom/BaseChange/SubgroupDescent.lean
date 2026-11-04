@@ -40,7 +40,10 @@ conditions on a naive cyclic subgroup descend too
 presentation satisfy fpqc descent, the rank is read off on the fibres of `f`, and the étale-local
 generator of the inverse image is an étale-local generator over `S` after composing with `f`. This
 is the input used to descend a naive `[Γ₀(N)]`-structure along the finite étale cover of the naive
-`[Γ₀(N)]` carrier by the naive `[Γ(N)]` carrier.
+`[Γ₀(N)]` carrier by the naive `[Γ(N)]` carrier. Containment of closed subschemes descends in
+the same way, so a naive cyclic subgroup of order `N`, étale-locally the divisor of the multiples
+of a point killed by `N`, lies in `E[N]`
+(`EllipticCurveGeom.IsNaiveCyclicSubgroup.ker_torsionι_le`).
 
 ## Main results
 
@@ -48,6 +51,8 @@ is the input used to descend a naive `[Γ₀(N)]`-structure along the finite ét
   schemes of elliptic curves descend along fppf base change.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.IsNaiveCyclicSubgroup.of_comap`: naive cyclic
   subgroups descend along quasi-compact étale surjective base change.
+* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.IsNaiveCyclicSubgroup.ker_torsionι_le`: a naive
+  cyclic subgroup of order `N` lies in `E[N]`.
 
 ## References
 
@@ -176,6 +181,19 @@ theorem IsNaiveCyclicSubgroup.of_comap [Etale f] [Surjective f] [QuasiCompact f]
     refine ⟨T, t ≫ f, inferInstance, inferInstance, E₁, g₁ ≫ g, hg₁.paste_horiz hg, ?_, P, hP, ?_⟩
     · rw [reassoc_of% h0₁, h0, Category.assoc]
     · rw [Scheme.IdealSheafData.comap_comp, hI]
+
+/-- **A naive cyclic subgroup of order `N` lies in `E[N]`**, as the definition of a naive
+`[Γ₀(N)]`-structure requires: the ideal sheaf of `E[N]` is contained in that of the subgroup.
+Étale-locally the subgroup is `[P] + ⋯ + [NP]` for a point `P` of naive exact order `N`, which lies
+in `E[N]`, and containment of closed subschemes descends along the étale surjection. -/
+theorem IsNaiveCyclicSubgroup.ker_torsionι_le {N : ℕ} [NeZero N] {I : E.carrier.IdealSheafData}
+    (h : E.IsNaiveCyclicSubgroup I N) : (E.torsionι N).left.ker ≤ I := by
+  obtain ⟨T, t, ht, hts, E₁, g₁, hg₁, h0₁, P, hP, hI⟩ := h.exists_etale
+  have : Etale g₁ := MorphismProperty.of_isPullback hg₁.flip ht
+  have : Surjective g₁ := MorphismProperty.of_isPullback hg₁.flip hts
+  rw [← Scheme.IdealSheafData.comap_le_comap_iff_of_flat_of_surjective g₁, hI,
+    ← ker_torsionι_left_of_isPullback N hg₁ h0₁]
+  exact hP.ker_torsionι_le_multiplesDivisor
 
 end EllipticCurveGeom
 

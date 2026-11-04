@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"gamma-zero-naive","main":"7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b","status":"partial","suppliers":["finite-quotient"],"splits":[{"n":1,"after":[],"title":"refactor(EllipticCurve/Scheme/Geom/BaseChange): factor the pull-back of a generator square out of IsCyclicSubgroup.comap"},{"n":2,"after":[],"title":"feat(EllipticCurve/Scheme/Geom/ExactOrder): index the divisor of multiples by ZMod N"},{"n":3,"after":[],"title":"feat(ModularCurve/NaiveLevel): naive [Γ₁(N)]-structures extend étale-locally to [Γ(N)]-structures"},{"n":4,"after":[1],"title":"feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup): naive cyclic subgroups of elliptic curves"},{"n":5,"after":[2,3,4],"title":"feat(ModularCurve/NaiveGammaZero): the naive moduli problem [Γ₀(N)]"},{"n":6,"after":[],"title":"feat(ModularCurve/ModuliProblem): group actions on representing schemes"},{"n":7,"after":[5,6],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier as the Borel quotient of the [Γ(N)] carrier"},{"n":8,"after":[],"title":"feat(IdealSheaf/FlatLocality): closed subschemes and factorizations through them are detected after fppf coverings"},{"n":9,"after":[5,7,8],"title":"feat(ModularCurve/NaiveGammaZero): the injective classifying map of naive [Γ₀(N)]-structures"},{"n":10,"after":[],"title":"feat(IdealSheaf/EffectiveDescent): closed subschemes descend along affine faithfully flat morphisms"},{"n":11,"after":[4,8],"title":"feat(EllipticCurve/Scheme/Geom/BaseChange/SubgroupDescent): naive cyclic subgroups descend along finite étale base change"},{"n":12,"after":[9,10,11],"title":"feat(ModularCurve/NaiveGammaZero): naive [Γ₀(N)] is relatively representable and étale over Ell/ℤ[1/N]"},{"n":13,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier is the cyclic locus of the subgroup parameter scheme"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"gamma-zero-naive","main":"00deee4410cf1ae1f96695b1ab13f148cea83bc7","status":"partial","suppliers":["finite-quotient"],"splits":[{"n":1,"after":[],"title":"refactor(EllipticCurve/Scheme/Geom/BaseChange): factor the pull-back of a generator square out of IsCyclicSubgroup.comap"},{"n":2,"after":[],"title":"feat(EllipticCurve/Scheme/Geom/ExactOrder): index the divisor of multiples by ZMod N"},{"n":3,"after":[],"title":"feat(ModularCurve/NaiveLevel): naive [Γ₁(N)]-structures extend étale-locally to [Γ(N)]-structures"},{"n":4,"after":[1,2],"title":"feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup): naive cyclic subgroups of elliptic curves"},{"n":5,"after":[2,3,4],"title":"feat(ModularCurve/NaiveGammaZero): the naive moduli problem [Γ₀(N)]"},{"n":6,"after":[],"title":"feat(ModularCurve/ModuliProblem): group actions on representing schemes"},{"n":7,"after":[5,6],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier as the Borel quotient of the [Γ(N)] carrier"},{"n":8,"after":[],"title":"feat(IdealSheaf/FlatLocality): closed subschemes and factorizations through them are detected after fppf coverings"},{"n":9,"after":[5,7,8],"title":"feat(ModularCurve/NaiveGammaZero): the injective classifying map of naive [Γ₀(N)]-structures"},{"n":10,"after":[],"title":"feat(IdealSheaf/EffectiveDescent): closed subschemes descend along affine faithfully flat morphisms"},{"n":11,"after":[4,8],"title":"feat(EllipticCurve/Scheme/Geom/BaseChange/SubgroupDescent): naive cyclic subgroups descend along finite étale base change"},{"n":12,"after":[9,10,11],"title":"feat(ModularCurve/NaiveGammaZero): naive [Γ₀(N)] is relatively representable and étale over Ell/ℤ[1/N]"},{"n":13,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat(ModularCurve/NaiveGammaZero): the naive [Γ₀(N)] carrier is the cyclic locus of the subgroup parameter scheme"}]}-->
 
 # Lookahead: `gamma-zero-naive` (ModularCurves, Layer 3N)
 
-Built on `main` at `7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b`. Status: **partial**.
+Built on `main` at `00deee4410cf1ae1f96695b1ab13f148cea83bc7`. Status: **partial**.
 
 The target is Layer 3N of `ModularCurves/README.md`, *Naive level structures*. The naive `[Γ(N)]`
 and `[Γ₁(N)]` problems, their relative representability and their étaleness were already on
@@ -28,7 +28,7 @@ now, in the dependency order given below. Splits 7, 9 and 12 wait for `finite-qu
   the README prose of Layer 0C, item 3, copied verbatim: "Deduce the constant-group case: if a
   finite constant group acts freely on `X` and `X` has a group-invariant affine open cover, glue
   the affine invariant quotients and prove that the result represents the fppf quotient."
-- **PR #27095's diff** (re-read 2026-11-04, still open, last updated that morning, still the
+- **PR #27095's diff** (re-read 2026-11-04, still open, last updated 10:37 UTC that day, still the
   single file `TauCeti/AlgebraicGeometry/Quotient/EquivalenceRelation.lean`): states only the affine equivalence-relation form,
   `Scheme.Hom.affineCoequalizer p₁ p₂` with `isKernelPair_affineCoequalizerπ`,
   `isColimitAffineCoequalizerCofork` and `isColimitFppfYonedaAffineCoequalizerCofork`, for
@@ -72,7 +72,7 @@ now, in the dependency order given below. Splits 7, 9 and 12 wait for `finite-qu
 
 ### `universal-subgroup`: not stubbed
 
-PR #27222 (re-read 2026-11-04, still open, last updated 2026-11-03) states
+PR #27222 (re-read 2026-11-04, still open, last updated 2026-11-03 23:01 UTC) states
 `Module.Grassmannian.universalSubgroup R H k` over an *affine* base `Spec R`, for a Hopf algebra
 `H`. Its description says the construction over a non-affine base, the relative Grassmannian, is
 still missing. The identification of the naive `[Γ₀(N)]`
@@ -95,8 +95,11 @@ Splits 1–12 are proved on this branch with no `sorry` outside the stub file. S
    Needs: none. Files: `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/ExactOrder/Basic.lean`
    (adds `EllipticCurveGeom.multiplesDivisor_eq_pointsDivisor_zmod` and
    `EllipticCurveGeom.multiplesDivisor_units`) and `.../ExactOrder/Comparison.lean` (the inline
-   reindexing in `IsOfNaiveExactOrder.isOfExactOrder` is replaced by the new lemma). About 55
-   changed lines.
+   reindexing in `IsOfNaiveExactOrder.isOfExactOrder` is replaced by the new lemma). The
+   comparison file also gains `EllipticCurveGeom.IsOfNaiveExactOrder.exists_isFiberwiseInjective`
+   (a point `P` of naive exact order `N` generates a fibrewise injective `φ : ℤ/Nℤ →* E(S)`, killed
+   by `N`, whose divisor is `[P] + ⋯ + [NP]`), factored out of `IsOfNaiveExactOrder.isOfExactOrder`
+   and reused by split 4. About 80 changed lines.
 3. **feat(ModularCurve/NaiveLevel): naive [Γ₁(N)]-structures extend étale-locally to
    [Γ(N)]-structures.** Needs: none. New this round; about 230 added lines in five existing files:
    - `TauCeti/Data/ZMod/Units.lean`: `TauCeti.ZMod.isCoprime_of_forall_mul_eq_zero` (residues
@@ -123,12 +126,14 @@ Splits 1–12 are proved on this branch with no `sorry` outside the stub file. S
    The `ModuliProblem.lean` part touches the same file as split 6 but neither depends on the
    other; if a reviewer prefers, it can be opened as its own small PR before this one.
 4. **feat(EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup): naive cyclic subgroups of elliptic
-   curves.** Needs: 1. New file
-   `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup.lean` (187 lines):
+   curves.** Needs: 1, 2. New file
+   `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/NaiveCyclicSubgroup.lean` (199 lines):
    `EllipticCurveGeom.IsNaiveCyclicSubgroup`, which is a subgroup scheme, finite locally free of
    rank `N`, and generated by a point of naive exact order `N` after an étale surjective base
    change; `IsOfNaiveExactOrder.isNaiveCyclicSubgroup_multiplesDivisor`, its nontrivial witness
-   where `N` is invertible; `IsNaiveCyclicSubgroup.comap`, stability under base change; and (new
+   where `N` is invertible; `IsOfNaiveExactOrder.ker_torsionι_le_multiplesDivisor` (the multiples
+   of a point of naive exact order `N` lie in `E[N]`, for any `N ≠ 0`; it uses split 2's
+   `exists_isFiberwiseInjective`); `IsNaiveCyclicSubgroup.comap`, stability under base change; and (new
    this round) `IsFiberwiseInjective.exists_mem_GL2Borel_eq_comp`: over a separably closed field
    with `N` invertible, two bases `(P, Q)`, `(P', Q')` with `⟨P⟩ = ⟨P'⟩` differ by a matrix of
    `TauCeti.GL2Borel (ZMod N)`.
@@ -228,14 +233,17 @@ Splits 1–12 are proved on this branch with no `sorry` outside the stub file. S
 11. **feat(EllipticCurve/Scheme/Geom/BaseChange/SubgroupDescent): naive cyclic subgroups descend
    along finite étale base change.** Needs: 4, 8 (new this round). New file
    `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/BaseChange/SubgroupDescent.lean`
-   (182 lines): `EllipticCurveGeom.exists_grpObj_isMonHom_of_comap` (for `g : E' ⟶ E` the base
+   (200 lines): `EllipticCurveGeom.exists_grpObj_isMonHom_of_comap` (for `g : E' ⟶ E` the base
    change along a flat surjective `f` locally of finite presentation, a closed subscheme whose
    inverse image is a subgroup scheme of `E'` is a subgroup scheme of `E`; the converse of `main`'s
    `exists_grpObj_isMonHom_comap`, through the closed-subgroup criterion and split 8's
    `le_ker_of_comap_le_ker`), and `EllipticCurveGeom.IsNaiveCyclicSubgroup.of_comap` (naive cyclic
    subgroups descend along a quasi-compact étale surjection: finiteness, flatness and finite
    presentation by fpqc descent, the rank fibrewise, the étale-local generator by composing with
-   `f`).
+   `f`), and `EllipticCurveGeom.IsNaiveCyclicSubgroup.ker_torsionι_le` (a naive cyclic subgroup
+   of order `N` lies in `E[N]`, as the README's definition of a naive `[Γ₀(N)]`-structure, "a
+   finite locally free subgroup scheme `C ⊆ E[N]`", requires; containment is checked after the
+   étale surjection of `exists_etale` with split 8's `comap_le_comap_iff_of_flat_of_surjective`).
 12. **feat(ModularCurve/NaiveGammaZero): naive [Γ₀(N)] is relatively representable and étale over
    Ell/ℤ[1/N].** Needs: 9, 10, 11 (and through them 1–8) (new this round). New file
    `TauCeti/AlgebraicGeometry/ModularCurve/NaiveGammaZero/Representable.lean` (188 lines) and
@@ -274,11 +282,17 @@ subgroups along finite étale base change, surjectivity of the classifying map, 
 Together with the naive `[Γ(N)]` and `[Γ₁(N)]` results already on `main`, every clause of 3N is
 proved except the last one.
 
+This round (on `main` `00deee4410c`) also proved that naive cyclic subgroups of order `N` lie in
+`E[N]` (splits 2, 4 and 11), the containment the README's definition states and the step that
+makes a naive `[Γ₀(N)]`-structure a rank-`N` subgroup of `E[N]`, so a point of the Layer 0G
+parameter scheme of `E[N]`.
+
 Remaining, exactly (split 13): the identification of `Y/Borel` with the cyclic open-and-closed
 locus in the subgroup parameter space of Layer 0G. It needs the parameter scheme of rank-`N`
 subgroup schemes of `E[N]` over an arbitrary (non-affine) base `S` of `Ell/ℤ[1/N]`, with its
 universal subgroup and universal property. `universal-subgroup` (PR #27222, re-checked 2026-11-04:
-still open, last updated 2026-11-03) constructs it only over an affine base `Spec R`, and neither
+still open, last updated 2026-11-03 23:01 UTC) constructs it, as
+`Module.Grassmannian.universalSubgroup R H k`, only over an affine base `Spec R`, and neither
 the PR nor `Suggested.lean` pins the relative form (`Suggested.lean`'s `NIsog`/`cyclicityLocus`
 are Layer 6 declarations, after KM Chapters 5–6). So no faithful stub can be written yet. Once the
 relative form lands, split 13 maps `Y/Borel` to the parameter scheme by classifying the naive

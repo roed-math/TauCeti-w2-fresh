@@ -41,6 +41,8 @@ the Borel subgroup (`EllipticCurveGeom.IsFiberwiseInjective.exists_mem_GL2Borel_
 
 * `EllipticCurveGeom.IsOfNaiveExactOrder.isNaiveCyclicSubgroup_multiplesDivisor`: where `N` is
   invertible, a point of naive exact order `N` generates a naive cyclic subgroup.
+* `EllipticCurveGeom.IsOfNaiveExactOrder.ker_torsionι_le_multiplesDivisor`: the multiples of a
+  point of naive exact order `N` lie in `E[N]`.
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.IsNaiveCyclicSubgroup.comap`: naive cyclic
   subgroups are stable under base change.
 * `EllipticCurveGeom.IsFiberwiseInjective.exists_mem_GL2Borel_eq_comp`: over a separably closed
@@ -110,6 +112,16 @@ theorem IsOfNaiveExactOrder.isNaiveCyclicSubgroup_multiplesDivisor [NeZero N]
   finrank_eq s := congrFun (finrank_multiplesDivisor P N) s
   exists_etale := ⟨S, 𝟙 S, inferInstance, inferInstance, E, 𝟙 _, .id_horiz _,
     (Category.comp_id _).trans (Category.id_comp _).symm, P, h, Scheme.IdealSheafData.comap_id _⟩
+
+/-- **The multiples of a point of naive exact order `N` lie in `E[N]`**: the divisor
+`[P] + ⋯ + [NP]` contains the `N`-torsion `E[N]` in the order of ideal sheaves, which reverses
+containment of closed subschemes. No invertibility of `N` is needed. -/
+theorem IsOfNaiveExactOrder.ker_torsionι_le_multiplesDivisor [NeZero N]
+    {P : 𝟙_ (Over S) ⟶ Over.mk E.structureMap} (h : E.IsOfNaiveExactOrder P N) :
+    (E.torsionι N).left.ker ≤ E.multiplesDivisor P N := by
+  obtain ⟨φ, hφ, hkill, hI⟩ := h.exists_isFiberwiseInjective
+  rw [hI]
+  exact hφ.ker_torsionι_left_le_pointsDivisor hkill
 
 variable {I : E.carrier.IdealSheafData} {N : ℕ}
 
