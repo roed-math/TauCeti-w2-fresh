@@ -46,6 +46,12 @@ In degree `0`, `Ext⁰(P, F) = Hom(P, F) ≅ G(F)` is the kernel of `G(K⁰) ⟶
 * `TauCeti.CategoryTheory.extAddEquivHomologyOfResolution`: the additive equivalence
   `Extⁿ(P, F) ≃+ Hⁿ(G(K))` for a resolution `K` of `F` by objects without higher `Ext` from `P`.
 
+## Main results
+
+* `TauCeti.CategoryTheory.extAddEquivHomologyOfResolution_naturality`: the equivalence is natural
+  in the corepresenting object: precomposition with `a : P' ⟶ P` corresponds to the map induced in
+  cohomology by a compatible natural transformation `G ⟶ G'`.
+
 ## References
 
 * R. Hartshorne, *Algebraic Geometry*, GTM 52, Springer, 1977, Proposition III.1.2A.
@@ -135,6 +141,15 @@ private lemma homEquiv_add {X : C} (f f' : P ⟶ X) :
 /-- The additive equivalence `(P ⟶ X) ≃+ G(X)` of a corepresentation of `G` by `P`. -/
 private noncomputable def homAddEquiv (X : C) : (P ⟶ X) ≃+ G.obj X :=
   { R.homEquiv with map_add' := homEquiv_add G R }
+
+omit [HasExt.{w} C] in
+private lemma homAddEquiv_apply {X : C} (f : P ⟶ X) : homAddEquiv G R X f = R.homEquiv f :=
+  (rfl)
+
+omit [HasExt.{w} C] in
+private lemma homAddEquiv_symm_apply {X : C} (x : G.obj X) :
+    (homAddEquiv G R X).symm x = R.homEquiv.symm x :=
+  (rfl)
 
 omit [Abelian C] [HasExt.{w} C] [G.Additive] in
 include R in
@@ -305,6 +320,142 @@ noncomputable def extAddEquivHomologyOfResolution (hK : ∀ j, K.ExactAt (j + 1)
       (extCyclesAddEquiv hK hKP n 1 (n + 1) (by omega)).trans <|
         extOneAddEquivHomology G R (n + 1) (K.iCycles (n + 1)) (K.iCycles_toCycles _ _)
           (shortExact_cycles hK (n + 1)) (hKP (n + 1) 0)
+
+section Naturality
+
+/-! ### Naturality in the corepresenting object
+
+Let `a : P' ⟶ P`, and let `τ : G ⟶ G'` be a natural transformation to an additive functor `G'`
+corepresented by `P'`, compatible with `a` in the sense that `τ` corresponds to precomposition with
+`a` under the corepresentations. For the sections functors of a site, `a` is the map of free
+abelian sheaves induced by a morphism `V' ⟶ V` and `τ` is restriction of sections. Then the
+computation of `Ext` from a resolution `K` is natural: precomposition with `a` on `Ext` corresponds
+to the map induced by `τ` on the cohomology of `G(K) ⟶ G'(K)`. -/
+
+variable {P' : C} (a : P' ⟶ P) {G' : C ⥤ AddCommGrpCat.{t}} [G'.Additive]
+  (R' : (G' ⋙ forget AddCommGrpCat).CorepresentableBy P') (τ : G ⟶ G')
+  (hτ : ∀ {X : C} (f : P ⟶ X), R'.homEquiv (a ≫ f) = τ.app X (R.homEquiv f))
+
+omit [HasExt.{w} C] in
+private lemma homologyMap_homologyClassOfCycles (k : ℕ) (x : G.obj (K.cycles (k + 1))) :
+    HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex τ _).app K) (k + 1)
+      (homologyClassOfCycles G k x) = homologyClassOfCycles G' k (τ.app _ x) := by
+  have h : (HomologicalComplex.liftCycles ((G.mapHomologicalComplex _).obj K)
+      (G.map (K.iCycles (k + 1))) (k + 2) (by simp) (by simp [← Functor.map_comp]) ≫
+        HomologicalComplex.homologyπ ((G.mapHomologicalComplex _).obj K) (k + 1)) ≫
+          HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex τ _).app K) (k + 1) =
+      τ.app _ ≫ HomologicalComplex.liftCycles ((G'.mapHomologicalComplex _).obj K)
+        (G'.map (K.iCycles (k + 1))) (k + 2) (by simp) (by simp [← Functor.map_comp]) ≫
+          HomologicalComplex.homologyπ ((G'.mapHomologicalComplex _).obj K) (k + 1) := by
+    rw [Category.assoc, HomologicalComplex.homologyπ_naturality,
+      HomologicalComplex.liftCycles_comp_cyclesMap_assoc, HomologicalComplex.comp_liftCycles_assoc]
+    simp only [NatTrans.mapHomologicalComplex_app_f, NatTrans.naturality]
+  exact ConcreteCategory.congr_hom h x
+
+omit [Abelian C] [HasExt.{w} C] in
+private lemma quotientKerEquivOfSurjective_symm_apply {A B : Type*} [AddGroup A] [AddGroup B]
+    (f : A →+ B) (hf : Function.Surjective f) (x : A) :
+    (QuotientAddGroup.quotientKerEquivOfSurjective f hf).symm (f x) = x :=
+  (AddEquiv.symm_apply_eq _).2 rfl
+
+/-- `extOneAddEquivHomology` sends the class of a morphism `φ : P ⟶ Zᵏ⁺¹(K)` to the cohomology
+class of the corresponding element of `G(Zᵏ⁺¹(K))`. -/
+lemma extOneAddEquivHomology_mk₀_comp (k : ℕ) {X : C} (f : X ⟶ K.X k)
+    (w : f ≫ K.toCycles k (k + 1) = 0) (hS : (ShortComplex.mk f _ w).ShortExact)
+    (h : Subsingleton (Ext P (K.X k) 1)) (φ : P ⟶ K.cycles (k + 1)) :
+    extOneAddEquivHomology G R k f w hS h ((Ext.mk₀ φ).comp hS.extClass (zero_add 1)) =
+      homologyClassOfCycles G k (R.homEquiv φ) := by
+  dsimp only [extOneAddEquivHomology]
+  have hφ : (Ext.mk₀ φ).comp hS.extClass (zero_add 1) = ((hS.extClass.postcomp P (zero_add 1)).comp
+      ((homAddEquiv G R (K.cycles (k + 1))).symm.trans Ext.addEquiv₀.symm).toAddMonoidHom)
+        (R.homEquiv φ) := by
+    simp [homAddEquiv_symm_apply]
+  rw [AddEquiv.trans_apply, AddEquiv.trans_apply, hφ]
+  -- `erw`: the definition quotients by the kernel of this map up to unfolding `ShortComplex.X₃`
+  erw [quotientKerEquivOfSurjective_symm_apply]
+  rfl
+
+include hτ in
+/-- `extOneAddEquivHomology` is natural in the corepresenting object. -/
+lemma extOneAddEquivHomology_naturality (k : ℕ) {X : C} (f : X ⟶ K.X k)
+    (w : f ≫ K.toCycles k (k + 1) = 0) (hS : (ShortComplex.mk f _ w).ShortExact)
+    (h : Subsingleton (Ext P (K.X k) 1)) (h' : Subsingleton (Ext P' (K.X k) 1))
+    (y : Ext P X 1) :
+    extOneAddEquivHomology G' R' k f w hS h' ((Ext.mk₀ a).comp y (zero_add 1)) =
+      HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex τ _).app K) (k + 1)
+        (extOneAddEquivHomology G R k f w hS h y) := by
+  obtain ⟨φ, rfl⟩ := surjective_extClass_postcomp_mk₀ P hS h y
+  rw [Ext.mk₀_comp_mk₀_assoc, extOneAddEquivHomology_mk₀_comp, extOneAddEquivHomology_mk₀_comp,
+    homologyMap_homologyClassOfCycles, hτ]
+
+/-- `extClassPostcompAddEquiv` commutes with precomposition. -/
+lemma extClassPostcompAddEquiv_mk₀_comp {S : ShortComplex C} (hS : S.ShortExact) (m : ℕ)
+    (h₀ : Subsingleton (Ext P S.X₂ m)) (h₁ : Subsingleton (Ext P S.X₂ (m + 1)))
+    (h₀' : Subsingleton (Ext P' S.X₂ m)) (h₁' : Subsingleton (Ext P' S.X₂ (m + 1)))
+    (x : Ext P S.X₃ m) :
+    extClassPostcompAddEquiv P' hS m h₀' h₁' ((Ext.mk₀ a).comp x (zero_add m)) =
+      (Ext.mk₀ a).comp (extClassPostcompAddEquiv P hS m h₀ h₁ x) (zero_add (m + 1)) := by
+  simp only [extClassPostcompAddEquiv_apply]
+  exact Ext.comp_assoc _ _ _ _ _ (by omega)
+
+/-- The inverse of `extClassPostcompAddEquiv` commutes with precomposition. -/
+lemma extClassPostcompAddEquiv_symm_mk₀_comp {S : ShortComplex C} (hS : S.ShortExact) (m : ℕ)
+    (h₀ : Subsingleton (Ext P S.X₂ m)) (h₁ : Subsingleton (Ext P S.X₂ (m + 1)))
+    (h₀' : Subsingleton (Ext P' S.X₂ m)) (h₁' : Subsingleton (Ext P' S.X₂ (m + 1)))
+    (x : Ext P S.X₁ (m + 1)) :
+    (extClassPostcompAddEquiv P' hS m h₀' h₁').symm ((Ext.mk₀ a).comp x (zero_add (m + 1))) =
+      (Ext.mk₀ a).comp ((extClassPostcompAddEquiv P hS m h₀ h₁).symm x) (zero_add m) := by
+  rw [AddEquiv.symm_apply_eq, extClassPostcompAddEquiv_mk₀_comp a hS m h₀ h₁,
+    AddEquiv.apply_symm_apply]
+
+/-- `extCyclesAddEquiv` commutes with precomposition. -/
+private lemma extCyclesAddEquiv_mk₀_comp (hK : ∀ j, K.ExactAt (j + 1))
+    (hKP : ∀ j k, Subsingleton (Ext P (K.X j) (k + 1)))
+    (hKP' : ∀ j k, Subsingleton (Ext P' (K.X j) (k + 1))) :
+    (n j k : ℕ) → (h : j + n = k) → (x : Ext P (K.cycles j) (n + 1)) →
+      extCyclesAddEquiv hK hKP' n j k h ((Ext.mk₀ a).comp x (zero_add (n + 1))) =
+        (Ext.mk₀ a).comp (extCyclesAddEquiv hK hKP n j k h x) (zero_add 1)
+  | 0, j, k, h, x => by subst h; rfl
+  | n + 1, j, k, h, x => by
+    rw [extCyclesAddEquiv, extCyclesAddEquiv, AddEquiv.trans_apply, AddEquiv.trans_apply,
+      extClassPostcompAddEquiv_symm_mk₀_comp a _ _ (hKP j n) (hKP j (n + 1)),
+      extCyclesAddEquiv_mk₀_comp hK hKP hKP' n (j + 1) k]
+
+include hτ in
+/-- **Naturality of `Ext` from an acyclic resolution** in the corepresenting object: if
+`τ : G ⟶ G'` corresponds to precomposition with `a : P' ⟶ P` under the corepresentations, then
+`extAddEquivHomologyOfResolution` carries precomposition with `a` on `Extⁿ(P, F)` to the map
+induced by `τ` on the cohomology of `G(K) ⟶ G'(K)`. -/
+theorem extAddEquivHomologyOfResolution_naturality (hK : ∀ j, K.ExactAt (j + 1))
+    (hKP : ∀ j k, Subsingleton (Ext P (K.X j) (k + 1)))
+    (hKP' : ∀ j k, Subsingleton (Ext P' (K.X j) (k + 1))) (n : ℕ) (x : Ext P F n) :
+    extAddEquivHomologyOfResolution G' R' ι hι hι' hK hKP' n ((Ext.mk₀ a).comp x (zero_add n)) =
+      HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex τ _).app K) n
+        (extAddEquivHomologyOfResolution G R ι hι hι' hK hKP n x) := by
+  match n with
+  | 0 =>
+    obtain ⟨g, rfl⟩ := Ext.addEquiv₀.symm.surjective x
+    have h₀ {Q : C} (f : Q ⟶ F) : Ext.addEquiv₀ (Ext.mk₀ f) = f := Ext.addEquiv₀.apply_symm_apply f
+    simp only [Ext.addEquiv₀_symm_apply, Ext.mk₀_comp_mk₀, extAddEquivHomologyOfResolution,
+      AddEquiv.trans_apply, h₀, homAddEquiv_apply, hτ, AddEquiv.ofBijective_apply,
+      Iso.addCommGroupIsoToAddEquiv_apply]
+    have h : τ.app F ≫ HomologicalComplex.liftCycles ((G'.mapHomologicalComplex _).obj K)
+        (G'.map ι) 1 (by simp) (by simp [← Functor.map_comp, hι]) ≫
+          (CochainComplex.isoHomologyπ₀ ((G'.mapHomologicalComplex _).obj K)).hom =
+        HomologicalComplex.liftCycles ((G.mapHomologicalComplex _).obj K) (G.map ι) 1 (by simp)
+          (by simp [← Functor.map_comp, hι]) ≫
+          (CochainComplex.isoHomologyπ₀ ((G.mapHomologicalComplex _).obj K)).hom ≫
+            HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex τ _).app K) 0 := by
+      simp [HomologicalComplex.liftCycles_comp_cyclesMap_assoc,
+        HomologicalComplex.comp_liftCycles_assoc]
+    exact ConcreteCategory.congr_hom h (R.homEquiv g)
+  | 1 => exact extOneAddEquivHomology_naturality G R a R' τ hτ 0 ι _ _ (hKP 0 0) (hKP' 0 0) x
+  | n + 2 =>
+    simp only [extAddEquivHomologyOfResolution, AddEquiv.trans_apply]
+    rw [extClassPostcompAddEquiv_symm_mk₀_comp a _ _ (hKP 0 n) (hKP 0 (n + 1)),
+      extCyclesAddEquiv_mk₀_comp a hK hKP hKP', extOneAddEquivHomology_naturality G R a R' τ hτ]
+
+end Naturality
 
 end Resolution
 

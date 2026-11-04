@@ -34,6 +34,8 @@ sections is exact in degree `n + 1`, so every cycle of `K(V)` in degree `n + 1` 
 * `CategoryTheory.Sheaf.H'.exists_d_hom_app_eq_of_resolution`: if `Hⁿ⁺¹(V, F) = 0` and the terms
   of a resolution `K` of `F` are acyclic over `V`, then every cycle of `K(V)` in degree `n + 1` is
   a boundary.
+* `CategoryTheory.Sheaf.H'.addEquivHomologyOfResolution_naturality`: the identification is
+  natural in `V`: restriction in the cohomology presheaf corresponds to restriction of sections.
 
 ## References
 
@@ -89,6 +91,30 @@ theorem exists_d_hom_app_eq_of_resolution (n : ℕ) (hF : Subsingleton (F.H' (n 
     HomologicalComplex.exactAt_iff' _ n (n + 1) (n + 2) (by simp) (by simp),
     ShortComplex.ab_exact_iff] at hL
   exact hL s hs
+
+/-- **Naturality of sheaf cohomology from an acyclic resolution** in the object of the site: for
+`i : V' ⟶ V`, the restriction map `Hⁿ(V, F) ⟶ Hⁿ(V', F)` of the cohomology presheaf corresponds to
+the map induced in cohomology by restricting sections `K(V) ⟶ K(V')`. -/
+theorem addEquivHomologyOfResolution_naturality {V V' : C} (i : V' ⟶ V)
+    (hKV : ∀ j k, Subsingleton ((K.X j).H' (k + 1) V))
+    (hKV' : ∀ j k, Subsingleton ((K.X j).H' (k + 1) V')) (n : ℕ) (x : F.H' n V) :
+    addEquivHomologyOfResolution ι hι hι' hK V' hKV' n ((F.cohomologyPresheaf n).map i.op x) =
+      HomologicalComplex.homologyMap ((NatTrans.mapHomologicalComplex
+        (Functor.whiskerLeft (sheafToPresheaf J AddCommGrpCat.{v})
+          ((evaluation Cᵒᵖ AddCommGrpCat.{v}).map i.op)) _).app K) n
+        (addEquivHomologyOfResolution ι hι hι' hK V hKV n x) := by
+  rw [addEquivHomologyOfResolution, addEquivHomologyOfResolution, AddEquiv.trans_apply,
+    AddEquiv.trans_apply, cohomologyPresheaf_map_apply]
+  exact extAddEquivHomologyOfResolution_naturality (sheafToPresheaf J AddCommGrpCat.{v} ⋙
+      (evaluation Cᵒᵖ AddCommGrpCat.{v}).obj (op V)) (freeYonedaSheafCorepresentableBy J V) ι hι
+    hι' ((freeYonedaSheafFunctor J).map i)
+    (G' := sheafToPresheaf J AddCommGrpCat.{v} ⋙ (evaluation Cᵒᵖ AddCommGrpCat.{v}).obj (op V'))
+    (freeYonedaSheafCorepresentableBy J V')
+    (Functor.whiskerLeft (sheafToPresheaf J AddCommGrpCat.{v})
+      ((evaluation Cᵒᵖ AddCommGrpCat.{v}).map i.op))
+    (fun f ↦ by
+      rw [freeYonedaSheafCorepresentableBy_homEquiv, freeYonedaSheafCorepresentableBy_homEquiv]
+      exact freeYonedaSheafSectionsEquiv_naturality_left J i _ f) hK _ _ n _
 
 end H'
 

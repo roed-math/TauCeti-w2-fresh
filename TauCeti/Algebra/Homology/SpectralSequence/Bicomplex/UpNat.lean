@@ -67,6 +67,10 @@ the abutment (`HomologicalComplex₂.rowFiltrationUpSpectralSequencePageXIsoEInf
   `HomologicalComplex₂.columnFiltrationUpSpectralSequence_page_two_d_eq`: hence the first
   differential is induced by the vertical differentials (for the column filtration, by the
   horizontal differentials).
+* `HomologicalComplex₂.rowFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom`,
+  `HomologicalComplex₂.columnFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom`: the same,
+  stated through the identifications `rowFiltrationUpSpectralSequenceFirstPageXIso` and
+  `columnFiltrationUpSpectralSequenceFirstPageXIso` of the first page.
 * `HomologicalComplex₂.columnFiltrationUpSpectralSequenceFirstPageXIso`: the first page of the row
   filtration of the flipped bicomplex is the cohomology of the original columns.
 * `HomologicalComplex₂.isZero_rowFiltrationUpSpectralSequence_page_two_X_of_lt`,
@@ -625,6 +629,42 @@ def rowFiltrationUpSpectralSequenceFirstPageXIso (p : ℤ) (s k : ℕ) (hp : p =
     (K.totalRowUp s).extendHomologyIso embeddingUpNat (j := k + s) (by simp; omega) ≪≫
     K.totalRowUpHomologyIso s k
 
+/-- The identifications `rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow` at two equal
+positions of the first page agree, up to the identification of the two positions. -/
+@[reassoc]
+private lemma rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow_congr {pq pq' : ℤ × ℤ}
+    (h : pq = pq') (i₁ i₂ i₁' i₂' : ℤ) (hi₁ : i₁ = pq.2) (hi₂ : i₂ = pq.2 + 1)
+    (hi₁' : i₁' = pq'.2) (hi₂' : i₂' = pq'.2 + 1) (s : ℕ) (hs : i₁ = -(s + 1))
+    (hs' : i₁' = -(s + 1)) (n n' : ℤ) (hn : n = pq.1 + pq.2) (hn' : n' = pq'.1 + pq'.2) (j : ℕ)
+    (hj : embeddingUpNat.f j = n) (hj' : embeddingUpNat.f j = n') :
+    ((K.totalRowUp s).extendHomologyIso embeddingUpNat hj).inv ≫
+      (K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow pq i₁ i₂ hi₁ hi₂ s hs n hn).inv ≫
+        ((K.rowFiltrationUpSpectralSequence.page 2).XIsoOfEq h).hom ≫
+          (K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow pq' i₁' i₂' hi₁' hi₂' s hs' n'
+            hn').hom ≫ ((K.totalRowUp s).extendHomologyIso embeddingUpNat hj').hom = 𝟙 _ := by
+  subst h hi₁ hi₂ hi₁' hi₂' hn hn'
+  simp
+
+/-- **The first differential of the spectral sequence of the row filtration**, under the
+identifications `rowFiltrationUpSpectralSequenceFirstPageXIso` of the first page with the
+cohomology of the rows: the differential from the row `s` to the row `s + 1` in degree `k` is
+`(-1)ᵏ` times the map induced in cohomology by the vertical differentials. -/
+theorem rowFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom (p p' : ℤ) (s k : ℕ)
+    (hp : p = k + 2 * s + 1) (hp' : p' = k + 2 * (s + 1 : ℕ) + 1) :
+    (K.rowFiltrationUpSpectralSequenceFirstPageXIso p s k hp).inv ≫
+      (K.rowFiltrationUpSpectralSequence.page 2).d (p, -((s : ℤ) + 1))
+        (p', -(((s + 1 : ℕ) : ℤ) + 1)) ≫
+      (K.rowFiltrationUpSpectralSequenceFirstPageXIso p' (s + 1) k hp').hom =
+    ((-1) ^ k : ℤ) • HomologicalComplex.homologyMap (K.dRow s (s + 1)) k := by
+  have h : (p + 2, -((s : ℤ) + 1) - 1) = (p', -(((s + 1 : ℕ) : ℤ) + 1)) := by
+    ext <;> push_cast <;> omega
+  rw [← HomologicalComplex.d_comp_XIsoOfEq_hom _ h,
+    K.rowFiltrationUpSpectralSequence_page_two_d_eq_dRow p _ s k rfl (by omega)]
+  simp only [rowFiltrationUpSpectralSequenceFirstPageXIso, Iso.trans_hom, Iso.trans_inv,
+    Category.assoc, Iso.inv_hom_id_assoc]
+  rw [rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow_congr_assoc, Iso.inv_hom_id,
+    Category.comp_id]
+
 /-- The first page of the spectral sequence of the row filtration vanishes at `(p, -(s + 1))` when
 `p < 2s + 1`: the row `s` contributes nothing in total degree `p - (s + 1) < s`. -/
 lemma isZero_rowFiltrationUpSpectralSequence_page_two_X_of_lt (p : ℤ) (s : ℕ)
@@ -718,6 +758,20 @@ def columnFiltrationUpSpectralSequenceFirstPageXIso (p k : ℕ) :
       (K.X p).homology k :=
   -- A row of the flipped bicomplex is the corresponding column of `K` by definition.
   K.flip.rowFiltrationUpSpectralSequenceFirstPageXIso _ p k rfl
+
+/-- **The first differential of the column-filtration spectral sequence**, under the
+identifications `columnFiltrationUpSpectralSequenceFirstPageXIso` of the first page with the
+vertical cohomology of the columns: the differential from the column `p` to the column `p + 1` in
+degree `k` is `(-1)ᵏ` times the map induced in cohomology by the horizontal differential. -/
+theorem columnFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom (p k : ℕ) :
+    (K.columnFiltrationUpSpectralSequenceFirstPageXIso p k).inv ≫
+      (K.columnFiltrationUpSpectralSequence.page 2).d ((k : ℤ) + 2 * p + 1, -((p : ℤ) + 1))
+        ((k : ℤ) + 2 * (p + 1 : ℕ) + 1, -(((p + 1 : ℕ) : ℤ) + 1)) ≫
+      (K.columnFiltrationUpSpectralSequenceFirstPageXIso (p + 1) k).hom =
+    ((-1) ^ k : ℤ) • HomologicalComplex.homologyMap (K.d p (p + 1)) k :=
+  -- The rows of `K.flip` are the columns of `K`, and its vertical differentials the horizontal
+  -- differentials of `K`, by definition.
+  K.flip.rowFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom _ _ p k rfl rfl
 
 /-- **The first differential of the column-filtration spectral sequence** is induced by the
 horizontal differentials: under the identifications of the first page at `(p, q)`,

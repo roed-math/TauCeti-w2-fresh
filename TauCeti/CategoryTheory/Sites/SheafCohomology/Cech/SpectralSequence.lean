@@ -19,7 +19,10 @@ resolution of an abelian sheaf `F`. Filtering the total complex of the Čech dou
 bicomplex filtered by its columns
 (`HomologicalComplex₂.columnFiltrationUpSpectralSequence`). Its first page is the group of Čech
 cochains `Čᵖ(U, Hᵠ(F)) = ∏ₐ Hᵠ(U (a 0) × ⋯ × U (a p), F)` of the cohomology presheaf
-(`TauCeti.CategoryTheory.cechToCohomologySpectralSequenceFirstPageAddEquiv`), and it converges to
+(`TauCeti.CategoryTheory.cechToCohomologySpectralSequenceFirstPageAddEquiv`), whose differential is
+`(-1)ᵠ` times the Čech differential
+(`TauCeti.CategoryTheory.cechToCohomologySpectralSequenceFirstPageAddEquiv_d`), so that its second
+page is the Čech cohomology `Ȟᵖ(U, Hᵠ(F))`; and it converges to
 the sheaf cohomology `Hⁿ(T, F)` (`TauCeti.CategoryTheory.cechToCohomologyAbutmentAddEquiv`, with
 the stabilization `HomologicalComplex₂.rowFiltrationUpSpectralSequencePageXIsoEInfty`).
 
@@ -37,6 +40,11 @@ complexes, in which the first page is numbered `2` and filtrations are increasin
 * `TauCeti.CategoryTheory.cechToCohomologySpectralSequenceFirstPageAddEquiv`: its first page is
   `Čᵖ(U, Hᵠ(F))`.
 * `TauCeti.CategoryTheory.cechToCohomologyAbutmentAddEquiv`: its abutment is `Hⁿ(T, F)`.
+
+## Main results
+
+* `TauCeti.CategoryTheory.cechToCohomologySpectralSequenceFirstPageAddEquiv_d`: the differential of
+  the first page is `(-1)ᵠ` times the Čech differential of `Hᵠ(-, F)`.
 
 ## References
 
@@ -88,6 +96,35 @@ def cechToCohomologySpectralSequenceFirstPageAddEquiv
       ∀ a : Fin (p + 1) → ι, F.H' q (∏ᶜ fun j ↦ U (a j)) :=
   ((cechDoubleComplex U K).columnFiltrationUpSpectralSequenceFirstPageXIso p
     q).addCommGroupIsoToAddEquiv.trans (cechDoubleComplexHomologyAddEquiv U ε hε hε' hK hKU p q)
+
+/-- **The first differential of the Čech-to-cohomology spectral sequence is the Čech
+differential** of the cohomology presheaf `Hᵠ(-, F)`, up to the sign `(-1)ᵠ`: under
+`cechToCohomologySpectralSequenceFirstPageAddEquiv`, the differential from the Čech `p`-cochains
+to the Čech `(p + 1)`-cochains of `Hᵠ(-, F)` sends `c` to `(-1)ᵠ δc`, where
+`(δc)(b) = ∑ₘ (-1)ᵐ c(b ∘ m.succAbove)|_{U (b 0) × ⋯ × U (b (p + 1))}`. Hence the second page
+is the Čech cohomology `Ȟᵖ(U, Hᵠ(F))`. -/
+@[stacks 03AV "The differential of the first page of the Čech-to-cohomology spectral sequence."]
+theorem cechToCohomologySpectralSequenceFirstPageAddEquiv_d
+    (hKU : ∀ (m : ℕ) (a : Fin (m + 1) → ι) j k,
+      Subsingleton ((K.X j).H' (k + 1) (∏ᶜ fun i ↦ U (a i)))) (p q : ℕ)
+    (x : ((cechToCohomologySpectralSequence U K).page 2).X ((q : ℤ) + 2 * p + 1, -((p : ℤ) + 1)))
+    (b : Fin (p + 2) → ι) :
+    cechToCohomologySpectralSequenceFirstPageAddEquiv U ε hε hε' hK hKU (p + 1) q
+        (((cechToCohomologySpectralSequence U K).page 2).d ((q : ℤ) + 2 * p + 1, -((p : ℤ) + 1))
+          ((q : ℤ) + 2 * (p + 1 : ℕ) + 1, -(((p + 1 : ℕ) : ℤ) + 1)) x) b =
+      (-1 : ℤ) ^ q • ∑ m : Fin (p + 2), (-1 : ℤ) ^ (m : ℕ) • (F.cohomologyPresheaf q).map
+        (Pi.lift fun y ↦ Pi.π (fun j ↦ U (b j)) (m.succAbove y)).op
+          (cechToCohomologySpectralSequenceFirstPageAddEquiv U ε hε hε' hK hKU p q x
+            (b ∘ m.succAbove)) := by
+  obtain ⟨y, rfl⟩ := ((cechDoubleComplex U K).columnFiltrationUpSpectralSequenceFirstPageXIso p
+    q).addCommGroupIsoToAddEquiv.symm.surjective x
+  have h := ConcreteCategory.congr_hom
+    ((cechDoubleComplex U K).columnFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom p q) y
+  simp only [ConcreteCategory.comp_apply] at h
+  simp only [cechToCohomologySpectralSequenceFirstPageAddEquiv, AddEquiv.trans_apply,
+    Iso.addCommGroupIsoToAddEquiv_apply, Iso.addCommGroupIsoToAddEquiv_symm_apply, h,
+    AddCommGrpCat.hom_zsmul, AddMonoidHom.coe_smul, Pi.smul_apply, map_zsmul,
+    cechDoubleComplexHomologyAddEquiv_homologyMap_d, Iso.inv_hom_id_apply]
 
 /-- **The abutment of the Čech-to-cohomology spectral sequence.** For an injective resolution
 `0 ⟶ F ⟶ K⁰ ⟶ K¹ ⟶ ⋯` of an abelian sheaf `F` and a family `U` whose maps to the terminal object

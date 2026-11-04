@@ -58,6 +58,9 @@ families of one-variable cohomology groups.
   augmented Čech complex of an injective abelian sheaf is exact.
 * `TauCeti.CategoryTheory.cechDoubleComplexHomologyAddEquiv`: the cohomology of the column `p` of
   the Čech double complex of an acyclic resolution of `F` is `∏ₐ Hᵠ(U (a 0) × ⋯ × U (a p), F)`.
+* `TauCeti.CategoryTheory.cechDoubleComplexHomologyAddEquiv_homologyMap_d`: under this
+  identification, the horizontal differentials induce the Čech differential of the cohomology
+  presheaf `Hᵠ(-, F)`.
 * `TauCeti.CategoryTheory.quasiIso_totalCoaugmentation_cechDoubleComplex`: for a covering family
   and a complex of injective sheaves, the total complex is quasi-isomorphic to the sections over the
   terminal object.
@@ -174,6 +177,77 @@ def cechDoubleComplexHomologyIsoPi (p q : ℕ) :
   (HomologicalComplex.homologyFunctor _ _ q).mapIso (cechDoubleComplexXIsoPi U K p) ≪≫
     PreservesProduct.iso (HomologicalComplex.homologyFunctor _ _ q) _
 
+/-- The restriction `K(W) ⟶ K(W')` of complexes of sections along `f : W' ⟶ W`. -/
+abbrev sectionsComplexMap {W W' : C} (f : W' ⟶ W) : sectionsComplex K W ⟶ sectionsComplex K W' :=
+  (NatTrans.mapHomologicalComplex (Functor.whiskerLeft (sheafToPresheaf J AddCommGrpCat.{v})
+    ((evaluation Cᵒᵖ AddCommGrpCat.{v}).map f.op)) _).app K
+
+/-- Under `cechDoubleComplexXIsoPi`, the projection of the Čech cochains to the factor `a` is the
+projection of a product of complexes of sections to its factor `a`. -/
+@[reassoc]
+lemma cechDoubleComplexXIsoPi_hom_f_π_f (p q : ℕ) (a : Fin (p + 1) → ι) :
+    (cechDoubleComplexXIsoPi U K p).hom.f q ≫
+        (Pi.π (fun a : Fin (p + 1) → ι ↦ sectionsComplex K (∏ᶜ fun j ↦ U (a j))) a).f q =
+      Pi.π (fun a : Fin (p + 1) → ι ↦ (K.X q).obj.obj (op (∏ᶜ fun j ↦ U (a j)))) a := by
+  have h : (cechDoubleComplexXIsoPi U K p).hom.f q ≫ (cechDoubleComplexXIsoPi U K p).inv.f q =
+      𝟙 _ := by
+    rw [← HomologicalComplex.comp_f, Iso.hom_inv_id, HomologicalComplex.id_f]
+  rw [← cechDoubleComplexXIsoPi_inv_f_π]
+  exact (Category.assoc _ _ _).symm.trans ((congrArg (· ≫ _) h).trans (Category.id_comp _))
+
+/-- The factor `b` of the horizontal differential of the Čech double complex, read on products of
+complexes of sections, is the alternating sum of the restrictions along the face maps
+`U (b 0) × ⋯ × U (b (p + 1)) ⟶ ∏ⱼ U (b (m.succAbove j))`. -/
+lemma cechDoubleComplex_d_comp_XIsoPi_hom_π (p : ℕ) (b : Fin (p + 2) → ι) :
+    (cechDoubleComplex U K).d p (p + 1) ≫ (cechDoubleComplexXIsoPi U K (p + 1)).hom ≫
+        Pi.π (fun a : Fin (p + 2) → ι ↦ sectionsComplex K (∏ᶜ fun j ↦ U (a j))) b =
+      ∑ m : Fin (p + 2), (-1 : ℤ) ^ (m : ℕ) • ((cechDoubleComplexXIsoPi U K p).hom ≫
+        Pi.π (fun a : Fin (p + 1) → ι ↦ sectionsComplex K (∏ᶜ fun j ↦ U (a j)))
+          (b ∘ m.succAbove) ≫
+        sectionsComplexMap K (Pi.lift fun x ↦ Pi.π (fun j ↦ U (b j)) (m.succAbove x))) := by
+  ext q : 1
+  simp only [← HomologicalComplex.eval_map, Functor.map_sum, Functor.map_zsmul]
+  simp only [HomologicalComplex.eval_map, HomologicalComplex.comp_f,
+    cechDoubleComplexXIsoPi_hom_f_π_f, cechDoubleComplexXIsoPi_hom_f_π_f_assoc,
+    cechDoubleComplex_d_f]
+  exact cechComplexFunctor_obj_d_comp_π U (K.X q).obj p b
+
+/-- The cohomology of the column `p` of the Čech double complex, followed by the projection to the
+factor `a`, is the map induced by the projection of the Čech cochains to the factor `a`. -/
+@[reassoc]
+lemma cechDoubleComplexHomologyIsoPi_hom_π (p q : ℕ) (a : Fin (p + 1) → ι) :
+    (cechDoubleComplexHomologyIsoPi U K p q).hom ≫
+        Pi.π (fun a : Fin (p + 1) → ι ↦ (sectionsComplex K (∏ᶜ fun j ↦ U (a j))).homology q) a =
+      HomologicalComplex.homologyMap ((cechDoubleComplexXIsoPi U K p).hom ≫
+        Pi.π (fun a : Fin (p + 1) → ι ↦ sectionsComplex K (∏ᶜ fun j ↦ U (a j))) a) q :=
+  -- `cechDoubleComplexHomologyIsoPi` is stated with `homology` rather than the objects of
+  -- `homologyFunctor`, so `rw [Iso.trans_hom]` sees an ill-typed motive; the composite is
+  -- unfolded by the term instead.
+  (Category.assoc _ _ _).trans <| (congrArg (_ ≫ ·)
+    (piComparison_comp_π (HomologicalComplex.homologyFunctor _ _ q) _ a)).trans
+      (HomologicalComplex.homologyMap_comp _ _ q).symm
+
+/-- **The horizontal differential on the column cohomology is a Čech differential**: under
+`cechDoubleComplexHomologyIsoPi`, the map induced in cohomology by the horizontal differential of
+the Čech double complex is the Čech differential of the presheaf `W ↦ Hᵠ(K(W))`. -/
+lemma homologyMap_cechDoubleComplex_d_comp_π (p q : ℕ) (b : Fin (p + 2) → ι) :
+    HomologicalComplex.homologyMap ((cechDoubleComplex U K).d p (p + 1)) q ≫
+        (cechDoubleComplexHomologyIsoPi U K (p + 1) q).hom ≫
+          Pi.π (fun a : Fin (p + 2) → ι ↦ (sectionsComplex K (∏ᶜ fun j ↦ U (a j))).homology q) b =
+      ∑ m : Fin (p + 2), (-1 : ℤ) ^ (m : ℕ) • ((cechDoubleComplexHomologyIsoPi U K p q).hom ≫
+        Pi.π (fun a : Fin (p + 1) → ι ↦ (sectionsComplex K (∏ᶜ fun j ↦ U (a j))).homology q)
+          (b ∘ m.succAbove) ≫ HomologicalComplex.homologyMap
+            (sectionsComplexMap K (Pi.lift fun x ↦ Pi.π (fun j ↦ U (b j)) (m.succAbove x))) q) := by
+  rw [cechDoubleComplexHomologyIsoPi_hom_π, ← HomologicalComplex.homologyMap_comp,
+    cechDoubleComplex_d_comp_XIsoPi_hom_π, ← HomologicalComplex.homologyFunctor_map,
+    Functor.map_sum]
+  refine Finset.sum_congr rfl fun m _ ↦ ?_
+  rw [Functor.map_zsmul]
+  simp only [HomologicalComplex.homologyFunctor_map, HomologicalComplex.homologyMap_comp,
+    cechDoubleComplexHomologyIsoPi_hom_π_assoc, Category.assoc]
+  -- the two sides differ only in writing `homology` as objects of `homologyFunctor`
+  rfl
+
 section Resolution
 
 variable [HasSheafify J AddCommGrpCat.{v}] [HasExt.{v} (Sheaf J AddCommGrpCat.{v})]
@@ -195,6 +269,41 @@ def cechDoubleComplexHomologyAddEquiv (p q : ℕ) :
     (AddCommGrpCat.HasLimit.productLimitCone _).isLimit).addCommGroupIsoToAddEquiv.trans
     (AddEquiv.piCongrRight fun a ↦
       (Sheaf.H'.addEquivHomologyOfResolution ε hε hε' hK _ (hKU p a) q).symm)
+
+/-- The factor `a` of `cechDoubleComplexHomologyAddEquiv` is the identification of the cohomology
+of the sections over `U (a 0) × ⋯ × U (a p)` with `Hᵠ(U (a 0) × ⋯ × U (a p), F)`. -/
+lemma cechDoubleComplexHomologyAddEquiv_apply (p q : ℕ)
+    (z : ((cechDoubleComplex U K).X p).homology q) (a : Fin (p + 1) → ι) :
+    cechDoubleComplexHomologyAddEquiv U ε hε hε' hK hKU p q z a =
+      (Sheaf.H'.addEquivHomologyOfResolution ε hε hε' hK _ (hKU p a) q).symm
+        (((cechDoubleComplexHomologyIsoPi U K p q).hom ≫ Pi.π _ a) z) :=
+  -- The factor `a` of an element of the explicit product of abelian groups is its image under
+  -- the projection of the product cone `productLimitCone`, by definition.
+  congrArg _ (ConcreteCategory.congr_hom ((limit.isLimit _).conePointUniqueUpToIso_hom_comp
+    (AddCommGrpCat.HasLimit.productLimitCone _).isLimit ⟨a⟩)
+      ((cechDoubleComplexHomologyIsoPi U K p q).hom z))
+
+/-- **The horizontal differential on the column cohomology is the Čech differential** of the
+cohomology presheaf: under `cechDoubleComplexHomologyAddEquiv`, the map induced in cohomology by
+the horizontal differential of the Čech double complex sends a Čech `p`-cochain `c` of
+`Hᵠ(-, F)` to `δc`, with `(δc)(b) = ∑ₘ (-1)ᵐ c(b ∘ m.succAbove)` restricted to
+`U (b 0) × ⋯ × U (b (p + 1))`. -/
+theorem cechDoubleComplexHomologyAddEquiv_homologyMap_d (p q : ℕ)
+    (z : ((cechDoubleComplex U K).X p).homology q) (b : Fin (p + 2) → ι) :
+    cechDoubleComplexHomologyAddEquiv U ε hε hε' hK hKU (p + 1) q
+        (HomologicalComplex.homologyMap ((cechDoubleComplex U K).d p (p + 1)) q z) b =
+      ∑ m : Fin (p + 2), (-1 : ℤ) ^ (m : ℕ) • (F.cohomologyPresheaf q).map
+        (Pi.lift fun x ↦ Pi.π (fun j ↦ U (b j)) (m.succAbove x)).op
+          (cechDoubleComplexHomologyAddEquiv U ε hε hε' hK hKU p q z (b ∘ m.succAbove)) := by
+  rw [cechDoubleComplexHomologyAddEquiv_apply, AddEquiv.symm_apply_eq, map_sum]
+  simp only [map_zsmul, cechDoubleComplexHomologyAddEquiv_apply, Function.comp_apply,
+    Sheaf.H'.addEquivHomologyOfResolution_naturality ε hε hε' hK _ (hKU p _) (hKU (p + 1) b),
+    AddEquiv.apply_symm_apply]
+  refine (ConcreteCategory.congr_hom (homologyMap_cechDoubleComplex_d_comp_π U K p q b) z).trans ?_
+  rw [← AddCommGrpCat.homAddEquiv_apply, map_sum, AddMonoidHom.finsetSum_apply]
+  -- the summands agree once `homAddEquiv`, `zsmul` and composition of `AddCommGrpCat` morphisms
+  -- are evaluated, which is how these operations are defined
+  rfl
 
 end Resolution
 
