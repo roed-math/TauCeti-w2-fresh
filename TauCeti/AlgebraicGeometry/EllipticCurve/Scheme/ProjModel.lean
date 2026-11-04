@@ -104,6 +104,13 @@ noncomputable def projModelOver : W.projModel ⟶ Spec (.of R) :=
   Proj.toSpecZero W.toProjective.grading ≫
     Spec.map W.toProjective.gradingZeroEquiv.toRingEquiv.toCommRingCatIso.hom
 
+/-- The structure morphism of the projective model is the structure morphism of `Proj` to the
+spectrum of the degree-zero part, followed by `Spec R ≅ Spec A₀`. The body of `projModelOver` is
+not exposed; this lemma unfolds it. -/
+theorem projModelOver_def : W.projModelOver = Proj.toSpecZero W.toProjective.grading ≫
+    Spec.map W.toProjective.gradingZeroEquiv.toRingEquiv.toCommRingCatIso.hom :=
+  (rfl)
+
 /-- The projective Weierstrass model is proper over its base. -/
 instance isProper_projModelOver : IsProper W.projModelOver := by
   unfold projModelOver

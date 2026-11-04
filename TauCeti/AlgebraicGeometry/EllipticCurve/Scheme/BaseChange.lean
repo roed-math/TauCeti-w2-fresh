@@ -44,6 +44,8 @@ Along a ring isomorphism `φ : R ≃+* R'` the base change morphism is an isomor
   `Spec f`.
 * `WeierstrassCurve.isPullback_projModelBaseChange`: the square formed by the base change
   morphism, the structure morphisms and `Spec f` is a pullback square.
+* `WeierstrassCurve.isPullback_projModelBaseChange_over`: the same square for an algebra
+  `R → R'`, written with the structure morphisms of schemes over `Spec R` and `Spec R'`.
 * `WeierstrassCurve.projModelZero_projModelBaseChange`: the base change morphism carries the zero
   section to the zero section.
 * `WeierstrassCurve.isPullback_projModelZero_projModelBaseChange`: the zero section of
@@ -250,6 +252,16 @@ theorem projModelBaseChange_projModelOver :
     W.projModelBaseChange f ≫ W.projModelOver =
       (W.map f).projModelOver ≫ Spec.map (CommRingCat.ofHom f) :=
   (W.isPullback_projModelBaseChange f).w
+
+/-- The projective model of `W.map (algebraMap R R')` is the base change of the projective model
+of `W` along `Spec R' ⟶ Spec R`, with the structure morphisms of both as schemes over their bases
+(`WeierstrassCurve.isPullback_projModelBaseChange`). -/
+theorem isPullback_projModelBaseChange_over [Algebra R R'] :
+    IsPullback (W.projModelBaseChange (algebraMap R R'))
+      ((W.map (algebraMap R R')).projModel ↘ Spec (.of R')) (W.projModel ↘ Spec (.of R))
+      (Spec.map (CommRingCat.ofHom (algebraMap R R'))) := by
+  rw [over_projModel, over_projModel]
+  exact W.isPullback_projModelBaseChange (algebraMap R R')
 
 /-- The projective model of `W.map f` over `Spec R'` is the base change of the projective model of
 `W` along `Spec f : Spec R' ⟶ Spec R`: the isomorphism in `Over (Spec R')` between

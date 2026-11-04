@@ -62,6 +62,20 @@ lemma sectionsGlobal_smul (M : X.Modules) (U : X.Opens)
     r • s = X.presheaf.map U.leTop.op r • s :=
   (rfl)
 
+/-- The functions on an open are an algebra over the global functions, by restriction. This is not
+an instance, as the base ring of a scheme over a ring often acts on functions in another way; it is
+meant to be enabled locally. -/
+abbrev sectionsGlobalAlgebra (X : Scheme.{u}) (U : X.Opens) : Algebra Γ(X, ⊤) Γ(X, U) :=
+  (X.presheaf.map U.leTop.op).hom.toAlgebra
+
+/-- Through `sectionsGlobalAlgebra`, global functions act on local sections through the functions
+on the open. -/
+lemma isScalarTower_sectionsGlobalAlgebra (M : X.Modules) (U : X.Opens) :
+    letI := sectionsGlobalAlgebra X U
+    IsScalarTower Γ(X, ⊤) Γ(X, U) Γ(M, U) :=
+  letI := sectionsGlobalAlgebra X U
+  .of_algebraMap_smul fun r x ↦ (sectionsGlobal_smul M _ r x).symm
+
 /-- Restriction of local sections is linear over global functions. -/
 def sectionsRestrictionLinear (M : X.Modules) {U V : X.Opens} (i : U ⟶ V) :
     Γ(M, V) →ₗ[Γ(X, ⊤)] Γ(M, U) where

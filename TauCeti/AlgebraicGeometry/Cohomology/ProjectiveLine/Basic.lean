@@ -418,21 +418,7 @@ private theorem overlapCoord_zero_mul_overlapCoord_one :
     map_awayToSection_ρ₁, ← map_mul]
   exact (congrArg _ (ψ₀_X_mul_ψ₁_X R)).trans (map_one _)
 
-/-- The functions on an open are an algebra over the global functions, by restriction. -/
-private noncomputable abbrev sectionsAlgebra (U : (projectiveLine R).Opens) :
-    Algebra Γ(projectiveLine R, ⊤) Γ(projectiveLine R, U) :=
-  ((projectiveLine R).presheaf.map U.leTop.op).hom.toAlgebra
-
-attribute [local instance] sectionsAlgebra
-
-/-- Global functions act on the sections of a sheaf of modules over an open through their
-restrictions to the open. -/
-private theorem isScalarTower_restrict (M : (projectiveLine R).Modules)
-    (U : (projectiveLine R).Opens) :
-    IsScalarTower Γ(projectiveLine R, ⊤) Γ(projectiveLine R, U) Γ(M, U) :=
-  .of_algebraMap_smul fun r x ↦ (sectionsGlobal_smul M _ r x).symm
-
-attribute [local instance] isScalarTower_restrict
+attribute [local instance] sectionsGlobalAlgebra isScalarTower_sectionsGlobalAlgebra
 
 /-- On the chart `D₊(Xᵢ)`, a polynomial in the affine coordinate is a polynomial in the coordinate
 with coefficients restricted from the global functions. -/

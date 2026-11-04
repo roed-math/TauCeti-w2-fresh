@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf
+public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.Basic
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.PointsDivisor
 public import TauCeti.AlgebraicGeometry.EffectiveCartierDivisor.Pullback
 public import TauCeti.AlgebraicGeometry.EffectiveCartierDivisor.TensorProduct
@@ -33,7 +33,7 @@ Weierstrass chart of `E`, the divisor `n[0]` is carried to the divisor `n[0]` of
 Weierstrass model (`WeierstrassCurve.zeroSectionDivisor`), whose ideal is described on the
 standard affine charts in `TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.Basic`, and
 `ℒ_n` to the pole sheaf `WeierstrassCurve.poleSheaf` of the model, whose cohomology over a field
-is computed in `TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf`.
+is computed in `TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.Basic`.
 
 ## Main definitions
 

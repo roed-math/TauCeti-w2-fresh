@@ -45,12 +45,11 @@ curve over an arbitrary base.
 
 * `WeierstrassCurve.mk_poleSheaf`: the class of `𝒪(n[0])` is the `n`-th power of the class of
   `𝒪([0])`, the dual of the ideal sheaf of the zero section (`WeierstrassCurve.mk_poleSheaf_one`).
-* `WeierstrassCurve.pullback_mk_poleSheaf_projModelBaseChange`: `𝒪(n[0])` commutes with change of
-  the coefficient ring.
+* `WeierstrassCurve.pullback_mk_poleSheaf_projModelBaseChange` and
+  `WeierstrassCurve.nonempty_pullback_poleSheaf_iso`: `𝒪(n[0])` commutes with change of the
+  coefficient ring.
 * `WeierstrassCurve.genus_projModel`: over a field, the projective model has genus one.
 * `WeierstrassCurve.eulerDegree_poleSheaf`: over a field, `𝒪(n[0])` has degree `n`.
-* `WeierstrassCurve.subsingleton_cohomology_one_poleSheaf`: over a field, `H¹(𝒪(n[0])) = 0` for
-  `n > 0`.
 * `WeierstrassCurve.finrank_cohomology_zero_poleSheaf`: over a field, `dim H⁰(𝒪(n[0])) = n` for
   `n > 0`.
 
@@ -122,6 +121,15 @@ theorem pullback_mk_poleSheaf_projModelBaseChange {R' : Type u} [CommRing R'] (f
     Scheme.IdealSheafData.IsEffectiveCartier.pullback_mk_toInvertibleSheaf hn hn',
     LineBundleClass.mk_toInvertibleSheaf_congr hn' _ (W.zeroSectionDivisor_pow_map f n).symm]
 
+/-- **The pole sheaves commute with change of the coefficient ring**, as sheaves up to
+isomorphism: the pullback of `𝒪(n[0])` along `projModel (W.map f) ⟶ projModel W` is
+isomorphic to `𝒪(n[0])`. -/
+theorem nonempty_pullback_poleSheaf_iso {R' : Type u} [CommRing R'] (f : R →+* R') (n : ℕ) :
+    Nonempty ((Scheme.Modules.pullback (W.projModelBaseChange f)).obj (W.poleSheaf n).obj ≅
+      ((W.map f).poleSheaf n).obj) := by
+  have h := W.pullback_mk_poleSheaf_projModelBaseChange f n
+  rwa [LineBundleClass.pullback_mk, LineBundleClass.mk_eq_mk_iff] at h
+
 /-! ### Cohomology over a field -/
 
 section Field
@@ -165,15 +173,6 @@ theorem eulerDegree_poleSheaf (n : ℕ) : (W.poleSheaf n).eulerDegree K = n := b
     rw [← LineBundleClass.eulerDegree_mk, mk_poleSheaf_add,
       LineBundleClass.eulerDegree_mul_of_smooth, LineBundleClass.eulerDegree_mk, hn, h1,
       Nat.cast_succ]
-
-/-- **`H¹(projModel W, 𝒪(n[0])) = 0` for `n > 0`** over a field: `𝒪(n[0])` has degree `n`, above
-`2g - 2 = 0`. -/
-theorem subsingleton_cohomology_one_poleSheaf {n : ℕ} (hn : 0 < n) :
-    Subsingleton (Scheme.Modules.Cohomology (W.poleSheaf n).obj 1) :=
-  InvertibleSheaf.subsingleton_cohomology_one_of_two_mul_genus_sub_two_lt_eulerDegree Fact.out
-    (isFunctionField_functionField_projModel W)
-    isIntegrallyClosedIn_functionField_of_geometricallyIntegral _
-    (by rw [finrank_cohomology_one_trivial_projModel, eulerDegree_poleSheaf]; omega)
 
 /-- **`dim_K H⁰(projModel W, 𝒪(n[0])) = n` for `n > 0`** over a field, by Riemann–Roch in genus
 one. -/

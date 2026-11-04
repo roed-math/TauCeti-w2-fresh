@@ -43,6 +43,8 @@ some `∂W/∂Xⱼ` with `j ≠ i` is nonzero there.
   elliptic Weierstrass curve is smooth of relative dimension one over the base.
 * `WeierstrassCurve.smooth_projModelOver`: the projective model of an elliptic Weierstrass curve
   is smooth over the base.
+* `WeierstrassCurve.smooth_over_projModel`: the same, for the structure morphism of the
+  projective model as a scheme over `Spec R`; in particular it is flat.
 * `WeierstrassCurve.topologicalKrullDim_projModel`: over a field, the projective model of an
   elliptic curve has dimension one.
 * `WeierstrassCurve.isDiscreteValuationRing_stalk_projModel`: over a field, the local rings of the
@@ -217,6 +219,12 @@ instance smooth_projModelOver [W.IsElliptic] : Smooth W.projModelOver :=
 as a scheme over `Spec R`. -/
 instance smoothOfRelativeDimension_over_projModel [W.IsElliptic] :
     SmoothOfRelativeDimension 1 (W.projModel ↘ Spec (.of R)) := by
+  rw [over_projModel]
+  infer_instance
+
+/-- The projective model of an elliptic curve is smooth over the base, as a scheme over
+`Spec R`. In particular it is flat over `Spec R`. -/
+instance smooth_over_projModel [W.IsElliptic] : Smooth (W.projModel ↘ Spec (.of R)) := by
   rw [over_projModel]
   infer_instance
 
