@@ -1,9 +1,13 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"8e29268de79c45d1730fa54d62137f70cd24b4e3","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":3,"after":[1],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":4,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":5,"after":[1,2,3,4],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"6c781b0a7341d9d794cf474258f824f4fa65faa2","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":3,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":4,"after":[3],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":5,"after":[4],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":6,"after":[1],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":7,"after":[4],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `8e29268de79c45d1730fa54d62137f70cd24b4e3` (this session merged `main` forward from
-`333c9e49143`; #27242 is still open, so its stub stays). Status: **partial**.
+Built on `main` at `6c781b0a7341d9d794cf474258f824f4fa65faa2` (this session merged `main` forward
+from `8e29268de79`; #27242 is still open, so its stub stays). Status: **partial**.
+
+This session proved the Čech half of the target's inputs on a general site: Čech complexes of
+injective sheaves are exact in positive degrees, and Leray's acyclicity theorem for a covering of a
+site (the third statement of the target's README). See "New this session" below.
 
 ## Supplier state
 
@@ -75,6 +79,54 @@ for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for
 - new: `lerayEdge_sheafAdjunctionContinuous_bijective` — Leray acyclicity for a morphism of sites
   `u : C ⥤ D` (uses the stubbed additivity instance).
 
+## New this session (no stub used)
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/PreservesProducts.lean` (148 lines, namespace
+`TauCeti.CategoryTheory`):
+
+- `cechComplexCompIsoOfIsIso G U Q` — for `G : C ⥤ D` with every `piComparison G (U ∘ a)` an
+  isomorphism, `Č(G ∘ U, Q) ≅ Č(U, G.op ⋙ Q)`; with `cechComplexCompIsoOfIsIso_hom_f_π` and
+  `exactAt_cechComplexFunctor_obj_comp_iff`. This is `cechComplexCompIso` (`Cech/Functor.lean`,
+  thin target) for a target that need not be thin. **Port note:** the port should instead
+  generalise `cechComplexCompIso` in place (its thin hypothesis implies the `IsIso` instances, by
+  `iso_of_both_ways`), deriving the thin case, so that the two proofs are not duplicated; that
+  touches its callers in `Topology/Sheaves/Cech/Pullback.lean`, `AlgebraicGeometry/Cohomology/Cech/`
+  and `AdicSpace/Spa/StructurePresheaf/AddCommGrp.lean`.
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/Injective.lean` (184 lines):
+
+- `exactAt_cechComplexFunctor_obj_free_op` — for a family of types `S`, the Čech complex of
+  `AddCommGrpCat.free.op` (values in `Abᵒᵖ`) is exact in positive degrees (extra degeneracy when
+  some `S i` is nonempty, all terms zero otherwise);
+- `exactAt_cechComplexFunctor_obj_freeYoneda_op` — the Čech complex of `X ↦ ℤ[y X]` (values in
+  `(Cᵒᵖ ⥤ Ab)ᵒᵖ`) is exact in positive degrees, checked at each `W` through `coyoneda.obj (op W)`
+  and `exactAt_cechComplexFunctor_obj_comp_iff`;
+- `exactAt_cechComplexFunctor_obj_of_injective` — **the Čech complex of an injective presheaf of
+  abelian groups is exact in positive degrees, for every family** (apply the exact functor
+  `preadditiveYoneda.obj P`, then `P(X) ≅ ULift (Hom(ℤ[y X], P))`);
+- `exactAt_cechComplexFunctor_obj_obj_of_injective` — the same for an injective abelian sheaf
+  (its presheaf is injective, as sheafification preserves monomorphisms).
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/Leray.lean` (379 lines), for a site `(C, J)` with
+finite products, terminal `T`, `U : ι → C` with `Sieve.ofArrows U (hT.from ∘ U) ∈ J T`:
+
+- `isSheafFor_ofArrows_of_mem`, `quasiIsoAt_cechAugmentation_zero_of_mem`,
+  `homologyZeroCechIso`, `homologyMap_comp_homologyZeroCechIso_hom` — `H⁰(U, F) ≅ H⁰(F)`, natural;
+- `homologyCechComplexIsoH U hT hU F hF n` — **Leray's acyclicity theorem for a covering of a
+  site**: if `Hᵏ⁺¹(U (a 0) × ⋯ × U (a m), F) = 0` for all `m, a, k`, then
+  `Hⁿ(Č(U, F)) ≅ Hⁿ(F)` for every `n`; with `homologyCechComplexIsoH_zero` and the naturality
+  `homologyMap_comp_homologyCechComplexIsoH_hom`. For a covering of `V` it applies on `C/V`.
+  The proof is the dimension shift of `TauCeti/Topology/Sheaves/Leray.lean` with the flasqueness
+  input replaced by `exactAt_cechComplexFunctor_obj_obj_of_injective`; it needs no finiteness of
+  `U`. **Port note:** the topological `TauCeti.Topology.homologyCechComplexIsoH` (finite open
+  covers) and `TauCeti.Topology.homologyZeroCechIso` should then be derived from these site
+  versions (the cover generates a covering sieve of `⊤`; finite products of opens are finite
+  intersections), deleting the duplicated dimension shift and dropping `[Finite ι]`; this was
+  tried and works except that `homologyCechComplexIsoH_zero` then needs the topological
+  `homologyZeroCechIso` (`Topology/Sheaves/Cech/Basic.lean`, unexposed) to be the site one, so it
+  belongs in the same refactor of `Topology/Sheaves/Cech/Basic.lean` (split 5's PR or a follow-up
+  refactor PR).
+
 ## What remains
 
 The spectral sequence itself:
@@ -87,47 +139,52 @@ The spectral sequence itself:
    identification and the cohomological reindexing are not there. The lemma that `G`-acyclic
    resolutions compute `R•G` is the first missing input; `ofShortExact` and the dimension-shift
    lemmas of split 1 are its inductive step.
-2. Čech acyclicity of injective abelian sheaves on a general site, the input of
-   `cech_to_cohomology` and of Leray's acyclicity theorem for coverings (Stacks 03AZ/03F7). `main`
-   has Leray's theorem only for open covers of topological spaces
-   (`TauCeti/Topology/Sheaves/Leray.lean`), where injective sheaves are flasque; on a site there are
-   no flasque sheaves. Planned proof (assessed this session, ~500 lines, not started): for a family
-   `U` and an object `W`, the Čech complex of the presheaf `V ↦ op ℤ[Hom(W, V)]` (values in `Abᵒᵖ`)
-   is that of `S ↦ op ℤ[S]` on `Type` for the family `Hom(W, U i)`, which is acyclic in positive
-   degrees by `quasiIso_cechAugmentation_of_hom` when some `Hom(W, U i)` is nonempty and is zero
-   otherwise. This needs `cechComplexCompIso` (`Cech/Functor.lean`) generalised from a thin target to
-   a product-preserving `G` (here `coyoneda.obj W`). Hence the free complex
-   `Kₙ = ⨁ₐ ℤ[y(U a₀ × ⋯ × U aₙ)]` is exact in positive degrees, so is its sheafification, and
-   `Hom(K^#, I) ≅ Č(U, I)` (from `freeYonedaSheafSectionsEquiv`) is exact in positive degrees for `I`
-   injective. The dimension shift of `Topology/Sheaves/Leray.lean` then goes through verbatim on a
-   site.
+2. ~~Čech acyclicity of injective abelian sheaves on a general site~~ and ~~Leray's acyclicity
+   theorem for coverings~~: **done this session** (`Cech/Injective.lean`, `Cech/Leray.lean`).
 3. `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
-   identification of its `E₂^{n,0}` edge with `lerayEdge`), `cech_to_cohomology` and Leray's
-   acyclicity theorem for coverings, from the Čech double complex `Ȟ^p(U, I^q)` of an injective
+   identification of its `E₂^{n,0}` edge with `lerayEdge`) and `cech_to_cohomology`, from the
+   Čech double complex `Ȟ^p(U, I^q)` of an injective
    resolution `I` (TauCeti's `Cech/` directory has the Čech complex, its augmentation and long
    exact sequence).
 
 ## Split plan
 
 1. **feat: dimension shifting for right derived functors** — file:
-   `TauCeti/CategoryTheory/Abelian/RightDerived.lean` (+~150 lines in the existing file). Adds
+   `TauCeti/CategoryTheory/Abelian/RightDerived.lean` (+151 lines in the existing file). Adds
    `InjectiveResolution.ofShortExact`, `Functor.rightDerivedObjX₁IsoOfShortExact`,
    `Functor.isZero_rightDerived_obj_X₃_of_isZero`,
    `Functor.epi_map_g_of_isZero_rightDerived_one`,
    `Functor.shortExact_map_of_isZero_rightDerived_one`. After: none. Can be opened now.
 2. **feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem** — file:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (new, ~350 lines). Adds every
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (new, 350 lines). Adds every
    `lerayEdge*` declaration above and `subsingleton_H_obj_of_injective`. After: 1, and #27242 on
    `main` for its last theorem (`lerayEdge_sheafAdjunctionContinuous_bijective`); without #27242
    that theorem can be held back and everything else opened.
-3. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files
+3. **feat: Čech complexes along a functor preserving products** — file:
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/PreservesProducts.lean` (new, 148 lines), or
+   better (see the port note) a generalisation of `cechComplexCompIso` in `Cech/Functor.lean` with
+   its callers updated. Adds `cechComplexCompIsoOfIsIso`, `cechComplexCompIsoOfIsIso_hom_f_π`,
+   `exactAt_cechComplexFunctor_obj_comp_iff`. After: none. Can be opened now.
+4. **feat: Čech complexes of injective sheaves are exact in positive degrees** — file:
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/Injective.lean` (new, 184 lines). Adds
+   `exactAt_cechComplexFunctor_obj_free_op`, `exactAt_cechComplexFunctor_obj_freeYoneda_op`,
+   `exactAt_cechComplexFunctor_obj_of_injective`, `exactAt_cechComplexFunctor_obj_obj_of_injective`.
+   After: 3.
+5. **feat: Leray's acyclicity theorem for a covering of a site** — file:
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/Leray.lean` (new, 379 lines), plus the
+   refactor deriving `TauCeti.Topology.homologyCechComplexIsoH` from it (port note above), which
+   removes ~250 duplicated lines. Adds `isSheafFor_ofArrows_of_mem`,
+   `quasiIsoAt_cechAugmentation_zero_of_mem`, `homologyZeroCechIso`,
+   `homologyMap_comp_homologyZeroCechIso_hom`, `homologyCechComplexIsoH`,
+   `homologyCechComplexIsoH_zero`, `homologyMap_comp_homologyCechComplexIsoH_hom`. After: 4.
+6. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files
    under `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`. After: 1 (its acyclic
    resolution lemma is proved by the dimension shifting of split 1). Not yet written.
-4. **feat: the Čech double complex of a covering with coefficients in an injective resolution** —
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean`, preceded by the Čech
-   acyclicity of injective sheaves of item 2 of "What remains" (which may become its own split if
-   it exceeds ~600 lines). After: none. Not yet written.
-5. **feat: the Leray and Čech-to-cohomology spectral sequences** —
+7. **feat: the Čech double complex of a covering with coefficients in an injective resolution** —
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean`: the double complex
+   `Č^p(U, I^q)`, whose rows are exact in positive degrees by split 4. After: 4. Not yet written.
+8. **feat: the Leray and Čech-to-cohomology spectral sequences** —
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
-   naturality, relative form and edge maps, `cech_to_cohomology`, Leray's acyclicity theorem for
-   coverings. After: 1, 2, 3, 4. The only split that completes the target. Not yet written.
+   naturality, relative form and edge maps (identified with `lerayEdge`), `cech_to_cohomology`
+   (with its degeneration recovering split 5). After: 1, 2, 3, 4, 5, 6, 7. The only split that
+   completes the target. Not yet written.
