@@ -45,6 +45,10 @@ Project defined through `ℙ(ℰ)`.
 * `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_one_iff`: the trivial class is
   relatively ample exactly for quasi-affine morphisms; in particular it is relatively ample for
   affine morphisms (`LineBundleClass.isRelativelyAmple_one`).
+* `TauCeti.AlgebraicGeometry.LineBundleClass.IsRelativelyAmple.isAmple`: over an affine base, a
+  relatively ample class is ample.
+* `TauCeti.AlgebraicGeometry.LineBundleClass.isRelativelyAmple_pullback_iff_of_isIso`: relative
+  ampleness is invariant under isomorphisms of the source over the base.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.isRelativelyVeryAmple_relativeProjTwistingSheaf`:
   `𝒪(1)` is relatively very ample on the relative `Proj` of an algebra generated in degree one.
 * `TauCeti.AlgebraicGeometry.InvertibleSheaf.IsRelativelyVeryAmple.pullback`: relative very
@@ -143,6 +147,36 @@ theorem IsRelativelyAmple.of_pow {a : LineBundleClass X} {f : X ⟶ S} {n : ℕ}
   quasiCompact := h.quasiCompact
   isAmple_pullback V hV := IsAmple.of_pow hn <| by
     simpa only [← pullbackHom_apply, map_pow] using h.isAmple_pullback V hV
+
+/-- **Relative ampleness over an affine base implies ampleness.** If the base `S` is affine and
+`a` is relatively ample for `f : X ⟶ S`, then `a` is ample: `X` is the preimage of `S` itself. -/
+theorem IsRelativelyAmple.isAmple [IsAffine S] {a : LineBundleClass X} {f : X ⟶ S}
+    (h : a.IsRelativelyAmple f) : a.IsAmple := by
+  -- `f ⁻¹ᵁ ⊤` is `⊤` by definition (`Scheme.Hom.preimage_top`).
+  have h' : (pullback (⊤ : X.Opens).ι a).IsAmple := h.isAmple_pullback ⊤ (isAffineOpen_top S)
+  simpa using h'.pullback_of_isOpenImmersion X.topIso.inv
+
+/-- **Relative ampleness is invariant under isomorphisms over the base.** If `e : X' ⟶ X` is an
+isomorphism, then the pullback of `a` along `e` is relatively ample for `e ≫ f` exactly when `a`
+is relatively ample for `f`. -/
+theorem isRelativelyAmple_pullback_iff_of_isIso {X' : Scheme.{u}} (e : X' ⟶ X) [IsIso e]
+    (a : LineBundleClass X) (f : X ⟶ S) :
+    (pullback e a).IsRelativelyAmple (e ≫ f) ↔ a.IsRelativelyAmple f := by
+  -- Over an open `V` of the base, the inclusion of `(e ≫ f)⁻¹ V` followed by `e` is the
+  -- isomorphism `e ∣_ f⁻¹ V` followed by the inclusion of `f⁻¹ V`.
+  have hV (V : S.Opens) : (pullback ((e ≫ f) ⁻¹ᵁ V).ι (pullback e a)).IsAmple ↔
+      (pullback (f ⁻¹ᵁ V).ι a).IsAmple := by
+    -- `(e ≫ f) ⁻¹ᵁ V` is `e ⁻¹ᵁ f ⁻¹ᵁ V` by definition (`Scheme.Hom.comp_preimage`), but the
+    -- type of the pulled-back class depends on the open, so the lemma cannot be rewritten with.
+    change (pullback (e ⁻¹ᵁ f ⁻¹ᵁ V).ι (pullback e a)).IsAmple ↔ _
+    rw [pullback_comp, ← morphismRestrict_ι, ← pullback_comp, isAmple_pullback_iff_of_isIso]
+  refine ⟨fun h ↦ ⟨?_, fun V hV' ↦ (hV V).mp (h.isAmple_pullback V hV')⟩,
+    fun h ↦ ⟨?_, fun V hV' ↦ (hV V).mpr (h.isAmple_pullback V hV')⟩⟩
+  · have := h.quasiCompact
+    rw [← IsIso.inv_hom_id_assoc e f]
+    infer_instance
+  · have := h.quasiCompact
+    infer_instance
 
 /-- The trivial class is relatively ample for `f` exactly when `f` is quasi-affine: `f` is
 quasi-compact and the preimage of every affine open of the base is quasi-affine. -/
