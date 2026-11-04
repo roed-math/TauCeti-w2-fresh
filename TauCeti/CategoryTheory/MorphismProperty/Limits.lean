@@ -32,6 +32,10 @@ where `f` itself has `P`.
   `pullback_fst_of_comp_eq` is the resulting inheritance along `e ≫ f`.
 * `CategoryTheory.MorphismProperty.pullback_map_pullback_map_iff`: the same for the base change of
   a morphism `g` over `Z`, along `f'` after `f` and along `f' ≫ f`.
+* `CategoryTheory.MorphismProperty.pullback_map_iff_pullback_fst_pullback_snd`: the base change of
+  a morphism `g : X ⟶ Y` over `Z` along `f` is the base change of `g` along `T ×_Z Y ⟶ Y`.
+* `CategoryTheory.MorphismProperty.diagonal_pullback_fst_iff`: the diagonal of a base change of
+  `q` is the base change of the diagonal of `q`.
 -/
 
 public section
@@ -111,5 +115,29 @@ theorem pullback_map_pullback_map_iff [P.RespectsIso] {S T Z : C} (f' : T ⟶ S)
   refine P.arrow_mk_iso_iff (Arrow.isoMk (pullbackRightPullbackFstIso f p f')
     (pullbackRightPullbackFstIso f q f') ?_)
   apply pullback.hom_ext <;> simp
+
+omit [P.IsStableUnderBaseChange] in
+/-- The base change along `f` of a morphism `g : X ⟶ Y` over `Z` is the base change of `g` along
+the projection `T ×_Z Y ⟶ Y`, so the two have the same properties closed under isomorphisms. -/
+theorem pullback_map_iff_pullback_fst_pullback_snd [P.RespectsIso] {T Z : C} (f : T ⟶ Z)
+    {p : X ⟶ Z} {q : Y ⟶ Z} (g : X ⟶ Y) (hg : g ≫ q = p) :
+    P (pullback.map f p f q (𝟙 _) g (𝟙 _) (by simp) (by simp [hg])) ↔
+      P (pullback.fst (pullback.snd f q) g) := by
+  subst hg
+  refine P.arrow_mk_iso_iff (Arrow.isoMk (pullbackLeftPullbackSndIso f q g).symm (Iso.refl _) ?_)
+  apply pullback.hom_ext <;> simp
+
+omit [P.IsStableUnderBaseChange] in
+/-- The diagonal of the base change `T ×_Z Y ⟶ T` of `q : Y ⟶ Z` along `f` is the base change along
+`f` of the diagonal of `q`, so the two have the same properties closed under isomorphisms. -/
+theorem diagonal_pullback_fst_iff [P.RespectsIso] {T Z : C} (f : T ⟶ Z) (q : Y ⟶ Z) :
+    P.diagonal (pullback.fst f q) ↔
+      P (pullback.map f q f (pullback.snd q q ≫ q) (𝟙 _) (pullback.diagonal q) (𝟙 _) (by simp)
+        (by simp)) := by
+  have : pullback.diagonal (pullback.fst f q) =
+      pullback.map f q f (pullback.snd q q ≫ q) (𝟙 _) (pullback.diagonal q) (𝟙 _) (by simp)
+        (by simp) ≫ (pullbackSymmetry _ _).hom ≫ (diagonalObjPullbackFstIso f q).inv := by
+    ext <;> simp
+  rw [diagonal_iff, this, P.cancel_right_of_respectsIso]
 
 end CategoryTheory.MorphismProperty
