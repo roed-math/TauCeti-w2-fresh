@@ -59,6 +59,9 @@ Project defined through `ℙ(ℰ)`.
 Closed immersions, in particular isomorphisms, are projective
 (`TauCeti.AlgebraicGeometry.isProjective_of_isClosedImmersion`); this is proved in
 `TauCeti.AlgebraicGeometry.Blowup.Projective`, through the blowup along the unit ideal sheaf.
+A scheme projective over a ring `R` in the sense of `AlgebraicGeometry.Scheme.IsProjectiveOver` is
+projective over `Spec R` (`AlgebraicGeometry.Scheme.IsProjectiveOver.isProjective`, in
+`TauCeti.AlgebraicGeometry.Morphisms.ProjectiveOver`).
 
 ## References
 

@@ -40,12 +40,19 @@ variable {R : CommRingCat.{u}}
 private abbrev symmetricPresheaf (M : ModuleCat.{u} R) (n : ℕ) :=
   (PresheafOfModulesOfCommRing.symmetricPower (R := (Spec R).presheaf) n).obj (tilde M).val
 
-private def symmetricToOpenSemilinear (M : ModuleCat.{u} R) (U : (Spec R).Opens) :
+/-- The map `M → Γ(M~, U)` to the sections over an open `U` of the sheaf associated with `M`,
+semilinear over `R → Γ(Spec R, U)`. -/
+def tildeToOpenₛₗ (M : ModuleCat.{u} R) (U : (Spec R).Opens) :
     M →ₛₗ[algebraMap R ((Spec R).presheaf.obj (.op U))]
       PresheafOfModulesOfCommRing.obj (R := (Spec R).presheaf) (tilde M).val (.op U) :=
   { toFun := fun m ↦ tilde.toOpen M U m
     map_add' := (tilde.toOpen M U).hom.map_add
     map_smul' := (tilde.toOpen M U).hom.map_smul }
+
+@[simp]
+theorem tildeToOpenₛₗ_apply (M : ModuleCat.{u} R) (U : (Spec R).Opens) (m : M) :
+    tildeToOpenₛₗ M U m = tilde.toOpen M U m :=
+  (rfl)
 
 private def symmetricToOpen (M : ModuleCat.{u} R) (n : ℕ) (U : (Spec R).Opens) :
     M.symmetricPower n ⟶ (specPresheafFunctor.obj (symmetricPresheaf M n)).obj (.op U) := by
@@ -57,18 +64,18 @@ private def symmetricToOpen (M : ModuleCat.{u} R) (n : ℕ) (U : (Spec R).Opens)
     IsScalarTower.of_algebraMap_smul fun _ _ ↦ rfl
   exact ModuleCat.ofHom (Y := E)
     { toFun := TauCeti.SymmetricAlgebra.homogeneousSubmoduleMapₛₗ
-        (symmetricToOpenSemilinear M U) n
+        (tildeToOpenₛₗ M U) n
       map_add' := map_add _
       map_smul' := fun r x ↦ by
         exact (LinearMap.map_smulₛₗ
           (TauCeti.SymmetricAlgebra.homogeneousSubmoduleMapₛₗ
-            (symmetricToOpenSemilinear M U) n) r x).trans
+            (tildeToOpenₛₗ M U) n) r x).trans
           (IsScalarTower.algebraMap_smul A (M := E) r _)}
 
 private lemma coe_symmetricToOpen (M : ModuleCat.{u} R) (n : ℕ) (U : (Spec R).Opens)
     (x : M.symmetricPower n) :
     Subtype.val (symmetricToOpen M n U x) =
-      SymmetricAlgebra.mapₛₗ (symmetricToOpenSemilinear M U) x.1 :=
+      SymmetricAlgebra.mapₛₗ (tildeToOpenₛₗ M U) x.1 :=
   TauCeti.SymmetricAlgebra.coe_homogeneousSubmoduleMapₛₗ_apply _ n x
 
 private lemma symmetricToOpen_res (M : ModuleCat.{u} R) (n : ℕ)
@@ -78,8 +85,8 @@ private lemma symmetricToOpen_res (M : ModuleCat.{u} R) (n : ℕ)
   let ψ := (ModuleCat.semilinearMapAddEquiv
     ((Spec R).presheaf.map i.op).hom _ _).symm
       (PresheafOfModulesOfCommRing.map (R := (Spec R).presheaf) (tilde M).val i.op)
-  have h := SymmetricAlgebra.mapₛₗ_comp_mapₛₗ (symmetricToOpenSemilinear M U) ψ
-    (symmetricToOpenSemilinear M V)
+  have h := SymmetricAlgebra.mapₛₗ_comp_mapₛₗ (tildeToOpenₛₗ M U) ψ
+    (tildeToOpenₛₗ M V)
     (fun r ↦ ConcreteCategory.congr_hom
       (StructureSheaf.algebraMap_self_map R (.op V) (.op U) i.op) r)
     (fun m ↦ ConcreteCategory.congr_hom (tilde.toOpen_res M U V i) m)
@@ -108,7 +115,7 @@ private instance symmetricToOpen_isLocalized (M : ModuleCat.{u} R) (n : ℕ) (f 
     IsScalarTower.of_algebraMap_smul fun _ _ ↦ rfl
   exact @LinearMap.isLocalizedModule_symmetricPower R A M N _ _ _ _ M.isModule _ NR
     N.isModule NT φ (.powers f) inferInstance inferInstance n E.isModule ET
-    (symmetricToOpenSemilinear M U) (fun _ ↦ rfl)
+    (tildeToOpenₛₗ M U) (fun _ ↦ rfl)
     (symmetricToOpen M n U).hom (coe_symmetricToOpen M n U)
 
 private instance symmetricTildeToOpen_isLocalized (M : ModuleCat.{u} R) (n : ℕ) (f : R) :
@@ -295,8 +302,8 @@ private lemma symmetricToOpen_map (n : ℕ) {M N : ModuleCat.{u} R} (φ : M ⟶ 
       ModuleCat.symmetricPower.map φ n ≫ symmetricToOpen N n U := by
   let ψ := PresheafOfModules.Hom.app' (R := (Spec R).presheaf) (tilde.map φ).val (.op U)
   have h : (SymmetricAlgebra.map _ ψ.hom : _ →+* _).comp
-      (SymmetricAlgebra.mapₛₗ (symmetricToOpenSemilinear M U)) =
-      (SymmetricAlgebra.mapₛₗ (symmetricToOpenSemilinear N U)).comp
+      (SymmetricAlgebra.mapₛₗ (tildeToOpenₛₗ M U)) =
+      (SymmetricAlgebra.mapₛₗ (tildeToOpenₛₗ N U)).comp
         (SymmetricAlgebra.map R φ.hom : _ →+* _) := by
     apply SymmetricAlgebra.ringHom_ext
     · ext r
