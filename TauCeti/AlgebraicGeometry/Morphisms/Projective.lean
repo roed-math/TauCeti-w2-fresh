@@ -6,7 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
-public import TauCeti.AlgebraicGeometry.LineBundle.RelativelyAmple
+public import TauCeti.AlgebraicGeometry.LineBundle.RelativelyAmple.Comp
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.Ample
 public import TauCeti.AlgebraicGeometry.RelativeProj.Proper
 public import TauCeti.AlgebraicGeometry.RelativeProj.SymmetricAlgebra
@@ -46,6 +46,8 @@ Project defined through `ℙ(ℰ)`.
   (`LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne`).
 * `TauCeti.AlgebraicGeometry.IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple`: a
   projective morphism has a line bundle that is relatively very ample and relatively ample.
+* `TauCeti.AlgebraicGeometry.IsProjective.exists_isRelativelyAmple_comp`: over a quasi-compact
+  base, a composite of projective morphisms has a relatively ample line bundle.
 * `TauCeti.AlgebraicGeometry.IsProjective.isProper`: a projective morphism is proper.
 * `TauCeti.AlgebraicGeometry.isProjective_relativeProjToBase_gradedSymmetricAlgebra`: the
   projective bundle `ℙ(F) = Proj_S(Sym F)` of a quasicoherent sheaf `F` of finite type is
@@ -229,6 +231,18 @@ theorem IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple (f : X ⟶ S
     ⟨A, _, hA, i, inferInstance, rfl, ⟨Iso.refl _⟩⟩, ?_⟩
   rw [← LineBundleClass.pullback_mk]
   exact (LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne A hA).pullback i
+
+/-- **A composite of projective morphisms has a relatively ample line bundle** over a
+quasi-compact base: if `L` and `M` are relatively ample for the projective morphisms `f` and `g`
+(`IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple`), then `L ⊗ f^* M^{⊗n}` is
+relatively ample for `f ≫ g` once `n` is large
+(`LineBundleClass.IsRelativelyAmple.exists_isRelativelyAmple_comp_mul_pullback_pow`). -/
+theorem IsProjective.exists_isRelativelyAmple_comp [CompactSpace S] (f : X ⟶ Y) (g : Y ⟶ S)
+    [IsProjective f] [IsProjective g] : ∃ a : LineBundleClass X, a.IsRelativelyAmple (f ≫ g) := by
+  obtain ⟨L, -, hL⟩ := IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple f
+  obtain ⟨M, -, hM⟩ := IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple g
+  obtain ⟨N, hN⟩ := hL.exists_isRelativelyAmple_comp_mul_pullback_pow hM
+  exact ⟨_, hN N le_rfl⟩
 
 /-- **A projective morphism is proper**: it is a closed immersion followed by the structure
 morphism of a relative `Proj` of a graded algebra of finite type with finite degree-zero part. -/

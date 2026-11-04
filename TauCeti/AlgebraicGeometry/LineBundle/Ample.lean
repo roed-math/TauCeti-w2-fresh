@@ -480,6 +480,31 @@ theorem _root_.AlgebraicGeometry.Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq
       hBj B.isOpen hB.isCompact
     rwa [Opens.coe_inf, Set.inter_assoc, Set.inter_eq_right.mpr hBj] at hAB
 
+/-- **Sections over an open subscheme.** Let `U` be an open of `X`, `L` a line bundle on `X`, and
+`K` a line bundle on the scheme `U` of the class of the restriction of `L`. Every global section
+`s'` of `K` comes from a section `s` of `L` over `U`, with `X_s` the image of `K_{s'}`. -/
+theorem _root_.TauCeti.AlgebraicGeometry.InvertibleSheaf.exists_nonvanishingLocus_eq_image
+    (L : InvertibleSheaf X) {U : X.Opens} {K : InvertibleSheaf U}
+    (hK : mk K = LineBundleClass.pullback U.ι (mk L)) (s' : Γ(K.obj, ⊤)) :
+    ∃ s : Γ(L.obj, U), L.obj.nonvanishingLocus s = U.ι ''ᵁ K.obj.nonvanishingLocus s' := by
+  -- `K` is isomorphic to the restriction `L|_U`, through `L|_U ≅ U.ι^* L`.
+  obtain ⟨ψ⟩ := mk_eq_mk_iff.mp (hK.trans (pullback_mk _ _))
+  let φ := (Scheme.Modules.restrictFunctorIsoPullback U.ι).app L.obj
+  have : SheafOfModules.isInvertible U (L.obj.restrict U.ι) :=
+    (SheafOfModules.isInvertible U).prop_of_iso φ.symm inferInstance
+  let s : Γ(L.obj, U.ι ''ᵁ ⊤) :=
+    (L.obj.restrictAppIso U.ι ⊤).hom ((ψ ≪≫ φ.symm).hom.app ⊤ s')
+  have hs : U.ι ⁻¹ᵁ L.obj.nonvanishingLocus s = K.obj.nonvanishingLocus s' := by
+    rw [← Scheme.Modules.nonvanishingLocus_restrictAppIso_inv, Iso.hom_inv_id_apply,
+      Scheme.Modules.nonvanishingLocus_hom_app]
+  have hUtop : U.ι ''ᵁ ⊤ = U := by
+    rw [U.ι.image_top_eq_opensRange, Scheme.Opens.opensRange_ι]
+  have hsU : L.obj.nonvanishingLocus s ≤ U :=
+    (Scheme.Modules.nonvanishingLocus_le s).trans hUtop.le
+  refine ⟨L.obj.presheaf.map (homOfLE hUtop.ge).op s, ?_⟩
+  rw [Scheme.Modules.nonvanishingLocus_map, inf_eq_right.mpr hsU, ← hs,
+    U.ι.image_preimage_eq_opensRange_inf, Scheme.Opens.opensRange_ι, inf_eq_right.mpr hsU]
+
 /-- **Ampleness can be checked on a cover by basic opens.** Let `X` be quasi-compact, and let `rᵢ`
 be global functions whose basic opens `X_{rᵢ}` cover `X`. If the restriction of `a` to every
 `X_{rᵢ}` is ample, then `a` is ample. Let `L` be a line bundle of class `aⁿ`, and `s` a section of
@@ -498,38 +523,17 @@ theorem IsAmple.of_iSup_basicOpen_eq_top [CompactSpace X]
     let U := X.basicOpen (r i)
     obtain ⟨n, hn, K, hK, s', hxs', hs'⟩ := (h i).exists_isAffineOpen_nonvanishingLocus ⟨x, hxi⟩
     obtain ⟨L, hL⟩ := mk_surjective (a ^ n)
-    -- `K` is isomorphic to the restriction `L|_U`, through `L|_U ≅ U.ι^* L`.
-    obtain ⟨ψ⟩ := mk_eq_mk_iff.mp (hK.trans (by
-      rw [← pullbackHom_apply, ← map_pow, pullbackHom_apply, ← hL, pullback_mk]))
-    let φ := (Scheme.Modules.restrictFunctorIsoPullback U.ι).app L.obj
-    have : SheafOfModules.isInvertible U (L.obj.restrict U.ι) :=
-      (SheafOfModules.isInvertible U).prop_of_iso φ.symm inferInstance
-    -- The section `s'` of `K`, carried to `L|_U` and then to a section `s` of `L` over `U`.
-    let s'' : Γ(L.obj.restrict U.ι, ⊤) := (ψ ≪≫ φ.symm).hom.app ⊤ s'
-    let s : Γ(L.obj, U.ι ''ᵁ ⊤) := (L.obj.restrictAppIso U.ι ⊤).hom s''
-    have hs : U.ι ⁻¹ᵁ L.obj.nonvanishingLocus s = K.obj.nonvanishingLocus s' := by
-      rw [← Scheme.Modules.nonvanishingLocus_restrictAppIso_inv, Iso.hom_inv_id_apply,
-        Scheme.Modules.nonvanishingLocus_hom_app]
-    have hUtop : U.ι ''ᵁ ⊤ = U := by
-      rw [U.ι.image_top_eq_opensRange, Scheme.Opens.opensRange_ι]
-    have hsU : L.obj.nonvanishingLocus s ≤ U :=
-      (Scheme.Modules.nonvanishingLocus_le s).trans hUtop.le
-    -- `X_s` is the image of the affine open `K_{s'}` of `U`.
-    have hsaff : IsAffineOpen (L.obj.nonvanishingLocus s) := by
-      have := (hs ▸ hs').image_of_isOpenImmersion U.ι
-      rwa [U.ι.image_preimage_eq_opensRange_inf, Scheme.Opens.opensRange_ι,
-        inf_eq_right.mpr hsU] at this
-    have hxs : x ∈ L.obj.nonvanishingLocus s := by
-      rw [← hs] at hxs'
-      exact hxs'
+    -- The section `s'` of `K` comes from a section `s` of `L` over `U`, with `X_s` the image of
+    -- the affine open `K_{s'}` of `U`.
+    obtain ⟨s, hs⟩ := InvertibleSheaf.exists_nonvanishingLocus_eq_image L (K := K) (by
+      rw [hK, hL]
+      simp only [← pullbackHom_apply, map_pow]) s'
+    have hsU : L.obj.nonvanishingLocus s ≤ U := Scheme.Modules.nonvanishingLocus_le s
     -- Extend `s` to a global section `t` after multiplication by a power of `r i`.
-    let s₀ : Γ(L.obj, U) := L.obj.presheaf.map (homOfLE hUtop.ge).op s
-    have hs₀ : L.obj.nonvanishingLocus s₀ = L.obj.nonvanishingLocus s := by
-      rw [Scheme.Modules.nonvanishingLocus_map, inf_eq_right.mpr hsU]
     have := L.obj.isLocalizedModule_basicOpenRestrict_of_qcqs (U := ⊤)
       (by simpa using isCompact_univ) (by simpa using isQuasiSeparated_univ) (r i)
     obtain ⟨⟨t, _, k, rfl⟩, ht⟩ :=
-      IsLocalizedModule.surj (Submonoid.powers (r i)) (L.obj.basicOpenRestrict (r i)) s₀
+      IsLocalizedModule.surj (Submonoid.powers (r i)) (L.obj.basicOpenRestrict (r i)) s
     have hUk : U ≤ X.basicOpen (r i ^ k) := by
       rcases k with _ | k
       · simp
@@ -539,12 +543,12 @@ theorem IsAmple.of_iSup_basicOpen_eq_top [CompactSpace X]
       have := congrArg L.obj.nonvanishingLocus ht
       rw [Scheme.Modules.basicOpenRestrict_apply, Scheme.Modules.nonvanishingLocus_map,
         Submonoid.smul_def, Scheme.Modules.basicOpen_smul_def,
-        Scheme.Modules.nonvanishingLocus_smul, Scheme.basicOpen_res, hs₀,
+        Scheme.Modules.nonvanishingLocus_smul, Scheme.basicOpen_res,
         inf_eq_right.mpr (hsU.trans (le_inf le_rfl hUk))] at this
       exact this.symm
     refine ⟨n, hn, L, hL, r i • t, ?_, ?_⟩ <;>
-      rw [Scheme.Modules.nonvanishingLocus_smul, ht']
-    exacts [hxs, hsaff]
+      rw [Scheme.Modules.nonvanishingLocus_smul, ht', hs]
+    exacts [⟨⟨x, hxi⟩, hxs', rfl⟩, hs'.image_of_isOpenImmersion U.ι]
 
 /-- **Exterior products of ample classes are ample over a separated base.** Let `P = X ×_S Y` be
 a fibre product over a separated scheme `S`, with projections `q₁` and `q₂`. If `a` is ample on

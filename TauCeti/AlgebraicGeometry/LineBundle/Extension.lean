@@ -176,6 +176,14 @@ theorem nonvanishingLocus_sectionPow_of_le {s : Γ(L.obj, U)}
     exact (nonvanishingLocus_sectionPow_succ s n).trans
       (le_antisymm (Scheme.Modules.nonvanishingLocus_le s) h)
 
+/-- The nonvanishing locus of a section lies in that of each of its tensor powers. -/
+theorem nonvanishingLocus_le_nonvanishingLocus_sectionPow (s : Γ(L.obj, U)) (n : ℕ) :
+    L.obj.nonvanishingLocus s ≤ (L.tensorPow n).obj.nonvanishingLocus (sectionPow s n) := by
+  cases n with
+  | zero =>
+    exact (Scheme.Modules.nonvanishingLocus_le s).trans (nonvanishingLocus_oneSection U).ge
+  | succ n => rw [nonvanishingLocus_sectionPow_succ]
+
 /-- **Sections vanishing on `X_s` are killed by powers of `s`** (Stacks, Tag 01PW (1)). Let `U` be
 quasi-compact, `s` a section of `L` over `U`, and `w` a section of a line bundle `F` over `U` whose
 restriction to `X_s` vanishes. Then `s^{⊗n} ⊗ w = 0` for all large `n`. Locally on an affine open

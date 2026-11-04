@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":11,"after":[1,2,3,4,5,6,7,8,9,10],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[1,2,3,4,5,6,7,8,9,10,11],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
 Built on `main` at `7ed979dc2eacd36a3962e1fdf3b481323fb3fb8b`. Status: **partial**. Target text
@@ -9,7 +9,7 @@ algebra." The target has no pinned forms in `StableReduction/Suggested.lean`.
 
 ## Stubbed declarations: none left
 
-Sixth session (2026-11-04, 00:05 UTC). The supplier `relative-proj-twisting-sheaf`
+Sixth session (2026-11-04, 00:05 UTC), still true in the seventeenth. The supplier `relative-proj-twisting-sheaf`
 (SchemeAndStackFoundations §0.3) has landed the part this target consumes, in
 `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf.lean` on `main`. The stub file
 `TauCeti/Lookahead/RelativeAmpleness/Stubs.lean` is deleted and the proof now uses the landed
@@ -39,6 +39,45 @@ The earlier stubs and what replaced them:
    `CommMon.IsGeneratedInDegreeOne A` with exactly that body, plus `isGeneratedInDegreeOne_iff`,
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
+
+## Changes in the seventeenth session (2026-11-04, 11:10 UTC)
+
+- `main` is unchanged at `7ed979dc2ea`; the supplier PR #27145 is still open and still not
+  consumed, so there are still no stubs.
+- **Relative ampleness composes after twisting (Stacks, Tag 0C4K)**, the composition input named
+  in last session's "Remains". New file `LineBundle/RelativelyAmple/Comp.lean` (split 10):
+  - `LineBundleClass.IsRelativelyAmple.exists_isAmple_mul_pullback_pow`: if `a` is relatively
+    ample for `f : X ⟶ Y` and `b` is ample on `Y`, then `a · f* bⁿ` is ample on `X` for all
+    `n ≥ N`. For `x ∈ X`, choose `s ∈ Γ(Y, M)`, `[M] = bᵈ`, with `Y_s ∋ f x` affine, and a section
+    `t` over `U = f⁻¹ Y_s` of a bundle of class `aᵉ` with `X_t ∋ x` affine. Then
+    `(f* s)^{⊗c} ⊗ t` extends to a global `ξ` (`InvertibleSheaf.exists_map_eq_tmul_sectionPow`,
+    split 8), `X_{f* s ⊗ ξ} = X_t`, and `(f* s)^{⊗k} ⊗ (f* s ⊗ ξ)^{⊗d}` with `k = e n − d c` is a
+    section of class `(a · f* bⁿ)^{e d}` vanishing nowhere exactly on `X_t`, for every `n ≥ d c`.
+    Finitely many `X_t` cover `X`.
+  - `LineBundleClass.IsRelativelyAmple.exists_isRelativelyAmple_comp_mul_pullback_pow`: over a
+    quasi-compact base `S`, relative ampleness of `a` for `f` and of `b` for `g : Y ⟶ S` gives
+    relative ampleness of `a · f* bⁿ` for `f ≫ g` for all large `n` (finite affine cover of `S`,
+    the absolute case over each piece, and locality on the base).
+- `IsProjective.exists_isRelativelyAmple_comp` (final split, `Morphisms/Projective.lean`): over a
+  quasi-compact base, a composite of projective morphisms carries a relatively ample class.
+- Deduplication: the transport of a section of a line bundle on an open subscheme `U` to a section
+  of `L` over `U` with the image nonvanishing locus, which was inline in
+  `IsAmple.of_iSup_basicOpen_eq_top`, is now the lemma
+  `InvertibleSheaf.exists_nonvanishingLocus_eq_image` in `Ample.lean` (split 5); that proof and
+  the new 0C4K proof both use it, and the proof of `of_iSup_basicOpen_eq_top` is shorter. The
+  small lemma `InvertibleSheaf.nonvanishingLocus_le_nonvanishingLocus_sectionPow`
+  (`X_s ⊆ X_{s^{⊗n}}`, also for `n = 0`) goes to `Extension.lean` (split 8).
+- Splits: the new split 10 carries `Comp.lean`; intersection numbers are split 11 and the final
+  split is 12.
+- Verified: `lake build` green (62972 jobs) and `lookahead-check` ok. No `sorry` anywhere on the
+  branch.
+- Rubric audit:
+  - naming: inside `namespace LineBundleClass`, the theorem names `IsRelativelyAmple.…` make bare
+    `pullback` and `mk` resolve to `IsRelativelyAmple.pullback`/`.mk`, so the statements use
+    `LineBundleClass.pullback` and `LineBundleClass.mk` explicitly;
+  - duplication: the section transport is factored out rather than copied (see above);
+  - placement: the composition result gets its own file under `LineBundle/RelativelyAmple/`
+    rather than growing `RelativelyAmple.lean`, so that it is its own split.
 
 ## Changes in the sixteenth session (2026-11-04, 10:20 UTC)
 
@@ -562,6 +601,8 @@ The earlier stubs and what replaced them:
    - `LineBundle/Ample.lean` (the rest of its diff; it now also imports
      `Modules/Localization.lean`, `Morphisms/Separated.lean` and `Pullback/Affine.lean`):
      `IsAmple.isSeparated`, `AlgebraicGeometry.Scheme.quasiSeparatedSpace_of_iSup_basicOpen_eq_top`,
+     `InvertibleSheaf.exists_nonvanishingLocus_eq_image` (sections of a line bundle on an open
+     subscheme `U` come from sections over `U`; used by the next lemma and by split 10),
      `IsAmple.of_iSup_basicOpen_eq_top`, `IsAmple.pullback_mul_pullback`,
      `InvertibleSheaf.exists_isAffineOpen_nonvanishingLocus_of_isQuasiAffine`,
      `InvertibleSheaf.isGloballyGenerated_of_isQuasiAffine` and `isAmple_of_isQuasiAffine`. It
@@ -591,7 +632,7 @@ The earlier stubs and what replaced them:
    - Subject: `feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper`
 8. **Sections over nonvanishing loci extend; ampleness pulls back along immersions**
    (after: 2, 4, 5).
-   - Files: `TauCeti/AlgebraicGeometry/LineBundle/Extension.lean` (318 lines, new; imports
+   - Files: `TauCeti/AlgebraicGeometry/LineBundle/Extension.lean` (326 lines, new; imports
      `LineBundle/NonvanishingLocus.lean`, `LineBundle/Power.lean`, and privately
      `Modules/Localization.lean` and `Algebra/Group/Action/Pow.lean`); `LineBundle/Ample.lean`
      (+75; it now also imports `Mathlib.AlgebraicGeometry.Morphisms.Immersion` and
@@ -599,7 +640,8 @@ The earlier stubs and what replaced them:
    - Declarations in `Extension.lean` (namespace `TauCeti.AlgebraicGeometry.InvertibleSheaf`):
      `oneSection`, `oneSection_map`, `nonvanishingLocus_oneSection`; the tensor powers of sections
      `sectionPow` with `sectionPow_zero`, `sectionPow_succ`, `sectionPow_map`, `sectionPow_smul`,
-     `nonvanishingLocus_sectionPow_succ`, `nonvanishingLocus_sectionPow_of_le`; the two halves of
+     `nonvanishingLocus_sectionPow_succ`, `nonvanishingLocus_sectionPow_of_le`,
+     `nonvanishingLocus_le_nonvanishingLocus_sectionPow`; the two halves of
      Stacks 01PW for line bundles on a quasi-compact (quasi-separated) open,
      `exists_tmul_sectionPow_eq_zero` (sections vanishing on `X_s` are killed by `s^{⊗n}`) and
      `exists_map_eq_tmul_sectionPow` (sections over `X_s` extend after multiplication by
@@ -633,18 +675,29 @@ The earlier stubs and what replaced them:
      `InvertibleSheaf.isRelativelyAmple_tensorPow_iff`.
    - Roadmap line: `Roadmap: StableReduction`.
    - Subject: `feat(AlgebraicGeometry/LineBundle): relatively ample line bundles`
-10. **Intersection numbers of powers** (after: none). A small addition to `main` only.
+10. **Relative ampleness composes after twisting by a large power** (after: 2, 3, 4, 5, 8, 9).
+   - File: `TauCeti/AlgebraicGeometry/LineBundle/RelativelyAmple/Comp.lean` (177 lines, new;
+     imports `LineBundle/RelativelyAmple.lean`).
+   - Declarations (namespace `TauCeti.AlgebraicGeometry.LineBundleClass`):
+     `IsRelativelyAmple.exists_isAmple_mul_pullback_pow` (`a` relatively ample for `f : X ⟶ Y`,
+     `b` ample on `Y` ⇒ `a · f* bⁿ` ample for `n ≫ 0`) and
+     `IsRelativelyAmple.exists_isRelativelyAmple_comp_mul_pullback_pow` (Stacks 0C4K over a
+     quasi-compact base).
+   - Roadmap line: `Roadmap: StableReduction`.
+   - Subject: `feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power`
+11. **Intersection numbers of powers** (after: none). A small addition to `main` only.
    - File: `main`'s `TauCeti/AlgebraicGeometry/IntersectionNumber/Basic.lean` (+27/−1).
    - Declarations: `TauCeti.AlgebraicGeometry.LineBundleClass.intersectionNumber_pow` and
      `intersectionNumber_zpow` (both simp): `(aⁿ · C) = n (a · C)` on a regular proper integral
      curve.
    - Subject: `feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers`
-11. **Relatively very ample line bundles, projective morphisms, projective bundles and blowups**
-    (after: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10). It imports splits 1, 6, 7 and 9, and through them 2,
-    3, 4, 5 and 8; split 10 is ordered before it so that it is the last split to merge.
+12. **Relatively very ample line bundles, projective morphisms, projective bundles and blowups**
+    (after: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11). It imports splits 1, 6, 7 and 10, and through them
+    2, 3, 4, 5, 8 and 9; split 11 is ordered before it so that it is the last split to merge.
     It is the only split that completes the target, and it carries its exported theorems.
     - Files (about 410 lines):
-      - `TauCeti/AlgebraicGeometry/Morphisms/Projective.lean` (276 lines, new);
+      - `TauCeti/AlgebraicGeometry/Morphisms/Projective.lean` (290 lines, new; imports
+        `LineBundle/RelativelyAmple/Comp.lean`);
       - `TauCeti/AlgebraicGeometry/Blowup/Projective.lean` (105 lines, new);
       - `main`'s `Blowup/IdealSheaf.lean` (+24/−12: the two inline bullets of
         `isProper_blowupToBase` become `finiteType_sections_reesAlgebra` and
@@ -655,7 +708,8 @@ The earlier stubs and what replaced them:
       `IsRelativelyVeryAmple.isSeparated`, `IsRelativelyVeryAmple.isRelativelyAmple` (for
       quasi-compact `f`); `LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne`;
       `IsProjective` (class), `isProjective_relativeProjToBase`, the instance `IsProjective (j ≫ f)`
-      for a closed immersion `j`, `IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple`, the
+      for a closed immersion `j`, `IsProjective.exists_isRelativelyVeryAmple_isRelativelyAmple`,
+      `IsProjective.exists_isRelativelyAmple_comp` (over a quasi-compact base), the
       instance `IsProjective.isProper`; projective bundles:
       `InvertibleSheaf.isRelativelyVeryAmple_relativeProjTwistingSheaf_gradedSymmetricAlgebra`,
       `LineBundleClass.isRelativelyAmple_relativeProjTwistingSheafOne_gradedSymmetricAlgebra`, and
@@ -709,6 +763,9 @@ Proved, with no stubs:
 - Tensor products and tensor powers of sections of line bundles, and both halves of Stacks 01PW
   for line bundles: on a quasi-compact quasi-separated open, sections vanishing on `X_s` are
   killed by powers of `s`, and sections over `X_s` extend after multiplication by a power of `s`.
+- Composition of relative ampleness (Stacks 0C4K): if `a` is relatively ample for `f : X ⟶ Y`
+  and `b` is ample on `Y`, then `a · f* bⁿ` is ample for all large `n`; over a quasi-compact
+  base, relative ampleness for `f` and `g` gives it for `f ≫ g` after such a twist.
 - Ample line bundles have a basis of affine nonvanishing loci; ampleness pulls back along
   immersions from quasi-compact schemes, and relative ampleness along quasi-compact immersions of
   the source.
@@ -723,15 +780,17 @@ Proved, with no stubs:
   of finite type is projective, and its `𝒪(1)` is relatively ample.
 
 Remains for the target:
-- Stability of projectivity under composition and base change. Part of the ampleness input is
-  done: base change, exterior products and descent along separated morphisms. Composition still
-  needs the lemma that `L ⊗ f* Mⁿ` is relatively ample for `f ≫ g` when `L` is relatively ample
-  for `f`, `M` for `g`, and `n` is large (Stacks 0C4K; composition with a quasi-affine `g`, where
-  `M` is trivial, is done). Its proof now has its key input, the extension of sections from
-  `f⁻¹ Y_s = X_{f* s}` (`InvertibleSheaf.exists_map_eq_tmul_sectionPow`, split 8). Also missing is the `Proj` input: base change of the relative `Proj` along
-  an arbitrary morphism of the base, which
-  needs pullback of graded quasi-coherent algebras (`main` has it only for restriction to opens,
-  `CommMon.isPullback_proj_restrictGradedSections`), and the relative Segre embedding.
+- Stability of projectivity under composition and base change. The ampleness input is done:
+  base change, exterior products, descent along separated morphisms, and now composition
+  (Stacks 0C4K, split 10: `L ⊗ f* Mⁿ` is relatively ample for `f ≫ g` for large `n`, so a
+  composite of projective morphisms over a quasi-compact base carries a relatively ample class,
+  `IsProjective.exists_isRelativelyAmple_comp`). What is missing is the `Proj` side. For
+  composition: the converse direction, that a relatively ample class for a finite-type proper
+  morphism gives a closed immersion into the relative `Proj` of a finite-type algebra generated
+  in degree one (Stacks 01VU/01VS via the relative `Proj` of the section algebra, with a relative
+  Segre or Veronese step to reach degree one). For base change: pullback of graded
+  quasi-coherent algebras along an arbitrary morphism of the base and `Proj` commuting with it
+  (`main` has it only for restriction to opens, `CommMon.isPullback_proj_restrictGradedSections`).
 Not needed from this target (checked in the fifteenth session):
 - Cartier divisors and degree on components. `main` already has the basic API: Cartier divisors,
   their sheaves `𝒪(D)` and the map to line-bundle classes (`CartierDivisor/Sheaf.lean`,
