@@ -26,7 +26,8 @@ Leray spectral sequence is the pullback `Sheaf.H.pullback pb c` of cohomology to
 (`Sheaf.H.lerayEdge`) and proves that it is natural in `F`, compatible with the connecting
 homomorphisms of short exact sequences that stay exact after pushforward, and in degree zero
 given by the adjunction, hence bijective when `c` is an isomorphism, and injective in degree one,
-the first map of the five-term exact sequence. By dimension shifting along the injective
+the first map of the five-term exact sequence; it is the identity for the identity morphism and
+compatible with composition of morphisms. By dimension shifting along the injective
 embeddings of `F`, if the higher direct images `Rᵠ f_* F` vanish for `0 < q < n`, the edge map is
 injective in degree `n`, and bijective if moreover `Rⁿ f_* F = 0`: in the Leray spectral sequence
 no differential reaches `E₂^{n,0}`. When all higher direct images of `F` vanish, for instance when
@@ -40,6 +41,8 @@ injective sheaves, whose higher cohomology vanishes.
 * `CategoryTheory.Sheaf.H.lerayEdge`: the edge map `Hⁿ(C, f_* F) →+ Hⁿ(D, F)`.
 * `CategoryTheory.Sheaf.H.lerayEdge_naturality`: naturality in `F`.
 * `CategoryTheory.Sheaf.H.lerayEdge_δ`: compatibility with connecting homomorphisms.
+* `CategoryTheory.Sheaf.H.lerayEdge_id`, `CategoryTheory.Sheaf.H.lerayEdge_comp_apply`: the edge
+  map of the identity is the identity, and edge maps compose along composite morphisms.
 * `CategoryTheory.Sheaf.H.addEquiv₀_lerayEdge`, `CategoryTheory.Sheaf.H.lerayEdge_zero_bijective`:
   the edge map in degree zero.
 * `CategoryTheory.Sheaf.H.lerayEdge_one_injective`: the edge map is injective in degree one.
@@ -60,7 +63,7 @@ public section
 
 open CategoryTheory Abelian Limits AddCommGrpCat
 
-universe w w₁ w₂
+universe w w₁ w₂ w₃
 
 namespace CategoryTheory.Sheaf.H
 
@@ -106,6 +109,33 @@ lemma lerayEdge_δ [pf.PreservesZeroMorphisms] {S : ShortComplex (Sheaf K AddCom
       τ₃ := adj.counit.app S.X₃ }
   exact (congrArg (H.map (adj.counit.app S.X₁) n₁) (pullback_δ pb c hS' n₀ n₁ h x)).trans
     (H.δ_naturality n₀ n₁ h (hS'.map_of_exact pb) hS φ _).symm
+
+/-- The edge map of the identity, with the identity comparison of constant sheaves, is the
+identity: for the identity morphism of sites the Leray spectral sequence degenerates. -/
+@[simp]
+lemma lerayEdge_id (F : Sheaf K AddCommGrpCat.{w}) (n : ℕ) :
+    lerayEdge Adjunction.id (𝟙 _) F n = AddMonoidHom.id _ := by
+  ext x
+  rw [lerayEdge_apply, pullback_id_apply]
+  exact H.map_id_apply x
+
+/-- The edge maps of two composable morphisms compose to the edge map of the composite: for
+`f : D ⟶ C` and `g : E ⟶ D`, the edge map `Hⁿ(C, f_* g_* F) ⟶ Hⁿ(E, F)` of `f ∘ g` is the edge
+map of `f` for `g_* F` followed by the edge map of `g`, for the composite comparison
+`ℤ ⟶ g⁻¹ ℤ ⟶ g⁻¹ f⁻¹ ℤ` of constant sheaves. -/
+lemma lerayEdge_comp_apply {E : Type*} [Category* E] {L : GrothendieckTopology E}
+    [HasSheafify L AddCommGrpCat.{w}] [HasExt.{w₃} (Sheaf L AddCommGrpCat.{w})]
+    {pb₂ : Sheaf K AddCommGrpCat.{w} ⥤ Sheaf L AddCommGrpCat.{w}} [pb₂.Additive]
+    [PreservesFiniteLimits pb₂] [PreservesFiniteColimits pb₂]
+    {pf₂ : Sheaf L AddCommGrpCat.{w} ⥤ Sheaf K AddCommGrpCat.{w}} (adj₂ : pb₂ ⊣ pf₂)
+    (c₂ : (constantSheaf L AddCommGrpCat.{w}).obj (of (ULift ℤ)) ⟶
+      pb₂.obj ((constantSheaf K AddCommGrpCat.{w}).obj (of (ULift ℤ))))
+    (F : Sheaf L AddCommGrpCat.{w}) (n : ℕ) (x : H (pf.obj (pf₂.obj F)) n) :
+    lerayEdge (adj.comp adj₂) (c₂ ≫ pb₂.map c) F n x =
+      lerayEdge adj₂ c₂ F n (lerayEdge adj c (pf₂.obj F) n x) := by
+  rw [lerayEdge_apply, lerayEdge_apply, lerayEdge_apply, pullback_comp_apply,
+    pullback_naturality, ← H.map_comp_apply, Adjunction.comp_counit_app]
+  rfl
 
 /-- In degree zero, the edge map sends the class of a map `g : ℤ_J ⟶ f_* F` to its adjoint
 `ℤ_K ⟶ pb ℤ_J ⟶ F`, precomposed with `c`. -/

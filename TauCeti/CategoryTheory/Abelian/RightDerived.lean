@@ -29,7 +29,8 @@ For a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective, an in
 extends to one of `X` (`CategoryTheory.InjectiveResolution.ofShortExact`), which shifts the
 right derived functors by one degree:
 
-* if `R^{n+2} G (X)` vanishes, so does `R^{n+1} G (Q)`
+* `R^{n+2} G (X) ≅ R^{n+1} G (Q)` (`CategoryTheory.Functor.rightDerivedObjX₁IsoOfShortExact`), so
+  if `R^{n+2} G (X)` vanishes, so does `R^{n+1} G (Q)`
   (`CategoryTheory.Functor.isZero_rightDerived_obj_X₃_of_isZero`);
 * if `G` is left exact and `R¹ G (X)` vanishes, then `0 ⟶ G X ⟶ G I ⟶ G Q ⟶ 0` is short exact
   (`CategoryTheory.Functor.shortExact_map_of_isZero_rightDerived_one`).
@@ -175,20 +176,26 @@ variable (G : C ⥤ D) [G.Additive] {S : ShortComplex C} (hS : S.ShortExact) [In
 
 include hS in
 /-- **Dimension shifting.** For a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective,
+`R^{n+2} G (X) ≅ R^{n+1} G (Q)`: an injective resolution of `Q` computes the right side, and its
+extension `X ⟶ I ⟶ R⁰ ⟶ R¹ ⟶ ⋯` (`InjectiveResolution.ofShortExact`) computes the left side,
+with the same differentials one degree higher. -/
+noncomputable def rightDerivedObjX₁IsoOfShortExact (n : ℕ) :
+    (G.rightDerived (n + 2)).obj S.X₁ ≅ (G.rightDerived (n + 1)).obj S.X₃ :=
+  let R := injectiveResolution S.X₃
+  (R.ofShortExact hS).isoRightDerivedObj G (n + 2) ≪≫
+    HomologicalComplex.homologyIsoSc' _ (n + 1) (n + 2) (n + 3) (by simp) (by simp) ≪≫
+    -- the short complexes in degrees `n + 2` and `n + 1` agree by unfolding `augment`
+    (HomologicalComplex.homologyIsoSc' ((G.mapHomologicalComplex _).obj R.cocomplex) n (n + 1)
+      (n + 2) (by simp) (by simp)).symm ≪≫
+    (R.isoRightDerivedObj G (n + 1)).symm
+
+include hS in
+/-- **Dimension shifting.** For a short exact sequence `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` with `I` injective,
 if `R^{n+2} G (X)` vanishes, so does `R^{n+1} G (Q)`. -/
 theorem isZero_rightDerived_obj_X₃_of_isZero (n : ℕ)
     (h : IsZero ((G.rightDerived (n + 2)).obj S.X₁)) :
-    IsZero ((G.rightDerived (n + 1)).obj S.X₃) := by
-  let R := injectiveResolution S.X₃
-  have h' := h.of_iso ((R.ofShortExact hS).isoRightDerivedObj G (n + 2)).symm
-  refine IsZero.of_iso ?_ (R.isoRightDerivedObj G (n + 1))
-  rw [HomologicalComplex.homologyFunctor_obj,
-    ← HomologicalComplex.exactAt_iff_isZero_homology,
-    HomologicalComplex.exactAt_iff' _ n (n + 1) (n + 2) (by simp) (by simp)]
-  rw [HomologicalComplex.homologyFunctor_obj,
-    ← HomologicalComplex.exactAt_iff_isZero_homology,
-    HomologicalComplex.exactAt_iff' _ (n + 1) (n + 2) (n + 3) (by simp) (by simp)] at h'
-  exact h'
+    IsZero ((G.rightDerived (n + 1)).obj S.X₃) :=
+  h.of_iso (G.rightDerivedObjX₁IsoOfShortExact hS n).symm
 
 include hS in
 /-- **Dimension shifting in degree one.** For a left exact functor `G` and a short exact sequence

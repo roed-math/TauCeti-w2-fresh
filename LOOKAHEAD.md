@@ -1,8 +1,9 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"333c9e49143de812ed1452b412193ee9c05501e7","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":3,"after":[1],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":4,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":5,"after":[1,2,3,4],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"8e29268de79c45d1730fa54d62137f70cd24b4e3","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":3,"after":[1],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":4,"after":[],"title":"feat: the Čech double complex of a covering with coefficients in an injective resolution"},{"n":5,"after":[1,2,3,4],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `333c9e49143de812ed1452b412193ee9c05501e7`. Status: **partial**.
+Built on `main` at `8e29268de79c45d1730fa54d62137f70cd24b4e3` (this session merged `main` forward from
+`333c9e49143`; #27242 is still open, so its stub stays). Status: **partial**.
 
 ## Supplier state
 
@@ -44,7 +45,10 @@ replace its import in `LerayEdge.lean` by `TauCeti.CategoryTheory.Sites.Continuo
 
 - `InjectiveResolution.ofShortExact hS R` — for `0 ⟶ X ⟶ I ⟶ Q ⟶ 0` short exact with `I`
   injective and an injective resolution `R` of `Q`, the injective resolution `X ⟶ I ⟶ R⁰ ⟶ R¹ ⟶ ⋯`;
-- `Functor.isZero_rightDerived_obj_X₃_of_isZero` — `R^{n+2}G(X) = 0 → R^{n+1}G(Q) = 0`;
+- `Functor.rightDerivedObjX₁IsoOfShortExact` (new this session) — `R^{n+2}G(X) ≅ R^{n+1}G(Q)`, read
+  off from the two resolutions, whose short complexes in degrees `n + 2` and `n + 1` agree;
+- `Functor.isZero_rightDerived_obj_X₃_of_isZero` — `R^{n+2}G(X) = 0 → R^{n+1}G(Q) = 0`, now a
+  one-line corollary of the isomorphism;
 - `Functor.epi_map_g_of_isZero_rightDerived_one`,
   `Functor.shortExact_map_of_isZero_rightDerived_one` — for left exact `G`, `R¹G(X) = 0` makes
   `0 ⟶ GX ⟶ GI ⟶ GQ ⟶ 0` short exact.
@@ -56,6 +60,10 @@ for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for
 - `lerayEdge adj c F n : H (pf.obj F) n →+ H F n` — the edge map `E₂^{n,0} = Hⁿ(C, f_*F) → Hⁿ(D, F)`,
   with `lerayEdge_apply`, `lerayEdge_naturality`, `lerayEdge_δ`, `addEquiv₀_lerayEdge`,
   `lerayEdge_zero_bijective`, `subsingleton_H_obj_of_injective` (Stacks 072Z input),
+  `lerayEdge_id` and `lerayEdge_comp_apply` (new this session: the edge map of the identity is the
+  identity, and the edge map of `f ∘ g` is that of `f` for `g_* F` followed by that of `g`, for
+  `adj.comp adj₂` and the comparison `c₂ ≫ pb₂.map c`; from `pullback_id_apply` and
+  `pullback_comp_apply` on `main` — the edge-map half of the relative form for composites),
   `lerayEdge_one_injective` (first map of the five-term exact sequence) — from the previous round;
 - new: `lerayEdge_succ_surjective`, `lerayEdge_succ_injective` — dimension shifting for the edge
   map along `0 ⟶ F ⟶ I ⟶ Q ⟶ 0` with `I` injective and `f_*` of it short exact;
@@ -79,7 +87,21 @@ The spectral sequence itself:
    identification and the cohomological reindexing are not there. The lemma that `G`-acyclic
    resolutions compute `R•G` is the first missing input; `ofShortExact` and the dimension-shift
    lemmas of split 1 are its inductive step.
-2. `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
+2. Čech acyclicity of injective abelian sheaves on a general site, the input of
+   `cech_to_cohomology` and of Leray's acyclicity theorem for coverings (Stacks 03AZ/03F7). `main`
+   has Leray's theorem only for open covers of topological spaces
+   (`TauCeti/Topology/Sheaves/Leray.lean`), where injective sheaves are flasque; on a site there are
+   no flasque sheaves. Planned proof (assessed this session, ~500 lines, not started): for a family
+   `U` and an object `W`, the Čech complex of the presheaf `V ↦ op ℤ[Hom(W, V)]` (values in `Abᵒᵖ`)
+   is that of `S ↦ op ℤ[S]` on `Type` for the family `Hom(W, U i)`, which is acyclic in positive
+   degrees by `quasiIso_cechAugmentation_of_hom` when some `Hom(W, U i)` is nonempty and is zero
+   otherwise. This needs `cechComplexCompIso` (`Cech/Functor.lean`) generalised from a thin target to
+   a product-preserving `G` (here `coyoneda.obj W`). Hence the free complex
+   `Kₙ = ⨁ₐ ℤ[y(U a₀ × ⋯ × U aₙ)]` is exact in positive degrees, so is its sheafification, and
+   `Hom(K^#, I) ≅ Č(U, I)` (from `freeYonedaSheafSectionsEquiv`) is exact in positive degrees for `I`
+   injective. The dimension shift of `Topology/Sheaves/Leray.lean` then goes through verbatim on a
+   site.
+3. `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
    identification of its `E₂^{n,0}` edge with `lerayEdge`), `cech_to_cohomology` and Leray's
    acyclicity theorem for coverings, from the Čech double complex `Ȟ^p(U, I^q)` of an injective
    resolution `I` (TauCeti's `Cech/` directory has the Čech complex, its augmentation and long
@@ -88,12 +110,13 @@ The spectral sequence itself:
 ## Split plan
 
 1. **feat: dimension shifting for right derived functors** — file:
-   `TauCeti/CategoryTheory/Abelian/RightDerived.lean` (+~145 lines in the existing file). Adds
-   `InjectiveResolution.ofShortExact`, `Functor.isZero_rightDerived_obj_X₃_of_isZero`,
+   `TauCeti/CategoryTheory/Abelian/RightDerived.lean` (+~150 lines in the existing file). Adds
+   `InjectiveResolution.ofShortExact`, `Functor.rightDerivedObjX₁IsoOfShortExact`,
+   `Functor.isZero_rightDerived_obj_X₃_of_isZero`,
    `Functor.epi_map_g_of_isZero_rightDerived_one`,
    `Functor.shortExact_map_of_isZero_rightDerived_one`. After: none. Can be opened now.
 2. **feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem** — file:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (new, ~320 lines). Adds every
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (new, ~350 lines). Adds every
    `lerayEdge*` declaration above and `subsingleton_H_obj_of_injective`. After: 1, and #27242 on
    `main` for its last theorem (`lerayEdge_sheafAdjunctionContinuous_bijective`); without #27242
    that theorem can be held back and everything else opened.
@@ -101,8 +124,9 @@ The spectral sequence itself:
    under `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`. After: 1 (its acyclic
    resolution lemma is proved by the dimension shifting of split 1). Not yet written.
 4. **feat: the Čech double complex of a covering with coefficients in an injective resolution** —
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean`. After: none. Not yet
-   written.
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Cech/DoubleComplex.lean`, preceded by the Čech
+   acyclicity of injective sheaves of item 2 of "What remains" (which may become its own split if
+   it exceeds ~600 lines). After: none. Not yet written.
 5. **feat: the Leray and Čech-to-cohomology spectral sequences** —
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
    naturality, relative form and edge maps, `cech_to_cohomology`, Leray's acyclicity theorem for
