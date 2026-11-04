@@ -32,7 +32,9 @@ supports in `Z = ∅` it vanishes.
 * `Scheme.Modules.sectionsWithSupport Z M`: the `Γ(X, ⊤)`-submodule `Γ_Z(X, M)` of `Γ(M, ⊤)`,
   all of `Γ(M, ⊤)` for `Z = X` (`Scheme.Modules.sectionsWithSupport_top`);
 * `Scheme.Modules.cohomologyWithSupportZeroLinearEquiv`: `H_Z^0(X, M) ≃ₗ[Γ(X, ⊤)] Γ_Z(X, M)`;
-* `Scheme.Modules.cohomologyWithSupportTopEquiv`: `H_X^q(X, M) ≃+ H^q(X, M)`;
+* `Scheme.Modules.cohomologyWithSupportTopEquiv`: `H_X^q(X, M) ≃+ H^q(X, M)`, natural in `M`,
+  and `Scheme.Modules.cohomologyWithSupportTopLinearEquiv`, the same identification as a
+  `Γ(X, ⊤)`-linear equivalence;
 * `Scheme.Modules.subsingleton_cohomologyWithSupport_bot`: `H_∅^q(X, M) = 0`.
 -/
 
@@ -207,6 +209,37 @@ def cohomologyWithSupportTopEquiv (M : X.Modules) (q : ℕ) :
     cohomologyWithSupport ⊤ M q ≃+ Cohomology M q :=
   (TauCeti.CategoryTheory.supportedHTopEquiv _ ⊤ q).trans
     (cohomologyOnTopIso M q).addCommGroupIsoToAddEquiv
+
+/-- The identification `H_X^q(X, M) ≃+ H^q(X, M)` is natural in the coefficient sheaf. -/
+lemma cohomologyWithSupportTopEquiv_naturality (f : M ⟶ N) (q : ℕ)
+    (x : cohomologyWithSupport ⊤ M q) :
+    cohomologyWithSupportTopEquiv N q (cohomologyWithSupportMap ⊤ f q x) =
+      (cohomologyFunctor X q).map f (cohomologyWithSupportTopEquiv M q x) := by
+  have h := ConcreteCategory.congr_hom
+    ((Sheaf.cohomologyPresheafEvaluationIsoFunctorH _ q isTerminalTop).hom.naturality
+      ((SheafOfModules.toSheaf X.ringCatSheaf).map f))
+    (TauCeti.CategoryTheory.supportedHTopEquiv _ ⊤ q x)
+  rw [cohomologyWithSupportMap_apply, cohomologyWithSupportTopEquiv, AddEquiv.trans_apply,
+    TauCeti.CategoryTheory.supportedHTopEquiv_naturality]
+  -- `cohomologyOnTopIso` is the component of `cohomologyPresheafEvaluationIsoFunctorH`, and
+  -- `cohomologyFunctor` is `functorH` after `toSheaf`, so `h` is the goal up to these abbrevs.
+  exact h
+
+/-- With supports in the whole space, cohomology with supports is ordinary cohomology, linearly
+over global functions. -/
+def cohomologyWithSupportTopLinearEquiv (M : X.Modules) (q : ℕ) :
+    cohomologyWithSupport ⊤ M q ≃ₗ[Γ(X, ⊤)] Cohomology M q where
+  __ := cohomologyWithSupportTopEquiv M q
+  map_smul' r x := by
+    -- The inherited additive-equivalence fields compute through their coercion to functions.
+    change cohomologyWithSupportTopEquiv M q (r • x) = r • cohomologyWithSupportTopEquiv M q x
+    rw [smul_cohomologyWithSupport, cohomology_smul, cohomologyWithSupportTopEquiv_naturality]
+
+@[simp]
+lemma cohomologyWithSupportTopLinearEquiv_apply (M : X.Modules) (q : ℕ)
+    (x : cohomologyWithSupport ⊤ M q) :
+    cohomologyWithSupportTopLinearEquiv M q x = cohomologyWithSupportTopEquiv M q x :=
+  (rfl)
 
 /-- With supports in the empty set, cohomology with supports vanishes. -/
 instance subsingleton_cohomologyWithSupport_bot (M : X.Modules) (q : ℕ) :

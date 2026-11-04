@@ -24,7 +24,8 @@ give `0`) this is the pair of boundary cases of cohomology with supports.
 * `TauCeti.CategoryTheory.isZero_freeYonedaSheafFunctor_obj_bot`: the free abelian sheaf on the
   empty open is zero;
 * `TauCeti.CategoryTheory.supportedHTopEquiv`: `H_Xⁿ(W, F) ≃+ Hⁿ(W, F)`, given by the map
-  `CategoryTheory.Sheaf.relativeH'.toH'` of the support sequence.
+  `CategoryTheory.Sheaf.relativeH'.toH'` of the support sequence, natural in `F`
+  (`TauCeti.CategoryTheory.supportedHTopEquiv_naturality`).
 -/
 
 @[expose] public section
@@ -69,6 +70,16 @@ lemma supportedHTopEquiv_apply (W : Opens X) {n : ℕ} (x : F.supportedH ⊤ W n
       Sheaf.relativeH'.toH' F ((⊤ : Closeds X).complInclusion W) n x := by
   apply (F.H'AddEquivExt n W).injective
   simp [supportedHTopEquiv, Sheaf.relativeH'.H'AddEquivExt_toH']
+
+/-- The identification `H_Xⁿ(W, F) ≃+ Hⁿ(W, F)` is natural in the coefficient sheaf. -/
+lemma supportedHTopEquiv_naturality {G : Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u}}
+    (f : F ⟶ G) (W : Opens X) {n : ℕ} (x : F.supportedH ⊤ W n) :
+    supportedHTopEquiv G W n (x.comp (Abelian.Ext.mk₀ f) (add_zero n)) =
+      ((Sheaf.cohomologyPresheafFunctor _ n).map f).app (op W) (supportedHTopEquiv F W n x) := by
+  apply (G.H'AddEquivExt n W).injective
+  rw [supportedHTopEquiv_apply, supportedHTopEquiv_apply,
+    Sheaf.H'AddEquivExt_cohomologyPresheafFunctor_map_app, Sheaf.relativeH'.H'AddEquivExt_toH',
+    Sheaf.relativeH'.H'AddEquivExt_toH', Abelian.Ext.comp_assoc_of_third_deg_zero]
 
 /-- With supports in the whole space, the map `H_Xⁿ(W, F) ⟶ Hⁿ(W, F)` of the support sequence is
 bijective. -/

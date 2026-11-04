@@ -164,6 +164,16 @@ lemma _root_.CategoryTheory.Sheaf.cohomologyPresheaf_map_apply
         (zero_add n) :=
   (rfl)
 
+/-- The coefficient maps of Mathlib's cohomology presheaf are postcomposition with the induced
+morphism of sheaves, transported along `CategoryTheory.Sheaf.H'AddEquivExt`. -/
+lemma _root_.CategoryTheory.Sheaf.H'AddEquivExt_cohomologyPresheafFunctor_map_app
+    {F G : _root_.CategoryTheory.Sheaf J AddCommGrpCat.{v}} (f : F ⟶ G) (n : ℕ) (U : C)
+    (x : F.H' n U) :
+    G.H'AddEquivExt n U
+        (((_root_.CategoryTheory.Sheaf.cohomologyPresheafFunctor J n).map f).app (op U) x) =
+      (F.H'AddEquivExt n U x).comp (Abelian.Ext.mk₀ f) (add_zero n) :=
+  (rfl)
+
 /-- If restriction of sections along `i : U ⟶ V` is surjective, then so is the restriction map
 `H⁰(V, F) ⟶ H⁰(U, F)` of the cohomology presheaf. -/
 theorem _root_.CategoryTheory.Sheaf.cohomologyPresheaf_zero_map_surjective

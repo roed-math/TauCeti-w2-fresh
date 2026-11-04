@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.Algebra.Polynomial.Laurent
+public import Mathlib.AlgebraicGeometry.Morphisms.ClosedImmersion
 public import TauCeti.AlgebraicGeometry.Cohomology.Support.Affine
 import TauCeti.AlgebraicGeometry.Modules.TensorProduct
 
@@ -20,12 +21,19 @@ vanishing theorem give
 * `H_Z^1(X, 𝒪) ≅ k[t, t⁻¹] / k[t]`;
 * `H_Z^q(X, 𝒪) = 0` for `q ≥ 2`, since `X` and `D(t)` are affine.
 
+In particular `H_Z^0(X, 𝒪)` is not the ring of functions on `Z`: the origin is the image of the
+closed immersion `Spec k ⟶ X`, whose ring of functions is `k ≠ 0`.
+
 ## Main declarations
 
 * `AffineLineExample.coordinate k`: the coordinate `t` as a global function on `Spec k[t]`;
 * `AffineLineExample.subsingleton_cohomologyWithSupport_origin_zero`: `H_Z^0(X, 𝒪) = 0`;
 * `AffineLineExample.cohomologyWithSupportOriginOneEquiv`: `H_Z^1(X, 𝒪) ≃+ k[t, t⁻¹] / k[t]`;
-* `AffineLineExample.subsingleton_cohomologyWithSupport_origin_add_two`: `H_Z^{n+2}(X, 𝒪) = 0`.
+* `AffineLineExample.subsingleton_cohomologyWithSupport_origin_add_two`: `H_Z^{n+2}(X, 𝒪) = 0`;
+* `AffineLineExample.origin k`: the closed immersion `Spec k ⟶ Spec k[t]` with image `Z`
+  (`AffineLineExample.range_origin`);
+* `AffineLineExample.isEmpty_cohomologyWithSupport_origin_zero_equiv`: `H_Z^0(X, 𝒪)` is not in
+  bijection with the functions `k` on the origin.
 -/
 
 public section
@@ -108,6 +116,33 @@ theorem subsingleton_cohomologyWithSupport_origin_add_two (n : ℕ) :
       (coordinate k)).compl (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf)
         (n + 2)) :=
   subsingleton_cohomologyWithSupport_basicOpen_add_two _ _ n
+
+/-- The origin of the affine line, as the closed point `Spec k ⟶ Spec k[t]` given by evaluation
+at `0`. -/
+def origin : Spec (CommRingCat.of k) ⟶ Spec (CommRingCat.of k[X]) :=
+  Spec.map (CommRingCat.ofHom (evalRingHom 0))
+
+instance : IsClosedImmersion (origin k) :=
+  IsClosedImmersion.spec_of_surjective _ fun a ↦ ⟨Polynomial.C a, eval_C⟩
+
+/-- The image of the origin is the zero locus `V(t)` of the coordinate. -/
+theorem range_origin : Set.range (origin k) =
+    (((Spec (CommRingCat.of k[X])).basicOpen (coordinate k)).compl : Set _) := by
+  rw [coordinate, basicOpen_eq_of_affine]
+  refine (range_comap_of_surjective _ _ fun a ↦ ⟨Polynomial.C a, eval_C⟩).trans ?_
+  rw [CommRingCat.hom_ofHom, ker_evalRingHom, map_zero, sub_zero, PrimeSpectrum.zeroLocus_span]
+  exact (compl_compl _).symm.trans
+    (congrArg compl (PrimeSpectrum.basicOpen_eq_zeroLocus_compl X).symm)
+
+/-- `H⁰_Z(X, 𝒪)` is not the ring of functions on `Z`: the origin `Z` is the image of the closed
+immersion `Spec k ⟶ 𝔸¹`, whose ring of functions `k` is nonzero, while `H⁰_Z(𝔸¹, 𝒪) = 0`. -/
+theorem isEmpty_cohomologyWithSupport_origin_zero_equiv :
+    IsEmpty (cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen
+      (coordinate k)).compl (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf) 0 ≃
+        Γ(Spec (CommRingCat.of k), ⊤)) := by
+  have := (Scheme.ΓSpecIso (CommRingCat.of k)).commRingCatIsoToRingEquiv.toEquiv.nontrivial
+  have := subsingleton_cohomologyWithSupport_origin_zero k
+  exact ⟨fun e ↦ not_subsingleton _ e.symm.subsingleton⟩
 
 end
 
