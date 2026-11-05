@@ -7,6 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.AffineScheme
 public import TauCeti.AlgebraicGeometry.Morphisms.Thickening
+public import TauCeti.CategoryTheory.CommSq
 public import TauCeti.RingTheory.Derivation.ToSquareZero
 
 /-!
@@ -21,7 +22,10 @@ affine. A lift `l : T' ⟶ X` of `g` along `i` over `S` is determined by the rin
 
 When `i` is a first-order thickening, `I ^ 2 = ⊥`, and the lifts, if there are any, form a torsor
 under the derivations `Der_{Γ(S, ⊤)}(Γ(X, ⊤), I)`. This is the affine case of the torsor of lifts
-of Stacks, Lemma 37.9.5 (04FJ), with `Hom(g^* Ω_{X/S}, I) = Der_{Γ(S, ⊤)}(Γ(X, ⊤), I)`.
+of Stacks, Lemma 37.9.5 (04FJ), with `Hom(g^* Ω_{X/S}, I) = Der_{Γ(S, ⊤)}(Γ(X, ⊤), I)`. The torsor
+is natural in the thickening: along a map of first-order thickenings, for instance the restriction
+to a smaller affine open, precomposition of lifts is equivariant for the induced map of
+derivations.
 
 ## Main definitions
 
@@ -31,6 +35,14 @@ of Stacks, Lemma 37.9.5 (04FJ), with `Hom(g^* Ω_{X/S}, I) = Der_{Γ(S, ⊤)}(Γ
   algebra lifts of the map on global sections.
 * `TauCeti.AlgebraicGeometry.liftStructAddTorsor`: along a first-order thickening of an affine
   scheme, the lifts in a square of affine schemes form a torsor under derivations.
+* `TauCeti.AlgebraicGeometry.kerAppTopLinearMap`: a map of first-order thickenings into affine
+  schemes induces a `Γ(X, ⊤)`-linear map of their square-zero ideals of global sections.
+
+## Main results
+
+* `TauCeti.AlgebraicGeometry.liftStructAddTorsor_precomp_vsub`,
+  `TauCeti.AlgebraicGeometry.liftStructAddTorsor_precomp_vadd`: precomposing lifts along a map of
+  first-order thickenings is equivariant for `liftStructAddTorsor`.
 
 ## References
 
@@ -206,5 +218,136 @@ theorem liftStructAddTorsor_vsub_apply [IsFirstOrderThickening i] (sq : CommSq g
     letI := liftStructAddTorsor sq
     ((l₁ -ᵥ l₂) x : Γ(T', ⊤)) = l₁.l.appTop x - l₂.l.appTop x :=
   (rfl)
+
+section Naturality
+
+variable {T₂ T₂' : Scheme.{u}} [IsAffine T₂'] {i₂ : T₂ ⟶ T₂'} {g₂ : T₂ ⟶ X} {h₂ : T₂' ⟶ S}
+  {φ : T₂' ⟶ T'} {ψ : T₂ ⟶ T}
+
+omit [IsAffine X] in
+variable (φ) in
+/-- Along a map `(ψ, φ)` from the first-order thickening `i₂` to `i` (`ψ ≫ i = i₂ ≫ φ`), with
+`ψ ≫ g = g₂`, the map `φ.appTop` restricts to a `Γ(X, ⊤)`-linear map
+`ker i.appTop ⟶ ker i₂.appTop` of square-zero ideals, which are `Γ(X, ⊤)`-modules through `g` and
+`g₂` (`Ideal.moduleOfSqEqBot`). -/
+@[expose]
+noncomputable def kerAppTopLinearMap [IsFirstOrderThickening i] [IsFirstOrderThickening i₂]
+    (hψ : ψ ≫ i = i₂ ≫ φ) (hg : ψ ≫ g = g₂) :
+    letI := quotientKerAppTopAlgebra i g
+    letI := quotientKerAppTopAlgebra i₂ g₂
+    letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+    letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+    RingHom.ker i.appTop.hom →ₗ[Γ(X, ⊤)] RingHom.ker i₂.appTop.hom :=
+  letI := quotientKerAppTopAlgebra i g
+  letI := quotientKerAppTopAlgebra i₂ g₂
+  letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+  letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+  have hφ (b : Γ(T', ⊤)) : i₂.appTop (φ.appTop b) = ψ.appTop (i.appTop b) := by
+    rw [← CommRingCat.comp_apply, ← CommRingCat.comp_apply, ← Scheme.Hom.comp_appTop,
+      ← Scheme.Hom.comp_appTop, hψ]
+  { toFun m := ⟨φ.appTop m, by
+      change i₂.appTop (φ.appTop m) = 0
+      rw [hφ, show i.appTop (m : Γ(T', ⊤)) = 0 from m.2, map_zero]⟩
+    map_add' m n := Subtype.ext (map_add _ _ _)
+    map_smul' a m := Subtype.ext <| by
+      obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective
+        (algebraMap Γ(X, ⊤) (Γ(T', ⊤) ⧸ RingHom.ker i.appTop.hom) a)
+      have hb₂ : Ideal.Quotient.mk (RingHom.ker i₂.appTop.hom) (φ.appTop b) =
+          algebraMap Γ(X, ⊤) (Γ(T₂', ⊤) ⧸ RingHom.ker i₂.appTop.hom) a := by
+        rw [quotientKerAppTopAlgebra_mk_eq_algebraMap_iff, hφ,
+          (quotientKerAppTopAlgebra_mk_eq_algebraMap_iff i g b a).1 hb, ← hg,
+          Scheme.Hom.comp_appTop, CommRingCat.comp_apply]
+      rw [RingHom.id_apply, Ideal.coe_smul_of_sq_eq_bot _ hb₂]
+      change φ.appTop ((a • m : RingHom.ker i.appTop.hom) : Γ(T', ⊤)) = _
+      rw [Ideal.coe_smul_of_sq_eq_bot _ hb, map_mul] }
+
+omit [IsAffine X] in
+@[simp]
+theorem coe_kerAppTopLinearMap_apply [IsFirstOrderThickening i] [IsFirstOrderThickening i₂]
+    (hψ : ψ ≫ i = i₂ ≫ φ) (hg : ψ ≫ g = g₂) (m : RingHom.ker i.appTop.hom) :
+    (kerAppTopLinearMap φ hψ hg m : Γ(T₂', ⊤)) = φ.appTop m :=
+  rfl
+
+/-- Along a map `(ψ, φ)` from the first-order thickening `i₂` to `i` (`ψ ≫ i = i₂ ≫ φ`), the
+difference of the precomposed lifts `φ ≫ l₁` and `φ ≫ l₂` is the image of `l₁ -ᵥ l₂` under
+`φ.appTop`: the torsors of lifts of `liftStructAddTorsor` are compatible with base change of the
+thickening, for instance with restriction to a smaller affine open. -/
+theorem liftStructAddTorsor_precomp_vsub_apply [IsFirstOrderThickening i]
+    [IsFirstOrderThickening i₂] (sq : CommSq g i f h) [sq.HasLift] (hψ : ψ ≫ i = i₂ ≫ φ)
+    (hg : ψ ≫ g = g₂) (hh : φ ≫ h = h₂) (sq₂ : CommSq g₂ i₂ f h₂) [sq₂.HasLift]
+    (l₁ l₂ : sq.LiftStruct) (x : Γ(X, ⊤)) :
+    letI := liftStructAddTorsor sq
+    letI := liftStructAddTorsor sq₂
+    ((l₁.precomp hψ hg hh sq₂ -ᵥ l₂.precomp hψ hg hh sq₂) x : Γ(T₂', ⊤)) =
+      φ.appTop ((l₁ -ᵥ l₂) x : Γ(T', ⊤)) := by
+  simp only [liftStructAddTorsor_vsub_apply, CommSq.LiftStruct.precomp_l, Scheme.Hom.comp_appTop,
+    CommRingCat.comp_apply, map_sub]
+
+/-- Along a map `(ψ, φ)` from the first-order thickening `i₂` to `i` (`ψ ≫ i = i₂ ≫ φ`), the
+difference of the precomposed lifts `φ ≫ l₁` and `φ ≫ l₂` is the derivation `l₁ -ᵥ l₂` composed with
+`kerAppTopLinearMap φ hψ hg`. -/
+theorem liftStructAddTorsor_precomp_vsub [IsFirstOrderThickening i]
+    [IsFirstOrderThickening i₂] (sq : CommSq g i f h) [sq.HasLift] (hψ : ψ ≫ i = i₂ ≫ φ)
+    (hg : ψ ≫ g = g₂) (hh : φ ≫ h = h₂) (sq₂ : CommSq g₂ i₂ f h₂) [sq₂.HasLift]
+    (l₁ l₂ : sq.LiftStruct) :
+    letI := f.appTop.hom.toAlgebra
+    letI := h.appTop.hom.toAlgebra
+    letI := h₂.appTop.hom.toAlgebra
+    letI := quotientKerAppTopAlgebra i g
+    letI := quotientKerAppTopAlgebra i₂ g₂
+    haveI := isScalarTower_quotientKerAppTopAlgebra sq
+    haveI := isScalarTower_quotientKerAppTopAlgebra sq₂
+    letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+    letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+    haveI : IsScalarTower Γ(S, ⊤) Γ(X, ⊤) (RingHom.ker i.appTop.hom) :=
+      Ideal.isScalarTower_of_sq_eq_bot (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+    haveI : IsScalarTower Γ(S, ⊤) Γ(X, ⊤) (RingHom.ker i₂.appTop.hom) :=
+      Ideal.isScalarTower_of_sq_eq_bot (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+    letI := liftStructAddTorsor sq
+    letI := liftStructAddTorsor sq₂
+    l₁.precomp hψ hg hh sq₂ -ᵥ l₂.precomp hψ hg hh sq₂ =
+      (kerAppTopLinearMap φ hψ hg).compDer (l₁ -ᵥ l₂) := by
+  let := f.appTop.hom.toAlgebra
+  let := h₂.appTop.hom.toAlgebra
+  let := quotientKerAppTopAlgebra i₂ g₂
+  let := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+  apply Derivation.ext
+  intro x
+  apply Subtype.ext
+  exact liftStructAddTorsor_precomp_vsub_apply sq hψ hg hh sq₂ l₁ l₂ x
+
+/-- Along a map `(ψ, φ)` from the first-order thickening `i₂` to `i` (`ψ ≫ i = i₂ ≫ φ`),
+precomposing with `φ` sends `d +ᵥ l` to `d' +ᵥ (φ ≫ l)`, where `d'` is `d` composed with
+`kerAppTopLinearMap φ hψ hg`. -/
+theorem liftStructAddTorsor_precomp_vadd [IsFirstOrderThickening i]
+    [IsFirstOrderThickening i₂] (sq : CommSq g i f h) [sq.HasLift] (hψ : ψ ≫ i = i₂ ≫ φ)
+    (hg : ψ ≫ g = g₂) (hh : φ ≫ h = h₂) (sq₂ : CommSq g₂ i₂ f h₂) [sq₂.HasLift]
+    (d : letI := f.appTop.hom.toAlgebra
+      letI := h.appTop.hom.toAlgebra
+      letI := quotientKerAppTopAlgebra i g
+      letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+      Derivation Γ(S, ⊤) Γ(X, ⊤) (RingHom.ker i.appTop.hom)) (l : sq.LiftStruct) :
+    letI := f.appTop.hom.toAlgebra
+    letI := h.appTop.hom.toAlgebra
+    letI := h₂.appTop.hom.toAlgebra
+    letI := quotientKerAppTopAlgebra i g
+    letI := quotientKerAppTopAlgebra i₂ g₂
+    haveI := isScalarTower_quotientKerAppTopAlgebra sq
+    haveI := isScalarTower_quotientKerAppTopAlgebra sq₂
+    letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+    letI := Ideal.moduleOfSqEqBot Γ(X, ⊤) (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+    haveI : IsScalarTower Γ(S, ⊤) Γ(X, ⊤) (RingHom.ker i.appTop.hom) :=
+      Ideal.isScalarTower_of_sq_eq_bot (IsFirstOrderThickening.ker_appTop_sq_eq_bot i)
+    haveI : IsScalarTower Γ(S, ⊤) Γ(X, ⊤) (RingHom.ker i₂.appTop.hom) :=
+      Ideal.isScalarTower_of_sq_eq_bot (IsFirstOrderThickening.ker_appTop_sq_eq_bot i₂)
+    letI := liftStructAddTorsor sq
+    letI := liftStructAddTorsor sq₂
+    (d +ᵥ l).precomp hψ hg hh sq₂ =
+      (kerAppTopLinearMap φ hψ hg).compDer d +ᵥ l.precomp hψ hg hh sq₂ := by
+  let := liftStructAddTorsor sq
+  let := liftStructAddTorsor sq₂
+  rw [eq_vadd_iff_vsub_eq, liftStructAddTorsor_precomp_vsub, vadd_vsub]
+
+end Naturality
 
 end TauCeti.AlgebraicGeometry
