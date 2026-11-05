@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,6],"title":"feat: open immersions are inherited from a finite stage"},{"n":8,"after":[2,3,6],"title":"feat: smooth and étale morphisms are inherited from a finite stage"},{"n":9,"after":[3,6,7,8],"title":"feat: closed immersions, finite, smooth and étale morphisms over a member, and separatedness, are inherited from a finite stage"},{"n":10,"after":[],"title":"feat: gluing two schemes along an open subscheme"},{"n":11,"after":[1,3,5,6,7,10],"title":"feat: descent of schemes of finite presentation along cofiltered limits"},{"n":12,"after":[3,5,6,7,8,9,11],"title":"feat: flatness and properness are inherited from a finite stage"},{"n":13,"after":[1,2,3,4,5,6,7,10,11],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":["qcoh-extension"],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,6],"title":"feat: open immersions are inherited from a finite stage"},{"n":8,"after":[2,3,6],"title":"feat: smooth and étale morphisms are inherited from a finite stage"},{"n":9,"after":[3,6,7,8],"title":"feat: closed immersions, finite, smooth and étale morphisms over a member, and separatedness, are inherited from a finite stage"},{"n":10,"after":[],"title":"feat: gluing two schemes along an open subscheme"},{"n":11,"after":[1,3,5,6,7,10],"title":"feat: descent of schemes of finite presentation along cofiltered limits"},{"n":12,"after":[3,5,6,7,8,9,11],"title":"feat: flatness and properness are inherited from a finite stage"},{"n":13,"after":[],"title":"feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely generated subring"},{"n":14,"after":[1,2,3,4,5,6,7,10,11,13],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":15,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
 # Lookahead: `noetherian-approximation` (SchemeAndStackFoundations §0.9)
 
 Built on `main` at `85f3eb5579d` (merged in this session; no conflicts, and `main` still has
@@ -39,7 +39,7 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_restric
 `exists_mono_restrict_iso_of_isQuasicoherent`: the added
 `[CompactSpace X] [QuasiSeparatedSpace X] [F.IsFiniteType]` hypotheses and `G'.IsFiniteType`
 conclusion (the content of 01PF); the "isomorphism over `V`" clause is dropped since no split
-consumes it. No proved declaration on this branch uses the stub yet: it is consumed by split 13
+consumes it. No proved declaration on this branch uses the stub yet: it is consumed by split 14
 (extending a finite-type quasi-coherent ideal sheaf, cutting out the closure of a
 finite-presentation model over an open, from `U` to `X`).
 
@@ -222,15 +222,42 @@ stub unchanged.
     `exists_pullback_fst_of_isLimit_of_isZariskiLocalAtSource`. Proper (081F): separatedness is split
     9, so universal closedness remains, which Stacks reaches through Chow's lemma. Morphism forms
     follow from split 9's `exists_pullbackMap_of_pullbackOver`. Likely two PRs.
-13. **feat: extending finite-presentation models across a quasi-compact open** (after: 1, 2, 3, 4, 5,
-    6, 7, 10, 11) — *remaining*. Stacks 01Z7, 01Z9, 07RN: given `X = U ∪ W`, `W` affine, and `U` a
-    limit of f.p. `ℤ`-schemes, produce an f.p. model of `X`; consumes the stub
-    `exists_isFiniteType_mono_restrict_iso` to extend the finite-type ideal sheaf. Split 10's gluing
-    (`isPullback_pushout_desc_of_isPullback`, the pushout instances) and split 11's
-    `isPullback_lift_of_isPullback` / `exists_isPullback_of_isLimit_of_le` are the gluing and
-    rebasing tools. New file `Limits/NoetherianApproximation/Extension.lean`.
-14. **feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes**
-    (after: 1–13) — *remaining*. `noetherian_approximation` (01ZA) by induction on the number of
+13. **feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely
+    generated subring** (after: none) — *proved* (2026-11-05). File
+    `TauCeti/AlgebraicGeometry/Limits/QuasiAffine.lean` (183 lines), namespace
+    `TauCeti.AlgebraicGeometry`, imports only Mathlib:
+    `finiteType_intCastRingHom_of_locallyOfFiniteType_terminal_from_Spec` (if `Spec R` is locally of
+    finite type over the terminal scheme, `ℤ → R` is of finite type; the finite-type converse of
+    split 2's `locallyOfFinitePresentation_terminal_from_Spec`),
+    `exists_finset_isOpenImmersion_away_comp_SpecMap_val` (if `R_f` is of finite type over `ℤ`, a
+    finite `s ∋ f` makes `R_f` the localization away from `f` of every subring `A ⊇ s`, so
+    `Spec R_f ⟶ Spec R ⟶ Spec A` is an open immersion), and
+    **`Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val`** (Stacks 01Z7): for an open immersion
+    `ι : W ⟶ Spec R` with `W` quasi-compact and locally of finite type over `ℤ`, there is a finite
+    `s ⊆ R` such that `ι ≫ Spec.map A.val` is an open immersion for every subring `A ⊇ s`; with
+    `A = ℤ[s]` this is the first clause of 01Z7, and cofinality of such `A` is its "moreover". The
+    proof covers `range ι` by finitely many `D(f)`, so injectivity of `W ⟶ Spec A` follows from
+    `D_R(f)` being the preimage of `D_A(f)`, and it is locally an open immersion by
+    `IsOpenImmersion.of_isLocalization`.
+14. **feat: extending finite-presentation models across a quasi-compact open** (after: 1, 2, 3, 4, 5,
+    6, 7, 10, 11, 13) — *remaining*. Stacks 01Z9, 07RN: given `X = U ∪ W`, `W = Spec R` affine, and
+    `U` a cofiltered limit of f.p. `ℤ`-schemes `Uᵢ` with affine transition maps, produce the same for
+    `X`. Split 10's gluing (`isPullback_pushout_desc_of_isPullback`, the pushout instances) and split
+    11's `isPullback_lift_of_isPullback` / `exists_isPullback_of_isLimit_of_le` are the gluing and
+    rebasing tools. A route sketched this session (not yet checked in Lean) that needs only split 13 and
+    Mathlib, no stub: put
+    `V = U ∩ W`; descend `V` to quasi-compact opens `Vⱼ ⊆ Uⱼ` (01Z4), quasi-affine for large `j`
+    (Mathlib's `Scheme.exists_isQuasiAffine_of_isLimit`); cover `V` by `D_W(g_k)`, `g_k ∈ R`, and lift
+    `g_k|_V` to `b_k ∈ Γ(Vⱼ)` (`Γ(V) = colim Γ(Vⱼ)`, Mathlib's `nonempty_isColimit_Γ_mapCocone`);
+    then `Pⱼ = R ×_{Γ(V)} Aⱼ` for a f.g. `Aⱼ ⊆ Γ(Vⱼ)` from split 13 has `(Pⱼ)_{(g_k, b_k)} ≅ (Aⱼ)_{b_k}`,
+    so `Vⱼ ↪ Spec Pⱼ` is open, split 13 again gives a f.g. `C ⊆ Pⱼ`, and `Xⱼ,C = Uⱼ ∪_{Vⱼ} Spec C`
+    (split 10) has limit `X` (over pairs `(j, C)`) because `colim Pⱼ = R ×_{Γ(V)} Γ(V) = R` when the `Aⱼ` exhaust
+    `Γ(V)`. The route planned in earlier sessions instead
+    extends a finite-type quasi-coherent ideal sheaf across `U ⊆ X`, consuming the stub
+    `exists_isFiniteType_mono_restrict_iso` (01PF, through Properties 28.22.13). New file
+    `Limits/NoetherianApproximation/Extension.lean`.
+15. **feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes**
+    (after: 1–14) — *remaining*. `noetherian_approximation` (01ZA) by induction on the number of
     affines in a cover, starting from split 2; completes the target.
 
 ## What remains
@@ -245,7 +272,8 @@ closed immersions (01ZP), finite morphisms (01ZO), open immersions (0EUU), smoot
 and étale morphisms (07RP), all in the morphism form, and of separatedness, over cofiltered limits
 of quasi-compact quasi-separated schemes with affine transition maps, and the descent of
 quasi-compact opens of base changes (01Z4); gluing of schemes along opens with base change
-(split 10). Remaining: the properties flat and proper in `finite_presentation_limits` (split 12;
-for proper only universal closedness), the extension step across an open (split 13, the only
-consumer of the `qcoh-extension` stub), and the qcqs induction for `noetherian_approximation`
-(01Z7, 01Z9, 07RN, 01ZA; split 14).
+(split 10). Also proved: Stacks 01Z7 (split 13), the first lemma of absolute Noetherian approximation.
+Remaining: the properties flat and proper in `finite_presentation_limits` (split 12;
+for proper only universal closedness), the extension step across an open (split 14, 01Z9/07RN;
+on the Stacks route the only consumer of the `qcoh-extension` stub), and the qcqs induction for
+`noetherian_approximation` (01ZA; split 15).
