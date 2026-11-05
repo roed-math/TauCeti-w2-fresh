@@ -244,6 +244,21 @@ theorem ι_app_localCohomology_map (q : ℕ)
   (NatTrans.naturality
     (colimit.ι (localCohomology.diagram (localCohomology.idealPowersDiagram I) q) j) f).symm
 
+/-- Multiplication by `a` on `H^q_I(X)` is the map induced by multiplication by `a` on `X`. -/
+theorem localCohomology_map_smul_id (q : ℕ) (X : ModuleCat.{u} A) (a : A)
+    (x : (localCohomology I q).obj X) : (localCohomology I q).map (a • 𝟙 X) x = a • x := by
+  obtain ⟨j, y, rfl⟩ := ModuleCat.exists_colimit_ι_app_eq _ X x
+  have h : ((localCohomology.diagram (localCohomology.idealPowersDiagram I) q).obj j).map
+      (a • 𝟙 X) y = a • y := by
+    apply (extLinearEquiv _ X q).injective
+    refine (extLinearEquiv_Ext_obj_map _ (a • 𝟙 X) q y).trans ?_
+    rw [map_smul, Ext.smul_eq_comp_mk₀]
+  refine (ConcreteCategory.congr_hom (ι_app_localCohomology_map I q (a • 𝟙 X) j) y).trans ?_
+  refine (congrArg (fun z ↦ (colimit.ι
+    (localCohomology.diagram (localCohomology.idealPowersDiagram I) q) j).app X z) h).trans ?_
+  exact map_smul ((colimit.ι
+    (localCohomology.diagram (localCohomology.idealPowersDiagram I) q) j).app X).hom a y
+
 include hS in
 /-- **Local cohomology is left exact**: `H⁰_I(X₁) → H⁰_I(X₂)` is injective for a short exact
 sequence `0 → X₁ → X₂ → X₃ → 0`. -/

@@ -30,6 +30,10 @@ of modules, because `Ext.mapExactFunctor` preserves Yoneda products and extensio
 degree zero it is bijective for every finitely generated `I`: a morphism `f : R ⧸ Iᵏ ⟶ M` goes to
 the section `f(1)` of `M^~`, and both sides are the `I`-power torsion `Γ_I(M)`.
 
+The comparison map is moreover `R`-linear, `R` acting on cohomology with supports through
+`R ≅ Γ(Spec R, ⊤)`, because `M ↦ M^~` sends multiplication by `r` to multiplication by the global
+function `r`.
+
 ## Main declarations
 
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.quotientPowOne hI k`: the section `1` of
@@ -43,7 +47,10 @@ the section `f(1)` of `M^~`, and both sides are the `I`-power torsion `Γ_I(M)`.
   `TauCeti.AlgebraicGeometry.Scheme.Modules.localCohomologyToCohomologyWithSupport_δ`: naturality
   in `M` and compatibility with connecting maps;
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.bijective_localCohomologyToCohomologyWithSupport_zero`:
-  the comparison map is bijective in degree zero.
+  the comparison map is bijective in degree zero;
+* `TauCeti.AlgebraicGeometry.Scheme.Modules.localCohomologyToCohomologyWithSupport_smul` and
+  `TauCeti.AlgebraicGeometry.Scheme.Modules.localCohomologyToCohomologyWithSupportHom`: it is
+  linear over `R ≅ Γ(Spec R, ⊤)`, and the corresponding morphism of `R`-modules.
 
 ## References
 
@@ -305,6 +312,36 @@ theorem bijective_localCohomologyToCohomologyWithSupport_zero (hI : I.FG)
     refine ⟨e₁.symm ⟨_, hs⟩, Subtype.ext ((key _).trans ?_)⟩
     rw [LinearEquiv.apply_symm_apply]
     exact Iso.inv_hom_id_apply _ _
+
+/-- **The comparison map is linear**: multiplication by `r : R` on `H^q_I(M)` corresponds to
+multiplication by the global function `r` on `H^q_{V(I)}(Spec R, M^~)`. -/
+lemma localCohomologyToCohomologyWithSupport_smul (hI : I.FG) (q : ℕ) (M : ModuleCat.{u} R)
+    (r : R) (x : (localCohomology I q).obj M) :
+    localCohomologyToCohomologyWithSupport hI q M (r • x) =
+      (Scheme.ΓSpecIso R).inv r • localCohomologyToCohomologyWithSupport hI q M x := by
+  rw [← Supports.localCohomology_map_smul_id, localCohomologyToCohomologyWithSupport_naturality,
+    tilde_map_smul_id]
+  exact (smul_cohomologyWithSupport _ _ _ _ _).symm
+
+/-- The comparison map as a morphism of `R`-modules, where `R` acts on cohomology with supports
+through `R ≅ Γ(Spec R, ⊤)`. -/
+noncomputable def localCohomologyToCohomologyWithSupportHom (hI : I.FG) (q : ℕ)
+    (M : ModuleCat.{u} R) :
+    (localCohomology I q).obj M ⟶ (ModuleCat.restrictScalars (Scheme.ΓSpecIso R).inv.hom).obj
+      (ModuleCat.of Γ(Spec R, ⊤) (cohomologyWithSupport (zeroLocusCloseds I) (tilde M) q)) :=
+  ModuleCat.ofHom (X := (localCohomology I q).obj M)
+    (Y := (ModuleCat.restrictScalars (Scheme.ΓSpecIso R).inv.hom).obj
+      (ModuleCat.of Γ(Spec R, ⊤) (cohomologyWithSupport (zeroLocusCloseds I) (tilde M) q)))
+    { toFun := localCohomologyToCohomologyWithSupport hI q M
+      map_add' := map_add _
+      map_smul' := localCohomologyToCohomologyWithSupport_smul hI q M }
+
+@[simp]
+lemma localCohomologyToCohomologyWithSupportHom_apply (hI : I.FG) (q : ℕ) (M : ModuleCat.{u} R)
+    (x : (localCohomology I q).obj M) :
+    localCohomologyToCohomologyWithSupportHom hI q M x =
+      localCohomologyToCohomologyWithSupport hI q M x :=
+  (rfl)
 
 end Scheme.Modules
 

@@ -44,11 +44,15 @@ derived functors of `Γ_I` by dimension shifting (Stacks, Lemma 51.2.1 (0A6T)).
   `M` lies in `Γ_I(M)`;
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.primaryComponentLinearEquivSectionsWithSupport`:
   `Γ_I(M) ≃ₗ[R] Γ_{V(I)}(Spec R, M^~)` for finitely generated `I`;
+* `TauCeti.AlgebraicGeometry.Scheme.Modules.tilde_map_smul_id`: multiplication by `r` on `M`
+  induces multiplication by the global function `r` on `M^~`;
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.subsingleton_cohomologyWithSupport_tilde_succ`:
   `H^{n+1}_Z(Spec R, J^~) = 0` for an injective module `J` over a Noetherian ring and any closed
   `Z`;
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.cohomologyWithSupportTildeδ`: the connecting map
-  `H^n_Z(Spec R, S.X₃^~) ⟶ H^{n+1}_Z(Spec R, S.X₁^~)` of a short exact sequence of modules;
+  `H^n_Z(Spec R, S.X₃^~) ⟶ H^{n+1}_Z(Spec R, S.X₁^~)` of a short exact sequence of modules, and
+  `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_cohomologyWithSupportMap_tilde_eq`: exactness
+  of the long exact sequence at `H^n_Z(Spec R, S.X₃^~)`;
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.bijective_cohomologyWithSupportTildeδ_succ` and
   `TauCeti.AlgebraicGeometry.Scheme.Modules.surjective_cohomologyWithSupportTildeδ_zero`:
   dimension shifting along `0 ⟶ M ⟶ J ⟶ N ⟶ 0` with `J` injective over a Noetherian ring.
@@ -163,6 +167,26 @@ noncomputable def primaryComponentLinearEquivSectionsWithSupport (hI : I.FG) :
       obtain ⟨m, hm⟩ := hbij.2 s.1
       exact ⟨⟨m, (hmem m).1 (hm ▸ s.2)⟩, Subtype.ext hm⟩⟩
 
+/-- Multiplication by `r : R` on `M` induces on `M^~` the multiplication by the global function
+`r`. -/
+lemma tilde_map_smul_id (r : R) :
+    tilde.map (r • 𝟙 M) = (tilde M).globalSectionsSmul ((Scheme.ΓSpecIso R).inv r) := by
+  have key (f g : (tilde.functor R).obj M ⟶ (tilde.functor R).obj M)
+      (h : tilde.adjunction.unit.app M ≫ moduleSpecΓFunctor.map f =
+        tilde.adjunction.unit.app M ≫ moduleSpecΓFunctor.map g) : f = g :=
+    (tilde.adjunction.homEquiv _ _).injective (by rwa [Adjunction.homEquiv_unit,
+      Adjunction.homEquiv_unit])
+  refine key (tilde.map (r • 𝟙 M)) ((tilde M).globalSectionsSmul _) ?_
+  ext m
+  refine (ConcreteCategory.congr_hom (tilde.toOpen_map_app (r • 𝟙 M) ⊤) m).trans ?_
+  change tilde.toOpen M ⊤ (r • m) =
+    ((tilde M).globalSectionsSmul ((Scheme.ΓSpecIso R).inv r)).app ⊤ (tilde.toOpen M ⊤ m)
+  rw [map_smul]
+  refine (_root_.AlgebraicGeometry.Scheme.Modules.smul_Spec_def (M := tilde M) (U := ⊤) r
+    (tilde.toOpen M ⊤ m)).trans ?_
+  rw [_root_.AlgebraicGeometry.Scheme.Modules.globalSectionsSmul_app]
+  rfl
+
 /-- **Injective modules have no cohomology with supports.** If `R` is Noetherian and `J` is an
 injective `R`-module, then `H^{n+1}_Z(Spec R, J^~) = 0` for every closed subset `Z`, because `J^~`
 is flasque (Hartshorne, Proposition III.3.4). -/
@@ -194,6 +218,16 @@ noncomputable def cohomologyWithSupportTildeδ (n : ℕ) :
 lemma cohomologyWithSupportTildeδ_apply (n : ℕ) (x : cohomologyWithSupport Z (tilde S.X₃) n) :
     cohomologyWithSupportTildeδ Z hS n x = x.comp (shortExact_map_tilde_toSheaf hS).extClass rfl :=
   (rfl)
+
+/-- Exactness of the long exact sequence of cohomology with supports at `H^n_Z(Spec R, S.X₃^~)`:
+a class killed by the connecting map comes from `H^n_Z(Spec R, S.X₂^~)`. -/
+lemma exists_cohomologyWithSupportMap_tilde_eq (n : ℕ)
+    (y : cohomologyWithSupport Z (tilde S.X₃) n) (hy : cohomologyWithSupportTildeδ Z hS n y = 0) :
+    ∃ x, cohomologyWithSupportMap Z (tilde.map S.g) n x = y := by
+  obtain ⟨x, hx⟩ := Abelian.Ext.covariant_sequence_exact₃
+    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤))
+    (shortExact_map_tilde_toSheaf hS) y rfl hy
+  exact ⟨x, (cohomologyWithSupportMap_apply _ _ _ _).trans hx⟩
 
 variable [IsNoetherianRing R] [Module.Injective R S.X₂]
 
