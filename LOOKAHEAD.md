@@ -373,7 +373,27 @@ directory `FormallySmooth/LiftSheaf/` (`Basic.lean` for split 6, `Affine.lean` f
   `liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub`; what is missing is the derivation
   `Γ(U, ⊤) → ker (i ∣_ W).appTop` built from `D`'s component on `(U, W)`, a derivation for
   `Ideal.moduleOfSqEqBot` by `coe_smul_of_sq_eq_bot` with the lifts `L₀.l.appTop y` of the lift
-  `L₀` given by `l₀`; the rest of the old plan for (d) was:
+  `L₀` given by `l₀`. A first attempt this round (not kept) fixed the recipe: for affine `W`,
+  `U`, `V` with `i ⁻¹ W ≤ a ⁻¹ U`, `W ≤ h ⁻¹ V`, `U ≤ f ⁻¹ V`, set
+  `d y := W.topIso.inv (D (U, W) (U.topIso.hom y))`; its values lie in `ker (i ∣_ W).appTop`
+  because `(i ∣_ W).appTop ∘ W.topIso.inv = (i ⁻¹ W).topIso.inv ∘ i.app W` (from Mathlib's
+  `morphismRestrict_appTop` and `Scheme.Hom.naturality`); it is `Γ(V, ⊤)`-linear by `map_mul` with
+  the lift `h^♯ s` of `a^♯ (f^♯ s)` (from `w` and `Scheme.Hom.appLE_comp_appLE`), `apply_appLE` and
+  `Scheme.Hom.resLE_app_top`; its Leibniz rule is `map_mul` with the lifts given by `l₀`
+  (`ιAppIso`/`app_map_appLE` of split 13) through `Ideal.coe_smul_of_sq_eq_bot` and
+  `quotientKerAppTopAlgebra_mk_eq_algebraMap_iff`. Then `l := (liftSheafObjEquivLiftStruct …).symm
+  (d +ᵥ L₀)`, and `liftSheafSub l l₀ = D` follows from `liftDerivation_eq_zero_of_isAffineOpen`,
+  `map_apply` (reduce to `(U, W)`), the restriction from `W.ι ⁻¹ᵁ W` to `⊤` (`appLESub_map`),
+  `U.ι.appLE U ⊤ _ = U.topIso.inv` (provable as `(Z.presheaf.map_comp _ _).symm.trans (congrArg
+  Z.presheaf.map (Subsingleton.elim _ _))` after `rw [Scheme.Opens.topIso_inv, Scheme.Hom.appLE,
+  Scheme.Opens.ι_app]`) and split 11's `liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub`. Pitfalls
+  met: `Scheme.Hom.appTop` is an abbrev for `app ⊤` typed with `⊤` instead of `f ⁻¹ᵁ ⊤`, so
+  unfolding it makes goals ill-typed at `rw` transparency (state a wrapper `resLE_appTop` of
+  `resLE_app_top` with `appTop`); `Scheme.Opens.ι_app`/`ι_appLE` produce terms that are not
+  type-correct at `implicit` transparency, so close their goals with `exact` rather than `rw`;
+  and `Derivation.mk'` under the four `letI` instances of `liftStructAddTorsor` timed out at
+  `isDefEq`: build the linear map and the Leibniz proof as separate lemmas stated with those
+  instances, not inline. The rest of the old plan for (d) was:
   (identify `ℋ(W)` with `Der_{Γ(V)}(Γ(U), I(W))` by restricting families to `U` and using
   `liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub`), glued over a cover of `W` with
   `liftSheaf_eq_of_appLESub_eq` (uniqueness) and the sheaf property of `liftSheaf`;
