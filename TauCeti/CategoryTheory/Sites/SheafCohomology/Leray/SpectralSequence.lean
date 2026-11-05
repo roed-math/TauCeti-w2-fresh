@@ -51,6 +51,9 @@ numbered `2`, as `CategoryTheory.Functor.grothendieckSpectralSequence` does: the
   `CategoryTheory.Sheaf.H.relativeLeraySpectralSequencePageThreeXIso`,
   `CategoryTheory.Sheaf.H.relativeLeraySpectralSequenceAbutmentIso`: the relative form
   `Rᵖ g_* Rᵠ f_* F ⇒ Rᵖ⁺ᵠ(g ∘ f)_* F` for a composite (Stacks, Lemma 21.14.7 (0734)).
+* `CategoryTheory.Sheaf.H.relativeLeraySpectralSequenceMap`,
+  `CategoryTheory.Sheaf.H.relativeLeraySpectralSequenceMap_hom_f_pageThreeXIso_hom`: the relative
+  form is natural in `F` from its second page on.
 * `CategoryTheory.Sheaf.H.leraySpectralSequence_page_d_eq_zero`,
   `CategoryTheory.Sheaf.H.leraySpectralSequenceEInftyAddEquiv`,
   `CategoryTheory.Sheaf.H.leraySpectralSequenceEInftyAddEquivH`: when the higher direct images
@@ -269,6 +272,29 @@ noncomputable def relativeLeraySpectralSequenceAbutmentIso (n : ℕ) :
   pf.grothendieckSpectralSequenceAbutmentIso pg I (fun I' _ n ↦
     have := Injective.injective_of_adjoint adj I'
     Functor.isZero_rightDerived_obj_injective_succ _ n _) n
+
+variable {F' : Sheaf K AddCommGrpCat.{w}} (I' : InjectiveResolution F') (u : F ⟶ F')
+
+variable (pf pg) in
+/-- The morphism of relative Leray spectral sequences induced by a morphism `u : F ⟶ F'` of
+abelian sheaves, through a chain map `I ⟶ I'` lifting `u`. -/
+noncomputable abbrev relativeLeraySpectralSequenceMap :
+    relativeLeraySpectralSequence pf I pg ⟶ relativeLeraySpectralSequence pf I' pg :=
+  pf.grothendieckSpectralSequenceMap pg I I' u
+
+omit [HasExt (Sheaf J AddCommGrpCat.{w})] [HasExt (Sheaf K AddCommGrpCat.{w})] in
+variable (pf pg) in
+/-- **The relative Leray spectral sequence is natural in `F`**: under the identifications
+`relativeLeraySpectralSequencePageThreeXIso` of the second pages with `Rᵖ g_* Rᵠ f_* F`, the
+morphism induced by `u : F ⟶ F'` is `Rᵖ g_* Rᵠ f_* u`. -/
+@[reassoc]
+theorem relativeLeraySpectralSequenceMap_hom_f_pageThreeXIso_hom (p q : ℕ) :
+    ((relativeLeraySpectralSequenceMap pf I pg I' u).hom 3 (by lia)).f
+        ((q : ℤ) + 2 * p + 1, -((p : ℤ) + 1)) ≫
+        (relativeLeraySpectralSequencePageThreeXIso pf I' pg p q).hom =
+      (relativeLeraySpectralSequencePageThreeXIso pf I pg p q).hom ≫
+        (pg.rightDerived p).map ((pf.rightDerived q).map u) :=
+  pf.grothendieckSpectralSequenceMap_hom_f_pageThreeXIso_hom pg I I' u p q
 
 end Relative
 

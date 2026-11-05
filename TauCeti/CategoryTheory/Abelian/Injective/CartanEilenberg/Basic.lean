@@ -103,6 +103,12 @@ noncomputable def ofIso {Z Z' : C} (I : InjectiveResolution Z) (e : Z' ≅ Z) :
   hasHomology := I.hasHomology
   ι := (CochainComplex.single₀ C).map e.hom ≫ I.ι
 
+lemma ofIso_ι₀ {Z Z' : C} (I : InjectiveResolution Z) (e : Z' ≅ Z) :
+    (I.ofIso e).ι₀ = e.hom ≫ I.ι₀ := by
+  rw [ι₀, ι₀, CochainComplex.fromSingle₀Equiv_apply_coe,
+    CochainComplex.fromSingle₀Equiv_apply_coe]
+  exact congrArg (· ≫ I.ι.f 0) (CochainComplex.single₀_map_f_zero e.hom)
+
 end InjectiveResolution
 
 end CategoryTheory

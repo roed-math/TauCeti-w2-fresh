@@ -159,6 +159,21 @@ variable (K : HomologicalComplex₂ C (up ℕ) (up ℕ))
 @[simp]
 lemma totalRowsGEUpι_zero : K.totalRowsGEUpι 0 = 𝟙 _ := (rfl)
 
+/-- The inclusion of the total complex of the rows `≥ s + 1` is the extension of that of the rows
+`≥ s` of `K.rowsSuccUp`, followed by the inclusion of the rows `≥ 1`. -/
+lemma totalRowsGEUpι_succ (s : ℕ) :
+    K.totalRowsGEUpι (s + 1) = HomologicalComplex.extendMap (K.rowsSuccUp.totalRowsGEUpι s)
+      (embeddingUpNatAdd 1) ≫ K.rowsSuccUpι := (rfl)
+
+/-- The projection of the rows `≥ 0` onto the row `0` is that of the total complex. -/
+lemma totalRowUpπ_zero : K.totalRowUpπ 0 = K.rowZeroUpπ := (rfl)
+
+/-- The projection of the rows `≥ s + 1` onto the row `s + 1` is the extension of that of
+`K.rowsSuccUp` for `s`. -/
+lemma totalRowUpπ_succ (s : ℕ) :
+    K.totalRowUpπ (s + 1) =
+      HomologicalComplex.extendMap (K.rowsSuccUp.totalRowUpπ s) (embeddingUpNatAdd 1) := (rfl)
+
 /-- The inclusions of the total complexes of the rows `≥ s + 1` and `≥ s` are compatible. -/
 @[reassoc (attr := simp)]
 lemma totalRowsGEUpMap_totalRowsGEUpι (s : ℕ) :
@@ -230,6 +245,13 @@ def totalRowUpHomologyIso (K : HomologicalComplex₂ C (up ℕ) (up ℕ)) : (s k
     -- The row `s` of `K.rowsSuccUp` is the row `s + 1` of `K` by definition.
     (K.rowsSuccUp.totalRowUp s).extendHomologyIso (embeddingUpNatAdd 1) (j := k + s) rfl ≪≫
       totalRowUpHomologyIso K.rowsSuccUp s k
+
+lemma totalRowUpHomologyIso_zero (k : ℕ) : K.totalRowUpHomologyIso 0 k = Iso.refl _ := (rfl)
+
+lemma totalRowUpHomologyIso_succ (s k : ℕ) :
+    K.totalRowUpHomologyIso (s + 1) k =
+      (K.rowsSuccUp.totalRowUp s).extendHomologyIso (embeddingUpNatAdd 1) (j := k + s) rfl ≪≫
+        K.rowsSuccUp.totalRowUpHomologyIso s k := (rfl)
 
 /-- The row `s` placed in the degrees of the total complex has no cohomology below degree `s`. -/
 lemma isZero_totalRowUp_homology (s n : ℕ) (hn : n < s) :
@@ -516,6 +538,14 @@ def rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (pq : ℤ × ℤ) (i₁
   CochainComplex.spectralSequenceFirstPageXIsoCokernel _ pq i₁ i₂ hi₁ hi₂ n hn ≪≫
     HomologicalComplex.homologyMapIso (K.rowFiltrationUpGradedIso s i₁ i₂ hs (by omega)) n
 
+lemma rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow_eq (pq : ℤ × ℤ) (i₁ i₂ : ℤ)
+    (hi₁ : i₁ = pq.2) (hi₂ : i₂ = pq.2 + 1) (s : ℕ) (hs : i₁ = -(s + 1)) (n : ℤ)
+    (hn : n = pq.1 + pq.2) :
+    K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow pq i₁ i₂ hi₁ hi₂ s hs n hn =
+      CochainComplex.spectralSequenceFirstPageXIsoCokernel _ pq i₁ i₂ hi₁ hi₂ n hn ≪≫
+        HomologicalComplex.homologyMapIso (K.rowFiltrationUpGradedIso s i₁ i₂ hs (by omega)) n :=
+  (rfl)
+
 /-- **The first differential of the spectral sequence of the row filtration.** Under the
 identifications of the first page with the cohomology of the rows, the differential from
 `(p, q)` to `(p + 2, q - 1)`, for `q = -(s + 1)`, is the connecting map
@@ -629,6 +659,14 @@ def rowFiltrationUpSpectralSequenceFirstPageXIso (p : ℤ) (s k : ℕ) (hp : p =
     (K.totalRowUp s).extendHomologyIso embeddingUpNat (j := k + s) (by simp; omega) ≪≫
     K.totalRowUpHomologyIso s k
 
+lemma rowFiltrationUpSpectralSequenceFirstPageXIso_eq (p : ℤ) (s k : ℕ)
+    (hp : p = k + 2 * s + 1) :
+    K.rowFiltrationUpSpectralSequenceFirstPageXIso p s k hp =
+      K.rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow (p, -((s : ℤ) + 1)) _ _ rfl rfl s
+          rfl _ rfl ≪≫
+        (K.totalRowUp s).extendHomologyIso embeddingUpNat (j := k + s) (by simp; omega) ≪≫
+        K.totalRowUpHomologyIso s k := (rfl)
+
 /-- The identifications `rowFiltrationUpSpectralSequenceFirstPageXIsoTotalRow` at two equal
 positions of the first page agree, up to the identification of the two positions. -/
 @[reassoc]
@@ -705,6 +743,10 @@ def rowFiltrationUpAbutmentIso (n : ℕ) :
       K.monotone_rowFiltrationUp)).abutment n ≅ (K.total (up ℕ)).homology n :=
   CochainComplex.filtrationAbutmentIso _ _ _ ≪≫
     (K.total (up ℕ)).extendHomologyIso embeddingUpNat (by simp)
+
+lemma rowFiltrationUpAbutmentIso_eq (n : ℕ) :
+    K.rowFiltrationUpAbutmentIso n = CochainComplex.filtrationAbutmentIso _ _ _ ≪≫
+      (K.total (up ℕ)).extendHomologyIso embeddingUpNat (by simp) := (rfl)
 
 /-! ### Convergence -/
 

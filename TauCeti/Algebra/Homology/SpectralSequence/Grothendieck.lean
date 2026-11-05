@@ -41,6 +41,9 @@ numbering `coreE₂Cohomological`, in which the first page is numbered `2`: the 
   `CategoryTheory.Functor.grothendieckSpectralSequenceEInftyIso`: at an `F`-acyclic object `X`
   the spectral sequence degenerates at `E₂`, and its abutment of degree `s` is
   `E₂^{s,0} = RˢG(R⁰F(X))`.
+* `CategoryTheory.Functor.grothendieckSpectralSequenceMap`,
+  `CategoryTheory.Functor.grothendieckSpectralSequenceMap_hom_f_pageThreeXIso_hom`: a morphism
+  `u : X ⟶ Y` induces a morphism of spectral sequences, which is `RˢG(RᵏF(u))` on `E₂`.
 
 ## References
 
@@ -128,5 +131,39 @@ noncomputable def grothendieckSpectralSequenceEInftyIso
     (G.rightDerived s).mapIso (I.isoRightDerivedObj F 0).symm
 
 end Degeneration
+
+/-! ### Naturality -/
+
+section Naturality
+
+variable {Y : C} (J : InjectiveResolution Y) (u : X ⟶ Y)
+
+/-- The morphism of Grothendieck spectral sequences induced by a morphism `u : X ⟶ Y`, through
+the chain map `I ⟶ J` lifting `u` between the chosen injective resolutions. -/
+noncomputable def grothendieckSpectralSequenceMap :
+    F.grothendieckSpectralSequence G I ⟶ F.grothendieckSpectralSequence G J :=
+  CochainComplex.cartanEilenbergSpectralSequenceMap G
+    ((F.mapHomologicalComplex _).map (InjectiveResolution.desc u J I))
+
+/-- **The second page of the Grothendieck spectral sequence is natural**: under the
+identifications `grothendieckSpectralSequencePageThreeXIso` with `RˢG(RᵏF(-))`, the morphism of
+spectral sequences induced by `u : X ⟶ Y` is `RˢG(RᵏF(u))`. -/
+@[reassoc]
+theorem grothendieckSpectralSequenceMap_hom_f_pageThreeXIso_hom (s k : ℕ) :
+    ((F.grothendieckSpectralSequenceMap G I J u).hom 3 (by lia)).f
+        ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) ≫
+        (F.grothendieckSpectralSequencePageThreeXIso G J s k).hom =
+      (F.grothendieckSpectralSequencePageThreeXIso G I s k).hom ≫
+        (G.rightDerived s).map ((F.rightDerived k).map u) := by
+  dsimp only [grothendieckSpectralSequencePageThreeXIso, Iso.trans_hom, Functor.mapIso_hom,
+    Iso.symm_hom]
+  rw [grothendieckSpectralSequenceMap,
+    CochainComplex.cartanEilenbergSpectralSequenceMap_hom_f_pageThreeXIso_hom_assoc]
+  exact (congrArg (_ ≫ ·) (((G.rightDerived s).map_comp _ _).symm.trans
+    ((congrArg (G.rightDerived s).map (InjectiveResolution.isoRightDerivedObj_inv_naturality u I
+      J _ (InjectiveResolution.desc_commutes_zero u J I) F k).symm).trans
+        ((G.rightDerived s).map_comp _ _)))).trans (Category.assoc _ _ _).symm
+
+end Naturality
 
 end CategoryTheory.Functor

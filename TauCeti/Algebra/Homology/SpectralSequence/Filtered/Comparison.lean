@@ -23,6 +23,9 @@ filtered complexes, holds for all filtrations.
 * `CochainComplex.isIso_homologyMap_app_top_of_isIso_abutment`: an isomorphism on the abutments
   gives an isomorphism in cohomology.
 * `CochainComplex.isIso_homologyMap_of_isIso_spectralSequence_page`: the comparison theorem.
+* `CochainComplex.spectralObjectMap_filtrationFunctorMap_hom_app_filtrationAbutmentIso_hom`: on
+  the abutments, the morphism of spectral objects induced by a morphism of filtered complexes is
+  the map it induces in cohomology.
 -/
 
 public section
@@ -62,6 +65,28 @@ lemma isIso_homologyMap_app_top_of_isIso_abutment {F : ℤ → Subobject K} {hF 
     infer_instance
   exact IsIso.of_isIso_comp_right _ (HomologicalComplex.homologyMap
     (cokernel.π ((filtrationFunctor G hG).map (homOfLE (bot_le : (⊥ : EInt) ≤ ⊤)))) n)
+
+/-- **The morphism of spectral objects of filtered complexes on the abutments**: through the
+identifications `filtrationAbutmentIso` of the abutments with the cohomology of the complexes,
+the morphism induced by a morphism of filtered complexes `f` is the map induced by `f` in
+cohomology. -/
+@[reassoc]
+lemma spectralObjectMap_filtrationFunctorMap_hom_app_filtrationAbutmentIso_hom
+    {F : ℤ → Subobject K} (hF : Monotone F) {G : ℤ → Subobject L} (hG : Monotone G) (f : K ⟶ L)
+    (hf : ∀ n, (G n).Factors ((F n).arrow ≫ f)) (n : ℤ) :
+    ((spectralObjectMap (filtrationFunctorMap hF hG f hf)).hom n).app
+        (mk₁ (homOfLE (bot_le : (⊥ : EInt) ≤ ⊤))) ≫ (filtrationAbutmentIso G hG n).hom =
+      (filtrationAbutmentIso F hF n).hom ≫ HomologicalComplex.homologyMap f n := by
+  rw [filtrationAbutmentIso_hom, filtrationAbutmentIso_hom,
+    ← Category.assoc, spectralObjectMap_hom_app_spectralObjectHIsoCokernel_hom, Category.assoc,
+    ← HomologicalComplex.homologyMap_comp, Category.assoc,
+    ← HomologicalComplex.homologyMap_comp]
+  congr 2
+  refine coequalizer.hom_ext ?_
+  rw [cokernel.π_desc_assoc, cokernel.π_desc_assoc, Category.assoc, cokernel.π_desc,
+    filtrationFunctorArrow, filtrationFunctorArrow]
+  exact (filtrationFunctorMap_app_comp (hF := hF) (hG := hG) f hf ⊤).trans
+    (Category.assoc _ _ _).symm
 
 /-- **The comparison theorem for filtered complexes.** Let `α` be a morphism between the
 functors of finite increasing filtrations `F` of `K` and `G` of `L` (`F_a = G_a = ⊥` and

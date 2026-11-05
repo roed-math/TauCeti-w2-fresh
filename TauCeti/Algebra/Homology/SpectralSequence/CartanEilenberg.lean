@@ -6,9 +6,10 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.CategoryTheory.Abelian.RightDerived
+public import TauCeti.Algebra.Homology.SpectralSequence.Bicomplex.RowFiltrationMap
 public import TauCeti.Algebra.Homology.SpectralSequence.Bicomplex.UpNat
 public import TauCeti.CategoryTheory.Abelian.RightDerived
-public import TauCeti.CategoryTheory.Abelian.Injective.CartanEilenberg
+public import TauCeti.CategoryTheory.Abelian.Injective.CartanEilenberg.Map
 
 /-!
 # The spectral sequence of a Cartan–Eilenberg double complex
@@ -59,6 +60,11 @@ The page numbered `3` is therefore the classical `E₂` page.
 * `CochainComplex.quasiIso_totalCoaugmentation_mapCartanEilenberg`,
   `CochainComplex.cartanEilenbergSpectralSequenceAbutmentIso`: for `G` left exact and `K`
   termwise `G`-acyclic, the spectral sequence converges to the cohomology of `G(K)`.
+* `CochainComplex.cartanEilenbergSpectralSequenceMap`,
+  `CochainComplex.cartanEilenbergSpectralSequenceMap_hom_f_firstPageXIso_hom`,
+  `CochainComplex.cartanEilenbergSpectralSequenceMap_hom_f_pageThreeXIso_hom`: a morphism
+  `φ : K ⟶ K'` induces a morphism of spectral sequences, which is the image under `G` of the
+  chain map `J(Hᵏ(K)) ⟶ J(Hᵏ(K'))` on the first page and `RˢG(Hᵏ(φ))` on `E₂`.
 
 ## References
 
@@ -420,6 +426,145 @@ noncomputable def cartanEilenbergSpectralSequenceEInftyIsoAbutment
     cokernelZeroIsoTarget ≪≫ @asIso _ _ _ _ _ this
 
 end Degeneration
+
+/-! ### Naturality -/
+
+section Naturality
+
+variable {K} {K' : CochainComplex C ℕ} (φ : K ⟶ K')
+
+/-- The morphism of Cartan–Eilenberg spectral sequences induced by a morphism of cochain
+complexes `φ : K ⟶ K'`, through the morphism of Cartan–Eilenberg double complexes
+`CochainComplex.cartanEilenbergMap φ`. -/
+noncomputable def cartanEilenbergSpectralSequenceMap :
+    K.cartanEilenbergSpectralSequence G ⟶ K'.cartanEilenbergSpectralSequence G :=
+  HomologicalComplex₂.rowFiltrationUpSpectralSequenceMap
+    (((G.mapHomologicalComplex (up ℕ)).mapHomologicalComplex (up ℕ)).map (cartanEilenbergMap φ))
+
+/-- **The morphism of Cartan–Eilenberg spectral sequences on the first page**: under the
+identifications `cartanEilenbergSpectralSequenceFirstPageXIso` with `G(J(Hᵏ)ˢ)`, it is the image
+under `G` of the chain map `J(Hᵏ) ⟶ J(H'ᵏ)` lifting `Hᵏ(φ)`. -/
+@[reassoc]
+theorem cartanEilenbergSpectralSequenceMap_hom_f_firstPageXIso_hom (p : ℤ) (s k : ℕ)
+    (hp : p = k + 2 * s + 1) :
+    ((cartanEilenbergSpectralSequenceMap G φ).hom 2 le_rfl).f (p, -((s : ℤ) + 1)) ≫
+        (K'.cartanEilenbergSpectralSequenceFirstPageXIso G p s k hp).hom =
+      (K.cartanEilenbergSpectralSequenceFirstPageXIso G p s k hp).hom ≫
+        G.map ((homologyResolutionMap φ k).f s) := by
+  have h : ((HomologicalComplex.eval D (up ℕ) s).mapHomologicalComplex (up ℕ)).map
+        (((G.mapHomologicalComplex (up ℕ)).mapHomologicalComplex (up ℕ)).map
+          (cartanEilenbergMap φ)) ≫ (K'.mapCartanEilenbergRowIso G s).hom =
+      (K.mapCartanEilenbergRowIso G s).hom ≫ cartanEilenbergRowMap φ G s := by
+    ext q
+    exact (comp_id _).trans (id_comp _).symm
+  simp only [cartanEilenbergSpectralSequenceFirstPageXIso, Iso.trans_hom,
+    HomologicalComplex.homologyMapIso_hom, assoc]
+  rw [cartanEilenbergSpectralSequenceMap,
+    HomologicalComplex₂.rowFiltrationUpSpectralSequenceMap_hom_f_firstPageXIso_hom_assoc,
+    ← HomologicalComplex.homologyMap_comp_assoc, h, HomologicalComplex.homologyMap_comp_assoc,
+    homologyMap_cartanEilenbergRowMap_cartanEilenbergRowHomologyIso_hom]
+
+/-- The morphism of Cartan–Eilenberg spectral sequences is compatible with the identifications
+`cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi` of the cohomology of the first pages. -/
+lemma homologyMap_cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi_hom (s k : ℕ)
+    (i : ℤ × ℤ) (i' : ℕ)
+    (hi : (ComplexShape.up' ((2, 1 - 2) : ℤ × ℤ)).prev ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) = i)
+    (hi' : (up ℕ).prev s = i')
+    (τ₁ : G.obj ((K.homologyResolution k).cocomplex.X i') ⟶
+      ((K.cartanEilenbergSpectralSequence G).page 2).X i) {hτ₁e : Epi τ₁}
+    (hτ₁ : τ₁ ≫ ((K.cartanEilenbergSpectralSequence G).page 2).d i
+        ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) =
+      G.map ((K.homologyResolution k).cocomplex.d i' s) ≫
+        (K.cartanEilenbergSpectralSequenceFirstPageXIso G _ s k rfl).inv)
+    (τ₁' : G.obj ((K'.homologyResolution k).cocomplex.X i') ⟶
+      ((K'.cartanEilenbergSpectralSequence G).page 2).X i) {hτ₁e' : Epi τ₁'}
+    (hτ₁' : τ₁' ≫ ((K'.cartanEilenbergSpectralSequence G).page 2).d i
+        ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) =
+      G.map ((K'.homologyResolution k).cocomplex.d i' s) ≫
+        (K'.cartanEilenbergSpectralSequenceFirstPageXIso G _ s k rfl).inv)
+    (hτ : τ₁ ≫ ((cartanEilenbergSpectralSequenceMap G φ).hom 2 le_rfl).f i =
+      G.map ((homologyResolutionMap φ k).f i') ≫ τ₁') :
+    HomologicalComplex.homologyMap ((cartanEilenbergSpectralSequenceMap G φ).hom 2 le_rfl)
+        ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) ≫
+        (K'.cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi G s k i i' hi hi' τ₁'
+          hτ₁').hom =
+      (K.cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi G s k i i' hi hi' τ₁ hτ₁).hom ≫
+        HomologicalComplex.homologyMap ((G.mapHomologicalComplex _).map
+          (homologyResolutionMap φ k)) s := by
+  have hY := HomologicalComplex.homologyMap_comp_homologyIsoSc'_hom
+    ((G.mapHomologicalComplex _).map (homologyResolutionMap φ k)) i' s (s + 1) hi' (by simp)
+  rw [← Iso.inv_comp_eq, ← assoc, ← Iso.eq_comp_inv] at hY
+  simp only [cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi, Iso.trans_hom, Iso.symm_hom,
+    asIso_inv]
+  rw [HomologicalComplex.homologyMap_comp_homologyIsoSc'_hom_assoc]
+  simp only [assoc]
+  rw [hY]
+  refine congrArg (_ ≫ ·) ?_
+  simp only [← assoc]
+  refine congrArg (· ≫ _) ?_
+  rw [IsIso.eq_inv_comp, ← assoc, IsIso.comp_inv_eq, ← ShortComplex.homologyMap_comp,
+    ← ShortComplex.homologyMap_comp]
+  congr 1
+  ext
+  · exact hτ
+  · simp only [ShortComplex.comp_τ₂, HomologicalComplex.shortComplexFunctor'_map_τ₂,
+      Functor.mapHomologicalComplex_map_f]
+    rw [Iso.inv_comp_eq, ← assoc, Iso.eq_comp_inv]
+    exact cartanEilenbergSpectralSequenceMap_hom_f_firstPageXIso_hom G φ _ s k rfl
+  · simp only [ShortComplex.comp_τ₃, HomologicalComplex.shortComplexFunctor'_map_τ₃,
+      Functor.mapHomologicalComplex_map_f, Linear.smul_comp, Linear.comp_smul]
+    congr 1
+    rw [Iso.inv_comp_eq, ← assoc, Iso.eq_comp_inv]
+    exact cartanEilenbergSpectralSequenceMap_hom_f_firstPageXIso_hom G φ _ (s + 1) k rfl
+
+/-- The morphism of Cartan–Eilenberg spectral sequences is compatible with the identifications
+`cartanEilenbergSpectralSequencePageTwoHomologyIso` of the cohomology of the first pages with the
+cohomology of `G(J(Hᵏ))`. -/
+lemma homologyMap_cartanEilenbergSpectralSequencePageTwoHomologyIso_hom (s k : ℕ) :
+    HomologicalComplex.homologyMap ((cartanEilenbergSpectralSequenceMap G φ).hom 2 le_rfl)
+        ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) ≫
+        (K'.cartanEilenbergSpectralSequencePageTwoHomologyIso G s k).hom =
+      (K.cartanEilenbergSpectralSequencePageTwoHomologyIso G s k).hom ≫
+        HomologicalComplex.homologyMap ((G.mapHomologicalComplex _).map
+          (homologyResolutionMap φ k)) s := by
+  cases s with
+  | zero =>
+    rw [cartanEilenbergSpectralSequencePageTwoHomologyIso,
+      cartanEilenbergSpectralSequencePageTwoHomologyIso]
+    apply homologyMap_cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi_hom
+    rw [zero_comp, comp_zero]
+  | succ s =>
+    rw [cartanEilenbergSpectralSequencePageTwoHomologyIso,
+      cartanEilenbergSpectralSequencePageTwoHomologyIso]
+    apply homologyMap_cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi_hom
+    rw [Linear.smul_comp, Linear.comp_smul]
+    congr 1
+    rw [Iso.inv_comp_eq, ← assoc, Iso.eq_comp_inv]
+    exact cartanEilenbergSpectralSequenceMap_hom_f_firstPageXIso_hom G φ _ s k rfl
+
+/-- **The second page of the Cartan–Eilenberg spectral sequence is natural**: under the
+identifications `cartanEilenbergSpectralSequencePageThreeXIso` with `RˢG(Hᵏ)`, the morphism of
+spectral sequences induced by `φ` is `RˢG(Hᵏ(φ))`. -/
+@[reassoc]
+theorem cartanEilenbergSpectralSequenceMap_hom_f_pageThreeXIso_hom (s k : ℕ) :
+    ((cartanEilenbergSpectralSequenceMap G φ).hom 3 (by lia)).f
+        ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) ≫
+        (K'.cartanEilenbergSpectralSequencePageThreeXIso G s k).hom =
+      (K.cartanEilenbergSpectralSequencePageThreeXIso G s k).hom ≫
+        (G.rightDerived s).map (HomologicalComplex.homologyMap φ k) := by
+  have h := (cartanEilenbergSpectralSequenceMap G φ).comm 2 3
+    ((k : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) rfl le_rfl
+  rw [← Iso.inv_comp_eq, ← assoc, ← Iso.eq_comp_inv] at h
+  have h₂ := homologyMap_cartanEilenbergSpectralSequencePageTwoHomologyIso_hom G φ s k
+  have h₃ := CategoryTheory.InjectiveResolution.isoRightDerivedObj_inv_naturality _ _ _ _
+    (homologyResolution_ι₀_comp_homologyResolutionMap_f φ k) G s
+  dsimp only [cartanEilenbergSpectralSequencePageThreeXIso, Iso.trans_hom, Iso.symm_hom]
+  simp only [assoc]
+  exact (assoc _ _ _).symm.trans ((congrArg (· ≫ _) h.symm).trans ((assoc _ _ _).trans
+    (congrArg (_ ≫ ·) ((assoc _ _ _).symm.trans ((congrArg (· ≫ _) h₂).trans
+      ((assoc _ _ _).trans ((congrArg (_ ≫ ·) h₃.symm).trans (assoc _ _ _).symm)))))))
+
+end Naturality
 
 /-! ### The abutment -/
 

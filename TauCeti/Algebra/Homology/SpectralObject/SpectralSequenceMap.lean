@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.Algebra.Homology.SpectralObject.Map
+public import Mathlib.Algebra.Homology.SpectralObject.FirstPage
 public import Mathlib.Algebra.Homology.SpectralObject.SpectralSequence
 public import TauCeti.Algebra.Homology.HomologicalComplex.Basic
 public import TauCeti.Algebra.Homology.ShortComplex.LeftHomology
@@ -38,6 +39,8 @@ which is functorial in `φ`.
   next page.
 * `CategoryTheory.Abelian.SpectralObject.spectralSequenceMap_id`,
   `CategoryTheory.Abelian.SpectralObject.spectralSequenceMap_comp`: functoriality.
+* `SpectralObject.spectralSequencePageXMap_spectralSequenceFirstPageXIso_hom`: on the first
+  page, the morphism of spectral sequences is the morphism induced on the objects `H`.
 
 ## Implementation notes
 
@@ -271,5 +274,37 @@ lemma spectralSequenceMap_comp :
     spectralSequenceMap data (φ ≫ ψ) = spectralSequenceMap data φ ≫ spectralSequenceMap data ψ := by
   ext r hr : 2
   simp
+
+/-! ### The first page -/
+
+/-- Under the identifications `E(𝟙, f, 𝟙) ≅ H(f)`, the morphism induced on the objects `E` by a
+morphism of spectral objects is the morphism induced on the objects `H`. -/
+@[reassoc]
+lemma EMap_EIsoH_hom {i j : ι} (f : i ⟶ j) (n₀ n₁ n₂ : ℤ) (hn₁ : n₀ + 1 = n₁)
+    (hn₂ : n₁ + 1 = n₂) :
+    EMap φ (𝟙 i) f (𝟙 j) n₀ n₁ n₂ hn₁ hn₂ ≫ (Y.EIsoH f n₀ n₁ n₂ hn₁ hn₂).hom =
+      (X.EIsoH f n₀ n₁ n₂ hn₁ hn₂).hom ≫ (φ.hom n₁).app (mk₁ f) := by
+  rw [← cancel_epi (X.πE (𝟙 i) f (𝟙 j) n₀ n₁ n₂ hn₁ hn₂), πE_EMap_assoc,
+    Y.πE_EIsoH_hom f n₀ n₁ n₂ hn₁ hn₂, X.πE_EIsoH_hom_assoc f n₀ n₁ n₂ hn₁ hn₂,
+    ← cancel_epi (X.cyclesIsoH f n₁ n₂ hn₂).inv, Iso.inv_hom_id_assoc,
+    X.cyclesIsoH_inv f n₁ n₂ hn₂, toCycles_cyclesMapOfHom_assoc φ (𝟙 i) f n₁ f (by simp),
+    ← Y.cyclesIsoH_inv f n₁ n₂ hn₂, Iso.inv_hom_id, Category.comp_id]
+
+/-- **The morphism of spectral sequences on the first page**: under the identifications of the
+objects of the first page with objects `H`, the morphism induced by a morphism of spectral objects
+is the morphism induced on the objects `H`. -/
+@[reassoc]
+lemma spectralSequencePageXMap_spectralSequenceFirstPageXIso_hom [data.HasFirstPageComputation]
+    (pq : κ) (i₁ i₂ : ι) (hi₁ : i₁ = data.i₁ pq) (hi₂ : i₂ = data.i₂ pq) (n : ℤ)
+    (hn : n = data.deg pq) :
+    spectralSequencePageXMap data φ r₀ le_rfl pq ≫
+        (Y.spectralSequenceFirstPageXIso data pq i₁ i₂ hi₁ hi₂ n hn).hom =
+      (X.spectralSequenceFirstPageXIso data pq i₁ i₂ hi₁ hi₂ n hn).hom ≫
+        (φ.hom n).app (mk₁ (homOfLE (data.le₁₂' pq hi₁ hi₂))) := by
+  rw [Y.spectralSequenceFirstPageXIso_hom data pq i₁ i₂ hi₁ hi₂ (n - 1) n (n + 1) hn,
+    X.spectralSequenceFirstPageXIso_hom data pq i₁ i₂ hi₁ hi₂ (n - 1) n (n + 1) hn,
+    ← spectralSequencePageXIso_hom_comp_EMap_assoc, Category.assoc]
+  -- `homOfLE le_rfl` is `𝟙` up to definitional equality.
+  exact congrArg (_ ≫ ·) (EMap_EIsoH_hom φ _ _ _ _ _ _)
 
 end CategoryTheory.Abelian.SpectralObject

@@ -23,6 +23,14 @@ resolution `InjectiveResolution.horseshoe hS I₁ I₃` of `X₂` whose term in 
 `InjectiveResolution.horseshoe_ι₀_comp_horseshoeSnd_f_zero`) and form a degreewise split short
 exact sequence of cochain complexes (`InjectiveResolution.horseshoeShortComplex_shortExact`).
 
+A morphism `φ : S ⟶ S'` of short exact sequences, with chain maps `α₁ : I₁ ⟶ I₁'` and
+`α₃ : I₃ ⟶ I₃'` lifting `φ.τ₁` and `φ.τ₃`, lifts to a chain map between the horseshoe resolutions
+(`InjectiveResolution.horseshoeMap`), given in each degree by an upper triangular matrix
+`[[α₁, θ], [0, α₃]]` and hence commuting with the chain maps of the horseshoes
+(`InjectiveResolution.horseshoeInl_comp_horseshoeMap`,
+`InjectiveResolution.horseshoeMap_comp_horseshoeSnd`); the maps `θ n : I₃ⁿ ⟶ I₁'ⁿ` are again
+chosen inductively (`InjectiveResolution.horseshoeMapθ`).
+
 The augmentation of an injective resolution `I` of `Z` is used in the form
 `InjectiveResolution.ι₀ I : Z ⟶ I⁰`, whose source is `Z` itself rather than the degree `0` object
 of the single complex on `Z`, so that it composes with morphisms out of `Z` without unfolding.
@@ -353,5 +361,151 @@ lemma ι₀_comp_horseshoeInl_f_zero :
 lemma horseshoe_ι₀_comp_horseshoeSnd_f_zero :
     (horseshoe hS I₁ I₃).ι₀ ≫ (horseshoeSnd hS I₁ I₃).f 0 = S.g ≫ I₃.ι₀ := by
   simp
+
+end CategoryTheory.InjectiveResolution
+
+/-! ### Morphisms of horseshoe resolutions -/
+
+namespace CategoryTheory.InjectiveResolution
+
+variable {C : Type u} [Category.{v} C] [Abelian C]
+
+variable {S S' : ShortComplex C} (hS : S.ShortExact) (hS' : S'.ShortExact) (φ : S ⟶ S')
+  {I₁ : InjectiveResolution S.X₁} {I₃ : InjectiveResolution S.X₃}
+  {I₁' : InjectiveResolution S'.X₁} {I₃' : InjectiveResolution S'.X₃}
+  (α₁ : I₁.cocomplex ⟶ I₁'.cocomplex) (α₃ : I₃.cocomplex ⟶ I₃'.cocomplex)
+
+/-- The pairs of consecutive off-diagonal components of a morphism of horseshoe resolutions, with
+the relation which makes it commute with the differentials. -/
+structure HorseshoeMapStep (n : ℕ) where
+  /-- The off-diagonal component in degree `n`. -/
+  θ : I₃.cocomplex.X n ⟶ I₁'.cocomplex.X n
+  /-- The off-diagonal component in degree `n + 1`. -/
+  θ' : I₃.cocomplex.X (n + 1) ⟶ I₁'.cocomplex.X (n + 1)
+  /-- The relation which makes the morphism commute with the differentials. -/
+  comm : I₃.cocomplex.d n (n + 1) ≫ θ' = θ ≫ I₁'.cocomplex.d n (n + 1) +
+    α₃.f n ≫ horseshoeσ hS' I₁' I₃' n - horseshoeσ hS I₁ I₃ n ≫ α₁.f (n + 1)
+
+variable (h₁ : I₁.ι₀ ≫ α₁.f 0 = φ.τ₁ ≫ I₁'.ι₀) (h₃ : I₃.ι₀ ≫ α₃.f 0 = φ.τ₃ ≫ I₃'.ι₀)
+
+/-- The morphism `X₃ ⟶ I₁'⁰` induced by the difference of the two ways of mapping `X₂` to `I₁'⁰`,
+which vanishes on `X₁`. -/
+noncomputable def horseshoeMapτ : S.X₃ ⟶ I₁'.cocomplex.X 0 :=
+  hS.exact.descToInjective (φ.τ₂ ≫ horseshoeι₀Fst hS' I₁' - horseshoeι₀Fst hS I₁ ≫ α₁.f 0) (by
+    rw [comp_sub, ← φ.comm₁₂_assoc, f_comp_horseshoeι₀Fst, f_comp_horseshoeι₀Fst_assoc, h₁,
+      sub_self])
+
+@[reassoc (attr := simp)]
+lemma g_comp_horseshoeMapτ :
+    S.g ≫ horseshoeMapτ hS hS' φ α₁ h₁ =
+      φ.τ₂ ≫ horseshoeι₀Fst hS' I₁' - horseshoeι₀Fst hS I₁ ≫ α₁.f 0 :=
+  hS.exact.comp_descToInjective _ _
+
+/-- The off-diagonal component `I₃⁰ ⟶ I₁'⁰` of a morphism of horseshoe resolutions in degree
+`0`. -/
+noncomputable def horseshoeMapθ₀ : I₃.cocomplex.X 0 ⟶ I₁'.cocomplex.X 0 :=
+  Injective.factorThru (horseshoeMapτ hS hS' φ α₁ h₁) I₃.ι₀
+
+@[reassoc (attr := simp)]
+lemma ι₀_comp_horseshoeMapθ₀ :
+    I₃.ι₀ ≫ horseshoeMapθ₀ hS hS' φ α₁ h₁ = horseshoeMapτ hS hS' φ α₁ h₁ :=
+  Injective.comp_factorThru _ _
+
+/-- The first pair of off-diagonal components of a morphism of horseshoe resolutions. -/
+noncomputable def horseshoeMapStepZero : HorseshoeMapStep hS hS' α₁ α₃ 0 where
+  θ := horseshoeMapθ₀ hS hS' φ α₁ h₁
+  θ' := I₃.exact_ι₀.descToInjective (horseshoeMapθ₀ hS hS' φ α₁ h₁ ≫ I₁'.cocomplex.d 0 1 +
+      α₃.f 0 ≫ horseshoeσ hS' I₁' I₃' 0 - horseshoeσ hS I₁ I₃ 0 ≫ α₁.f 1) (by
+    have := hS.epi_g
+    dsimp
+    rw [← cancel_epi S.g, comp_zero]
+    simp only [comp_add, comp_sub, ι₀_comp_horseshoeMapθ₀_assoc, g_comp_horseshoeMapτ_assoc,
+      reassoc_of% h₃, ← φ.comm₂₃_assoc, g_comp_ι₀_comp_horseshoeσ_zero,
+      g_comp_ι₀_comp_horseshoeσ_zero_assoc, sub_comp, assoc, neg_comp, comp_neg, α₁.comm]
+    abel)
+  comm := I₃.exact_ι₀.comp_descToInjective _ _
+
+variable {hS hS' α₁ α₃} in
+/-- The next pair of off-diagonal components of a morphism of horseshoe resolutions. -/
+noncomputable def HorseshoeMapStep.next {n : ℕ} (s : HorseshoeMapStep hS hS' α₁ α₃ n) :
+    HorseshoeMapStep hS hS' α₁ α₃ (n + 1) where
+  θ := s.θ'
+  θ' := (I₃.exact_succ n).descToInjective (s.θ' ≫ I₁'.cocomplex.d (n + 1) (n + 2) +
+      α₃.f (n + 1) ≫ horseshoeσ hS' I₁' I₃' (n + 1) -
+        horseshoeσ hS I₁ I₃ (n + 1) ≫ α₁.f (n + 2)) (by
+    have h := horseshoeσ_comm hS I₁ I₃ n
+    have h' := horseshoeσ_comm hS' I₁' I₃' n
+    have h₂ : I₃.cocomplex.d n (n + 1) ≫ horseshoeσ hS I₁ I₃ (n + 1) ≫ α₁.f (n + 2) =
+        -(horseshoeσ hS I₁ I₃ n ≫ I₁.cocomplex.d (n + 1) (n + 2) ≫ α₁.f (n + 2)) := by
+      rw [← assoc, eq_neg_of_add_eq_zero_right h, neg_comp, assoc]
+    dsimp
+    rw [comp_sub, comp_add, reassoc_of% s.comm, ← α₃.comm_assoc,
+      eq_neg_of_add_eq_zero_right h', h₂]
+    simp only [add_comp, sub_comp, assoc, HomologicalComplex.d_comp_d, comp_zero, comp_neg,
+      HomologicalComplex.Hom.comm]
+    abel)
+  comm := (I₃.exact_succ n).comp_descToInjective _ _
+
+/-- The pairs of consecutive off-diagonal components of a morphism of horseshoe resolutions,
+defined by induction. -/
+noncomputable def horseshoeMapStep : (n : ℕ) → HorseshoeMapStep hS hS' α₁ α₃ n
+  | 0 => horseshoeMapStepZero hS hS' φ α₁ α₃ h₁ h₃
+  | n + 1 => (horseshoeMapStep n).next
+
+/-- The off-diagonal component `I₃ⁿ ⟶ I₁'ⁿ` of a morphism of horseshoe resolutions. -/
+noncomputable def horseshoeMapθ (n : ℕ) : I₃.cocomplex.X n ⟶ I₁'.cocomplex.X n :=
+  (horseshoeMapStep hS hS' φ α₁ α₃ h₁ h₃ n).θ
+
+lemma horseshoeMapθ_zero :
+    horseshoeMapθ hS hS' φ α₁ α₃ h₁ h₃ 0 = horseshoeMapθ₀ hS hS' φ α₁ h₁ := rfl
+
+lemma horseshoeMapθ_comm (n : ℕ) :
+    I₃.cocomplex.d n (n + 1) ≫ horseshoeMapθ hS hS' φ α₁ α₃ h₁ h₃ (n + 1) =
+      horseshoeMapθ hS hS' φ α₁ α₃ h₁ h₃ n ≫ I₁'.cocomplex.d n (n + 1) +
+        α₃.f n ≫ horseshoeσ hS' I₁' I₃' n - horseshoeσ hS I₁ I₃ n ≫ α₁.f (n + 1) :=
+  (horseshoeMapStep hS hS' φ α₁ α₃ h₁ h₃ n).comm
+
+/-- The component `I₁ⁿ ⊞ I₃ⁿ ⟶ I₁'ⁿ ⊞ I₃'ⁿ` of a morphism of horseshoe resolutions, the upper
+triangular matrix `[[α₁, θ n], [0, α₃]]`. -/
+noncomputable def horseshoeMapF (n : ℕ) :
+    I₁.cocomplex.X n ⊞ I₃.cocomplex.X n ⟶ I₁'.cocomplex.X n ⊞ I₃'.cocomplex.X n :=
+  biprod.map (α₁.f n) (α₃.f n) + biprod.snd ≫ horseshoeMapθ hS hS' φ α₁ α₃ h₁ h₃ n ≫ biprod.inl
+
+/-- **The horseshoe lemma for morphisms**: a morphism `φ` of short exact sequences, with chain
+maps `α₁`, `α₃` between injective resolutions of the outer terms lifting `φ.τ₁` and `φ.τ₃`,
+lifts to a chain map between the horseshoe resolutions of the middle terms, given in each degree
+by an upper triangular matrix `[[α₁, θ], [0, α₃]]`. -/
+noncomputable def horseshoeMap :
+    horseshoeCocomplex hS I₁ I₃ ⟶ horseshoeCocomplex hS' I₁' I₃' :=
+  CochainComplex.ofHom (horseshoeMapF hS hS' φ α₁ α₃ h₁ h₃) fun n ↦ by
+    have h := horseshoeMapθ_comm hS hS' φ α₁ α₃ h₁ h₃ n
+    rw [horseshoeCocomplex_d, horseshoeCocomplex_d]
+    refine biprod.hom_ext' _ _ (biprod.hom_ext _ _ ?_ ?_) (biprod.hom_ext _ _ ?_ ?_) <;>
+      simp [horseshoeMapF, horseshoeD, h]
+
+lemma horseshoeMap_f (n : ℕ) :
+    (horseshoeMap hS hS' φ α₁ α₃ h₁ h₃).f n = horseshoeMapF hS hS' φ α₁ α₃ h₁ h₃ n := rfl
+
+@[reassoc (attr := simp)]
+lemma horseshoeInl_comp_horseshoeMap :
+    horseshoeInl hS I₁ I₃ ≫ horseshoeMap hS hS' φ α₁ α₃ h₁ h₃ = α₁ ≫ horseshoeInl hS' I₁' I₃' := by
+  ext n : 2
+  simp [horseshoeMap_f, horseshoeMapF]
+
+@[reassoc (attr := simp)]
+lemma horseshoeMap_comp_horseshoeSnd :
+    horseshoeMap hS hS' φ α₁ α₃ h₁ h₃ ≫ horseshoeSnd hS' I₁' I₃' = horseshoeSnd hS I₁ I₃ ≫ α₃ := by
+  ext n : 2
+  simp [horseshoeMap_f, horseshoeMapF]
+
+/-- The morphism of horseshoe resolutions lifts `φ.τ₂`. -/
+@[reassoc]
+lemma horseshoe_ι₀_comp_horseshoeMap_f_zero :
+    (horseshoe hS I₁ I₃).ι₀ ≫ (horseshoeMap hS hS' φ α₁ α₃ h₁ h₃).f 0 =
+      φ.τ₂ ≫ (horseshoe hS' I₁' I₃').ι₀ := by
+  rw [horseshoe_ι₀, horseshoe_ι₀, horseshoeMap_f]
+  refine biprod.hom_ext _ _ ?_ ?_
+  · simp [horseshoeMapF, horseshoeMapθ_zero]
+  · simp [horseshoeMapF, φ.comm₂₃_assoc, h₃]
 
 end CategoryTheory.InjectiveResolution
