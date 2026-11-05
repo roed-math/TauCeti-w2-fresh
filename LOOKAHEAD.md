@@ -40,6 +40,21 @@ The earlier stubs and what replaced them:
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
 
+## Changes in the thirty-second session (2026-11-05, 14:20 UTC)
+
+- `main` is still `b3b0334ab9203d9faee4b2f34cd75161463ecdd0` (`git merge origin/main`: already up
+  to date). The supplier PR #27145 is still open and still not consumed, so there are still no
+  stubs.
+- No new mathematics this session. The full `lake build` of the branch again took most of the
+  round, leaving no time to start one of the remaining composition items (twist invariance,
+  relative global generation, Segre embedding). The session only re-verified the branch.
+- Advice for the next session: start a remaining item only with a round of more than an hour, or
+  begin with its commutative-algebra core (for twist invariance, the graded isomorphism
+  `Symⁿ(M ⊗ L) ≅ Symⁿ M ⊗ L^{⊗n}` for an invertible module `L`, which Mathlib's
+  `Mathlib/LinearAlgebra/TensorPower/Symmetric.lean` and `RingTheory/PicardGroup.lean` do not yet
+  provide), which does not import `RelativeProj/Functor.lean`.
+- Verified: `lake build` green and `lookahead-check` ok. No `sorry` anywhere on the branch.
+
 ## Changes in the thirty-first session (2026-11-05, 13:15 UTC)
 
 - `main` moved to `b3b0334ab9203d9faee4b2f34cd75161463ecdd0` and was merged. Since the previous
