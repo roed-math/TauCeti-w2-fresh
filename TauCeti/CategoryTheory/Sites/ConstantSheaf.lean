@@ -29,7 +29,8 @@ with apex `X` over `F`, restricted along `u` in the first case.
 * `CategoryTheory.Functor.sheafPullbackConstantSheafHom_naturality`: the comparison is natural
   in `X`.
 * `CategoryTheory.Functor.sheafPullbackConstantSheafIso`: the comparison as an isomorphism, for
-  `u` final.
+  `u` final, and `CategoryTheory.Functor.constantSheafCompSheafPullbackIso`, the same as a natural
+  isomorphism.
 * `CategoryTheory.Functor.whiskerLeft_toSheafify_comp_sheafPullbackConstantSheafIso_inv`: the
   inverse comparison `X_K ⟶ u^* (X_J)`, read on sections over objects `u(U)`, is the unit of the
   adjunction `u^* ⊣ u_*` on the constant section `X ⟶ X_J(U)`.
@@ -156,6 +157,13 @@ lemma whiskerLeft_toSheafify_comp_sheafPullbackConstantSheafIso_inv [u.Final] (X
   -- The identity left by `Functor.map_id` is on the sections of `u_* u^* X_J`, which `simp`
   -- does not match against `Category.comp_id` syntactically.
   exact ((Category.comp_id _).symm.trans this).symm
+
+/-- For `u` final, the pullback of constant sheaves along `u` is the constant sheaf, naturally in
+the value: `sheafPullbackConstantSheafIso` as a natural isomorphism. -/
+def constantSheafCompSheafPullbackIso [u.Final] :
+    constantSheaf J A ⋙ u.sheafPullback A J K ≅ constantSheaf K A :=
+  NatIso.ofComponents (u.sheafPullbackConstantSheafIso A J K)
+    (sheafPullbackConstantSheafHom_naturality u A J K)
 
 end
 

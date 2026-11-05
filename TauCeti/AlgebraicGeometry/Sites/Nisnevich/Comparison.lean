@@ -33,7 +33,7 @@ constant sheaves to constant sheaves.
 
 public section
 
-open CategoryTheory Limits GrothendieckTopology TauCeti.AlgebraicGeometry.Scheme
+open CategoryTheory Limits GrothendieckTopology
 
 universe w w' u
 

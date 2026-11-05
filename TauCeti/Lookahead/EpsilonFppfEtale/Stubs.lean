@@ -14,9 +14,10 @@ set_option warningAsError false
 
 These are lookahead stubs for the supplier `is-nisnevich-covering` (open PR #28094, module
 `TauCeti.AlgebraicGeometry.Sites.Nisnevich.Basic`), to be replaced by the landed declarations.
-Only what the comparison morphisms consume is stated: the small Nisnevich topology on `X.Etale`
-and its comparison with the small étale topology. The proofs use only the stated API, never the
-body of `smallNisnevichTopology`.
+Only what the comparison morphisms consume is stated: Nisnevich coverings and the fact that
+Zariski coverings are Nisnevich coverings, the small Nisnevich topology on `X.Etale`, its
+description by Nisnevich coverings and its comparison with the small étale topology. The proofs
+use only the stated API, never the bodies of `IsNisnevichCovering` or `smallNisnevichTopology`.
 -/
 
 public section
@@ -27,14 +28,42 @@ universe u
 
 namespace TauCeti.AlgebraicGeometry.Scheme
 
+variable {S : Scheme.{u}}
+
+/-- Stub: a family `{pᵢ : Xᵢ ⟶ S}` of morphisms of schemes is a Nisnevich covering if every `pᵢ`
+is étale and every point of `S` has a preimage at which `pᵢ` induces an isomorphism of residue
+fields. -/
+def IsNisnevichCovering {ι : Type*} {X : ι → Scheme.{u}} (f : ∀ i, X i ⟶ S) : Prop :=
+  sorry
+
+/-- Stub: Zariski coverings are Nisnevich coverings. -/
+theorem isNisnevichCovering_of_zariski {ι : Type*} {X : ι → Scheme.{u}} {f : ∀ i, X i ⟶ S}
+    (hf : Presieve.ofArrows X f ∈ AlgebraicGeometry.Scheme.zariskiPrecoverage S) :
+    IsNisnevichCovering f := by
+  sorry
+
+end TauCeti.AlgebraicGeometry.Scheme
+
+namespace AlgebraicGeometry.Scheme
+
+open TauCeti.AlgebraicGeometry.Scheme
+
 /-- Stub: the small Nisnevich site of a scheme `X`, on the category `X.Etale` of schemes étale
 over `X`. -/
 noncomputable def smallNisnevichTopology (X : Scheme.{u}) : GrothendieckTopology X.Etale :=
   sorry
 
-/-- Stub: the small Nisnevich topology is coarser than the small étale topology. -/
-theorem smallNisnevichTopology_le_smallEtaleTopology (X : Scheme.{u}) :
-    smallNisnevichTopology X ≤ X.smallEtaleTopology := by
+/-- Stub: a family of morphisms in `X.Etale` generates a covering sieve of the small Nisnevich
+site exactly when the underlying morphisms of schemes form a Nisnevich covering. -/
+theorem ofArrows_mem_smallNisnevichTopology_iff {X : Scheme.{u}} {W : X.Etale} {ι : Type*}
+    {Z : ι → X.Etale} (f : ∀ i, Z i ⟶ W) :
+    Sieve.ofArrows Z f ∈ X.smallNisnevichTopology W ↔
+      IsNisnevichCovering (fun i ↦ (f i).left) := by
   sorry
 
-end TauCeti.AlgebraicGeometry.Scheme
+/-- Stub: the small Nisnevich topology is coarser than the small étale topology. -/
+theorem smallNisnevichTopology_le_smallEtaleTopology (X : Scheme.{u}) :
+    X.smallNisnevichTopology ≤ X.smallEtaleTopology := by
+  sorry
+
+end AlgebraicGeometry.Scheme
