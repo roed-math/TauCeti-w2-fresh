@@ -6,7 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.Algebra.Category.ModuleCat.EnoughInjectives
-public import Mathlib.Algebra.Module.Torsion.Basic
+public import Mathlib.Algebra.Module.Torsion.PrimaryComponent
 public import Mathlib.CategoryTheory.Abelian.Injective.Ext
 public import Mathlib.CategoryTheory.Abelian.RightDerived
 public import TauCeti.Algebra.Homology.LocalCohomology.Exact
@@ -16,11 +16,12 @@ import TauCeti.Algebra.Category.ModuleCat.FilteredColimits
 # Local cohomology as derived power torsion
 
 For an ideal `I` of a commutative ring `A`, the `I`-power torsion of an `A`-module `M` is the
-submodule `Γ_I(M)` of elements killed by some power of `I`, and `M ↦ Γ_I(M)` is an additive
-functor `TauCeti.Supports.powerTorsionFunctor I`. Mathlib's `localCohomology I q` is the colimit
-over `k` of `Ext^q_A(A ⧸ Iᵏ, -)`. This file proves that `Γ_I` is left exact and that, in every
-degree, `H^q_I` is naturally isomorphic to the right-derived functor `R^qΓ_I` (Stacks, Lemma
-47.8.2 (0954)). In degree zero both are `Γ_I`, by `TauCeti.Supports.localCohomology_degreeZero`.
+submodule `Γ_I(M)` of elements killed by some power of `I` (Mathlib's `Ideal.primaryComponent`),
+and `M ↦ Γ_I(M)` is an additive functor `TauCeti.Supports.powerTorsionFunctor I`. Mathlib's
+`localCohomology I q` is the colimit over `k` of `Ext^q_A(A ⧸ Iᵏ, -)`. This file proves that
+`Γ_I` is left exact and that, in every degree, `H^q_I` is naturally isomorphic to the
+right-derived functor `R^qΓ_I` (Stacks, Lemma 47.8.2 (0954)). In degree zero both are `Γ_I`, by
+`TauCeti.Supports.localCohomology_degreeZero`.
 
 The proof follows Stacks. Fix an injective resolution `M → J•`. A class in
 `Ext^{p+1}(A ⧸ Iᵏ, M)` is represented by a cocycle `f : A ⧸ Iᵏ ⟶ J^{p+1}`
@@ -33,7 +34,7 @@ is needed.
 
 ## Main definitions
 
-* `TauCeti.Supports.powerTorsion I M`: the `I`-power torsion submodule of `M`.
+* `TauCeti.Supports.I.primaryComponent M`: the `I`-power torsion submodule of `M`.
 * `TauCeti.Supports.powerTorsionFunctor I`: the functor `Γ_I` on `A`-modules.
 * `TauCeti.Supports.localCohomologyZeroLinearEquiv I M`: `H⁰_I(M) ≃ₗ[A] Γ_I(M)`.
 * `TauCeti.Supports.localCohomologySuccLinearEquivHomology I R p`: for an injective resolution
@@ -50,7 +51,7 @@ is needed.
 
 ## Main results
 
-* `TauCeti.Supports.mem_powerTorsion_iff`: `m ∈ Γ_I(M)` iff some power of `I` kills `m`.
+* `TauCeti.Supports.mem_primaryComponent_iff`: `m ∈ Γ_I(M)` iff some power of `I` kills `m`.
 * The instance `PreservesFiniteLimits (powerTorsionFunctor I)`: `Γ_I` is left exact.
 * `TauCeti.Supports.localCohomologySuccLinearEquivHomology_ι_extMk`: the comparison sends the
   class of a cocycle `f : A ⧸ Iᵏ ⟶ J^{p+1}` to the class of `f(1)`.
@@ -77,30 +78,21 @@ section PowerTorsion
 
 variable {M N : Type*} [AddCommGroup M] [Module A M] [AddCommGroup N] [Module A N]
 
-/-- The `I`-power torsion `Γ_I(M)` of `M`: the elements killed by some power of `I`. -/
-def powerTorsion (M : Type*) [AddCommGroup M] [Module A M] : Submodule A M :=
-  ⨆ n : ℕ, Submodule.torsionBySet A M ↑(I ^ n)
-
 variable {I} in
-theorem mem_powerTorsion_iff {m : M} : m ∈ powerTorsion I M ↔ ∃ n : ℕ, ∀ a ∈ I ^ n, a • m = 0 := by
-  rw [powerTorsion, Submodule.mem_iSup_of_directed _
-    (Monotone.directed_le fun i j h => Submodule.torsionBySet_le_torsionBySet_pow i j h I)]
-  simp only [Submodule.mem_torsionBySet_iff, Subtype.forall, SetLike.mem_coe]
-
-variable {I} in
-/-- Linear maps preserve `I`-power torsion. -/
-theorem map_mem_powerTorsion (f : M →ₗ[A] N) {m : M} (hm : m ∈ powerTorsion I M) :
-    f m ∈ powerTorsion I N := by
-  obtain ⟨n, hn⟩ := mem_powerTorsion_iff.1 hm
-  exact mem_powerTorsion_iff.2 ⟨n, fun a ha => by rw [← map_smul, hn a ha, map_zero]⟩
+/-- An element lies in the `I`-power torsion `Γ_I(M)` (Mathlib's `Ideal.primaryComponent`) iff
+some power of `I` kills it. -/
+theorem mem_primaryComponent_iff {m : M} :
+    m ∈ I.primaryComponent M ↔ ∃ n : ℕ, ∀ a ∈ I ^ n, a • m = 0 := by
+  simp only [Ideal.primaryComponent_mem, Submodule.mem_torsionBySet_iff, Subtype.forall,
+    SetLike.mem_coe]
 
 /-- The `I`-power-torsion functor `Γ_I` on `A`-modules. -/
 @[expose] noncomputable def powerTorsionFunctor : ModuleCat.{u} A ⥤ ModuleCat.{u} A where
-  obj M := ModuleCat.of A (powerTorsion I M)
-  map f := ModuleCat.ofHom (f.hom.restrict fun _ => map_mem_powerTorsion f.hom)
+  obj M := ModuleCat.of A (I.primaryComponent M)
+  map f := ModuleCat.ofHom (f.hom.restrict fun m hm => I.primaryComponent_map_mem f.hom ⟨m, hm⟩)
 
 theorem powerTorsionFunctor_obj (M : ModuleCat.{u} A) :
-    (powerTorsionFunctor I).obj M = ModuleCat.of A (powerTorsion I M) :=
+    (powerTorsionFunctor I).obj M = ModuleCat.of A (I.primaryComponent M) :=
   rfl
 
 @[simp]
@@ -120,17 +112,18 @@ instance : PreservesFiniteLimits (powerTorsionFunctor I) := by
     (ModuleCat.mono_iff_injective _).2 fun x y h => Subtype.ext (hf (congrArg Subtype.val h))⟩
   obtain ⟨y, hy⟩ := (ShortComplex.moduleCat_exact_iff _).1 hS.exact x.1
     (congrArg Subtype.val hx)
-  obtain ⟨n, hn⟩ := mem_powerTorsion_iff.1 x.2
-  refine ⟨⟨y, mem_powerTorsion_iff.2 ⟨n, fun a ha => hf ?_⟩⟩, Subtype.ext hy⟩
+  obtain ⟨n, hn⟩ := mem_primaryComponent_iff.1 x.2
+  refine ⟨⟨y, mem_primaryComponent_iff.2 ⟨n, fun a ha => hf ?_⟩⟩, Subtype.ext hy⟩
   rw [map_smul, map_zero, hy, hn a ha]
 
 /-- **Degree zero of local cohomology is power torsion**: evaluation at `1` identifies
 `H⁰_I(M)` with `Γ_I(M)`. Stacks, Lemma 47.8.2 (0954). -/
 noncomputable def localCohomologyZeroLinearEquiv (M : ModuleCat.{u} A) :
-    (localCohomology I 0).obj M ≃ₗ[A] powerTorsion I M :=
+    (localCohomology I 0).obj M ≃ₗ[A] I.primaryComponent M :=
   LinearEquiv.ofInjective _ (localCohomologyZeroToModule_injective I M) ≪≫ₗ
     LinearEquiv.ofEq _ _ (SetLike.coe_injective <| (LinearMap.coe_range _).trans <|
-      (range_localCohomologyZeroToModule I M).trans (Set.ext fun _ => mem_powerTorsion_iff.symm))
+      (range_localCohomologyZeroToModule I M).trans
+        (Set.ext fun _ => mem_primaryComponent_iff.symm))
 
 @[simp]
 theorem coe_localCohomologyZeroLinearEquiv_apply (M : ModuleCat.{u} A)
@@ -175,7 +168,7 @@ variable {I R p}
     (f : ModuleCat.of A (A ⧸ I ^ k) ⟶ R.cocomplex.X (p + 1))
     (hf : f ≫ R.cocomplex.d (p + 1) (p + 2) = 0) : LinearMap.ker (torsionSc I R p).g.hom :=
   ⟨⟨f.hom (Submodule.Quotient.mk 1),
-      mem_powerTorsion_iff.2 ⟨k, fun _ ha => smul_apply_mk_one_eq_zero f.hom ha⟩⟩,
+      mem_primaryComponent_iff.2 ⟨k, fun _ ha => smul_apply_mk_one_eq_zero f.hom ha⟩⟩,
     LinearMap.mem_ker.2 <| Subtype.ext <|
       congrArg (fun g => g.hom (Submodule.Quotient.mk (1 : A))) hf⟩
 
@@ -191,7 +184,7 @@ theorem mk_torsionCycle_eq_zero_iff {k : ℕ}
     (f : ModuleCat.of A (A ⧸ I ^ k) ⟶ R.cocomplex.X (p + 1))
     (hf : f ≫ R.cocomplex.d (p + 1) (p + 2) = 0) :
     (Submodule.Quotient.mk (torsionCycle f hf) : TorsionHomology I R p) = 0 ↔
-      ∃ z ∈ powerTorsion I (R.cocomplex.X p),
+      ∃ z ∈ I.primaryComponent (R.cocomplex.X p),
         (R.cocomplex.d p (p + 1)).hom z = f.hom (Submodule.Quotient.mk 1) := by
   rw [Submodule.Quotient.mk_eq_zero]
   constructor
@@ -235,7 +228,7 @@ theorem ker_quotientCocyclesToExt_le (k : ℕ) :
   obtain ⟨g, hg⟩ :=
     (R.extMk_eq_zero_iff f.1 (p + 2) rfl (LinearMap.mem_ker.1 f.2) p rfl).1 (LinearMap.mem_ker.1 hf)
   refine LinearMap.mem_ker.2 ((mk_torsionCycle_eq_zero_iff f.1 (LinearMap.mem_ker.1 f.2)).2
-    ⟨g.hom (Submodule.Quotient.mk 1), mem_powerTorsion_iff.2
+    ⟨g.hom (Submodule.Quotient.mk 1), mem_primaryComponent_iff.2
       ⟨k, fun _ ha => smul_apply_mk_one_eq_zero g.hom ha⟩, ?_⟩)
   rw [← hg]
   rfl
@@ -323,7 +316,7 @@ noncomputable def localCohomologySuccLinearEquivHomology :
       rw [← extToTorsionHomology_extMk, hfy]
       exact (hι j y).symm.trans hx
     obtain ⟨z, hz, hdz⟩ := (mk_torsionCycle_eq_zero_iff f hf).1 hx'
-    obtain ⟨n, hn⟩ := mem_powerTorsion_iff.1 hz
+    obtain ⟨n, hn⟩ := mem_primaryComponent_iff.1 hz
     let k := j.unop.unop
     have hm : I ^ max k n ≤ I ^ k := Ideal.pow_le_pow_right (le_max_left k n)
     let w : j ⟶ op (op (max k n)) := (homOfLE (le_max_left k n)).op.op
@@ -341,7 +334,7 @@ noncomputable def localCohomologySuccLinearEquivHomology :
     rw [← colimit.w F w, ModuleCat.comp_apply, hy, map_zero]
   · intro q
     obtain ⟨⟨⟨z, hz⟩, hdz⟩, rfl⟩ := Submodule.Quotient.mk_surjective _ q
-    obtain ⟨k, hk⟩ := mem_powerTorsion_iff.1 hz
+    obtain ⟨k, hk⟩ := mem_primaryComponent_iff.1 hz
     let f : ModuleCat.of A (A ⧸ I ^ k) ⟶ R.cocomplex.X (p + 1) :=
       ModuleCat.ofHom ((I ^ k).liftQ (LinearMap.toSpanSingleton A _ z) fun a ha => hk a ha)
     have hf : f ≫ R.cocomplex.d (p + 1) (p + 2) = 0 := by

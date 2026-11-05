@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change of Noetherian local cohomology"},{"n":11,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":12,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":13,"after":[12],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":14,"after":[6,11,13],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":15,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change of Noetherian local cohomology"},{"n":11,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":12,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":13,"after":[12],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":14,"after":[6,11,13],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":15,"after":[12],"title":"feat: cohomology with supports of the sheaf associated to a module"},{"n":16,"after":[7,8,15],"title":"feat: comparison map from local cohomology to cohomology with supports"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat: geometric comparison of local cohomology and the section 2.7 checks"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
@@ -6,8 +6,8 @@ Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174` (session 12 merged
 without conflicts).
 Status: **partial**. Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
 splits numbered 5–11 before session 9 are now 8–14. Session 12 split the old split 9 into splits 9
-and 10, so the splits numbered 10–14 before session 12 are now 11–15. The session notes below use
-the new numbers.
+and 10, so the splits numbered 10–14 before session 12 are now 11–15. Session 13 inserted splits
+15 and 16, so the old final split 15 is now split 17. The session notes below use the new numbers.
 
 ## Suppliers: both have landed, so no stub remains
 
@@ -622,6 +622,86 @@ hypothesis, so dropping it gives a strictly stronger theorem. The pinned form is
 The README also asks that the isomorphism be "compatibly with the geometric comparison", which can
 only be stated once split 15's `localCohomology_module_comparison` exists.
 
+### Session 13: the comparison map to cohomology with supports on `Spec A`
+
+`main` (still `85f3eb5579d`) now has two inputs that sessions 8–12 listed as missing:
+`TauCeti.AlgebraicGeometry.isFlasque_tilde_of_injective` (Hartshorne III.3.4: `J^~` is flasque for
+an injective module `J` over a Noetherian ring,
+`TauCeti/AlgebraicGeometry/Modules/Quasicoherent/Flasque.lean`) and the flasque vanishing and
+dimension-shifting lemmas `CategoryTheory.Sheaf.relativeH'.subsingleton_succ_of_isFlasque` and
+`extClass_postcomp_bijective_of_isFlasque` (`TauCeti/Topology/Sheaves/SupportedCohomology.lean`).
+Mathlib also has the `I`-power torsion as `Ideal.primaryComponent`.
+
+**Refactor (split 8).** The branch's `TauCeti.Supports.powerTorsion I M` had literally the same
+definition as Mathlib's `Ideal.primaryComponent M I` (`⨆ n, torsionBySet A M (I ^ n)`), so it is
+deleted. `DerivedTorsion.lean` now uses `I.primaryComponent M` throughout,
+`mem_powerTorsion_iff` became `TauCeti.Supports.mem_primaryComponent_iff`, and
+`map_mem_powerTorsion` became Mathlib's `Ideal.primaryComponent_map_mem`. The functor keeps the
+name `powerTorsionFunctor`. Nothing else on the branch used the deleted names.
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support/Tilde.lean` (new, 227 lines, split 15), in namespace
+`TauCeti.AlgebraicGeometry.Scheme.Modules`, for `R : CommRingCat`:
+
+- `zeroLocusCloseds I : Closeds (Spec R)` (`@[expose]`), `coe_zeroLocusCloseds`, and
+  `compl_zeroLocusCloseds_span G : V(span G)ᶜ = ⨆ g ∈ G, D(g)` for a finset `G`;
+- `toOpen_eq_zero_iff`: `m ∈ M` vanishes as a section of `M^~` over `⋃_{g ∈ G} D(g)` iff a power
+  of every `g` kills `m` (sheaf locality via `TopCat.Presheaf.IsSheaf.section_ext`);
+- **`mem_sectionsWithSupport_tilde_iff`**: for finitely generated `I`, `s ∈ Γ_{V(I)}(Spec R, M^~)`
+  iff `(tilde.isoTop M).inv s ∈ I.primaryComponent M` (Stacks 0A6T in degree zero);
+- **`primaryComponentLinearEquivSectionsWithSupport`**:
+  `Γ_I(M) ≃ₗ[R] (sectionsWithSupport (zeroLocusCloseds I) (tilde M)).restrictScalars R`;
+- instance **`subsingleton_cohomologyWithSupport_tilde_succ`**: `H^{n+1}_Z(Spec R, J^~) = 0` for
+  `J` injective over a Noetherian ring and any closed `Z`;
+- `shortExact_map_tilde_toSheaf`, the connecting map **`cohomologyWithSupportTildeδ Z hS n`**
+  (`H^n_Z(S.X₃^~) →+ H^{n+1}_Z(S.X₁^~)`, Yoneda product with the extension class of the sheafified
+  sequence) with `cohomologyWithSupportTildeδ_apply`, and the dimension shifts
+  **`bijective_cohomologyWithSupportTildeδ_succ`** and
+  **`surjective_cohomologyWithSupportTildeδ_zero`** for `S.X₂` injective over a Noetherian ring.
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support/LocalCohomology.lean` (new, 314 lines, split 16), same
+namespace, for a finitely generated ideal `I` (`hI : I.FG`):
+
+- `one_mem_primaryComponent_quotient_pow`, and **`quotientPowOne hI k`**: the global section `1` of
+  `(R ⧸ Iᵏ)^~`, supported in `V(I)`, as a morphism out of the relative free sheaf
+  `ℤ_{Spec R, Spec R ∖ V(I)} ⟶ (tilde.functor R ⋙ toSheaf (Spec R)).obj (R ⧸ Iᵏ)`;
+  `quotientPowOne_comp_map` (compatibility with `R ⧸ Iᵏ' ⟶ R ⧸ Iᵏ`);
+- **`extToCohomologyWithSupport hI k M q`**: the stage `Ext^q_R(R ⧸ Iᵏ, M) →+ H^q_{V(I)}(Spec R, M^~)`,
+  `x ↦ mk₀ (quotientPowOne hI k) ⬝ (x.mapExactFunctor (tilde.functor R ⋙ toSheaf _))`, with
+  `extToCohomologyWithSupport_apply`, `extToCohomologyWithSupport_mk₀_comp` (transition maps),
+  `extToCohomologyWithSupport_comp_mk₀` (naturality in `M`) and
+  `extToCohomologyWithSupport_comp_extClass` (connecting maps, via `Ext.mapExactFunctor_extClass`
+  and associativity of the Yoneda product);
+- `localCohomologyStages`, `localCohomologyStagesCocone`, and **the comparison map
+  `localCohomologyToCohomologyWithSupport hI q M : H^q_I(M) →+ H^q_{V(I)}(Spec R, M^~)`**, out of the
+  colimit computed in abelian groups (`forget₂` preserves filtered colimits), with
+  `localCohomologyToCohomologyWithSupport_ι_app` (stage formula),
+  **`localCohomologyToCohomologyWithSupport_naturality`** (natural in `M`, against
+  `cohomologyWithSupportMap _ (tilde.map f) q`) and **`localCohomologyToCohomologyWithSupport_δ`**
+  (intertwines the native `Supports.localCohomologyδ` with `cohomologyWithSupportTildeδ`);
+- degree zero: `coe_cohomologyWithSupportZeroLinearEquiv_extToCohomologyWithSupport_mk₀` (the
+  stage sends `f : R ⧸ Iᵏ ⟶ M` to the section `tilde.isoTop M (f 1)`),
+  `coe_cohomologyWithSupportZeroLinearEquiv_localCohomologyToCohomologyWithSupport` (under
+  `H⁰_Z ≃ Γ_Z` it is `x ↦ tilde.isoTop M (localCohomologyZeroLinearEquiv I M x)`), and
+  **`bijective_localCohomologyToCohomologyWithSupport_zero`**: bijective in degree zero for every
+  finitely generated `I`, over any commutative ring.
+
+Port notes (rubric audit): `one_mem_primaryComponent_quotient_pow` mentions only Mathlib types,
+so the port should move it to `TauCeti/Algebra/Module/Torsion/PrimaryComponent.lean` (namespace
+`Ideal`). Likewise `zeroLocusCloseds`, `coe_zeroLocusCloseds` and `compl_zeroLocusCloseds_span`
+could move next to `PrimeSpectrum.zeroLocus` if a fitting `TauCeti/` file exists. The branch keeps
+them in the new files so as not to rebuild those widely imported files. `zeroLocusCloseds` is not
+exposed: `coe_zeroLocusCloseds` is proved by `(rfl)`.
+
+Gotchas met in this session (for the next one): `Γ(tilde M, ⊤)` and
+`(modulesSpecToSheaf.obj (tilde M)).presheaf.obj (op ⊤)` are defeq but not syntactically equal,
+so `rw` with a `sectionsWithSupport` membership on an element produced by `tilde.toOpen` or
+`tilde.isoTop` fails (instance mismatch). Go through `.trans` with `mem_sectionsWithSupport_iff`
+and `Sheaf.mem_supportedSections_iff`. `sectionsWithSupport`, `cohomologyWithSupportMap` and
+`cohomologyWithSupportTildeδ` are not exposed, so in other modules use their `_apply` lemmas through
+`Eq.trans`, not `rfl` or `rw`. State morphisms into the sheafified modules as
+`(tilde.functor R ⋙ toSheaf (Spec R)).obj N`, the form `Ext.mapExactFunctor` produces, not as
+`(toSheaf _).obj (tilde N)`. Otherwise `rw` with `Ext.comp_assoc*` fails.
+
 ## What `main` already has (found in session 2)
 
 `sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
@@ -640,22 +720,35 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
 - `localCohomology_colimit_ext_comparison` (split 8): session 11 proved its first half, the
   natural isomorphism `localCohomologyIsoRightDerived I q : localCohomology I q ≅
   (powerTorsionFunctor I).rightDerived q`, built from an injective resolution as the README asks,
-  for every commutative ring and every degree. Still missing is its second half: for Noetherian
-  `A`, derived torsion is `RΓ_{V(I)}` on `Spec A` (Stacks 0955), which needs `J~` flasque for
-  injective `J` (Hartshorne III.3.4).
+  for every commutative ring and every degree. Its second half (for Noetherian `A`, derived
+  torsion is `RΓ_{V(I)}` on `Spec A`, Stacks 0955) follows by composing with the comparison
+  `localCohomologyToCohomologyWithSupport` once that is shown bijective (next item).
+- **The geometric comparison** `localCohomology_module_comparison` (Stacks 0A6T). Session 13 built
+  the comparison map `localCohomologyToCohomologyWithSupport hI q M : H^q_I(M) →+
+  H^q_{V(I)}(Spec A, M^~)`, natural in `M` and compatible with connecting maps, and the
+  geometric dimension shifts along `0 ⟶ M ⟶ J ⟶ N ⟶ 0` with `J` injective. Still to do, in this
+  order:
+  1. **Degree zero** is done (session 13,
+     `bijective_localCohomologyToCohomologyWithSupport_zero`).
+  2. **Bijectivity in all degrees** for Noetherian `A`, by induction on `q` simultaneously for all
+     `M`. Embed `M` into an injective module (`Injective.ι M`) and take its cokernel `N`. For
+     `q + 2`, use `localCohomologyToCohomologyWithSupport_δ` with the native connecting map
+     bijective (`isZero_localCohomology_succ_of_injective` and session 10's long exact sequence)
+     and `bijective_cohomologyWithSupportTildeδ_succ`. For `q = 1`, surjectivity uses
+     `surjective_cohomologyWithSupportTildeδ_zero` and degree zero for `N`. Injectivity uses
+     exactness at `H⁰(N)` on both sides (`Ext.covariant_sequence_exact₃`), degree zero for `J`
+     and `N`, and `localCohomologyToCohomologyWithSupport_naturality`.
+  3. **Linearity.** Show `Φ (r • x) = (ΓSpecIso.inv r) • Φ x`, then package
+     `localCohomology_module_comparison` as a natural `A`-linear isomorphism. On a stage,
+     `r • x = x ⬝ mk₀ (r • 𝟙)`, so this needs `tilde.map (r • 𝟙 M) =
+     (tilde M).globalSectionsSmul ((ΓSpecIso _).inv r)` (compare sections with `smul_Spec_def`)
+     and `cohomologyWithSupportMap_globalSectionsSmul`-type compatibility from split 12.
+     Mathlib's `Ext.mapExactFunctor_comp_mk₀_natTransApp` is the general form of the stage step.
   `Supports.localCohomology_flat_baseChange` and flat excision `localCohomology_flat_excision`
   are done (session 12, splits 9 and 10). What remains of that README sentence is the clause
-  "compatibly with the geometric comparison". It can only be stated once split 15's
-  `localCohomology_module_comparison` exists: the comparison isomorphisms for `A` and for `B`
-  should intertwine `localCohomologyBaseChangeIso` with the flat pullback along `Spec B → Spec A`. The native side is now an effaceable `δ`-functor
-  (`isZero_localCohomology_succ_of_injective`, and session 10's long exact sequence in all
-  degrees) agreeing with `Γ_I` in degree zero (split 1). What split 8 still has to build: the
-  right-derived functor of the `I`-power-torsion functor (as a functor on `ModuleCat A`, for
-  instance `Functor.rightDerived` of a torsion functor, whose naturality in `M` the session-1
-  `localCohomologyZeroToModule` does not yet record) and the comparison by dimension shifting
-  against an embedding into an injective module. The geometric side needs that `J~` is flasque
-  for an injective module `J` over a Noetherian ring (Hartshorne III.3.4) and its own long exact
-  sequence (`main`'s `relativeH'` sequences in the coefficients).
+  "compatibly with the geometric comparison": the comparison isomorphisms for `A` and for `B`
+  should intertwine `localCohomologyBaseChangeIso` with the flat pullback along
+  `Spec B → Spec A`.
 - `localCohomologySheaf Z F q` as a sheaf of `𝒪_X`-modules: `main` has the abelian
   `supportedHSheaf` and the `R`-linear `supportedModuleHPresheaf`, but no scheme wrapper yet.
 - `Γ(X, ⊤)`-linearity is done for the structure sheaf on `V(r)`
@@ -663,20 +756,19 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
   quasi-coherent `M` (`cohomologyWithSupportOneEquiv_globalSectionsSmul`). The affine-line and
   DVR geometric identifications are still stated additively, so the DVR comparison of session 9
   is an `AddEquiv`.
-- Split 15:
-  - `localCohomology_module_comparison`, using
-    `Scheme.Hom.exists_subsingleton_cohomology_of_isAffine`; in degree one along a nonzerodivisor
+- Split 17:
+  - `localCohomology_module_comparison` (the three steps above); in degree one along a nonzerodivisor
     both sides are now computed (`localCohomologyOneLinearEquiv`,
     `cohomologyWithSupportSpecOneEquiv`), which the general comparison should be checked against;
   - the checks `test_support_all` and `test_support_empty` (one line each, from
     `cohomologyWithSupportTopEquiv` and `subsingleton_cohomologyWithSupport_bot`),
     `test_support_affine_line_origin` and `test_support_not_restriction` (both proved in split 13;
-    split 15 only collects them), `test_depth_dvr` (complete in split 14:
+    split 17 only collects them), `test_depth_dvr` (complete in split 14:
     `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`),
-    `localCohomology_module_comparison_nil_ideal` (complete in split 14; split 15 only collects
+    `localCohomology_module_comparison_nil_ideal` (complete in split 14; split 17 only collects
     it) and `localCohomology_module_comparison_dvr` (both sides are computed in split 14 and agree
     in degrees zero and one; the check's wording asks for them to follow from the general
-    comparison, so split 15 rederives it once `localCohomology_module_comparison` is proved).
+    comparison, so split 17 rederives it once `localCohomology_module_comparison` is proved).
 
 ## Split plan
 
@@ -722,9 +814,10 @@ before session 9 are now 8–14.
    session 10.
 8. **feat: local cohomology computes derived power torsion**. After: 1, 5, 7 (started in session
    11, done for the derived-torsion half). `TauCeti/Algebra/Homology/LocalCohomology/DerivedTorsion.lean`
-   (about 530 lines) and +27 lines in `DegreeZero.lean` (`localCohomologyZeroToModule_ι_app`): the
-   session-11 declarations, ending with `localCohomologyIsoRightDerived`. The `RΓ_{V(I)}` half of
-   `localCohomology_colimit_ext_comparison` (Noetherian) may need its own split before 15.
+   (about 525 lines) and +27 lines in `DegreeZero.lean` (`localCohomologyZeroToModule_ι_app`): the
+   session-11 declarations, ending with `localCohomologyIsoRightDerived`, stated with Mathlib's
+   `Ideal.primaryComponent` since session 13. The `RΓ_{V(I)}` half of
+   `localCohomology_colimit_ext_comparison` (Noetherian) comes with split 17's comparison.
 9. **feat: flat base change of Ext over a Noetherian ring**. After: none (done, 283 lines).
    `TauCeti/Algebra/Category/ModuleCat/Ext/FlatBaseChange.lean`: the session-12 declarations of
    that file, ending with `extBaseChangeLinearEquiv`.
@@ -765,6 +858,22 @@ before session 9 are now 8–14.
    `localCohomology_module_comparison_nil_ideal`) and the session-9 DVR declarations
    (`localCohomologyOneMaximalIdealLinearEquiv`, `localCohomologyOneAddEquivCohomologyWithSupport`,
    `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`).
-15. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–14
-   (not yet written). `localCohomology_module_comparison`, the remaining scheme wrappers and the
-   remaining §2.7 checks. This is the only split that completes the target.
+15. **feat: cohomology with supports of the sheaf associated to a module**. After: 12 (done,
+   227 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support/Tilde.lean`: the session-13
+   declarations of that file (`zeroLocusCloseds` through `surjective_cohomologyWithSupportTildeδ_zero`).
+   Uses `main`'s `isFlasque_tilde_of_injective` and `relativeH'` flasque lemmas.
+16. **feat: comparison map from local cohomology to cohomology with supports**. After: 7, 8, 15
+   (done, 314 lines; it uses split 7's `extLinearEquiv`, `extLinearEquiv_zero_apply`,
+   `extLinearEquiv_Ext_map`, `extLinearEquiv_Ext_obj_map`, `extLinearEquiv_extδ`,
+   `ι_app_localCohomology_map`, `ι_app_localCohomologyδ` and
+   `ModuleCat.exists_colimit_ι_app_eq`, and split 8's `localCohomologyZeroLinearEquiv`,
+   `coe_localCohomologyZeroLinearEquiv_apply` and `localCohomologyZeroToModule_ι_app`).
+   `TauCeti/AlgebraicGeometry/Cohomology/Support/LocalCohomology.lean`: the session-13 declarations
+   of that file, ending with `localCohomologyToCohomologyWithSupport_naturality`,
+   `localCohomologyToCohomologyWithSupport_δ` and
+   `bijective_localCohomologyToCohomologyWithSupport_zero`. Bijectivity in positive degrees (step
+   2 of "What remains") may grow this file or become a split of its own before 17.
+17. **feat: geometric comparison of local cohomology and the section 2.7 checks**. After: 1–16
+   (not yet written). `localCohomology_module_comparison` (steps 1–3 of "What remains"), the
+   remaining scheme wrappers and the remaining §2.7 checks. This is the only split that completes
+   the target.
