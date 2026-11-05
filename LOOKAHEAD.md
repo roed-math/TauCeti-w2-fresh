@@ -2,8 +2,8 @@
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174` (eighth round, 2026-11-05, merged
-`main` forward from `57ab0f657d7`; #27242 is still open at head `fc88ca0a5dc2`, so its stub stays).
+Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174` (ninth round, 2026-11-05, same
+`main` as the eighth round; #27242 is still open at head `fc88ca0a5dc2`, so its stub stays).
 Status: **partial**.
 
 Earlier sessions proved the Čech half of the target's inputs on a general site (Čech complexes of
@@ -52,6 +52,56 @@ The seventh round (2026-11-04, merged `main` forward to `57ab0f657d7`; #27242 st
 `fc88ca0a5dc2`, so the stub stays) closed the remaining Čech item (a3) of "What remains" 3: the
 **first differential of the Čech-to-cohomology spectral sequence of a covering of an object `V`**
 is `(-1)ᵠ` times the Čech differential of `Hᵠ(-, F)` on `C`. See "New in the seventh round".
+
+## New in the ninth round: the rows of the Cartan–Eilenberg double complex (no stub used)
+
+This round proved the Cartan–Eilenberg row property, item 1 of "What remains" (the input of the
+`E₂ = RᵖG(Hᵠ)` page of the Grothendieck spectral sequence filtered by the resolution degree). It
+extends `TauCeti/CategoryTheory/Abelian/Injective/CartanEilenberg.lean` (split 15; now 470 lines,
++276) and touches no other file:
+
+- general (namespace `CategoryTheory.ShortComplex.LeftHomologyData`):
+  `lift_eq_of_factorization` and `ofFactorization` (`@[simps]`) — the left homology data of a
+  short complex whose first map factors as `X₁ ↠ A ⟶ Z ⟶ X₂` and whose second map factors as
+  `X₂ ⟶ B ↪ X₃`, with `Z` a kernel of `X₂ ⟶ B` and `H` a cokernel of `A ⟶ Z`;
+- general (namespace `CategoryTheory.InjectiveResolution`): `ofIso` (`@[simps cocomplex]`), the
+  injective resolution of `Z'` with the complex of a resolution of `Z ≅ Z'`. **Port note:** it
+  belongs in `main`'s `TauCeti/CategoryTheory/Abelian/Injective/Resolution.lean` (with `ι₀`, see
+  the eighth round), kept here to avoid rebuilding that file's dependents;
+- namespace `CochainComplex`: `homologyResolution` (`J(Hᵠ)`: `J(Z⁰)` transported along
+  `isoHomologyπ₀` in degree `0`, the chosen `injectiveResolution` in degree `q + 1`, so that
+  `RᵖG(Hᵠ)` is read off it), `cyclesResolutionSnd` (the chain map `J(Zᵠ) ⟶ J(Hᵠ)`: identity in
+  degree `0`, the horseshoe projection in degree `q + 1`), split-mono/epi instances for the
+  degreewise components of `cyclesResolutionInl`, `cokernelCyclesResolutionInl`,
+  `cartanEilenbergResolutionSnd`, `cyclesResolutionSnd` (and `IsIso` of the last in degree `0`);
+- for an additive functor `G : C ⥤ D` into an abelian category: `cartanEilenbergRow G p` (the
+  row `q ↦ G(J(Kᵠ)ᵖ)`, defined as `(G.mapHomologicalComplex _).obj (K.cartanEilenberg.flip.X p)`,
+  which is definitionally the row `p` of `G` applied to the bicomplex, as split 10's
+  `rowFiltrationUpSpectralSequenceFirstPageXIso` and `dRow` use it), `cartanEilenbergRowι`,
+  `cartanEilenbergRowSnd` with their `Mono`/`Epi` instances, `cartanEilenbergRowι_cartanEilenbergRowSnd`,
+  `cartanEilenbergRow_d`, `cartanEilenbergRowι_d`, `cartanEilenbergRowι_comp_map_flip_d_f`,
+  `cartanEilenbergRowLeftHomologyDataZero`, `cartanEilenbergRowLeftHomologyDataSucc`,
+  **`cartanEilenbergRowHomologyIso G p q : (cartanEilenbergRow G p).homology q ≅
+  G.obj ((homologyResolution q).cocomplex.X p)`**, its characterization
+  `liftCycles_homologyπ_cartanEilenbergRowHomologyIso_hom` (the class of a cycle of `G(J(Zᵠ)ᵖ)`
+  goes to its image under `G(J(Zᵠ) ⟶ J(Hᵠ))`), the `Epi` instance of `liftCycles ≫ homologyπ`,
+  and **`homologyMap_map_flip_d_cartanEilenbergRowHomologyIso_hom`**: under these isomorphisms
+  the vertical differentials of `G(J)` induce the differentials of `G(J(Hᵠ))`.
+
+Gotcha for the next round: `(K.cartanEilenberg.flip.X p).X q` and
+`(K.cartanEilenbergResolution q).cocomplex.X p` are only definitionally (not reducibly) equal,
+so any statement mixing `G.map ((…).f p)` with the row's objects is type-incorrect at reducible
+transparency and breaks `rw`/`simp`. The fix used here: wrap the maps into and out of the rows
+in typed definitions (`cartanEilenbergRowι`, `cartanEilenbergRowSnd`), prove the bridging lemmas
+(`cartanEilenbergRow_d`, `cartanEilenbergRowι_comp_map_flip_d_f`) by `Eq.trans` in term mode, and
+make the homology data `abbrev`s so their `K`/`H` reduce.
+
+Next: with split 10 applied to `L = G(cartanEilenberg K)` (rows in resolution degree), combine
+`rowFiltrationUpSpectralSequenceFirstPageXIso` with `cartanEilenbergRowHomologyIso` and
+`rowFiltrationUpSpectralSequenceFirstPageXIso_inv_d_hom` with
+`homologyMap_map_flip_d_cartanEilenbergRowHomologyIso_hom` to get `E₂^{p,q} = RᵖG(Hᵠ(K))`
+(through `(homologyResolution q).isoRightDerivedObj`); then the column filtration
+(`E₁ = Hᵖ(G J(Kᵠ))`, zero for `p > 0` when `Kᵠ` is `G`-acyclic) for the abutment `Hⁿ(G K)`.
 
 ## New in the eighth round: horseshoes and Cartan–Eilenberg resolutions (no stub used)
 
@@ -615,8 +665,9 @@ The spectral sequence itself:
    injective) resolutions, the double complex, and the identification of its `E₂` page
    `R^p G (R^q F)`. **Partly done** (eighth round): the horseshoe lemma and the Cartan–Eilenberg
    double complex `CochainComplex.cartanEilenberg K` with injective-resolution columns (splits
-   14–15). Still missing: the row property (the `p`-th row is a sum of split pieces with cohomology
-   `J(Hᵠ)ᵖ`, preserved by additive `G`), the two filtrations of `Tot G(cartanEilenberg K)` via
+   14–15), and (ninth round) the row property: after any additive `G`, the `p`-th row has
+   cohomology `G(J(Hᵠ)ᵖ)`, compatibly with the vertical differentials (split 15). Still missing:
+   the two filtrations of `Tot G(cartanEilenberg K)` via
    split 10, and the comparison of the abutment with `Hⁿ(G K)` for `G`-acyclic `Kᵠ`. `main` has the row-filtration spectral sequence of a first-quadrant
    (homological) bicomplex, `TauCeti/Algebra/Homology/SpectralSequence/Bicomplex.lean`, and
    finite/exhaustive-filtration convergence under `.../SpectralSequence/Filtered/`; the `E₂`
@@ -805,9 +856,10 @@ The spectral sequence itself:
    `TauCeti/CategoryTheory/Abelian/Injective/Horseshoe.lean` (new, 357 lines). Adds every
    declaration listed in "New in the eighth round" for that file. After: none. Can be opened now.
 15. **feat: Cartan–Eilenberg resolutions of cochain complexes** — file:
-   `TauCeti/CategoryTheory/Abelian/Injective/CartanEilenberg.lean` (new, 198 lines). Adds every
-   declaration listed in "New in the eighth round" for that file. After: 14. Written; the row
-   property (cohomology of the rows is `J(Hᵠ)`) is still to be added, here or in split 7.
+   `TauCeti/CategoryTheory/Abelian/Injective/CartanEilenberg.lean` (new, 470 lines). Adds every
+   declaration listed in "New in the eighth round" and "New in the ninth round" for that file.
+   After: 14. Written. (If a reviewer finds it too long, the ninth-round row property, ~275
+   lines, can be its own follow-up PR `feat: the rows of a Cartan–Eilenberg double complex`.)
 16. **feat: the Leray and Čech-to-cohomology spectral sequences** —
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
    naturality, relative form and edge maps (identified with `lerayEdge`), `cech_to_cohomology`

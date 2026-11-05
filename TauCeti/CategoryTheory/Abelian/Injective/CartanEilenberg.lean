@@ -30,6 +30,13 @@ the augmentations `Kᵠ ⟶ J(Kᵠ)⁰` commuting with the differentials
 cycles, boundaries and cohomology of each row are resolved by the chosen resolutions of `Zᵠ`,
 `Kᵠ / Zᵠ` and `Hᵠ`.
 
+After any additive functor `G`, the row `q ↦ G(J(Kᵠ)ᵖ)` in resolution degree `p` has cohomology
+`G(J(Hᵠ)ᵖ)` in degree `q` (`CochainComplex.cartanEilenbergRowHomologyIso`), where `J(Hᵠ)` is the
+chosen resolution `CochainComplex.homologyResolution` of `Hᵠ(K)`, and under these isomorphisms
+the vertical differentials induce the differentials of `G(J(Hᵠ))`
+(`CochainComplex.homologyMap_map_flip_d_cartanEilenbergRowHomologyIso_hom`): the rows are sums of
+split pieces, which every additive functor preserves.
+
 The Cartan–Eilenberg double complex is the input of the Grothendieck spectral sequence, and
 hence of the Leray spectral sequence.
 
@@ -44,6 +51,61 @@ hence of the Leray spectral sequence.
 open CategoryTheory Category Limits Preadditive
 
 universe v u
+
+namespace CategoryTheory
+
+namespace ShortComplex.LeftHomologyData
+
+variable {C : Type u} [Category.{v} C] [Preadditive C] (S : ShortComplex C) {A Z H B : C}
+  (e : S.X₁ ⟶ A) [he : Epi e] (a : A ⟶ Z) (π : Z ⟶ H) (wπ : a ≫ π = 0)
+  (hπ : IsColimit (CokernelCofork.ofπ π wπ)) (i : Z ⟶ S.X₂) (c : S.X₂ ⟶ B) (wi : i ≫ c = 0)
+  (hi : IsLimit (KernelFork.ofι i wi)) (m : B ⟶ S.X₃) [hm : Mono m] (hf : e ≫ a ≫ i = S.f)
+  (hg : c ≫ m = S.g)
+
+omit he in
+include hf in
+/-- The map from `X₁` to the kernel `Z` of `X₂ ⟶ X₃` induced by `S.f` is `X₁ ⟶ A ⟶ Z`. -/
+lemma lift_eq_of_factorization :
+    (isKernelCompMono hi m hg.symm).lift (KernelFork.ofι S.f S.zero) = e ≫ a := by
+  have : Mono i := Fork.IsLimit.mono hi
+  rw [← cancel_mono i, assoc, hf]
+  exact (isKernelCompMono hi m hg.symm).fac _ WalkingParallelPair.zero
+
+/-- The left homology data of a short complex `S` whose first map factors as `X₁ ⟶ A ⟶ Z ⟶ X₂`
+with `X₁ ⟶ A` an epimorphism, and whose second map factors as `X₂ ⟶ B ⟶ X₃` with `B ⟶ X₃` a
+monomorphism: its cycles are a kernel `Z` of `X₂ ⟶ B`, and its homology a cokernel `H` of
+`A ⟶ Z`. It is an abbreviation so that its cycles and homology are reducibly `Z` and `H`. -/
+@[simps]
+noncomputable abbrev ofFactorization : S.LeftHomologyData where
+  K := Z
+  H := H
+  i := i
+  π := π
+  wi := by rw [← hg, reassoc_of% wi, zero_comp]
+  hi := isKernelCompMono hi m hg.symm
+  wπ := by
+    rw [lift_eq_of_factorization S e a i c wi hi m hf hg, assoc, wπ, comp_zero]
+  hπ := isCokernelEpiComp hπ e (lift_eq_of_factorization S e a i c wi hi m hf hg)
+
+end ShortComplex.LeftHomologyData
+
+namespace InjectiveResolution
+
+variable {C : Type u} [Category.{v} C] [Abelian C]
+
+/-- An injective resolution of `Z` is one of every object isomorphic to `Z`, with the same
+complex. -/
+@[simps cocomplex]
+noncomputable def ofIso {Z Z' : C} (I : InjectiveResolution Z) (e : Z' ≅ Z) :
+    InjectiveResolution Z' where
+  cocomplex := I.cocomplex
+  injective := I.injective
+  hasHomology := I.hasHomology
+  ι := (CochainComplex.single₀ C).map e.hom ≫ I.ι
+
+end InjectiveResolution
+
+end CategoryTheory
 
 namespace CochainComplex
 
@@ -194,5 +256,215 @@ lemma cartanEilenberg_d (q : ℕ) : K.cartanEilenberg.d q (q + 1) = K.cartanEile
   dsimp only [cartanEilenberg]
   exact CochainComplex.of_d _ _ q
 
+
+/-! ### The rows of the Cartan–Eilenberg double complex -/
+
+/-- The chosen injective resolutions `J(Hᵠ)` of the cohomology of a cochain complex: in degree
+`0`, the resolution `J(Z⁰)` of `Z⁰ = H⁰`, and in degree `q + 1` an arbitrary one. -/
+noncomputable def homologyResolution : (q : ℕ) → InjectiveResolution (K.homology q)
+  | 0 => (K.cyclesResolution 0).ofIso K.isoHomologyπ₀.symm
+  | _ + 1 => injectiveResolution _
+
+/-- The chain map `J(Zᵠ) ⟶ J(Hᵠ)`: the identity in degree `0`, and in degree `q + 1` the chain map
+of the horseshoe, lifting `Zᵠ⁺¹ ⟶ Hᵠ⁺¹`. -/
+noncomputable def cyclesResolutionSnd : (q : ℕ) →
+    (K.cyclesResolution q).cocomplex ⟶ (K.homologyResolution q).cocomplex
+  | 0 => 𝟙 (K.cyclesResolution 0).cocomplex
+  | q + 1 => InjectiveResolution.horseshoeSnd (K.boundariesShortComplex_shortExact q)
+      (injectiveResolution _) (injectiveResolution _)
+
+instance (p q : ℕ) : IsSplitMono ((K.cyclesResolutionInl q).f p) :=
+  IsSplitMono.mk' ⟨biprod.fst, biprod.inl_fst⟩
+
+instance (p q : ℕ) : IsSplitMono ((K.cokernelCyclesResolutionInl q).f p) :=
+  IsSplitMono.mk' ⟨biprod.fst, biprod.inl_fst⟩
+
+instance (p q : ℕ) : IsSplitEpi ((K.cartanEilenbergResolutionSnd q).f p) :=
+  IsSplitEpi.mk' ⟨biprod.inr, biprod.inr_snd⟩
+
+instance (p : ℕ) : IsIso ((K.cyclesResolutionSnd 0).f p) :=
+  inferInstanceAs (IsIso (𝟙 _))
+
+instance (p q : ℕ) : IsSplitEpi ((K.cyclesResolutionSnd q).f p) := by
+  cases q with
+  | zero => exact IsSplitEpi.mk' ⟨𝟙 _, Category.id_comp _⟩
+  | succ q => exact IsSplitEpi.mk' ⟨biprod.inr, biprod.inr_snd⟩
+
+variable {D : Type*} [Category* D] [Abelian D] (G : C ⥤ D) [G.Additive]
+
+/-- The image under `G` of the row `p` of the Cartan–Eilenberg double complex: the complex
+`q ↦ G(J(Kᵠ)ᵖ)`. -/
+noncomputable abbrev cartanEilenbergRow (p : ℕ) : CochainComplex D ℕ :=
+  (G.mapHomologicalComplex (ComplexShape.up ℕ)).obj (K.cartanEilenberg.flip.X p)
+
+/-- The inclusion `G(J(Zᵠ)ᵖ) ⟶ G(J(Kᵠ)ᵖ)` of the cycles of the row `p` of `G(J)`, the image of the
+chain map `J(Zᵠ) ⟶ J(Kᵠ)` of the horseshoe. -/
+noncomputable def cartanEilenbergRowι (p q : ℕ) :
+    G.obj ((K.cyclesResolution q).cocomplex.X p) ⟶ (K.cartanEilenbergRow G p).X q :=
+  G.map ((K.cyclesResolutionInl q).f p)
+
+/-- The projection `G(J(Kᵠ)ᵖ) ⟶ G(J(Kᵠ / Zᵠ)ᵖ)`, the image of the chain map `J(Kᵠ) ⟶ J(Kᵠ / Zᵠ)` of
+the horseshoe. -/
+noncomputable def cartanEilenbergRowSnd (p q : ℕ) : (K.cartanEilenbergRow G p).X q ⟶
+    G.obj ((injectiveResolution (cokernel (K.iCycles q))).cocomplex.X p) :=
+  G.map ((K.cartanEilenbergResolutionSnd q).f p)
+
+instance (p q : ℕ) : Mono (K.cartanEilenbergRowι G p q) :=
+  inferInstanceAs (Mono (G.map ((K.cyclesResolutionInl q).f p)))
+
+instance (p q : ℕ) : Epi (K.cartanEilenbergRowSnd G p q) :=
+  inferInstanceAs (Epi (G.map ((K.cartanEilenbergResolutionSnd q).f p)))
+
+@[reassoc (attr := simp)]
+lemma cartanEilenbergRowι_cartanEilenbergRowSnd (p q : ℕ) :
+    K.cartanEilenbergRowι G p q ≫ K.cartanEilenbergRowSnd G p q = 0 := by
+  have h : G.map ((K.cyclesResolutionInl q).f p ≫ (K.cartanEilenbergResolutionSnd q).f p) = 0 := by
+    rw [← HomologicalComplex.comp_f, cyclesResolutionInl_cartanEilenbergResolutionSnd,
+      HomologicalComplex.zero_f, G.map_zero]
+  exact (G.map_comp _ _).symm.trans h
+
+/-- The differentials of the row `p` of `G(J)`: the composite
+`G(J(Kᵠ)ᵖ) ⟶ G(J(Kᵠ / Zᵠ)ᵖ) ⟶ G(J(Zᵠ⁺¹)ᵖ) ⟶ G(J(Kᵠ⁺¹)ᵖ)`. -/
+lemma cartanEilenbergRow_d (p q : ℕ) :
+    (K.cartanEilenbergRow G p).d q (q + 1) = K.cartanEilenbergRowSnd G p q ≫
+      G.map ((K.cokernelCyclesResolutionInl q).f p) ≫ K.cartanEilenbergRowι G p (q + 1) := by
+  have h : G.map ((K.cartanEilenbergD q).f p) = G.map ((K.cartanEilenbergResolutionSnd q).f p) ≫
+      G.map ((K.cokernelCyclesResolutionInl q).f p) ≫
+        G.map ((K.cyclesResolutionInl (q + 1)).f p) := by
+    simp [cartanEilenbergD]
+  -- The row of the flipped bicomplex is formed by the resolutions by definition.
+  exact (congrArg G.map (HomologicalComplex.congr_hom (K.cartanEilenberg_d q) p)).trans h
+
+@[reassoc (attr := simp)]
+lemma cartanEilenbergRowι_d (p q : ℕ) :
+    K.cartanEilenbergRowι G p q ≫ (K.cartanEilenbergRow G p).d q (q + 1) = 0 := by
+  rw [cartanEilenbergRow_d, cartanEilenbergRowι_cartanEilenbergRowSnd_assoc, zero_comp]
+
+/-- The vertical differentials of `G(J)` restrict to the cycles of the rows: the differentials of
+`G(J(Zᵠ))`. -/
+@[reassoc]
+lemma cartanEilenbergRowι_comp_map_flip_d_f (p q : ℕ) :
+    K.cartanEilenbergRowι G p q ≫
+        ((G.mapHomologicalComplex _).map (K.cartanEilenberg.flip.d p (p + 1))).f q =
+      G.map ((K.cyclesResolution q).cocomplex.d p (p + 1)) ≫ K.cartanEilenbergRowι G (p + 1) q :=
+  -- The vertical differentials of the flipped bicomplex are those of the resolutions by
+  -- definition.
+  (G.map_comp _ _).symm.trans ((congrArg G.map ((K.cyclesResolutionInl q).comm p (p + 1))).trans
+    (G.map_comp _ _))
+
+/-- The left homology data of the row `p` of `G(J)` in degree `0`: its cycles and its
+cohomology are `G(J(Z⁰)ᵖ)`. It is an abbreviation so that these are reducibly the objects of
+`G(J(Z⁰))` and `G(J(H⁰))`. -/
+noncomputable abbrev cartanEilenbergRowLeftHomologyDataZero (p : ℕ) :
+    ((K.cartanEilenbergRow G p).sc' 0 0 1).LeftHomologyData :=
+  ShortComplex.LeftHomologyData.ofFactorization _ (𝟙 _) 0
+    (G.map ((K.cyclesResolutionSnd 0).f p)) zero_comp
+    ((CokernelCofork.IsColimit.ofId _ rfl).ofIsoColimit
+      (Cofork.ext (asIso (G.map ((K.cyclesResolutionSnd 0).f p))) (Category.id_comp _)))
+    (K.cartanEilenbergRowι G p 0)
+    (K.cartanEilenbergRowSnd G p 0) _
+    ((ShortComplex.Splitting.ofHasBinaryBiproduct _ _).map G).shortExact.fIsKernel
+    (G.map ((K.cokernelCyclesResolutionInl 0).f p) ≫ K.cartanEilenbergRowι G p 1)
+    (by simp) (K.cartanEilenbergRow_d G p 0).symm
+    (hm := inferInstanceAs (Mono (G.map ((K.cokernelCyclesResolutionInl 0).f p) ≫
+      G.map ((K.cyclesResolutionInl 1).f p))))
+
+/-- The left homology data of the row `p` of `G(J)` in degree `q + 1`: its cycles are
+`G(J(Zᵠ⁺¹)ᵖ)`, and its cohomology `G(J(Hᵠ⁺¹)ᵖ)`. It is an abbreviation for the same reason as
+`CochainComplex.cartanEilenbergRowLeftHomologyDataZero`. -/
+noncomputable abbrev cartanEilenbergRowLeftHomologyDataSucc (p q : ℕ) :
+    ((K.cartanEilenbergRow G p).sc' q (q + 1) (q + 2)).LeftHomologyData :=
+  ShortComplex.LeftHomologyData.ofFactorization _ (K.cartanEilenbergRowSnd G p q)
+    (G.map ((K.cokernelCyclesResolutionInl q).f p)) (G.map ((K.cyclesResolutionSnd (q + 1)).f p))
+    _ ((ShortComplex.Splitting.ofHasBinaryBiproduct _ _).map G).shortExact.gIsCokernel
+    (K.cartanEilenbergRowι G p (q + 1)) (K.cartanEilenbergRowSnd G p (q + 1)) _
+    ((ShortComplex.Splitting.ofHasBinaryBiproduct _ _).map G).shortExact.fIsKernel
+    (G.map ((K.cokernelCyclesResolutionInl (q + 1)).f p) ≫ K.cartanEilenbergRowι G p (q + 2))
+    (K.cartanEilenbergRow_d G p q).symm (K.cartanEilenbergRow_d G p (q + 1)).symm
+    (hm := inferInstanceAs (Mono (G.map ((K.cokernelCyclesResolutionInl (q + 1)).f p) ≫
+      G.map ((K.cyclesResolutionInl (q + 2)).f p))))
+
+/-- **The rows of the Cartan–Eilenberg double complex**, after any additive functor `G`: the
+cohomology in degree `q` of the row `q ↦ G(J(Kᵠ)ᵖ)` is `G(J(Hᵠ)ᵖ)`. -/
+noncomputable def cartanEilenbergRowHomologyIso (p : ℕ) : (q : ℕ) →
+    (K.cartanEilenbergRow G p).homology q ≅ G.obj ((K.homologyResolution q).cocomplex.X p)
+  | 0 => (K.cartanEilenbergRow G p).homologyIsoSc' 0 0 1 (by simp) (by simp) ≪≫
+      (K.cartanEilenbergRowLeftHomologyDataZero G p).homologyIso
+  | q + 1 => (K.cartanEilenbergRow G p).homologyIsoSc' q (q + 1) (q + 2) (by simp) (by simp) ≪≫
+      (K.cartanEilenbergRowLeftHomologyDataSucc G p q).homologyIso
+
+/-- The isomorphism `cartanEilenbergRowHomologyIso` sends the class of a cycle of `G(J(Zᵠ)ᵖ)` to
+its image in `G(J(Hᵠ)ᵖ)`. -/
+@[reassoc (attr := simp)]
+lemma liftCycles_homologyπ_cartanEilenbergRowHomologyIso_hom (p q : ℕ) :
+    (K.cartanEilenbergRow G p).liftCycles (K.cartanEilenbergRowι G p q) (q + 1) (by simp)
+        (K.cartanEilenbergRowι_d G p q) ≫
+      (K.cartanEilenbergRow G p).homologyπ q ≫ (K.cartanEilenbergRowHomologyIso G p q).hom =
+    G.map ((K.cyclesResolutionSnd q).f p) := by
+  cases q with
+  | zero =>
+    have h : (K.cartanEilenbergRow G p).liftCycles (K.cartanEilenbergRowι G p 0) 1
+        (by simp) (K.cartanEilenbergRowι_d G p 0) ≫
+        ((K.cartanEilenbergRow G p).cyclesIsoSc' 0 0 1 (by simp) (by simp)).hom ≫
+        (K.cartanEilenbergRowLeftHomologyDataZero G p).cyclesIso.hom =
+          𝟙 (K.cartanEilenbergRowLeftHomologyDataZero G p).K := by
+      rw [← cancel_mono (K.cartanEilenbergRowLeftHomologyDataZero G p).i, Category.assoc,
+        Category.assoc, ShortComplex.LeftHomologyData.cyclesIso_hom_comp_i,
+        HomologicalComplex.cyclesIsoSc'_hom_iCycles, HomologicalComplex.liftCycles_i,
+        Category.id_comp]
+    simp only [cartanEilenbergRowHomologyIso, Iso.trans_hom,
+      HomologicalComplex.π_homologyIsoSc'_hom_assoc,
+      ShortComplex.LeftHomologyData.homologyπ_comp_homologyIso_hom, reassoc_of% h]
+  | succ q =>
+    have h : (K.cartanEilenbergRow G p).liftCycles (K.cartanEilenbergRowι G p (q + 1))
+        (q + 2) (by simp) (K.cartanEilenbergRowι_d G p (q + 1)) ≫
+        ((K.cartanEilenbergRow G p).cyclesIsoSc' q (q + 1) (q + 2) (by simp) (by simp)).hom ≫
+        (K.cartanEilenbergRowLeftHomologyDataSucc G p q).cyclesIso.hom =
+          𝟙 (K.cartanEilenbergRowLeftHomologyDataSucc G p q).K := by
+      rw [← cancel_mono (K.cartanEilenbergRowLeftHomologyDataSucc G p q).i, Category.assoc,
+        Category.assoc, ShortComplex.LeftHomologyData.cyclesIso_hom_comp_i,
+        HomologicalComplex.cyclesIsoSc'_hom_iCycles, HomologicalComplex.liftCycles_i,
+        Category.id_comp]
+    simp only [cartanEilenbergRowHomologyIso, Iso.trans_hom,
+      HomologicalComplex.π_homologyIsoSc'_hom_assoc,
+      ShortComplex.LeftHomologyData.homologyπ_comp_homologyIso_hom, reassoc_of% h]
+
+instance (p q : ℕ) : Epi ((K.cartanEilenbergRow G p).liftCycles (K.cartanEilenbergRowι G p q)
+    (q + 1) (by simp) (K.cartanEilenbergRowι_d G p q) ≫
+      (K.cartanEilenbergRow G p).homologyπ q) := by
+  have h := K.liftCycles_homologyπ_cartanEilenbergRowHomologyIso_hom G p q
+  rw [← Category.assoc] at h
+  rw [(Iso.eq_comp_inv _).2 h]
+  infer_instance
+
+/-- **The cohomology of the rows of `G(J)` is `G(J(Hᵠ))`, as a complex**: under
+`cartanEilenbergRowHomologyIso`, the vertical differentials of `G(J)` induce the differentials of
+`G(J(Hᵠ))`. -/
+@[reassoc]
+theorem homologyMap_map_flip_d_cartanEilenbergRowHomologyIso_hom (p q : ℕ) :
+    HomologicalComplex.homologyMap
+        ((G.mapHomologicalComplex _).map (K.cartanEilenberg.flip.d p (p + 1))) q ≫
+      (K.cartanEilenbergRowHomologyIso G (p + 1) q).hom =
+    (K.cartanEilenbergRowHomologyIso G p q).hom ≫
+      G.map ((K.homologyResolution q).cocomplex.d p (p + 1)) := by
+  rw [← cancel_epi ((K.cartanEilenbergRow G p).liftCycles (K.cartanEilenbergRowι G p q)
+    (q + 1) (CochainComplex.next ℕ q) (K.cartanEilenbergRowι_d G p q) ≫
+      (K.cartanEilenbergRow G p).homologyπ q)]
+  have h : (K.cartanEilenbergRow G (p + 1)).liftCycles (K.cartanEilenbergRowι G p q ≫
+        ((G.mapHomologicalComplex _).map (K.cartanEilenberg.flip.d p (p + 1))).f q) (q + 1)
+        (CochainComplex.next ℕ q) (by
+          rw [Category.assoc, cartanEilenbergRowι_comp_map_flip_d_f_assoc, cartanEilenbergRowι_d,
+            comp_zero]) =
+      G.map ((K.cyclesResolution q).cocomplex.d p (p + 1)) ≫
+        (K.cartanEilenbergRow G (p + 1)).liftCycles (K.cartanEilenbergRowι G (p + 1) q) (q + 1)
+          (CochainComplex.next ℕ q) (K.cartanEilenbergRowι_d G (p + 1) q) := by
+    rw [← cancel_mono ((K.cartanEilenbergRow G (p + 1)).iCycles q),
+      HomologicalComplex.liftCycles_i, Category.assoc, HomologicalComplex.liftCycles_i,
+      cartanEilenbergRowι_comp_map_flip_d_f]
+  simp only [Category.assoc, HomologicalComplex.homologyπ_naturality_assoc,
+    HomologicalComplex.liftCycles_comp_cyclesMap_assoc, h,
+    liftCycles_homologyπ_cartanEilenbergRowHomologyIso_hom_assoc,
+    liftCycles_homologyπ_cartanEilenbergRowHomologyIso_hom]
+  rw [← G.map_comp, ← G.map_comp, HomologicalComplex.Hom.comm]
 
 end CochainComplex
