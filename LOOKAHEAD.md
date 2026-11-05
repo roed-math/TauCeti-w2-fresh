@@ -21,22 +21,19 @@ Nothing proved on this branch consumes either listed supplier, so there is no
   update the import in `Morphisms/Thickening.lean`; that is #22428's job, not this branch's. The
   branch uses only `IsUniversalHomeomorphism.isHomeomorph`, which is on `main`, in
   `Criterion.lean`: a thickening is a homeomorphism, so preimages of opens are open.
-* `equiv-sheaf-h` (§2.3, open PR #27237; carrier `Sheaf.NonabelianH1` merged as #22627). It is
-  needed only for `smooth_lifting_torsor` (the obstruction class in `H¹(T, Hom(a^* Ω_{X/S}, I))`)
-  and for the gluing step of smooth ⇒ formally smooth. Neither is on this branch (see
-  *What remains*), so nothing is stubbed. The next session should stub what that step consumes:
-  `NonabelianH1`'s torsor-class API and `equivSheafH`, in the forms of #27237 and its follow-ups.
-  (Rechecked 2026-11-05 06:47 UTC against `main` `e8758b7b2f8`: #22428 (*feat: universal
-  homeomorphisms of schemes and the integral criterion*) and #27237 (*feat: connecting map of an
-  extension of sheaves of groups*, a single new file
-  `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Connecting.lean`) are both still open; the
-  torsor carrier `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Torsor.lean` is on `main`.
-  `equivSheafH` is pinned in the README only (no `Suggested.lean` signature, not in #27237), so its
-  stub will have to fix a form, for instance `NonabelianH1 (toGrpSheaf G) ≃ Sheaf.H G 1` with the
-  `toGrpSheaf` of §2.4. Nothing on the branch consumes either supplier. Split 6's
-  `liftSheaf_coversTop` is stated in the exact form of the `coversTop` field of main's
-  `CategoryTheory.Sheaf.Torsor`, so that once a group sheaf acts on `liftSheaf` it plugs in
-  directly.)
+* `equiv-sheaf-h` (§2.3, open PR #27237; carrier `Sheaf.NonabelianH1` merged as #22627). The
+  torsor of lifts (`liftTorsor`, split 14) and its class `liftObstruction` use only main's
+  `CategoryTheory.Sheaf.Torsor` and `Sheaf.NonabelianH1` (with `NonabelianH1.mk_eq_one_iff`), so
+  nothing is stubbed. `equivSheafH` will be consumed only by the remaining step: carrying
+  `liftObstruction` to `Sheaf.H` of the abelian sheaf `liftDerivationSheaf f i a` and showing that
+  it vanishes for affine `T'`. The next session should stub it then. It is pinned in the README
+  only (no `Suggested.lean` signature, not in #27237), so the stub will have to fix a form, for
+  instance `NonabelianH1 G' ≃ Sheaf.H G 1` for `G'` the multiplicative `GrpCat`-sheaf of an abelian
+  sheaf `G` (here `liftDerivationGrpSheaf f i a`, built with `AddCommGrpCat.toCommGrp ⋙ forget₂
+  CommGrpCat GrpCat`). (Rechecked 2026-11-05 06:41 UTC against `main` `e8758b7b2f8`: #22428
+  (*feat: universal homeomorphisms of schemes and the integral criterion*) and #27237 (*feat:
+  connecting map of an extension of sheaves of groups*, a single new file
+  `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Connecting.lean`) are both still open.)
 
 ## What is proved (all sorry-free, `lake build` green)
 
@@ -276,7 +273,7 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    which need not be affine). This closes, at the level of differences, the comparison of two charts
    with non-affine intersection that the previous round listed as missing.
 12. **`feat: the sheaf of derivations into the ideal of a thickening`** — after: none.
-   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Derivation.lean` (321
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Derivation.lean` (357
    lines; imports only Mathlib, so it can be opened at once). For `f : X ⟶ S`, `i : T ⟶ T'`,
    `a : T ⟶ X`: `LiftDerivationIndex i a W` (the pairs `(U, V)`, `U` open in `X`, `V ⊆ W` open in
    `T'`, with `i ⁻¹ᵁ V ≤ a ⁻¹ᵁ U`) and `LiftDerivationIndex.shrink`; the Prop-structure
@@ -342,8 +339,8 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    lines) once those helpers are public.
 14. **`feat: the torsor of lifts along a first-order thickening`** — after: 1, 2, 4, 6, 7, 8, 10,
    11, 12, 13.
-   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Torsor.lean` (about 130
-   lines, about 155 with the obstruction class): an instance `AddCommGrpCat.toCommGrp.IsEquivalence` (Mathlib's
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Torsor.lean` (about 155
+   lines): an instance `AddCommGrpCat.toCommGrp.IsEquivalence` (Mathlib's
    `commGroupAddCommGroupEquivalence.inverse`, so that `sheafCompose` applies; general, a
    reviewer may ask to move it to Mathlib's `EquivalenceGroupAddGroup` file);
    `liftDerivationGrpSheaf f i a` (the sheaf of derivations through
