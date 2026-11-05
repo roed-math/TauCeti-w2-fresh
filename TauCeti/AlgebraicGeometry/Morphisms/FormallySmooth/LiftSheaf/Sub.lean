@@ -32,6 +32,8 @@ difference map of the torsor of lifts of Stacks, Lemma 37.9.5 (04FJ).
 * `TauCeti.AlgebraicGeometry.liftSheafSub_left_injective`: a section is determined by its
   difference with a fixed section.
 * `TauCeti.AlgebraicGeometry.liftSheafSub_map`: the difference is compatible with restriction.
+* `TauCeti.AlgebraicGeometry.liftDerivation_eq_zero_of_isAffineOpen`: when `a` lifts to `W`, a
+  derivation over `W` vanishing on one affine chart `U ⊇ a (i ⁻¹ W)` vanishes.
 * `TauCeti.AlgebraicGeometry.liftSheafSub_eq_zero_iff`: two sections are equal if and only if
   their difference vanishes.
 
@@ -278,5 +280,72 @@ theorem liftSheafSub_map {W' : T'.Opens} (e : W' ≤ W)
       ← ι_app_liftSheafSub_apply l₁ l₂ ⟨q.1, q.2.1.trans e, q.2.2⟩ x,
       ← Scheme.Hom.appLE_eq_app (f := W.ι), ← CommRingCat.comp_apply, Scheme.Hom.appLE_comp_appLE]
     simp only [Scheme.homOfLE_ι, Scheme.Hom.appLE_eq_app]
+
+/-- A derivation over `W` is determined by one affine chart: if `a` lifts to `W`, `U` is an affine
+open of `X` with `a (i ⁻¹ W) ⊆ U` and `D` vanishes on `Γ(X, U)` over every open `V ⊆ W`, then `D`
+vanishes. Over a basic open `D(g) ⊆ U`, every section is `x' / g ^ n`, and the Leibniz rule along
+the lifts given by the lift of `a` shows that `D` kills it. -/
+theorem liftDerivation_eq_zero_of_isAffineOpen (l₀ : (liftSheaf f i a h).obj.obj (op W))
+    {U : X.Opens} (hUa : IsAffineOpen U) (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U)
+    (D : liftDerivationSubgroup f i a W)
+    (hD : ∀ (V : T'.Opens) (hV : V ≤ W) (x : Γ(X, U)),
+      D.1 ⟨(U, V), hV, (i.preimage_mono hV).trans hU⟩ x = 0) :
+    D = 0 := by
+  refine Subtype.ext <| funext fun p ↦ AddMonoidHom.ext fun x ↦ ?_
+  rw [AddSubgroup.coe_zero, Pi.zero_apply, AddMonoidHom.zero_apply]
+  set m := (liftSheafObjEquiv f i a h W l₀).1
+  refine T'.IsSheaf.section_ext fun t ht ↦ ?_
+  have htW : t ∈ W := p.2.1 ht
+  have hyU : m ⟨t, htW⟩ ∈ U :=
+    preimage_ι_le_preimage_liftSheafObjEquiv hU l₀ (show ⟨t, htW⟩ ∈ W.ι ⁻¹ᵁ W from htW)
+  have hyU'' : m ⟨t, htW⟩ ∈ p.1.1 :=
+    preimage_ι_le_preimage_liftSheafObjEquiv p.2.2 l₀ (show ⟨t, htW⟩ ∈ W.ι ⁻¹ᵁ p.1.2 from ht)
+  obtain ⟨g, hg, hyg⟩ := hUa.exists_basicOpen_le ⟨_, hyU''⟩ hyU
+  -- The open `V₃ ∋ t` of `T'` that `l₀` maps into the basic open `D(g) ⊆ U ∩ U''`.
+  set V₃ := p.1.2 ⊓ W.ι ''ᵁ (m ⁻¹ᵁ X.basicOpen g)
+  have hV₃ : i ⁻¹ᵁ V₃ ≤ a ⁻¹ᵁ X.basicOpen g := fun s hs ↦ by
+    have hsW : i s ∈ W := Scheme.Opens.ι_image_le _ _ hs.2
+    let s' : (i ⁻¹ᵁ W).toScheme := ⟨s, hsW⟩
+    have hy : (i ∣_ W) s' = ⟨i s, hsW⟩ := Subtype.ext (morphismRestrict_base_coe i W s')
+    have has : a s = m ⟨i s, hsW⟩ := by
+      rw [← hy, ← Scheme.Hom.comp_apply, (liftSheafObjEquiv f i a h W l₀).2.1,
+        Scheme.Hom.comp_apply]
+      rfl
+    change a s ∈ X.basicOpen g
+    rw [has]
+    exact (Scheme.Opens.mem_ι_image_iff (x := (⟨i s, hsW⟩ : W.toScheme))).1 hs.2
+  refine ⟨V₃, inf_le_left,
+    ⟨ht, (Scheme.Opens.mem_ι_image_iff (x := (⟨t, htW⟩ : W.toScheme))).2 hyg⟩, ?_⟩
+  rw [map_zero, (isLiftDerivation_coe D).map_apply,
+    ← (isLiftDerivation_coe D).apply_map (p.shrink i a V₃ inf_le_left) (X.basicOpen g) hV₃ hg
+      x]
+  have hV₃W : V₃ ≤ W := inf_le_left.trans p.2.1
+  let q : LiftDerivationIndex i a W := ⟨(U, V₃), hV₃W, (i.preimage_mono hV₃W).trans hU⟩
+  let q₃ : LiftDerivationIndex i a W := ⟨(X.basicOpen g, V₃), hV₃W, hV₃⟩
+  change D.1 q₃ (X.presheaf.map (homOfLE hg).op x) = 0
+  have hq (y : Γ(X, U)) : D.1 q₃ (X.presheaf.map (homOfLE (X.basicOpen_le g)).op y) = 0 :=
+    ((isLiftDerivation_coe D).apply_map q _ hV₃ (X.basicOpen_le g) y).trans (hD V₃ hV₃W y)
+  -- Write the restriction of `x` to `D(g)` as `x' / g ^ n`.
+  have := hUa.isLocalization_basicOpen g
+  obtain ⟨⟨x', _, ⟨n, rfl⟩⟩, hx'⟩ :=
+    IsLocalization.surj (Submonoid.powers g) (X.presheaf.map (homOfLE hg).op x)
+  -- The lifts of `a^♯ y` along `l₀`.
+  let lift : Γ(X, X.basicOpen g) →+* Γ(T', V₃) := (ιAppIso hV₃W).inv.hom.comp
+    (m.appLE (X.basicOpen g) (W.ι ⁻¹ᵁ V₃) (preimage_ι_le_preimage_liftSheafObjEquiv hV₃ l₀)).hom
+  have hlift (y : Γ(X, X.basicOpen g)) :
+      i.app V₃ (lift y) = a.appLE (X.basicOpen g) (i ⁻¹ᵁ V₃) hV₃ y :=
+    app_map_appLE l₀ q₃ y
+  have hg₃ : IsUnit (algebraMap Γ(X, U) Γ(X, X.basicOpen g) g) :=
+    X.toRingedSpace.isUnit_res_basicOpen g
+  have hunit : IsUnit (lift (algebraMap Γ(X, U) Γ(X, X.basicOpen g) (g ^ n))) := by
+    rw [map_pow, map_pow]
+    exact (hg₃.map lift).pow n
+  have hmul := (isLiftDerivation_coe D).map_mul q₃ (X.presheaf.map (homOfLE hg).op x)
+    (algebraMap Γ(X, U) Γ(X, X.basicOpen g) (g ^ n)) _ _ (hlift _) (hlift _)
+  have h₁ : D.1 q₃ (algebraMap Γ(X, U) Γ(X, X.basicOpen g) x') = 0 := hq x'
+  have h₂ : D.1 q₃ (algebraMap Γ(X, U) Γ(X, X.basicOpen g) (g ^ n)) = 0 := hq (g ^ n)
+  rw [hx', h₁, h₂, mul_zero, zero_add] at hmul
+  rw [← hunit.mul_right_eq_zero]
+  exact hmul.symm
 
 end TauCeti.AlgebraicGeometry

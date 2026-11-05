@@ -295,7 +295,7 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    all `V ⊆ W`, so nothing is lost. `liftDerivationPresheaf` carries `@[expose]` so that its
    `map_apply` simp lemma can be stated about the underlying subgroup.
 13. **`feat: the difference of two lifts as a derivation`** — after: 1, 2, 4, 6, 7, 8, 10, 11, 12.
-   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Sub.lean` (about 285
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Sub.lean` (about 345
    lines; imports split 11's `Difference.lean` and split 12's `Derivation.lean`). For `i` a
    first-order thickening and two sections `l₁`, `l₂` of `liftSheaf f i a h` over `W`:
    `preimage_ι_le_preimage_liftSheafObjEquiv` (for `i ⁻¹ᵁ V ≤ a ⁻¹ᵁ U`, a section maps `W ∩ V`
@@ -309,7 +309,12 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    `liftSheafSub_add_liftSheafSub` (cocycle), `liftSheafSub_self`, `neg_liftSheafSub`,
    `liftSheafSub_eq_zero_iff` (two sections are equal iff their difference vanishes),
    `liftSheafSub_left_injective`, and `liftSheafSub_map` (compatibility with restriction to
-   `W' ⊆ W`, via `liftDerivationSubgroupRestrict`). Split 12 also gains the public
+   `W' ⊆ W`, via `liftDerivationSubgroupRestrict`), and `liftDerivation_eq_zero_of_isAffineOpen`
+   (when `a` lifts to `W`, a derivation over `W` that vanishes on `Γ(X, U)` for one affine open
+   `U ⊇ a (i ⁻¹ W)` vanishes: over a basic open `D(g) ⊆ U ∩ U''` every section is `x' / g ^ n`, and
+   the Leibniz rule along the lifts given by the lift of `a`, where `g ^ n` lifts to a unit,
+   kills it; Mathlib's `IsAffineOpen.isLocalization_basicOpen`, `RingedSpace.isUnit_res_basicOpen`,
+   `TopCat.Presheaf.IsSheaf.section_ext`). Split 12 also gains the public
    `mem_liftDerivationSubgroup` for this split. Private helpers: `ιAppIso`, `ι_app_injective`,
    `ι_app_app` (`(i ⁻¹ W).ι^♯ ∘ i^♯ = (i ∣_ W)^♯ ∘ W.ι^♯`), `app_map_appLE`,
    `app_liftSheafSubHom`.
@@ -354,7 +359,13 @@ directory `FormallySmooth/LiftSheaf/` (`Basic.lean` for split 6, `Affine.lean` f
   (`liftSheafSub_left_injective`) and compatible with restriction (`liftSheafSub_map`);
   (d) surjectivity of `l ↦ liftSheafSub l l₀` (equivalently the action of `ℋ` on `liftSheaf`,
   `D +ᵥ l₀` the unique `l` with `liftSheafSub l l₀ = D`; uniqueness is split 13's
-  `liftSheafSub_left_injective`): over affine `W`, `U`, `V` it is `liftStructAddTorsor`
+  `liftSheafSub_left_injective`): over affine `W`, `U`, `V` it is `liftStructAddTorsor`, and by
+  split 13's `liftDerivation_eq_zero_of_isAffineOpen` it suffices to compare `liftSheafSub l l₀`
+  with `D` on the one chart `U` (on `(U, W)`, by `map_apply`), where it is
+  `liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub`; what is missing is the derivation
+  `Γ(U, ⊤) → ker (i ∣_ W).appTop` built from `D`'s component on `(U, W)`, a derivation for
+  `Ideal.moduleOfSqEqBot` by `coe_smul_of_sq_eq_bot` with the lifts `L₀.l.appTop y` of the lift
+  `L₀` given by `l₀`; the rest of the old plan for (d) was:
   (identify `ℋ(W)` with `Der_{Γ(V)}(Γ(U), I(W))` by restricting families to `U` and using
   `liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub`), glued over a cover of `W` with
   `liftSheaf_eq_of_appLESub_eq` (uniqueness) and the sheaf property of `liftSheaf`;
