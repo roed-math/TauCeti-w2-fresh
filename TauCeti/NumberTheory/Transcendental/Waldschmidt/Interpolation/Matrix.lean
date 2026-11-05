@@ -33,7 +33,8 @@ columns span a space of dimension at most
 
 `L_d = (T₀ + d choose d) (2 T₁ + 1)`
 
-when `|t| ≤ T₁`; the dimension of `W` is exactly `d`. This file proves this upper bound on the
+when `|t| ≤ T₁`; the dimension of `W` is exactly `d`
+(`TauCeti.finrank_map_waldschmidtPointMap_sup`). This file proves this upper bound on the
 rank, for arbitrary families of rows and columns. That, for the monomial rows, the bound `L_d` is
 attained exactly when the conclusion of a zero estimate holds is proved in
 `TauCeti.NumberTheory.Transcendental.Waldschmidt.Interpolation.Rank`.
@@ -47,8 +48,6 @@ attained exactly when the conclusion of a zero estimate holds is proved in
 
 * `TauCeti.rank_waldschmidtInterpolationMatrix_le_of_mem`: if the grid points and `e₀` lie in a
   subspace `W`, the rank is at most `(T₀ + dim W choose dim W) · #{t}`.
-* `TauCeti.finrank_map_waldschmidtPointMap_sup`: if `V` contains the coefficient vector, the grid
-  points `s · y`, `s ∈ V`, and `e₀` span a subspace of dimension `dim V`.
 * `TauCeti.rank_waldschmidtInterpolationMatrix_le`: if the column indices `s` lie in a subspace
   `V` containing the coefficient vector, the rank is at most `(T₀ + dim V choose dim V) · #{t}`,
   that is, at most `L_d` with `d = dim V` when `|t| ≤ T₁`.
@@ -184,70 +183,6 @@ theorem rank_waldschmidtInterpolationMatrix_le_of_mem {ι κ : Type*} [Finite ι
       lia
   rw [Matrix.rank_eq_finrank_span_row]
   exact (Submodule.finrank_mono hle).trans (hsup T)
-
-/-- The grid points `s · y` of the indices `s` in a subspace `V ⊆ Kᵐ` containing the coefficient
-vector `c = (β₁, …, β_{m-1}, -1)`, together with the direction `e₀` of the derivatives, span a
-subspace `W = Y(V) + K e₀` of the same dimension as `V`, where `Y` is the grid point map. If
-`β₀ ≠ 0`, then `Y` is injective and `e₀ ∈ Y(V)`; if `β₀ = 0`, then `Y` has kernel `K c` and
-`e₀ ∉ Y(V)`. -/
-theorem finrank_map_waldschmidtPointMap_sup (b : Fin (n + 1) → K)
-    {V : Submodule K (Fin (n + 1) → K)} (hV : Fin.snoc (fun k : Fin n ↦ b k.succ) (-1) ∈ V) :
-    finrank K ↥(V.map (waldschmidtPointMap b) ⊔ K ∙ Pi.single 0 1) = finrank K V := by
-  set Y := waldschmidtPointMap b
-  set e₀ : Fin (n + 1) → K := Pi.single 0 1
-  set c : Fin (n + 1) → K := Fin.snoc (fun k : Fin n ↦ b k.succ) (-1)
-  -- A vector in the kernel of `Y` is a multiple of the coefficient vector.
-  have hker (v : Fin (n + 1) → K) (hv : Y v = 0) : v = -v (Fin.last n) • c := by
-    ext i
-    induction i using Fin.lastCases with
-    | last => simp [c]
-    | cast k =>
-      have := congrFun hv k.succ
-      simp only [Y, waldschmidtPointMap_apply_succ, Pi.zero_apply] at this
-      simp [c, Fin.snoc_castSucc]
-      linear_combination this
-  have hc := waldschmidtPointMap_snoc b
-  by_cases hb : b 0 = 0
-  · -- `Y(V)` meets the line `K e₀` only in `0`, and loses at most the line `K c` of `V`.
-    have hinf : V.map Y ⊓ K ∙ e₀ = ⊥ := by
-      refine (Submodule.eq_bot_iff _).2 fun x ⟨⟨v, _, hvx⟩, hx⟩ ↦ ?_
-      obtain ⟨a, rfl⟩ := Submodule.mem_span_singleton.1 hx
-      have := congrFun hvx 0
-      simp [Y, e₀, hb] at this
-      simp [this]
-    have he₀ : e₀ ≠ 0 := by simp [e₀]
-    have hsup := Submodule.finrank_sup_add_finrank_inf_eq (V.map Y) (K ∙ e₀)
-    rw [hinf, finrank_bot, finrank_span_singleton he₀] at hsup
-    have hrank := LinearMap.finrank_range_add_finrank_ker (Y ∘ₗ V.subtype)
-    rw [LinearMap.range_comp, Submodule.range_subtype] at hrank
-    have hker₁ : finrank K (LinearMap.ker (Y ∘ₗ V.subtype)) ≤ 1 := by
-      rw [← Submodule.finrank_map_subtype_eq]
-      have hc0 : c ≠ 0 := fun h ↦ by simpa [c] using congrFun h (Fin.last n)
-      refine (Submodule.finrank_mono (s := _) (t := K ∙ c) ?_).trans
-        (finrank_span_singleton hc0).le
-      rintro _ ⟨v, hv, rfl⟩
-      rw [Submodule.subtype_apply, hker v (LinearMap.mem_ker.1 hv)]
-      exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self c)
-    have hker₂ : 1 ≤ finrank K (LinearMap.ker (Y ∘ₗ V.subtype)) := by
-      rw [hb, neg_zero, Pi.single_zero] at hc
-      refine Submodule.one_le_finrank_iff.2 ((Submodule.ne_bot_iff _).2
-        ⟨⟨c, hV⟩, by simpa using hc, fun h ↦ ?_⟩)
-      have := congrFun (congrArg Subtype.val h) (Fin.last n)
-      simp [c] at this
-    lia
-  · -- `Y` is injective and `e₀ ∈ Y(V)`, so `Y(V) ⊔ K e₀ = Y(V) ≃ V`.
-    have he₀ : e₀ ∈ V.map Y := by
-      refine ⟨(-b 0)⁻¹ • c, V.smul_mem _ hV, ?_⟩
-      rw [map_smul, hc, ← Pi.single_smul, smul_eq_mul, inv_mul_cancel₀ (neg_ne_zero.2 hb)]
-    have hinj : Injective Y := by
-      rw [← LinearMap.ker_eq_bot, Submodule.eq_bot_iff]
-      intro v hv
-      have h0 := congrFun (LinearMap.mem_ker.1 hv) 0
-      simp only [Y, waldschmidtPointMap_apply_zero, Pi.zero_apply, mul_eq_zero, hb,
-        or_false] at h0
-      rw [hker v hv, h0, neg_zero, zero_smul]
-    rw [sup_eq_left.2 ((Submodule.span_singleton_le_iff_mem _ _).2 he₀)]
-    exact (Submodule.equivMapOfInjective Y hinj V).finrank_eq.symm
 
 /-- **Rank of the interpolation matrix on a residual subspace.** Let the polynomials `F r` have
 total degree at most `T₀` and the exponents `t r` lie in a finite set `T`. If the column indices

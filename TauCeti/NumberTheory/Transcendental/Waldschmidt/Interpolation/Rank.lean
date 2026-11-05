@@ -30,12 +30,8 @@ every family `(G_t)_{t ∈ T}` of polynomials of total degree at most `T₀` who
 polynomials vanishing on `W`. In the language of the proof: no auxiliary polynomial
 `∑_t G_t(z) Y^t` on `W × 𝔾ₘ` that is nonzero there vanishes to the prescribed order at the
 points of the grid. The zero estimate itself, the torus and additive-group multiplicity
-argument of W00 §9.2.3, is not proved here.
-
-The file also proves the existence of the subspace `V` of the rank argument: a subspace
-containing the coefficient vector `(β₁, …, β_{m-1}, -1)` of the normalized linear form, of
-smallest dimension `d` among those with `#π_V(S) ≤ (m + 1) T₀^(m-d) / (d + 1)`, where
-`π_V : Kᵐ → Kᵐ / V` is the quotient map.
+argument of W00 §9.2.3, is not proved here. The subspace `V` of the column indices is chosen in
+`TauCeti.NumberTheory.Transcendental.Waldschmidt.Interpolation.Residual`.
 
 ## Main results
 
@@ -45,8 +41,6 @@ smallest dimension `d` among those with `#π_V(S) ≤ (m + 1) T₀^(m-d) / (d + 
 * `TauCeti.rank_waldschmidtInterpolationMatrix_eq_iff`: for column indices in a subspace `V`
   containing the coefficient vector, the rank is `L_d = (T₀ + d choose d) · #T` with
   `d = dim V` if and only if the conclusion of the zero estimate holds on `W = V · y + K e₀`.
-* `TauCeti.exists_waldschmidtResidualSubspace`: the subspace `V` of smallest dimension `d ≥ 1`
-  with `(d + 1) #π_V(S) ≤ (m + 1) T₀^(m-d)` exists.
 
 ## References
 
@@ -218,35 +212,5 @@ theorem rank_waldschmidtInterpolationMatrix_eq_iff [Infinite K] {κ : Type*} [Fi
     (Submodule.mem_sup_right (Submodule.mem_span_singleton_self _)) fun c ↦ ?_
   rw [← waldschmidtPointMap_intCast]
   exact Submodule.mem_sup_left (Submodule.mem_map_of_mem (hs c))
-
-/-- **The residual subspace of the rank argument.** For a set `S ⊆ ℤᵐ` there is a subspace
-`V ⊆ Kᵐ` containing the coefficient vector `c = (β₁, …, β_{m-1}, -1)` of the normalized linear
-form, of dimension `d` with `(d + 1) #π_V(S) ≤ (m + 1) T₀^(m-d)`, where `π_V : Kᵐ → Kᵐ / V` is the
-quotient map, whose dimension is the smallest among all such subspaces. The whole space `Kᵐ`
-satisfies the inequality, and `d ≥ 1` because `c ≠ 0`. -/
-theorem exists_waldschmidtResidualSubspace (b : Fin (n + 1) → K) (S : Set (Fin (n + 1) → ℤ))
-    (T₀ : ℕ) :
-    ∃ V : Submodule K (Fin (n + 1) → K), Fin.snoc (fun k : Fin n ↦ b k.succ) (-1) ∈ V ∧
-      (finrank K V + 1) * ((fun s ↦ V.mkQ fun i ↦ (s i : K)) '' S).ncard ≤
-        (n + 2) * T₀ ^ (n + 1 - finrank K V) ∧
-      (∀ V' : Submodule K (Fin (n + 1) → K), Fin.snoc (fun k : Fin n ↦ b k.succ) (-1) ∈ V' →
-        (finrank K V' + 1) * ((fun s ↦ V'.mkQ fun i ↦ (s i : K)) '' S).ncard ≤
-          (n + 2) * T₀ ^ (n + 1 - finrank K V') → finrank K V ≤ finrank K V') ∧
-      1 ≤ finrank K V := by
-  classical
-  set c : Fin (n + 1) → K := Fin.snoc (fun k : Fin n ↦ b k.succ) (-1)
-  let p : ℕ → Prop := fun d ↦ ∃ V : Submodule K (Fin (n + 1) → K), c ∈ V ∧
-    finrank K V = d ∧
-      (d + 1) * ((fun s ↦ V.mkQ fun i ↦ (s i : K)) '' S).ncard ≤ (n + 2) * T₀ ^ (n + 1 - d)
-  -- The whole space qualifies: modulo `Kᵐ` the set `S` has at most one class.
-  have hp : ∃ d, p d := by
-    refine ⟨n + 1, ⊤, Submodule.mem_top, by simp, ?_⟩
-    have : ((fun s ↦ (⊤ : Submodule K (Fin (n + 1) → K)).mkQ fun i ↦ (s i : K)) '' S).ncard ≤ 1 :=
-      Set.ncard_le_one_iff_subsingleton.2 Set.subsingleton_of_subsingleton
-    simpa using Nat.mul_le_mul_left (n + 2) this
-  obtain ⟨V, hcV, hd, hcard⟩ := Nat.find_spec hp
-  refine ⟨V, hcV, hd ▸ hcard, fun V' hcV' hcard' ↦ hd ▸ Nat.find_min' hp ⟨V', hcV', rfl, hcard'⟩,
-    Submodule.one_le_finrank_iff.2 ((Submodule.ne_bot_iff _).2 ⟨c, hcV, fun h ↦ ?_⟩)⟩
-  simpa [c] using congrFun h (Fin.last n)
 
 end TauCeti
