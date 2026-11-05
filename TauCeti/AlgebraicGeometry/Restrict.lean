@@ -35,6 +35,8 @@ global functions of the base change.
   attached to a ring-hom property `Q` holds for `f.resLE U V` iff `Q` holds for `f.appLE U V`.
 * `AlgebraicGeometry.Scheme.Hom.congr_appLE`: equal morphisms induce the same maps
   `Γ(Y, U) ⟶ Γ(X, V)`, whatever the proofs of `V ≤ f ⁻¹ᵁ U`.
+* `AlgebraicGeometry.Scheme.Opens.topIso_inv_map_homOfLE`: restricting a section along `O' ≤ O`
+  commutes with `Scheme.Opens.topIso`.
 * `CategoryTheory.CommSq.appLE_app_topIso_hom`: in a commutative square over the inclusion of an
   open `U`, the two ways of pulling a function on `U` back to the source of the square agree.
 * `CategoryTheory.IsPullback.isIso_appLE`: in a pullback square of the inclusion of an open `U`
@@ -110,6 +112,20 @@ theorem Scheme.Hom.congr_appLE {g : X ⟶ Y} (e : f = g) (U : Y.Opens) (V : X.Op
     f.appLE U V hf = g.appLE U V hg := by
   subst e
   rfl
+
+/-- Restricting a section over `O` to `O' ⊆ O` and moving it to `Γ(O', ⊤)` is moving it to
+`Γ(O, ⊤)` and restricting it along `O' ⟶ O`. -/
+theorem Scheme.Opens.topIso_inv_map_homOfLE {Z : Scheme.{u}} {O O' : Z.Opens} (e : O' ≤ O)
+    (t : Γ(Z, O)) :
+    O'.topIso.inv (Z.presheaf.map (homOfLE e).op t) = (Z.homOfLE e).appTop (O.topIso.inv t) := by
+  rw [Scheme.homOfLE_appTop, Scheme.Opens.topIso_inv, Scheme.Opens.topIso_inv]
+  -- Both sides restrict `t` along morphisms of the poset of opens, which are equal.
+  have key {B C D : Z.Opensᵒᵖ} (f₁ : Opposite.op O ⟶ B) (g₁ : B ⟶ D) (f₂ : Opposite.op O ⟶ C)
+      (g₂ : C ⟶ D) :
+      Z.presheaf.map g₁ (Z.presheaf.map f₁ t) = Z.presheaf.map g₂ (Z.presheaf.map f₂ t) := by
+    rw [← CommRingCat.comp_apply, ← CommRingCat.comp_apply, ← Functor.map_comp,
+      ← Functor.map_comp, Subsingleton.elim (f₁ ≫ g₁)]
+  exact key _ _ _ _
 
 end AlgebraicGeometry
 

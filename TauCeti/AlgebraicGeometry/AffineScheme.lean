@@ -8,6 +8,7 @@ module
 public import Mathlib.AlgebraicGeometry.AffineScheme
 public import Mathlib.AlgebraicGeometry.Properties
 public import Mathlib.CategoryTheory.Sites.Spaces
+public import TauCeti.AlgebraicGeometry.Restrict
 import TauCeti.RingTheory.Localization.Tower
 
 /-!
@@ -60,6 +61,8 @@ be injective. This is the local reason why an affine blowup changes nothing away
 * `AlgebraicGeometry.IsAffineOpen.span_setOf_basicOpen_mem_sieve_eq_top`: the basic opens of an
   affine open `U` lying in a covering sieve of `U` are defined by functions generating the unit
   ideal of `Γ(X, U)`.
+* `AlgebraicGeometry.IsAffineOpen.isLocalization_away_homOfLE_appTop`: for an affine open `O` of
+  `Z` and `g ∈ Γ(Z, O)`, restriction `Γ(O, ⊤) ⟶ Γ(Z.basicOpen g, ⊤)` is a localization at `g`.
 * `TauCeti.AlgebraicGeometry.toSpecΓ_SpecMap_isoSpec_inv_appTop`: the morphism into an affine
   scheme `X` given by a ring map `φ : Γ(X, ⊤) ⟶ Γ(Y, ⊤)` acts on global sections by `φ`.
 * `TauCeti.AlgebraicGeometry.overPullback_map_bijective_of_isIso_appTop`: over an affine base,
@@ -223,6 +226,29 @@ theorem IsAffineOpen.span_setOf_basicOpen_mem_sieve_eq_top {X : Scheme.{u}} {U :
   obtain ⟨V, i, hi, hxV⟩ := hS x hx
   obtain ⟨f, hfV, hxf⟩ := hU.exists_basicOpen_le ⟨x, hxV⟩ hx
   exact TopologicalSpace.Opens.mem_iSup.2 ⟨⟨f, S.downward_closed hi (homOfLE hfV)⟩, hxf⟩
+
+/-- For an affine open `O` of `Z` and `g ∈ Γ(Z, O)`, restriction `Γ(O, ⊤) ⟶ Γ(O', ⊤)` to the basic
+open `O' = Z.basicOpen g` is a localization at `g`. -/
+theorem IsAffineOpen.isLocalization_away_homOfLE_appTop {Z : Scheme.{u}} {O O' : Z.Opens}
+    (hO : IsAffineOpen O) (g : Γ(Z, O)) (hO' : Z.basicOpen g = O') (e : O' ≤ O) :
+    letI := (Z.homOfLE e).appTop.hom.toAlgebra
+    IsLocalization.Away (O.topIso.inv g) Γ(O'.toScheme, ⊤) := by
+  subst hO'
+  have := hO.isLocalization_basicOpen g
+  let eO := O.topIso.symm.commRingCatIsoToRingEquiv
+  have h₁ := IsLocalization.isLocalization_of_base_ringEquiv (Submonoid.powers g)
+    Γ(Z, Z.basicOpen g) eO
+  rw [Submonoid.map_powers] at h₁
+  let : Algebra Γ(O.toScheme, ⊤) Γ(Z, Z.basicOpen g) :=
+    ((algebraMap Γ(Z, O) Γ(Z, Z.basicOpen g)).comp eO.symm.toRingHom).toAlgebra
+  have h₂ := (IsLocalization.isLocalization_iff_of_ringEquiv _
+    (Z.basicOpen g).topIso.symm.commRingCatIsoToRingEquiv).1 h₁
+  convert h₂ using 2 <;> first
+    | rfl
+    | refine RingHom.ext fun r ↦ ?_
+      change _ = (Z.basicOpen g).topIso.inv
+        (Z.presheaf.map (homOfLE (Z.basicOpen_le g)).op (O.topIso.hom r))
+      rw [Scheme.Opens.topIso_inv_map_homOfLE, Iso.hom_inv_id_apply]
 
 end AlgebraicGeometry
 

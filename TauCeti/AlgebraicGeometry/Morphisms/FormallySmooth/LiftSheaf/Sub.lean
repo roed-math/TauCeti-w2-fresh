@@ -7,6 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.LiftSheaf.Derivation
 public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.LiftSheaf.Difference
+import TauCeti.AlgebraicGeometry.Restrict
 
 /-!
 # The difference of two lifts as a derivation, and the torsor of lifts
@@ -21,14 +22,17 @@ difference map of the torsor of lifts of Stacks, Lemma 37.9.5 (04FJ).
 Conversely every derivation over `W` is the difference of a section with a given one, so the sheaf
 of derivations acts simply transitively on the sheaf of lifts. Over an affine `W` inside affine
 charts `U ⊆ X`, `V ⊆ S`, the component of the derivation on `(U, W)` is a derivation of the affine
-torsor `liftStructAddTorsor`, by which the given section is moved; that the difference of the new
-section with the given one is the derivation everywhere, not only on the chart `U`, is
-`liftDerivation_eq_zero_of_isAffineOpen`. In general the local solutions glue.
+torsor `liftStructAddTorsor` (`liftDerivationChart`), by which the given section is moved; that
+the difference of the new section with the given one is the derivation everywhere, not only on the
+chart `U`, is `liftDerivation_eq_zero_of_isAffineOpen`. In general the local solutions glue.
 
 ## Main definitions
 
 * `TauCeti.AlgebraicGeometry.liftSheafSub l₁ l₂`: the difference of two sections of the sheaf of
   lifts, as a derivation into the ideal of `i`.
+* `TauCeti.AlgebraicGeometry.liftDerivationChart`: over an affine `W` inside affine charts
+  `U ⊆ X`, `V ⊆ S`, the component of a derivation over `W` on `(U, W)`, as a derivation
+  `Γ(U, ⊤) → ker (i ∣_ W)^♯` over `Γ(V, ⊤)`.
 
 ## Main results
 
@@ -41,6 +45,10 @@ section with the given one is the derivation everywhere, not only on the chart `
 * `TauCeti.AlgebraicGeometry.liftSheafSub_map`: the difference is compatible with restriction.
 * `TauCeti.AlgebraicGeometry.liftDerivation_eq_zero_of_isAffineOpen`: when `a` lifts to `W`, a
   derivation over `W` vanishing on one affine chart `U ⊇ a (i ⁻¹ W)` vanishes.
+* `TauCeti.AlgebraicGeometry.liftDerivationChart_injective`: so a derivation over `W` is
+  determined by its chart derivation.
+* `TauCeti.AlgebraicGeometry.liftDerivationChart_liftSheafSub`: the chart derivation of the
+  difference of two sections is their difference in the affine torsor of lifts.
 * `TauCeti.AlgebraicGeometry.exists_liftSheafSub_eq`: every derivation over `W` is the difference
   of a section of the sheaf of lifts with a given one.
 * `TauCeti.AlgebraicGeometry.liftSheafSub_eq_zero_iff`: two sections are equal if and only if
@@ -377,13 +385,6 @@ private lemma appLE_comp_appLE' {A B C : Scheme.{u}} (g₁ : A ⟶ B) (g₂ : B 
     g₂.appLE O O' e₂ ≫ g₁.appLE O' O'' e₁ = (g₁ ≫ g₂).appLE O O'' e :=
   Scheme.Hom.appLE_comp_appLE g₁ g₂ O O' O'' e₂ e₁
 
-/-- Equal morphisms induce equal maps on sections. -/
-private lemma appLE_congr_hom {A B : Scheme.{u}} {g₁ g₂ : A ⟶ B} (hg : g₁ = g₂) {O : B.Opens}
-    {O' : A.Opens} (e₁ : O' ≤ g₁ ⁻¹ᵁ O) (e₂ : O' ≤ g₂ ⁻¹ᵁ O) :
-    g₁.appLE O O' e₁ = g₂.appLE O O' e₂ := by
-  subst hg
-  rfl
-
 /-- `Scheme.Hom.resLE_app_top`, stated with `appTop`. -/
 private lemma resLE_appTop {Y Z : Scheme.{u}} (g : Y ⟶ Z) {O : Z.Opens} {O' : Y.Opens}
     (e : O' ≤ g ⁻¹ᵁ O) :
@@ -393,14 +394,14 @@ private lemma resLE_appTop {Y Z : Scheme.{u}} (g : Y ⟶ Z) {O : Z.Opens} {O' : 
 omit [IsFirstOrderThickening i] in
 /-- Restricting a section of `T'` over `W` to `W` and pulling it back along `i ∣_ W` is pulling
 it back along `i` and restricting to `i ⁻¹ W`. -/
-private lemma morphismRestrict_appTop_topIso_inv (t : Γ(T', W)) :
+theorem morphismRestrict_appTop_topIso_inv (t : Γ(T', W)) :
     (i ∣_ W).appTop (W.topIso.inv t) = (i ⁻¹ᵁ W).topIso.inv (i.app W t) := by
   have H : W.topIso.inv ≫ (i ∣_ W).appTop = i.app W ≫ (i ⁻¹ᵁ W).topIso.inv := by
     have h₁ : (⊤ : (i ⁻¹ᵁ W).toScheme.Opens) ≤ (i ∣_ W ≫ W.ι) ⁻¹ᵁ W := by simp
     have h₂ : (⊤ : (i ⁻¹ᵁ W).toScheme.Opens) ≤ ((i ⁻¹ᵁ W).ι ≫ i) ⁻¹ᵁ W := by simp
     rw [← ι_appLE_top W (by simp), ← ι_appLE_top (i ⁻¹ᵁ W) (by simp), appTop_eq_appLE,
       Scheme.Hom.app_eq_appLE i, appLE_comp_appLE' _ _ _ _ h₁, appLE_comp_appLE' _ _ _ _ h₂]
-    exact appLE_congr_hom (morphismRestrict_ι i W) _ _
+    exact Scheme.Hom.congr_appLE _ (morphismRestrict_ι i W) _ _ _ _
   rw [← CommRingCat.comp_apply, H, CommRingCat.comp_apply]
 
 variable {U : X.Opens} {V : S.Opens}
@@ -455,7 +456,7 @@ private lemma chartFun_appTop_mul (w : a ≫ f = i ≫ h) (hU : i ⁻¹ᵁ W ≤
       have h₁ : i ⁻¹ᵁ W ≤ (i ≫ h) ⁻¹ᵁ V := i.preimage_mono hV
       have h₂ : i ⁻¹ᵁ W ≤ (a ≫ f) ⁻¹ᵁ V := hU.trans (a.preimage_mono hUV)
       rw [Scheme.Hom.app_eq_appLE, appLE_comp_appLE' _ _ _ _ h₁, appLE_comp_appLE' _ _ _ _ h₂]
-      exact appLE_congr_hom w.symm _ _
+      exact Scheme.Hom.congr_appLE _ w.symm _ _ _ _
     rw [← CommRingCat.comp_apply, H, CommRingCat.comp_apply]
   rw [chartFun, chartFun, resLE_appTop, resLE_appTop, CommRingCat.comp_apply,
     CommRingCat.comp_apply, map_mul, Iso.inv_hom_id_apply, (isLiftDerivation_coe D).map_mul
@@ -475,8 +476,10 @@ private lemma mk_chartLift [IsAffine W.toScheme] (hU : i ⁻¹ᵁ W ≤ a ⁻¹�
     app_chartLift, resLE_appTop, CommRingCat.comp_apply, CommRingCat.comp_apply]
 
 /-- The derivation `Γ(U, ⊤) → ker (i ∣_ W)^♯` of the affine torsor of lifts given by the component
-of a derivation `D` over `W` on the chart `(U, W)`. -/
-private noncomputable def chartDerivation [IsAffine W.toScheme] (w : a ≫ f = i ≫ h)
+of a derivation `D` over `W` on the chart `(U, W)`. Its values do not depend on the section `l₀` of
+the sheaf of lifts, which only supplies the lifts of `a^♯` for the Leibniz rule
+(`coe_liftDerivationChart_apply`). -/
+noncomputable def liftDerivationChart [IsAffine W.toScheme] (w : a ≫ f = i ≫ h)
     (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U) (hV : W ≤ h ⁻¹ᵁ V) (hUV : U ≤ f ⁻¹ᵁ V)
     (l₀ : (liftSheaf f i a h).obj.obj (op W))
     (D : liftDerivationSubgroup f i a W) :
@@ -500,13 +503,70 @@ private noncomputable def chartDerivation [IsAffine W.toScheme] (w : a ≫ f = i
         Ideal.coe_smul_of_sq_eq_bot _ (mk_chartLift hU l₀ y₂)]
       rfl
 
-/-- Restriction between two opens that contain each other is injective. -/
-private lemma map_homOfLE_injective {Z : Scheme.{u}} {A B : Z.Opens} (h₁ : B ≤ A) (h₂ : A ≤ B) :
-    Function.Injective (Z.presheaf.map (homOfLE h₁).op) := fun s t hst ↦ by
-  have := congrArg (Z.presheaf.map (homOfLE h₂).op) hst
-  rwa [← CommRingCat.comp_apply, ← CommRingCat.comp_apply, ← Functor.map_comp,
-    (Subsingleton.elim _ (𝟙 _) : (homOfLE h₁).op ≫ (homOfLE h₂).op = 𝟙 _),
-    CategoryTheory.Functor.map_id, CommRingCat.id_apply, CommRingCat.id_apply] at this
+/-- The chart derivation of `D` sends `y` to the component of `D` on `(U, W)` at `y`. -/
+theorem coe_liftDerivationChart_apply [IsAffine W.toScheme] (w : a ≫ f = i ≫ h)
+    (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U) (hV : W ≤ h ⁻¹ᵁ V) (hUV : U ≤ f ⁻¹ᵁ V)
+    (l₀ : (liftSheaf f i a h).obj.obj (op W)) (D : liftDerivationSubgroup f i a W)
+    (y : Γ(U.toScheme, ⊤)) :
+    letI := (f.resLE V U hUV).appTop.hom.toAlgebra
+    letI := (h.resLE V W hV).appTop.hom.toAlgebra
+    letI := quotientKerAppTopAlgebra (i ∣_ W) (a.resLE U (i ⁻¹ᵁ W) hU)
+    letI := Ideal.moduleOfSqEqBot Γ(U.toScheme, ⊤)
+      (IsFirstOrderThickening.ker_appTop_sq_eq_bot (i ∣_ W))
+    (liftDerivationChart w hU hV hUV l₀ D y : Γ(W.toScheme, ⊤)) =
+      W.topIso.inv (D.1 ⟨(U, W), le_rfl, hU⟩ (U.topIso.hom y)) :=
+  (rfl)
+
+/-- When `a` lifts to `W`, two derivations over `W` agreeing on `(U, W)` for one affine chart
+`U ⊇ a (i ⁻¹ W)` are equal. -/
+theorem liftDerivationSubgroup.ext_of_isAffineOpen (l₀ : (liftSheaf f i a h).obj.obj (op W))
+    (hUa : IsAffineOpen U) (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U) {D E : liftDerivationSubgroup f i a W}
+    (hDE : ∀ x : Γ(X, U), D.1 ⟨(U, W), le_rfl, hU⟩ x = E.1 ⟨(U, W), le_rfl, hU⟩ x) : D = E := by
+  rw [← sub_eq_zero]
+  refine liftDerivation_eq_zero_of_isAffineOpen l₀ hUa hU _ fun V' hV' x ↦ ?_
+  -- The components on `(U, V')` are the restrictions of the components on `(U, W)`.
+  rw [AddSubgroup.coe_sub, Pi.sub_apply, AddMonoidHom.sub_apply, sub_eq_zero]
+  exact ((isLiftDerivation_coe D).map_apply ⟨(U, W), le_rfl, hU⟩ V' hV' x).symm.trans
+    ((congrArg _ (hDE x)).trans ((isLiftDerivation_coe E).map_apply ⟨(U, W), le_rfl, hU⟩ V' hV' x))
+
+/-- Over an affine chart `U`, a derivation over `W` is determined by its chart derivation. -/
+theorem liftDerivationChart_injective [IsAffine W.toScheme] [IsAffine U.toScheme]
+    (w : a ≫ f = i ≫ h) (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U) (hV : W ≤ h ⁻¹ᵁ V) (hUV : U ≤ f ⁻¹ᵁ V)
+    (l₀ : (liftSheaf f i a h).obj.obj (op W)) :
+    Function.Injective (liftDerivationChart w hU hV hUV l₀) := by
+  intro D E hDE
+  refine liftDerivationSubgroup.ext_of_isAffineOpen l₀ (inferInstance : IsAffine U.toScheme) hU
+    fun x ↦ ?_
+  have := congrArg (fun d ↦ W.topIso.hom (d (U.topIso.inv x) : Γ(W.toScheme, ⊤))) hDE
+  simpa only [coe_liftDerivationChart_apply, Iso.inv_hom_id_apply] using this
+
+/-- Over affine charts `U ⊆ X`, `V ⊆ S`, the chart derivation of the difference of two sections
+of the sheaf of lifts is their difference in the affine torsor of lifts `liftStructAddTorsor`. -/
+theorem liftDerivationChart_liftSheafSub [IsAffine W.toScheme] [IsAffine U.toScheme]
+    [IsAffine V.toScheme] (w : a ≫ f = i ≫ h) (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U) (hV : W ≤ h ⁻¹ᵁ V)
+    (hUV : U ≤ f ⁻¹ᵁ V) [(commSq_resLE w hU hV hUV).HasLift]
+    (l₀ l₁ l₂ : (liftSheaf f i a h).obj.obj (op W)) :
+    letI := liftStructAddTorsor (commSq_resLE w hU hV hUV)
+    liftDerivationChart w hU hV hUV l₀ (liftSheafSub l₁ l₂) =
+      liftSheafObjEquivLiftStruct w hU hV hUV l₁ -ᵥ liftSheafObjEquivLiftStruct w hU hV hUV l₂ := by
+  let := (f.resLE V U hUV).appTop.hom.toAlgebra
+  let := (h.resLE V W hV).appTop.hom.toAlgebra
+  let := quotientKerAppTopAlgebra (i ∣_ W) (a.resLE U (i ⁻¹ᵁ W) hU)
+  let := Ideal.moduleOfSqEqBot Γ(U.toScheme, ⊤)
+    (IsFirstOrderThickening.ker_appTop_sq_eq_bot (i ∣_ W))
+  let := liftStructAddTorsor (commSq_resLE w hU hV hUV)
+  have hrange (l' : (liftSheaf f i a h).obj.obj (op W)) :
+      ⊤ ≤ (liftSheafObjEquiv f i a h W l').1 ⁻¹ᵁ U :=
+    (Scheme.Opens.ι_preimage_self W).ge.trans (preimage_ι_le_preimage_liftSheafObjEquiv hU l')
+  refine Derivation.ext fun y ↦ Subtype.ext ?_
+  obtain ⟨x, rfl⟩ : ∃ x, U.ι.appLE U ⊤ (by simp) x = y :=
+    ⟨U.topIso.hom y, by rw [ι_appLE_top, Iso.hom_inv_id_apply]⟩
+  rw [liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub w hU hV hUV l₁ l₂ (hrange l₁)
+    (hrange l₂) x, coe_liftDerivationChart_apply, ι_appLE_top, Iso.inv_hom_id_apply]
+  have key := congrArg (W.toScheme.presheaf.map (homOfLE (Scheme.Opens.ι_preimage_self W).ge).op)
+    ((liftSheafSub_apply_eq_iff l₁ l₂ ⟨(U, W), le_rfl, hU⟩ x _).1 rfl)
+  rw [Scheme.Hom.appLESub_map, ← CommRingCat.comp_apply, ← Scheme.Hom.appLE, ι_appLE_top] at key
+  exact key.symm
 
 /-- Over an affine open `W` of `T'` with affine charts `U ⊆ X`, `V ⊆ S` (`a (i ⁻¹ W) ⊆ U`,
 `h W ⊆ V`, `f U ⊆ V`), every derivation `D` over `W` is the difference `liftSheafSub l l₀` of a
@@ -519,29 +579,9 @@ theorem exists_liftSheafSub_eq_of_isAffine [IsAffine W.toScheme] [IsAffine U.toS
   have : (commSq_resLE w hU hV hUV).HasLift := ⟨⟨liftSheafObjEquivLiftStruct w hU hV hUV l₀⟩⟩
   let := liftStructAddTorsor (commSq_resLE w hU hV hUV)
   set e := liftSheafObjEquivLiftStruct w hU hV hUV
-  set d := chartDerivation w hU hV hUV l₀ D
-  refine ⟨e.symm (d +ᵥ e l₀), ?_⟩
-  set l := e.symm (d +ᵥ e l₀)
-  rw [← sub_eq_zero]
-  refine liftDerivation_eq_zero_of_isAffineOpen l₀ (inferInstance : IsAffine U.toScheme) hU _
-    fun V' hV' x ↦ ?_
-  -- The component on `(U, V')` is the restriction of the component on `(U, W)`.
-  have hE := (isLiftDerivation_coe (liftSheafSub l l₀ - D)).map_apply ⟨(U, W), le_rfl, hU⟩ V'
-    hV' x
-  refine hE.symm.trans ?_
-  suffices h0 : (liftSheafSub l l₀ - D).1 ⟨(U, W), le_rfl, hU⟩ x = 0 by rw [h0, map_zero]
-  rw [AddSubgroup.coe_sub, Pi.sub_apply, AddMonoidHom.sub_apply, sub_eq_zero,
-    liftSheafSub_apply_eq_iff]
-  -- Compare both sides on `⊤ = W ⁻¹ W`.
-  have hrange (l' : (liftSheaf f i a h).obj.obj (op W)) :
-      ⊤ ≤ (liftSheafObjEquiv f i a h W l').1 ⁻¹ᵁ U :=
-    (Scheme.Opens.ι_preimage_self W).ge.trans (preimage_ι_le_preimage_liftSheafObjEquiv hU l')
-  refine map_homOfLE_injective (Z := W.toScheme) (Scheme.Opens.ι_preimage_self W).ge le_top ?_
-  rw [Scheme.Hom.appLESub_map, ← CommRingCat.comp_apply, ← Scheme.Hom.appLE,
-    ι_appLE_top, ← liftSheafObjEquivLiftStruct_vsub_apply_eq_appLESub w hU hV hUV l l₀
-      (hrange l) (hrange l₀) x, Equiv.apply_symm_apply, vadd_vsub]
-  change chartFun hU D (U.ι.appLE U ⊤ _ x) = _
-  rw [chartFun, ι_appLE_top, Iso.inv_hom_id_apply]
+  refine ⟨e.symm (liftDerivationChart w hU hV hUV l₀ D +ᵥ e l₀),
+    liftDerivationChart_injective w hU hV hUV l₀ ?_⟩
+  rw [liftDerivationChart_liftSheafSub, Equiv.apply_symm_apply, vadd_vsub]
 
 omit [IsFirstOrderThickening i] in
 /-- Restricting a section of the sheaf of lifts twice is restricting it once. -/

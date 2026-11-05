@@ -95,7 +95,7 @@ theorem liftDerivationSubgroupRestrict_smul {W W' : T'.Opens} (e : W' ≤ W) (t 
 
 /-- The sheaf of derivations of `a⁻¹ 𝒪_X` over `𝒪_S` into the ideal of `i`, as a sheaf of
 `𝒪_{T'}`-modules: a section `t` of `𝒪_{T'}` over `W` acts by `(t • D) U V x = t|_V * D U V x`. -/
-noncomputable def liftDerivationModule : T'.Modules where
+@[expose] noncomputable def liftDerivationModule : T'.Modules where
   val :=
     letI (W : T'.Opensᵒᵖ) :
         Module (T'.ringCatSheaf.obj.obj W) ((liftDerivationPresheaf f i a).obj W) :=
