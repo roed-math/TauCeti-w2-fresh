@@ -24,11 +24,11 @@ Since `g^* 𝒪_E(n[0])` is `𝒪_{E'}(n[0])`
 (`TauCeti.AlgebraicGeometry.EllipticCurveGeom.pullback_mk_poleSheaf_of_isPullback`), the formation
 of `π_* 𝒪_E(n[0])` commutes with arbitrary base change.
 
-By `TauCeti.AlgebraicGeometry.isIso_pushforwardBaseChange_app_of_bijective` it suffices to check
-the base change property on sections over a basis of affine opens. We use the images `V` of the
-bases of the pointed Weierstrass charts `k` of `E'` whose bases map over `f` into the base `U` of a
-chart `c` of `E`. Over such a pair the restrictions of `E` and `E'` are the projective models of
-the chart equations, the second the base change of the first
+By `AlgebraicGeometry.Scheme.Modules.isIso_pushforwardBaseChange_app_of_bijective` it suffices to
+check the base change property on sections over a basis of affine opens. We use the images `V` of
+the bases of the pointed Weierstrass charts `k` of `E'` whose bases map over `f` into the base `U`
+of a chart `c` of `E`. Over such a pair the restrictions of `E` and `E'` are the projective models
+of the chart equations, the second the base change of the first
 (`TauCeti.AlgebraicGeometry.PointedWeierstrassChart.isPullback_modelMap`), and the base change
 property is cohomology and base change for `H⁰` of the pole sheaf of a Weierstrass model
 (`WeierstrassCurve.bijective_cohomologyBaseChange_zero_poleSheaf`). The rings of the charts are
@@ -427,7 +427,7 @@ theorem isIso_pushforwardBaseChange_app_poleSheaf {n : ℕ} (hn : 0 < n) :
   choose Φ hΦ hbij using fun p : ι ↦
     exists_bijective_pullbackSectionsLE_poleSheaf hg p.2.2.2 hn
   exact isIso_pushforwardBaseChange_app_of_bijective hg.toCommSq _
-    (U := fun p : ι ↦ p.2.1.baseMap.opensRange) (V := fun p : ι ↦ p.1.baseMap.opensRange)
+    (W := fun p : ι ↦ p.2.1.baseMap.opensRange) (W' := fun p : ι ↦ p.1.baseMap.opensRange)
     (fun _ ↦ isAffineOpen_opensRange _) (fun _ ↦ isAffineOpen_opensRange _)
     (fun p ↦ PointedWeierstrassChart.opensRange_le_preimage_opensRange p.2.2.2) hB Φ hΦ hbij
 
