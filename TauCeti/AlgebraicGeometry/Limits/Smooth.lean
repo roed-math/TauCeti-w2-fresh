@@ -97,26 +97,10 @@ theorem exists_pullback_fst_of_isLimit_of_isPullback (P : MorphismProperty Schem
   -- The isomorphism `e` over `S` descends to a morphism `b` over some `Sⱼ`, which is an
   -- isomorphism over some later `Sₗ`.
   obtain ⟨j, hjk, b, hb₁, hb₂⟩ := exists_pullbackMap_comp_eq_of_isLimit hc e.hom he
-  let ψ {Z : Scheme.{u}} (s : Z ⟶ D.obj k) :
-      pullback (c.π.app j) (pullback.fst (D.map hjk) s) ≅ pullback (c.π.app k) s :=
-    pullbackRightPullbackFstIso (D.map hjk) s (c.π.app j) ≪≫ pullback.congrHom (c.w hjk) rfl
   have : IsIso (pullback.map (c.π.app j) (pullback.fst (D.map hjk) p) (c.π.app j)
-      (pullback.fst (D.map hjk) r) (𝟙 _) b (𝟙 _) (by simp) (by simp [hb₁])) := by
-    have : pullback.map (c.π.app j) (pullback.fst (D.map hjk) p) (c.π.app j)
-        (pullback.fst (D.map hjk) r) (𝟙 _) b (𝟙 _) (by simp) (by simp [hb₁]) =
-        (ψ p).hom ≫ e.hom ≫ (ψ r).inv := by
-      rw [← Category.assoc, Iso.eq_comp_inv]
-      apply pullback.hom_ext
-      · simp [ψ, he]
-      · have h := congrArg (· ≫ pullback.snd (D.map hjk) r) hb₂
-        simp only [Category.assoc, pullback.lift_snd, Category.comp_id] at h
-        have key : (ψ p).hom ≫ pullback.map (c.π.app k) p (D.map hjk) p (c.π.app j) (𝟙 _) (𝟙 _)
-            (by simp) (by simp) = pullback.snd _ _ := by
-          apply pullback.hom_ext <;> simp [ψ, pullback.condition]
-        rw [Category.assoc, Category.assoc, ← h, reassoc_of% key]
-        simp [ψ]
-    rw [this]
-    infer_instance
+      (pullback.fst (D.map hjk) r) (𝟙 _) b (𝟙 _) (by simp) (by simp [hb₁])) :=
+    (pullbackMap_iff_of_pullbackMap_comp_eq (MorphismProperty.isomorphisms _) hjk he hb₁
+      hb₂).mpr (inferInstanceAs (IsIso e.hom))
   obtain ⟨l, hlj, hl⟩ := exists_isIso_pullbackMap_of_isLimit hc b hb₁
   refine ⟨l, (hlj ≫ hjk) ≫ hki, ?_⟩
   have h : P (pullback.fst (D.map hlj) (pullback.fst (D.map hjk) r)) :=

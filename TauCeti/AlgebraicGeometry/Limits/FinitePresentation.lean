@@ -36,6 +36,8 @@ composites, being the identity over the limit, are the identity at some later st
 * `TauCeti.AlgebraicGeometry.Scheme.exists_pullbackMap_comp_eq_of_isLimit`: a morphism over the
   limit between base changes of schemes over `Dᵢ`, the target of finite presentation, descends to
   some `Dⱼ`.
+* `TauCeti.AlgebraicGeometry.Scheme.pullbackMap_iff_of_pullbackMap_comp_eq`: the base change to the
+  limit of such a descended morphism is the original morphism, up to isomorphism.
 * `TauCeti.AlgebraicGeometry.Scheme.exists_isIso_pullbackMap_of_isLimit`: a morphism of schemes
   of finite presentation over `Dᵢ` whose base change to the limit is an isomorphism is an
   isomorphism over some `Dⱼ`.
@@ -111,6 +113,41 @@ theorem exists_pullbackMap_comp_eq_of_isLimit [∀ i, CompactSpace (D.obj i)]
   · simp [reassoc_of% ha]
   · rw [Category.assoc, pullback.lift_snd]
     exact hg'₁.trans (by simp)
+
+omit [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] in
+/-- Let `c` be a cone over `D`, and let `b : X ×_{Dᵢ} Dⱼ ⟶ Y ×_{Dᵢ} Dⱼ` over `Dⱼ` descend a morphism
+`a : X ×_{Dᵢ} S ⟶ Y ×_{Dᵢ} S` over `S`, as in `exists_pullbackMap_comp_eq_of_isLimit`. Then the
+base change of `b` to `S` is `a` up to the canonical isomorphisms, so it has every property of
+morphisms respecting isomorphisms that `a` has. -/
+theorem pullbackMap_iff_of_pullbackMap_comp_eq (P : MorphismProperty Scheme.{u}) [P.RespectsIso]
+    {i j : I} (hji : j ⟶ i) {X Y : Scheme.{u}} {p : X ⟶ D.obj i} {q : Y ⟶ D.obj i}
+    {a : pullback (c.π.app i) p ⟶ pullback (c.π.app i) q}
+    (ha : a ≫ pullback.fst _ _ = pullback.fst _ _)
+    {b : pullback (D.map hji) p ⟶ pullback (D.map hji) q}
+    (hb₁ : b ≫ pullback.fst _ _ = pullback.fst _ _)
+    (hb₂ : pullback.map (c.π.app i) p (D.map hji) p (c.π.app j) (𝟙 X) (𝟙 _) (by simp) (by simp) ≫
+      b = a ≫ pullback.map (c.π.app i) q (D.map hji) q (c.π.app j) (𝟙 Y) (𝟙 _) (by simp)
+        (by simp)) :
+    P (pullback.map (c.π.app j) (pullback.fst (D.map hji) p) (c.π.app j)
+      (pullback.fst (D.map hji) q) (𝟙 _) b (𝟙 _) (by simp) (by simp [hb₁])) ↔ P a := by
+  -- `S ×_{Dⱼ} (Dⱼ ×_{Dᵢ} Z) ≅ S ×_{Dᵢ} Z`.
+  let ψ {Z : Scheme.{u}} (s : Z ⟶ D.obj i) :
+      pullback (c.π.app j) (pullback.fst (D.map hji) s) ≅ pullback (c.π.app i) s :=
+    pullbackRightPullbackFstIso (D.map hji) s (c.π.app j) ≪≫ pullback.congrHom (c.w hji) rfl
+  have : pullback.map (c.π.app j) (pullback.fst (D.map hji) p) (c.π.app j)
+      (pullback.fst (D.map hji) q) (𝟙 _) b (𝟙 _) (by simp) (by simp [hb₁]) =
+      (ψ p).hom ≫ a ≫ (ψ q).inv := by
+    rw [← Category.assoc, Iso.eq_comp_inv]
+    apply pullback.hom_ext
+    · simp [ψ, ha]
+    · have h := congrArg (· ≫ pullback.snd (D.map hji) q) hb₂
+      simp only [Category.assoc, pullback.lift_snd, Category.comp_id] at h
+      have key : (ψ p).hom ≫ pullback.map (c.π.app i) p (D.map hji) p (c.π.app j) (𝟙 _) (𝟙 _)
+          (by simp) (by simp) = pullback.snd _ _ := by
+        apply pullback.hom_ext <;> simp [ψ, pullback.condition]
+      rw [Category.assoc, Category.assoc, ← h, reassoc_of% key]
+      simp [ψ]
+  rw [this, P.cancel_left_of_respectsIso, P.cancel_right_of_respectsIso]
 
 include hc in
 /-- Let `S = lim Dⱼ` be a cofiltered limit of quasi-compact quasi-separated schemes with affine
