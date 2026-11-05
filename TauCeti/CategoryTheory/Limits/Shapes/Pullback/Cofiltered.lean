@@ -7,6 +7,7 @@ module
 
 public import Mathlib.CategoryTheory.Limits.Constructions.Over.Connected
 public import Mathlib.CategoryTheory.Filtered.Final
+public import Mathlib.CategoryTheory.Limits.Shapes.Pullback.IsPullback.Basic
 
 /-!
 # Base change of a cofiltered limit
@@ -119,5 +120,36 @@ noncomputable def IsLimit.pullbackOver [IsCofilteredOrEmpty I] {c : Cone D}
           exact congr(($hm').left)
         · simp [← hm o]
           rfl }
+
+/-- Let `α : F ⟶ G` be a natural transformation of cofiltered diagrams whose naturality squares are
+pullbacks. Then a limit of `F` is the base change along `α i : F i ⟶ G i` of a limit of `G`: for
+limit cones `cF` and `cG`, the square formed by `cF.π i`, `α i`, `cG.π i` and the induced map
+`cF.pt ⟶ cG.pt` is a pullback. -/
+theorem IsLimit.isPullback_of_isPullback_naturality [IsCofilteredOrEmpty I] {F G : I ⥤ C}
+    (α : F ⟶ G) (hα : ∀ {j k : I} (f : j ⟶ k), IsPullback (F.map f) (α.app j) (α.app k) (G.map f))
+    {cF : Cone F} (hcF : IsLimit cF) {cG : Cone G} (hcG : IsLimit cG) (i : I) :
+    IsPullback (cF.π.app i) (hcG.lift ((Cone.postcompose α).obj cF)) (α.app i) (cG.π.app i) := by
+  -- Over `i`, the members of `F` are the base changes along `α i` of those of `G`.
+  let e : Over.forget i ⋙ F ≅ G.pullbackOver (α.app i) :=
+    NatIso.ofComponents (fun j ↦ (hα j.hom).flip.isoPullback) fun {j k} f ↦ by
+      apply pullback.hom_ext
+      · simp [Functor.pullbackOver]
+      · simp [Functor.pullbackOver, ← F.map_comp]
+  have hF : IsLimit ((Cone.postcompose e.hom).obj (cF.whisker (Over.forget i))) :=
+    (IsLimit.postcomposeHomEquiv e _).symm
+      ((Functor.Initial.isLimitWhiskerEquiv (Over.forget i) cF).symm hcF)
+  let m : cF.pt ⟶ pullback (cG.π.app i) (α.app i) :=
+    pullback.lift (hcG.lift ((Cone.postcompose α).obj cF)) (cF.π.app i) (by simp)
+  let φ : (Cone.postcompose e.hom).obj (cF.whisker (Over.forget i)) ⟶
+      cG.pullbackOver (α.app i) :=
+    { hom := m
+      w j := by
+        apply pullback.hom_ext
+        · simp [m, e]
+        · simp [m, e] }
+  have : IsIso m := by
+    have := IsLimit.hom_isIso hF (hcG.pullbackOver (α.app i)) φ
+    exact (inferInstance : IsIso ((Cone.forget _).map φ))
+  exact (IsPullback.of_iso_pullback ⟨by simp⟩ (asIso m) (by simp [m]) (by simp [m])).flip
 
 end CategoryTheory.Limits

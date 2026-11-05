@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.Algebra.Category.Ring.FilteredColimits
+public import Mathlib.CategoryTheory.Filtered.Final
 public import Mathlib.CategoryTheory.Limits.Types.Filtered
 public import Mathlib.RingTheory.Adjoin.FG
 
@@ -29,6 +30,7 @@ This is the index category of the extension step in the proof of Stacks, Proposi
 
 * `TauCeti.CommRingCat.FGSubringPair`: the category of pairs.
 * `TauCeti.CommRingCat.FGSubringPair.isCofiltered`: it is cofiltered.
+* `TauCeti.CommRingCat.FGSubringPair.proj`: the projection to `I`, which is initial.
 * `TauCeti.CommRingCat.FGSubringPair.ring`: the functor of subrings.
 * `TauCeti.CommRingCat.FGSubringPair.isColimitCocone`: if a cocone on `F` is a colimit in the
   sense that every element of its point comes from some `F j` and every element of `F j` mapping
@@ -121,6 +123,21 @@ instance [Nonempty I] : Nonempty (FGSubringPair F s) := by
 /-- The category of pairs over a cofiltered category is cofiltered. -/
 instance isCofiltered [IsCofiltered I] : IsCofiltered (FGSubringPair F s) where
   nonempty := have : Nonempty I := IsCofiltered.nonempty; inferInstance
+
+/-- The functor sending a pair `(j, C)` to its index `j`. -/
+@[simps]
+def proj : FGSubringPair F s ⥤ I where
+  obj a := a.idx
+  map f := f.1
+
+/-- The projection from the pairs to a cofiltered category is initial. -/
+instance initial_proj [IsCofilteredOrEmpty I] : (proj (F := F) (s := s)).Initial :=
+  Functor.initial_of_exists_of_isCofiltered _
+    (fun j ↦ ⟨⟨j, Algebra.adjoin ℤ (s j : Set (F.obj (op j))), Subalgebra.fg_adjoin_finset _,
+      Algebra.subset_adjoin⟩, ⟨𝟙 j⟩⟩)
+    fun {_ a} f g ↦ by
+      obtain ⟨j, h, hh⟩ := IsCofilteredOrEmpty.cone_maps f g
+      exact ⟨ofMaps a a h h, ofMapsFst a a h h, hh⟩
 
 /-- The ring map `C ⟶ C'` along a morphism `(j', C') ⟶ (j, C)`, induced by `F j ⟶ F j'`. -/
 def ringHom {a b : FGSubringPair F s} (f : a ⟶ b) :

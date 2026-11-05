@@ -40,6 +40,8 @@ global functions of the base change.
 * `CategoryTheory.IsPullback.isIso_appLE`: in a pullback square of the inclusion of an open `U`
   along `f`, pullback along the top morphism identifies the functions on `f ⁻¹ᵁ U` with the
   global functions of the base change.
+* `CategoryTheory.IsPullback.opensRange_snd`: the range of the base change of an open immersion
+  is the preimage of its range.
 -/
 
 public section
@@ -156,5 +158,18 @@ theorem IsPullback.isIso_appLE (h : IsPullback j g f U.ι) :
     (Scheme.Hom.appLE_congr _ le_rfl rfl e.hom.preimage_top fun φ ↦ IsIso φ).mp
       (by rw [Scheme.Hom.appLE_eq_app]; infer_instance)
   infer_instance
+
+/-- In a pullback square along an open immersion `f`, the range of the base change of `f` along
+`g` is the preimage under `g` of the range of `f`. -/
+theorem IsPullback.opensRange_snd {P A B Z : Scheme.{u}} {fst : P ⟶ A}
+    {snd : P ⟶ B} {f : A ⟶ Z} {g : B ⟶ Z} [IsOpenImmersion f] (h : IsPullback fst snd f g)
+    [IsOpenImmersion snd] : snd.opensRange = g ⁻¹ᵁ f.opensRange := by
+  refine le_antisymm ?_ fun x hx ↦ ?_
+  · rintro _ ⟨y, rfl⟩
+    exact ⟨fst y, by rw [← Scheme.Hom.comp_apply, h.w, Scheme.Hom.comp_apply]⟩
+  · obtain ⟨z, rfl⟩ : x ∈ Set.range (Limits.pullback.snd f g) := by
+      rw [IsOpenImmersion.range_pullbackSnd]
+      exact hx
+    exact ⟨h.isoPullback.inv z, by rw [← Scheme.Hom.comp_apply, h.isoPullback_inv_snd]⟩
 
 end CategoryTheory
