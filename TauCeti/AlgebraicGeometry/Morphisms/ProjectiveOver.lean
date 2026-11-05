@@ -11,6 +11,7 @@ public import TauCeti.AlgebraicGeometry.Morphisms.Projective
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ClosedImmersion
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ProjectiveOver
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.SymmetricBaseChange
+public import TauCeti.AlgebraicGeometry.RelativeProj.Pullback
 public import TauCeti.RingTheory.GradedAlgebra.DegreeOne
 
 /-!
@@ -61,11 +62,15 @@ along `Spec Γ(S, U) ≅ U ⊆ S`, and hence along every morphism `Spec R ⟶ Sp
   `X ⟶ S` along `Spec Γ(S, U) ⟶ S`, for an affine open `U`, and along `Spec R ⟶ Spec Γ(S, U) ⟶ S`
   is projective. In particular, over an affine base, projectivity is stable under base change
   along every morphism from the spectrum of a ring (`isProjective_pullback_snd_of_isAffine`).
+* `TauCeti.AlgebraicGeometry.isProjective_relativeProjToBase_pullback`: the relative `Proj` of the
+  pullback of a graded algebra generated in degree one, of finite type and with finite degree-zero
+  part, is projective.
 -/
 
 public section
 
 open CategoryTheory CategoryTheory.Limits Opposite AlgebraicGeometry TauCeti.SymmetricAlgebra
+open scoped DirectSum
 
 namespace TauCeti.AlgebraicGeometry
 
@@ -386,6 +391,23 @@ theorem isProjective_pullback_snd_of_isAffine {X S : Scheme.{u}} [IsAffine S] (f
     (Spec.preimage (g ≫ S.isoSpec.hom))
   rwa [Spec.map_preimage, IsAffineOpen.fromSpec_top, Category.assoc, Iso.hom_inv_id,
     Category.comp_id] at this
+
+/-- **The relative `Proj` of a pulled-back graded algebra is projective**: if a graded
+quasicoherent algebra `A` on `S` is generated in degree one and of finite type with finite
+degree-zero part over every affine open, then for every morphism `g : S' ⟶ S` the relative `Proj`
+of its pullback `g^* A` is projective over `S'`. The three conditions pass to `g^* A`
+(`GradedQuasicoherentAlgebra.isGeneratedInDegreeOne_pullback`,
+`GradedQuasicoherentAlgebra.finiteType_pullback_sections_of_isAffineOpen` and
+`GradedQuasicoherentAlgebra.finite_pullback_sections_zero_of_isAffineOpen`). -/
+theorem isProjective_relativeProjToBase_pullback {S S' : Scheme.{u}} (g : S' ⟶ S)
+    (A : GradedQuasicoherentAlgebra S) (hA : A.obj.IsGeneratedInDegreeOne)
+    (h : ∀ U : S.Opens, IsAffineOpen U → Algebra.FiniteType Γ(S, U) (⨁ n, Γ(A.obj.X n, U)))
+    (h₀ : ∀ U : S.Opens, IsAffineOpen U → Module.Finite Γ(S, U) Γ(A.obj.X 0, U)) :
+    IsProjective ((GradedQuasicoherentAlgebra.pullback g).obj A).obj.relativeProjToBase :=
+  isProjective_relativeProjToBase _
+    (GradedQuasicoherentAlgebra.isGeneratedInDegreeOne_pullback g A hA)
+    (fun _ ↦ GradedQuasicoherentAlgebra.finiteType_pullback_sections_of_isAffineOpen g A h)
+    fun _ ↦ GradedQuasicoherentAlgebra.finite_pullback_sections_zero_of_isAffineOpen g A h₀
 
 /-- **Projectivity over a ring is projectivity over its spectrum**: a scheme `X` over `Spec R` is a
 closed subscheme over `R` of `Proj (Sym_R M)` for a finite `R`-module `M` if and only if
