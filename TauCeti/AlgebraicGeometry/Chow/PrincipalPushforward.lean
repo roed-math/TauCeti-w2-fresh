@@ -35,6 +35,10 @@ The coefficients are compared one point `y ∈ Y` at a time.
   of `y`, hence also its codimension (`TauCeti.AlgebraicGeometry.coheight_apply_eq_coheight`), so
   `r` has order zero at `x`.
 
+Since pushforward preserves degrees, a principal divisor and the principal divisor of its norm
+have the same degree (`Chow.degree_div_eq_degree_div_norm`): on curves, the degree of principal
+divisors can be computed after a finite map to another curve.
+
 For a proper morphism `f` from an integral scheme whose image has the same dimension,
 `Chow.map_height_div_eq_map_imageι` applies this to the factorization of `f` through its integral
 scheme-theoretic image: `f_* div(r)` is `div(N(r))` on `f(X)`, pushed into `Y`. When instead the
@@ -95,6 +99,19 @@ theorem map_height_div (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f] [IsD
     · rw [Scheme.ord_eq_zero_of_coheight_neq_one, zero_mul]
       rwa [← coheight_apply_eq_coheight k f h
         (height_apply_eq_height_of_residueDegree_ne_zero k f hd)]
+
+/-- **Degrees of principal divisors and norms.** Let `f : X ⟶ Y` be a proper dominant morphism
+over a field `k` of quasi-compact integral schemes locally of finite type over `k`, of the same
+dimension. For a nonzero rational function `r` on `X`, the principal cycle of `r` and that of its
+norm `N_{K(X)/K(Y)}(r)` have the same degree over `k`. -/
+theorem degree_div_eq_degree_div_norm [CompactSpace X] [CompactSpace Y] (f : X ⟶ Y)
+    [f.IsOver (Spec (.of k))] [IsProper f] [IsDominant f]
+    (h : topologicalKrullDim X = topologicalKrullDim Y) (r : X.functionFieldˣ) :
+    letI := f.functionFieldMap.hom.toAlgebra
+    AlgebraicCycle.degree (X ↘ Spec (.of k)) (AlgebraicCycle.div r) =
+      AlgebraicCycle.degree (Y ↘ Spec (.of k)) (AlgebraicCycle.div
+        (Units.map (Algebra.norm Y.functionField (S := X.functionField)) r)) := by
+  rw [← map_height_div k f h r, degree_map_height k f]
 
 omit [IsIntegral Y] in
 /-- **Proper pushforward of a principal divisor through the image.** Let `f : X ⟶ Y` be a proper

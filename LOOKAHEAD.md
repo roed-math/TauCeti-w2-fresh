@@ -146,7 +146,7 @@ session replaced those proofs by stubs, so the branch no longer duplicates the s
 
 ### Split 1: `feat: pushforward of cycles over a field and degree of zero-cycles` (after: none; needs PR #27340 on `main`)
 
-Proved on this branch, about 390 lines.
+Proved on this branch, about 400 lines.
 
 - `TauCeti/Algebra/BigOperators/Finprod.lean`: `TauCeti.finprod_mem_fiberwise` /
   `TauCeti.finsum_mem_fiberwise`. These regroup a product over a preimage `g ⁻¹' t` by the
@@ -175,8 +175,11 @@ Proved on this branch, about 390 lines.
     `k`, with `coe_cyclesMap`, `cyclesMap_apply`, `cyclesMap_id`, `cyclesMap_comp`, and
     `cyclesMap_eq_cyclesPushforward` (agreement with `main`'s closed-immersion pushforward)
   - `cyclesDegree k X : cyclesOfDimension X 0 →+ ℤ` (Mathlib's `AlgebraicCycle.degree` of the
-    structure morphism) for quasi-compact `X`, with `cyclesDegree_apply`,
-    `cyclesDegree_eq_cyclesMap_apply`, and `cyclesDegree_cyclesMap` (`deg f_* α = deg α`).
+    structure morphism) for quasi-compact `X`, with `cyclesDegree_apply`;
+  - `degree_eq_map_height_apply` (the degree of any cycle is the coefficient of its pushforward
+    to `Spec k`) and `degree_map_height` (`deg f_* α = deg α` for every cycle `α`, along a
+    quasi-compact `f` over `k` between quasi-compact schemes), with its zero-cycle case
+    `cyclesDegree_cyclesMap`.
 
 ### Split 2: `feat: cokernel length of injective endomorphisms` (after: none)
 
@@ -349,7 +352,7 @@ Proved on this branch, about 315 lines, no stubs. It needs only split 5 (and `ma
 
 ### Split 8: `feat: proper pushforward of a principal divisor is the divisor of the norm` (after: 1, 6, 7)
 
-Proved on this branch, about 230 lines, no new stubs (it uses the supplier stub through
+Proved on this branch, about 245 lines, no new stubs (it uses the supplier stub through
 `LocalDimension.lean`, like splits 1 and 6).
 
 - `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (namespace `TauCeti.AlgebraicGeometry`):
@@ -365,7 +368,7 @@ Proved on this branch, about 230 lines, no new stubs (it uses the supplier stub 
 - `TauCeti/AlgebraicGeometry/SchemeTheoreticImage/Basic.lean` (namespace
   `AlgebraicGeometry.Scheme.Hom`): instances `isIntegral_image` (the scheme-theoretic image of a
   quasi-compact morphism from an integral scheme is integral) and `isLocallyNoetherian_image`.
-- `TauCeti/AlgebraicGeometry/Chow/PrincipalPushforward.lean` (new, 140 lines, namespace
+- `TauCeti/AlgebraicGeometry/Chow/PrincipalPushforward.lean` (new, 188 lines with the split 9 lemma below, namespace
   `TauCeti.AlgebraicGeometry.Chow`):
   - `map_height_div` (Fulton, Proposition 1.4(b)): for `f : X ⟶ Y` proper and dominant over `k`
     between integral schemes locally of finite type over `k` with `dim X = dim Y`, and
@@ -380,6 +383,10 @@ Proved on this branch, about 230 lines, no new stubs (it uses the supplier stub 
     `height (f η_X) = height η_X`, `f_* div r = (f.imageι)_* div N_{K(X)/K(f(X))}(r)`: split 8's
     main theorem applied to `f.toImage`, which is proper and dominant onto the integral image of
     the same dimension. This is the form split 10 uses on each summand `(i_j ≫ f)_* div r_j`.
+  - `degree_div_eq_degree_div_norm`: for `f` as in `map_height_div`, with `X` and `Y`
+    quasi-compact, `deg div r = deg div N(r)` (`map_height_div` with split 1's
+    `degree_map_height`). This is Fulton's reduction in the proof of Proposition 1.4(a): the
+    degree of a principal divisor on a proper curve can be computed after a finite map to `ℙ¹`.
 
 ### Split 9: `feat: principal divisors push forward to zero along dimension-dropping proper maps` (after: 1, 8)
 
@@ -398,6 +405,24 @@ divisor of `r` on the generic fibre, a proper curve over `κ(f η_W)`. That this
 the generic fibre with its local rings (`𝒪_{W_η, x} = 𝒪_{W, x}`), and either a finite morphism
 of the curve to `ℙ¹` given by `r` (to which split 8 applies, the norm of `r` being `t^d` with
 degree-zero divisor) or Fulton's closure of the graph of `r`; none of this is on `main`.
+
+A concrete route, using what `main` now has:
+
+1. The generic fibre `W_η` of `W ⟶ f(W)` as a proper integral curve over `K(f(W))`, with the
+   points of `f⁻¹(f η_W)` as its points and the same local rings and residue degrees
+   (`TauCeti/AlgebraicGeometry/Fibers.lean` has the generic fibre of a scheme over a domain and
+   its identification with Mathlib's `Scheme.Hom.fiber`; the comparison of local rings is not
+   there). This turns the remaining coefficient into `deg_{K(f(W))} div_{W_η}(r)`.
+2. A finite dominant morphism `W_η ⟶ ℙ¹_{K(f(W))}` (`TauCeti/AlgebraicGeometry/ProjectiveSpectrum/
+   ProjectiveLine.lean` has `ℙ¹` with its two polynomial charts). Then
+   `Chow.degree_div_eq_degree_div_norm` (proved, split 8) reduces the degree to `ℙ¹`.
+3. Principal divisors on `ℙ¹_K` have degree zero. `main` proves this for proper normal curves
+   with `H¹(𝒪)` finite (`TauCeti.AlgebraicGeometry.SchemeWeilDivisor.relativeDegree_principalDivisor`);
+   it needs the discrete valuation ring stalks of `ℙ¹`, the finiteness of `H¹(ℙ¹, 𝒪)`
+   (`TauCeti/AlgebraicGeometry/Cohomology/ProjectiveLine/`), and a comparison of
+   `SchemeWeilDivisor.relativeDegree` of `principalDivisor` with Mathlib's
+   `AlgebraicCycle.degree` of `AlgebraicCycle.div`. A direct computation through the charts
+   (`div t = [0] - [∞]` after pulling back to `K[t]`) is an alternative.
 
 ### Split 10 (final): `feat: proper pushforward of Chow groups and the degree of zero-cycles` (after: 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
@@ -438,7 +463,8 @@ Proved: splits 1–8: the cycle level, the whole commutative algebra of Fulton's
 and both forms of A.3), the finiteness of a proper generically finite morphism over a
 neighbourhood of each codimension-one point, the scheme-level coefficient identity
 `ord_y N(r) = Σ_{f x = y} [κ(x) : κ(y)] ord_x(r)`, and Fulton's Proposition 1.4(b) globally
-(`Chow.map_height_div`, `Chow.map_height_div_eq_map_imageι`). Split 10 is started: the image
+(`Chow.map_height_div`, `Chow.map_height_div_eq_map_imageι`), with its consequence for degrees
+(`Chow.degree_div_eq_degree_div_norm`). Split 10 is started: the image
 family of a rational equivalence under a proper map and
 `f_* (cycle F) = cycle (map F f) + Σ_{dimension-dropping j} (i_j ≫ f)_* div(r_j)`. Split 9 is started (the
 case `dim f(W) < dim W - 1`). Remaining: the core of split 9 (Proposition

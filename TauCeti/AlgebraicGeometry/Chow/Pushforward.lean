@@ -27,7 +27,8 @@ pushforward of `k`-cycles functorial, and compatible with degrees of zero-cycles
   `Chow.cyclesMap_id` and `Chow.cyclesMap_comp`.
 * `Chow.cyclesDegree k X`: the degree `Z_0(X) →+ ℤ`, `Σ n_x [x] ↦ Σ n_x [κ(x) : k]`, of
   zero-cycles on a quasi-compact `X` (Mathlib's `AlgebraicCycle.degree` of the structure
-  morphism), with `Chow.cyclesDegree_cyclesMap`: `deg f_* α = deg α`.
+  morphism), with `Chow.cyclesDegree_cyclesMap`: `deg f_* α = deg α`, the case of zero-cycles of
+  `Chow.degree_map_height`.
 
 That proper pushforward preserves rational equivalence, and hence descends to Chow groups, is
 not proved here.
@@ -150,29 +151,37 @@ lemma cyclesDegree_apply (α : cyclesOfDimension X 0) :
       ∑ᶠ x, (X ↘ Spec (.of k)).residueDegree x • (α : AlgebraicCycle X ℤ) x :=
   (rfl)
 
-/-- The degree of a zero-cycle is the coefficient of its pushforward to `Spec k`. -/
-lemma cyclesDegree_eq_cyclesMap_apply (α : cyclesOfDimension X 0) :
-    cyclesDegree k X α =
-      (cyclesMap k (X ↘ Spec (.of k)) α : AlgebraicCycle (Spec (.of k)) ℤ) default := by
-  refine AlgebraicCycle.degree_eq_map_of_unique _ _ _ _ fun x _ hx ↦ ?_
-  exact (height_apply_eq_height_of_residueDegree_ne_zero k (X ↘ Spec (.of k)) hx).symm
+/-- The degree of a cycle on a quasi-compact scheme over `k` is the coefficient of its
+pushforward to `Spec k`. -/
+lemma degree_eq_map_height_apply (α : AlgebraicCycle X ℤ) :
+    AlgebraicCycle.degree (X ↘ Spec (.of k)) α =
+      AlgebraicCycle.map (X ↘ Spec (.of k)) height height α default :=
+  AlgebraicCycle.degree_eq_map_of_unique _ _ _ _ fun _ _ hx ↦
+    (height_apply_eq_height_of_residueDegree_ne_zero k (X ↘ Spec (.of k)) hx).symm
+
+/-- Pushforward along a morphism over `k` of quasi-compact schemes preserves the degree of
+cycles. -/
+lemma degree_map_height [CompactSpace Y] (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [QuasiCompact f]
+    (α : AlgebraicCycle X ℤ) :
+    AlgebraicCycle.degree (Y ↘ Spec (.of k)) (AlgebraicCycle.map f height height α) =
+      AlgebraicCycle.degree (X ↘ Spec (.of k)) α := by
+  -- The composite `X ⟶ Y ⟶ Spec k` is the structure morphism of `X`. After substituting it, the
+  -- two sides differ only in the (propositional) instance arguments, so they agree by `rfl`.
+  have key : ∀ (p : X ⟶ Spec (.of k)) [QuasiCompact p], p = X ↘ Spec (.of k) →
+      AlgebraicCycle.map p height height α default =
+        AlgebraicCycle.map (X ↘ Spec (.of k)) height height α default := by
+    rintro p _ rfl
+    rfl
+  rw [degree_eq_map_height_apply, degree_eq_map_height_apply, ← map_height_comp k]
+  exact key _ (comp_over f (Spec (.of k)))
 
 /-- Pushforward along a morphism over `k` of quasi-compact schemes preserves the degree of
 zero-cycles. -/
 @[simp]
 lemma cyclesDegree_cyclesMap [CompactSpace Y] (f : X ⟶ Y) [f.IsOver (Spec (.of k))]
     [QuasiCompact f] (α : cyclesOfDimension X 0) :
-    cyclesDegree k Y (cyclesMap k f α) = cyclesDegree k X α := by
-  -- The composite `X ⟶ Y ⟶ Spec k` is the structure morphism of `X`. After substituting it, the
-  -- two sides differ only in the (propositional) instance arguments, so they agree by `rfl`.
-  have key : ∀ (p : X ⟶ Spec (.of k)) [p.IsOver (Spec (.of k))] [QuasiCompact p],
-      p = X ↘ Spec (.of k) → (cyclesMap k p α : AlgebraicCycle (Spec (.of k)) ℤ) default =
-        (cyclesMap k (X ↘ Spec (.of k)) α : AlgebraicCycle (Spec (.of k)) ℤ) default := by
-    rintro p _ _ rfl
-    rfl
-  rw [cyclesDegree_eq_cyclesMap_apply, cyclesDegree_eq_cyclesMap_apply, ← AddMonoidHom.comp_apply,
-    ← cyclesMap_comp]
-  exact key _ (comp_over f (Spec (.of k)))
+    cyclesDegree k Y (cyclesMap k f α) = cyclesDegree k X α :=
+  degree_map_height k f α
 
 end Degree
 
