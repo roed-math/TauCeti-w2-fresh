@@ -45,7 +45,8 @@ constant sheaves, and it commutes with the pullbacks of sheaves along a morphism
 
 public section
 
-open CategoryTheory Limits TopologicalSpace TauCeti.AlgebraicGeometry.Scheme
+open CategoryTheory Limits Opposite GrothendieckTopology TopologicalSpace
+  TauCeti.AlgebraicGeometry.Scheme
 
 universe w w' u
 
@@ -138,6 +139,101 @@ noncomputable def nisnevichToZariskiCompEtaleToNisnevichIso
       X.restrictEtaleFunctor.sheafPullback A (Opens.grothendieckTopology X) X.smallEtaleTopology :=
   ((nisnevichToZariskiAdjunction X A).comp (etaleToNisnevichAdjunction X A)).leftAdjointUniq
     (X.restrictEtaleFunctor.sheafAdjunctionContinuous A _ _)
+
+/-- **The comparisons of constant sheaves compose**: the comparison `M_ét ⟶ ((M_Zar)^Nis)^ét`
+through the small Nisnevich site, transported along `nisnevichToZariskiCompEtaleToNisnevichIso`,
+is the comparison of constant sheaves for the pullback from the Zariski site to the small étale
+site. -/
+lemma constantSheafComp_nisnevichToZariskiCompEtaleToNisnevichIso_hom_app
+    [HasWeakSheafify (Opens.grothendieckTopology X) A] [HasWeakSheafify X.smallEtaleTopology A]
+    (M : A) :
+    (constantSheafCompEtaleToNisnevichIso X A).inv.app M ≫
+        (etaleToNisnevich X A).map ((constantSheafCompNisnevichToZariskiIso X A).inv.app M) ≫
+        (nisnevichToZariskiCompEtaleToNisnevichIso X A).hom.app _ =
+      (X.restrictEtaleFunctor.sheafPullbackConstantSheafIso A _ X.smallEtaleTopology M).inv := by
+  -- Both sides are maps out of the constant sheaf, so they agree once they agree on the constant
+  -- section over the terminal object `X`; there, each comparison is a unit of an adjunction.
+  let u := X.restrictEtaleFunctor
+  let T : Opens X := ⊤
+  let hNE := smallNisnevichTopology_le_smallEtaleTopology X
+  have hA : (CategoryTheory.toSheafify X.smallEtaleTopology ((Functor.const _).obj M)).app
+        (op (u.obj T)) ≫ ((constantSheafCompEtaleToNisnevichIso X A).inv.app M).hom.app
+        (op (u.obj T)) =
+      (CategoryTheory.toSheafify X.smallNisnevichTopology ((Functor.const _).obj M)).app
+        (op (u.obj T)) ≫ ((sheafAdjunctionOfLE A hNE).unit.app
+          ((constantSheaf X.smallNisnevichTopology A).obj M)).hom.app (op (u.obj T)) :=
+    NatTrans.congr_app (toSheafify_comp_presheafToSheafCompSheafInverseImageIso_inv_app_hom A hNE
+      ((Functor.const _).obj M)) (op (u.obj T))
+  have hB : ((sheafAdjunctionOfLE A hNE).unit.app
+        ((constantSheaf X.smallNisnevichTopology A).obj M)).hom.app (op (u.obj T)) ≫
+        ((etaleToNisnevich X A).map
+          (u.sheafPullbackConstantSheafIso A _ X.smallNisnevichTopology M).inv).hom.app
+          (op (u.obj T)) =
+      (u.sheafPullbackConstantSheafIso A _ X.smallNisnevichTopology M).inv.hom.app
+          (op (u.obj T)) ≫ ((sheafAdjunctionOfLE A hNE).unit.app ((nisnevichToZariski X A).obj
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M))).hom.app (op (u.obj T)) :=
+    have h := congrArg (fun f ↦ f.hom.app (op (u.obj T)))
+      ((sheafAdjunctionOfLE A hNE).unit.naturality (u.sheafPullbackConstantSheafIso A
+        (Opens.grothendieckTopology X) X.smallNisnevichTopology M).inv)
+    h.symm
+  have hC : (CategoryTheory.toSheafify X.smallNisnevichTopology ((Functor.const _).obj M)).app
+        (op (u.obj T)) ≫
+        (u.sheafPullbackConstantSheafIso A _ X.smallNisnevichTopology M).inv.hom.app
+          (op (u.obj T)) =
+      (CategoryTheory.toSheafify (Opens.grothendieckTopology X) ((Functor.const _).obj M)).app
+        (op T) ≫ ((u.sheafAdjunctionContinuous A (Opens.grothendieckTopology X)
+          X.smallNisnevichTopology).unit.app
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M)).hom.app (op T) :=
+    NatTrans.congr_app (u.whiskerLeft_toSheafify_comp_sheafPullbackConstantSheafIso_inv A
+      (Opens.grothendieckTopology X) X.smallNisnevichTopology M) (op T)
+  have hC' : (CategoryTheory.toSheafify X.smallEtaleTopology ((Functor.const _).obj M)).app
+        (op (u.obj T)) ≫
+        (u.sheafPullbackConstantSheafIso A _ X.smallEtaleTopology M).inv.hom.app
+          (op (u.obj T)) =
+      (CategoryTheory.toSheafify (Opens.grothendieckTopology X) ((Functor.const _).obj M)).app
+        (op T) ≫ ((u.sheafAdjunctionContinuous A (Opens.grothendieckTopology X)
+          X.smallEtaleTopology).unit.app
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M)).hom.app (op T) :=
+    NatTrans.congr_app (u.whiskerLeft_toSheafify_comp_sheafPullbackConstantSheafIso_inv A
+      (Opens.grothendieckTopology X) X.smallEtaleTopology M) (op T)
+  have hD : ((u.sheafAdjunctionContinuous A (Opens.grothendieckTopology X)
+          X.smallNisnevichTopology).unit.app
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M)).hom.app (op T) ≫
+        ((sheafAdjunctionOfLE A hNE).unit.app ((nisnevichToZariski X A).obj
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M))).hom.app (op (u.obj T)) ≫
+        ((nisnevichToZariskiCompEtaleToNisnevichIso X A).hom.app
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M)).hom.app (op (u.obj T)) =
+      ((u.sheafAdjunctionContinuous A (Opens.grothendieckTopology X)
+          X.smallEtaleTopology).unit.app
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M)).hom.app (op T) := by
+    have h := congrArg (fun f ↦ f.hom.app (op T)) (Adjunction.unit_leftAdjointUniq_hom_app
+      ((nisnevichToZariskiAdjunction X A).comp (etaleToNisnevichAdjunction X A))
+      (u.sheafAdjunctionContinuous A (Opens.grothendieckTopology X) X.smallEtaleTopology)
+      ((constantSheaf (Opens.grothendieckTopology X) A).obj M))
+    simp only [Adjunction.comp_unit_app, ObjectProperty.FullSubcategory.comp_hom,
+      NatTrans.comp_app] at h
+    exact (Category.assoc _ _ _).symm.trans h
+  have key : (CategoryTheory.toSheafify X.smallEtaleTopology ((Functor.const _).obj M)).app
+      (op (u.obj T)) ≫ (((constantSheafCompEtaleToNisnevichIso X A).inv.app M).hom.app
+        (op (u.obj T)) ≫ ((etaleToNisnevich X A).map
+          (u.sheafPullbackConstantSheafIso A _ X.smallNisnevichTopology M).inv).hom.app
+          (op (u.obj T)) ≫
+        ((nisnevichToZariskiCompEtaleToNisnevichIso X A).hom.app
+          ((constantSheaf (Opens.grothendieckTopology X) A).obj M)).hom.app (op (u.obj T))) =
+      (CategoryTheory.toSheafify X.smallEtaleTopology ((Functor.const _).obj M)).app
+        (op (u.obj T)) ≫
+        (u.sheafPullbackConstantSheafIso A _ X.smallEtaleTopology M).inv.hom.app
+          (op (u.obj T)) :=
+    -- The objects of the intermediate presheaves are only defeq to each other, so `rw` fails;
+    -- the reassociated forms of the identities are chained as terms.
+    (Category.assoc _ _ _).symm.trans ((hA =≫ _).trans ((Category.assoc _ _ _).trans
+      ((_ ≫= ((Category.assoc _ _ _).symm.trans ((hB =≫ _).trans (Category.assoc _ _ _)))).trans
+        ((Category.assoc _ _ _).symm.trans ((hC =≫ _).trans ((Category.assoc _ _ _).trans
+          ((_ ≫= hD).trans hC'.symm)))))))
+  apply ((constantSheafAdj _ A (isTerminalRestrictEtaleFunctorObjTop X)).homEquiv _ _).injective
+  rw [constantSheafCompNisnevichToZariskiIso_inv_app, Adjunction.homEquiv_unit,
+    Adjunction.homEquiv_unit, constantSheafAdj, Adjunction.comp_unit_app]
+  exact (Category.assoc _ _ _).trans ((congrArg _ key).trans (Category.assoc _ _ _).symm)
 
 end
 

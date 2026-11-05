@@ -64,7 +64,7 @@ variable [HasWeakSheafify (fppfTopology.over X) A]
 
 /-- The inverse image `ε⁻¹` of the morphism of topoi `ε` from the big fppf site to the big étale
 site over `X`: the fppf sheafification of an étale sheaf. Stacks, Section 59.100 (0DDK). -/
-noncomputable def epsilonFppfEtale :
+@[expose] noncomputable def epsilonFppfEtale :
     Sheaf (etaleTopology.over X) A ⥤
       Sheaf (fppfTopology.over X) A :=
   sheafInverseImage _ _ A
@@ -77,7 +77,7 @@ lemma epsilonFppfEtale_obj (F : Sheaf (etaleTopology.over X) A) :
 
 /-- The inverse image `ε⁻¹` is left adjoint to the direct image `ε_*`, which regards an fppf
 sheaf as an étale sheaf. -/
-noncomputable def epsilonFppfEtaleAdjunction :
+@[expose] noncomputable def epsilonFppfEtaleAdjunction :
     epsilonFppfEtale X A ⊣ sheafDirectImageOfLE A (etaleTopology_over_le_fppfTopology_over X) :=
   sheafAdjunctionOfLE A _
 
@@ -91,7 +91,7 @@ instance [HasFiniteLimits A] [HasSheafify (fppfTopology.over X) A] :
   infer_instance
 
 /-- The inverse image `ε⁻¹` sends the constant étale sheaf to the constant fppf sheaf. -/
-noncomputable def constantSheafCompEpsilonFppfEtaleIso
+@[expose] noncomputable def constantSheafCompEpsilonFppfEtaleIso
     [HasWeakSheafify (etaleTopology.over X) A] :
     constantSheaf _ A ⋙ epsilonFppfEtale X A ≅ constantSheaf _ A :=
   constantSheafCompSheafInverseImageIso A (etaleTopology_over_le_fppfTopology_over X)

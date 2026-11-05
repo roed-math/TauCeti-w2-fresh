@@ -18,8 +18,11 @@ sheaves to constant sheaves. They therefore induce pullback maps on sheaf cohomo
 * `etaleToNisnevichH X F n : Hⁿ(X_Nis, F) →+ Hⁿ(X_ét, F^ét)`,
 * `nisnevichToZariskiH X F n : Hⁿ(X_Zar, F) →+ Hⁿ(X_Nis, F^Nis)`,
 
-through `CategoryTheory.Sheaf.H.pullback`. In degree zero the pullback from the Zariski site is the
-restriction of global sections along the unit of the adjunction (`equiv₀_nisnevichToZariskiH`).
+through `CategoryTheory.Sheaf.H.pullback`. In degree zero both are the restriction of global
+sections along the unit of the adjunction (`equiv₀_etaleToNisnevichH`,
+`equiv₀_nisnevichToZariskiH`).
+Their composite is the pullback of cohomology from the Zariski site to the small étale site
+(`map_etaleToNisnevichH_nisnevichToZariskiH`).
 
 The coefficient universe `w` is arbitrary: the categories of abelian sheaves are assumed to have
 `Ext` groups and the inverse image from Zariski to Nisnevich sheaves to be exact, which is an
@@ -29,15 +32,18 @@ instance for `w = u`.
 
 * `AlgebraicGeometry.Scheme.etaleToNisnevichH`, `nisnevichToZariskiH`: the pullbacks of
   cohomology.
-* `AlgebraicGeometry.Scheme.equiv₀_nisnevichToZariskiH`: in degree zero, the pullback from the
-  Zariski site is the restriction of global sections.
+* `AlgebraicGeometry.Scheme.equiv₀_etaleToNisnevichH`, `equiv₀_nisnevichToZariskiH`: in degree
+  zero, the pullbacks are the restriction of global sections.
+* `AlgebraicGeometry.Scheme.map_etaleToNisnevichH_nisnevichToZariskiH`: the pullbacks from the
+  Zariski site to the Nisnevich site and from there to the étale site compose to the pullback from
+  the Zariski site to the étale site.
 -/
 
 public section
 
 open CategoryTheory Limits Opposite GrothendieckTopology AddCommGrpCat
 
-universe w w₁ w₂ u
+universe w w₁ w₂ w₃ u
 
 namespace AlgebraicGeometry.Scheme
 
@@ -63,6 +69,19 @@ noncomputable def etaleToNisnevichH (F : Sheaf X.smallNisnevichTopology AddCommG
     (n : ℕ) : F.H n →+ ((etaleToNisnevich X AddCommGrpCat.{w}).obj F).H n :=
   Sheaf.H.pullback _
     ((constantSheafCompEtaleToNisnevichIso X AddCommGrpCat.{w}).inv.app (of (ULift ℤ))) F n
+
+/-- In degree zero, the pullback of cohomology from the small Nisnevich site to the small étale site
+is the restriction of global sections `F(X) ⟶ F^ét(X)` along the unit of the adjunction. -/
+lemma equiv₀_etaleToNisnevichH (F : Sheaf X.smallNisnevichTopology AddCommGrpCat.{w})
+    (x : F.H 0) :
+    Sheaf.H.equiv₀ _ (isTerminalRestrictEtaleFunctorObjTop X) (etaleToNisnevichH X F 0 x) =
+      ((etaleToNisnevichAdjunction X _).unit.app F).hom.app (op (X.restrictEtaleFunctor.obj ⊤))
+        (Sheaf.H.equiv₀ F (isTerminalRestrictEtaleFunctorObjTop X) x) :=
+  have : PreservesFiniteColimits (sheafInverseImage X.smallNisnevichTopology
+      X.smallEtaleTopology AddCommGrpCat.{w}) :=
+    inferInstanceAs (PreservesFiniteColimits (etaleToNisnevich X _))
+  Sheaf.H.equiv₀_pullback_sheafInverseImage (smallNisnevichTopology_le_smallEtaleTopology X)
+    (isTerminalRestrictEtaleFunctorObjTop X) F x
 
 end Etale
 
@@ -104,6 +123,46 @@ lemma equiv₀_nisnevichToZariskiH (F : Sheaf (Opens.grothendieckTopology X) Add
     X.restrictEtaleFunctor isTerminalTop (isTerminalRestrictEtaleFunctorObjTop X) F x
   rw [nisnevichToZariskiH, constantSheafCompNisnevichToZariskiIso_inv_app]
   exact h
+
+section Etale
+
+variable [HasSheafify X.smallEtaleTopology AddCommGrpCat.{w}]
+  [HasExt.{w₃} (Sheaf X.smallEtaleTopology AddCommGrpCat.{w})]
+
+/-- The pullback of abelian sheaves from the Zariski site to the small étale site is exact, since
+it is the composite of the exact inverse images through the small Nisnevich site. -/
+instance : PreservesFiniteLimits (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{w}
+    (Opens.grothendieckTopology X) X.smallEtaleTopology) :=
+  preservesFiniteLimits_of_natIso (nisnevichToZariskiCompEtaleToNisnevichIso X AddCommGrpCat.{w})
+
+instance : (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{w}
+    (Opens.grothendieckTopology X) X.smallEtaleTopology).IsLeftAdjoint :=
+  (X.restrictEtaleFunctor.sheafAdjunctionContinuous _ _ _).isLeftAdjoint
+
+/-- The pullback of abelian sheaves from the Zariski site to the small étale site is additive. -/
+instance : (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{w}
+    (Opens.grothendieckTopology X) X.smallEtaleTopology).Additive :=
+  have := preservesBinaryBiproducts_of_preservesBinaryCoproducts
+    (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{w} (Opens.grothendieckTopology X)
+      X.smallEtaleTopology)
+  Functor.additive_of_preservesBinaryBiproducts _
+
+/-- **Composition of the pullbacks of cohomology**: the pullback of cohomology from the Zariski
+site to the small Nisnevich site, followed by the pullback to the small étale site, is the pullback
+of cohomology along the morphism of sites from the small étale site to the Zariski site, under the
+identification `nisnevichToZariskiCompEtaleToNisnevichIso` of the coefficient sheaves. -/
+theorem map_etaleToNisnevichH_nisnevichToZariskiH
+    (F : Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{w}) (n : ℕ) (x : F.H n) :
+    Sheaf.H.map ((nisnevichToZariskiCompEtaleToNisnevichIso X AddCommGrpCat.{w}).hom.app F) n
+        (etaleToNisnevichH X _ n (nisnevichToZariskiH X F n x)) =
+      Sheaf.H.pullback (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{w} _
+        X.smallEtaleTopology) (X.restrictEtaleFunctor.sheafPullbackConstantSheafIso
+          AddCommGrpCat.{w} _ X.smallEtaleTopology (of (ULift ℤ))).inv F n x := by
+  rw [etaleToNisnevichH, nisnevichToZariskiH, ← Sheaf.H.pullback_comp_apply,
+    ← Sheaf.H.pullback_natTrans_apply, Category.assoc,
+    constantSheafComp_nisnevichToZariskiCompEtaleToNisnevichIso_hom_app]
+
+end Etale
 
 end Zariski
 

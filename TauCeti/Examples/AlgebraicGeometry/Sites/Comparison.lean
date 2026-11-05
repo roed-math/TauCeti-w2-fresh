@@ -104,13 +104,17 @@ example (X : Scheme.{u}) [HasExt.{u + 1} (Sheaf X.smallEtaleTopology AddCommGrpC
   aXH_apply X F n x
 
 -- The pullback of cohomology from the Zariski site to the small Nisnevich site, followed by the
--- pullback to the small étale site.
-noncomputable example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}]
+-- pullback to the small étale site, is the pullback from the Zariski site to the small étale site.
+example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}]
     [HasExt.{u} (Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u})]
     [HasExt.{u} (Sheaf X.smallNisnevichTopology AddCommGrpCat.{u})]
     [HasExt.{u} (Sheaf X.smallEtaleTopology AddCommGrpCat.{u})]
-    (F : Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u}) (n : ℕ) :
-    F.H n →+ ((etaleToNisnevich X _).obj ((nisnevichToZariski X _).obj F)).H n :=
-  (etaleToNisnevichH X _ n).comp (nisnevichToZariskiH X F n)
+    (F : Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u}) (n : ℕ) (x : F.H n) :
+    Sheaf.H.map ((nisnevichToZariskiCompEtaleToNisnevichIso X _).hom.app F) n
+        (etaleToNisnevichH X _ n (nisnevichToZariskiH X F n x)) =
+      Sheaf.H.pullback (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{u} _
+        X.smallEtaleTopology) (X.restrictEtaleFunctor.sheafPullbackConstantSheafIso
+          AddCommGrpCat.{u} _ X.smallEtaleTopology (AddCommGrpCat.of (ULift ℤ))).inv F n x :=
+  map_etaleToNisnevichH_nisnevichToZariskiH X F n x
 
 end TauCeti.Examples

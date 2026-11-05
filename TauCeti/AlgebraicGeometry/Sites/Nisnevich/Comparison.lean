@@ -51,7 +51,7 @@ variable [HasWeakSheafify X.smallEtaleTopology A]
 
 /-- The inverse image of the morphism of topoi from the small étale site to the small Nisnevich
 site of `X`: the étale sheafification of a Nisnevich sheaf. -/
-noncomputable def etaleToNisnevich :
+@[expose] noncomputable def etaleToNisnevich :
     Sheaf (smallNisnevichTopology X) A ⥤ Sheaf X.smallEtaleTopology A :=
   sheafInverseImage _ _ A
 
@@ -63,7 +63,7 @@ lemma etaleToNisnevich_obj (F : Sheaf (smallNisnevichTopology X) A) :
 
 /-- The inverse image from Nisnevich sheaves to étale sheaves is left adjoint to the direct image,
 which regards an étale sheaf as a Nisnevich sheaf. -/
-noncomputable def etaleToNisnevichAdjunction :
+@[expose] noncomputable def etaleToNisnevichAdjunction :
     etaleToNisnevich X A ⊣
       sheafDirectImageOfLE A (smallNisnevichTopology_le_smallEtaleTopology X) :=
   sheafAdjunctionOfLE A _
@@ -79,7 +79,7 @@ instance [HasFiniteLimits A] [HasSheafify X.smallEtaleTopology A] :
 
 /-- The inverse image from Nisnevich sheaves to étale sheaves sends the constant Nisnevich sheaf
 to the constant étale sheaf. -/
-noncomputable def constantSheafCompEtaleToNisnevichIso
+@[expose] noncomputable def constantSheafCompEtaleToNisnevichIso
     [HasWeakSheafify (smallNisnevichTopology X) A] :
     constantSheaf _ A ⋙ etaleToNisnevich X A ≅ constantSheaf _ A :=
   constantSheafCompSheafInverseImageIso A (smallNisnevichTopology_le_smallEtaleTopology X)

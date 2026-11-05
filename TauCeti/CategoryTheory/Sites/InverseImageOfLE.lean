@@ -155,6 +155,27 @@ noncomputable def presheafToSheafCompSheafInverseImageIso [HasWeakSheafify J A]
   ((sheafificationAdjunction J A).comp (sheafAdjunctionOfLE A h)).leftAdjointUniq
     (sheafificationAdjunction K A)
 
+/-- The comparison `P^K ⟶ (P^J)^K` of sheafifications, precomposed with the `K`-sheafification
+map of `P`, is the `J`-sheafification map of `P` followed by the unit `P^J ⟶ (P^J)^K` of the
+adjunction between inverse and direct images. -/
+lemma toSheafify_comp_presheafToSheafCompSheafInverseImageIso_inv_app_hom [HasWeakSheafify J A]
+    [HasWeakSheafify K A] (h : J ≤ K) (P : Cᵒᵖ ⥤ A) :
+    CategoryTheory.toSheafify K P ≫ ((presheafToSheafCompSheafInverseImageIso A h).inv.app P).hom =
+      CategoryTheory.toSheafify J P ≫
+        ((sheafAdjunctionOfLE A h).unit.app ((presheafToSheaf J A).obj P)).hom := by
+  have h₁ := Adjunction.unit_leftAdjointUniq_hom_app
+    ((sheafificationAdjunction J A).comp (sheafAdjunctionOfLE A h)) (sheafificationAdjunction K A) P
+  rw [Adjunction.comp_unit_app] at h₁
+  have h₂ := congrArg (fun f ↦ f ≫ ((presheafToSheafCompSheafInverseImageIso A h).inv.app P).hom) h₁
+  have h₃ := congrArg (fun f ↦ f.hom)
+    ((presheafToSheafCompSheafInverseImageIso A h).hom_inv_id_app P)
+  simp only [Category.assoc] at h₂
+  simp only [ObjectProperty.FullSubcategory.comp_hom] at h₃
+  -- The composites live in presheaf categories whose objects are only defeq to each other, so
+  -- `rw` fails on them; the identities are assembled as terms.
+  exact h₂.symm.trans ((Category.assoc _ _ _).trans (congrArg _ ((Category.assoc _ _ _).trans
+    ((congrArg _ h₃).trans (Category.comp_id _)))))
+
 /-- The inverse image of the comparison of two topologies `J ≤ K` sends the constant `J`-sheaf to
 the constant `K`-sheaf. -/
 noncomputable def constantSheafCompSheafInverseImageIso [HasWeakSheafify J A]

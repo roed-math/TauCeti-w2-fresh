@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.Homology.DerivedCategory.Ext.Map
 public import Mathlib.CategoryTheory.Sites.SheafCohomology.ExactSequences
 public import TauCeti.CategoryTheory.Sites.ConstantSheaf
+public import TauCeti.CategoryTheory.Sites.InverseImageOfLE
 
 /-!
 # Pullback of sheaf cohomology
@@ -26,7 +27,8 @@ is the inverse of the canonical isomorphism `u^* ℤ_J ≅ ℤ_K`
 pullback `Hⁿ(C, G) → Hⁿ(D, u^* G)` along the morphism of sites. (The Stacks Project, Tag 08J6,
 constructs this pullback through the derived pushforward instead; that description is not
 formalised here.) In degree zero it is restriction of global sections:
-`Sheaf.H.equiv₀_pullback_sheafPullback`.
+`Sheaf.H.equiv₀_pullback_sheafPullback`, and likewise for the sheafification of `J`-sheaves for a
+finer topology `K` (`Sheaf.H.equiv₀_pullback_sheafInverseImage`).
 
 ## Main declarations
 
@@ -37,8 +39,12 @@ formalised here.) In degree zero it is restriction of global sections:
   `pullback_δ`:
   naturality in the coefficient sheaf, the identity, composition, and compatibility with the
   connecting homomorphisms of a short exact sequence and its image under `pb`.
+* `CategoryTheory.Sheaf.H.pullback_natTrans_apply`: naturality in the exact functor `pb`.
 * `CategoryTheory.Sheaf.H.equiv₀_pullback_sheafPullback`: for a morphism of sites, the pullback
   in degree zero is restriction of global sections along the unit of `u^* ⊣ u_*`.
+* `CategoryTheory.Sheaf.H.equiv₀_pullback_sheafInverseImage`: for topologies `J ≤ K`, the pullback
+  along the `K`-sheafification of `J`-sheaves in degree zero is restriction of global sections along
+  the unit of the adjunction between inverse and direct images.
 -/
 
 public section
@@ -114,6 +120,18 @@ lemma pullback_comp_apply {E : Type*} [Category* E] {L : GrothendieckTopology E}
   simp [pullback_apply, Ext.comp_mapExactFunctor, Ext.mapExactFunctor_comp,
     Ext.mapExactFunctor_mk₀]
 
+/-- The pullback is natural in the exact functor: for a natural transformation `τ : pb ⟶ pb'`, the
+pullback along `pb'` with comparison `c ≫ τ ℤ_J` is the pullback along `pb` followed by
+`τ G : pb G ⟶ pb' G`. -/
+lemma pullback_natTrans_apply (pb' : Sheaf J AddCommGrpCat.{w} ⥤ Sheaf K AddCommGrpCat.{w})
+    [pb'.Additive] [PreservesFiniteLimits pb'] [PreservesFiniteColimits pb'] (τ : pb ⟶ pb')
+    (G : Sheaf J AddCommGrpCat.{w}) (n : ℕ) (x : H G n) :
+    pullback pb' (c ≫ τ.app _) G n x = H.map (τ.app G) n (pullback pb c G n x) := by
+  rw [pullback_apply, pullback_apply, H.map_apply, ← Ext.mk₀_comp_mk₀,
+    Ext.comp_assoc _ _ _ (zero_add 0) (zero_add n) (by lia),
+    ← Ext.mapExactFunctor_comp_mk₀_natTransApp,
+    Ext.comp_assoc _ _ _ (zero_add n) (add_zero n) (by lia)]
+
 /-- The pullback commutes with the connecting homomorphisms of a short exact sequence of
 abelian sheaves and of its image under `pb`. -/
 lemma pullback_δ {S : ShortComplex (Sheaf J AddCommGrpCat.{w})} (hS : S.ShortExact)
@@ -184,6 +202,56 @@ lemma equiv₀_pullback_sheafPullback {T : C} (hT : IsTerminal T) (huT : IsTermi
       ((Category.assoc _ _ _).trans (congrArg (_ ≫ ·) nat)))
   rw [hM]
   -- Both sides evaluate the same morphism `ℤ ⟶ (u^* G)(u(T))` at `1`.
+  rfl
+
+end CategoryTheory.Sheaf.H
+
+namespace CategoryTheory.Sheaf.H
+
+variable {C : Type*} [Category* C] {J K : GrothendieckTopology C}
+  [HasSheafify J AddCommGrpCat.{w}] [HasSheafify K AddCommGrpCat.{w}]
+  [HasExt.{w₁} (Sheaf J AddCommGrpCat.{w})] [HasExt.{w₂} (Sheaf K AddCommGrpCat.{w})]
+  [PreservesFiniteColimits (GrothendieckTopology.sheafInverseImage J K AddCommGrpCat.{w})]
+  (h : J ≤ K)
+
+local instance : (GrothendieckTopology.sheafInverseImage J K AddCommGrpCat.{w}).Additive :=
+  Functor.additive_of_preserves_binary_products _
+
+/-- For topologies `J ≤ K`, the pullback along the inverse image (the `K`-sheafification of a
+`J`-sheaf) in degree zero is restriction of global sections: under `Sheaf.H.equiv₀` at a terminal
+object `T`, it is the unit `G(T) ⟶ G^K(T)` of the adjunction between inverse and direct images. -/
+lemma equiv₀_pullback_sheafInverseImage {T : C} (hT : IsTerminal T)
+    (G : Sheaf J AddCommGrpCat.{w}) (x : H G 0) :
+    H.equiv₀ _ hT (pullback (GrothendieckTopology.sheafInverseImage J K AddCommGrpCat.{w})
+      ((GrothendieckTopology.constantSheafCompSheafInverseImageIso AddCommGrpCat.{w} h).inv.app
+        (of (ULift ℤ))) G 0 x) =
+      ((GrothendieckTopology.sheafAdjunctionOfLE AddCommGrpCat.{w} h).unit.app G).hom.app (op T)
+        (H.equiv₀ G hT x) := by
+  obtain ⟨f, rfl⟩ := Ext.addEquiv₀.symm.surjective x
+  rw [equiv₀, equiv₀, AddEquiv.trans_apply, AddEquiv.trans_apply, AddEquiv.trans_apply,
+    AddEquiv.trans_apply, addEquiv₀_pullback, AddEquiv.apply_symm_apply]
+  have key := congrArg (fun α => α.app (op T))
+    (GrothendieckTopology.toSheafify_comp_presheafToSheafCompSheafInverseImageIso_inv_app_hom
+      AddCommGrpCat.{w} h ((Functor.const Cᵒᵖ).obj (of (ULift ℤ))))
+  have nat := congrArg (fun φ => φ.hom.app (op T))
+    ((GrothendieckTopology.sheafAdjunctionOfLE AddCommGrpCat.{w} h).unit_naturality f)
+  simp only [ObjectProperty.FullSubcategory.comp_hom, NatTrans.comp_app] at nat
+  have hM : (constantSheafAdj K AddCommGrpCat.{w} hT).homAddEquiv _ _
+      ((GrothendieckTopology.constantSheafCompSheafInverseImageIso AddCommGrpCat.{w} h).inv.app
+        (of (ULift ℤ)) ≫ (GrothendieckTopology.sheafInverseImage J K AddCommGrpCat.{w}).map f) =
+      (constantSheafAdj J AddCommGrpCat.{w} hT).homAddEquiv _ _ f ≫
+        ((GrothendieckTopology.sheafAdjunctionOfLE AddCommGrpCat.{w} h).unit.app G).hom.app
+          (op T) := by
+    unfold constantSheaf at f key ⊢
+    simp only [Adjunction.homAddEquiv, constantSheafAdj, AddEquiv.coe_mk, Adjunction.comp_homEquiv,
+      Equiv.trans_apply, Adjunction.homEquiv_unit, Functor.comp_obj, Functor.const_obj_obj,
+      NatTrans.comp_app, Functor.id_obj, Functor.flip_obj_obj, ObjectProperty.ι_obj,
+      evaluation_obj_obj, constantPresheafAdj_unit_app, evaluation_obj_map,
+      Category.id_comp] at key ⊢
+    exact (Category.assoc _ _ _).symm.trans ((congrArg (· ≫ _) key).trans
+      ((Category.assoc _ _ _).trans (congrArg (_ ≫ ·) nat)))
+  rw [hM]
+  -- Both sides evaluate the same morphism `ℤ ⟶ G^K(T)` at `1`.
   rfl
 
 end CategoryTheory.Sheaf.H

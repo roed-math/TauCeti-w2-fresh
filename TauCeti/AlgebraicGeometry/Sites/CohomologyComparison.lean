@@ -22,7 +22,8 @@ to constant sheaves. They therefore induce pullback maps on sheaf cohomology,
 through `CategoryTheory.Sheaf.H.pullback`. They are the maps that the comparison theorems of
 Stacks, Section 59.100 (0DDK) assert to be isomorphisms. The pullback along `a_X` is the composite
 of the pullbacks along `π_X` and `ε` (`aXH_apply`), and in degree zero the pullback along `π_X`
-is the restriction of global sections along the unit of `π_X⁻¹ ⊣ π_{X,*}` (`equiv₀_piXH`).
+is the restriction of global sections along the unit of `π_X⁻¹ ⊣ π_{X,*}` (`equiv₀_piXH`), and
+the pullback along `ε` that along the unit of `ε⁻¹ ⊣ ε_*` (`equiv₀_epsilonFppfEtaleH`).
 
 The coefficient universe `w` is arbitrary: the categories of abelian sheaves are assumed to have
 `Ext` groups, and `π_X⁻¹` to be exact, which is an instance for `w = u + 1`.
@@ -33,8 +34,8 @@ The coefficient universe `w` is arbitrary: the categories of abelian sheaves are
   `ε`, `π_X` and `a_X`.
 * `AlgebraicGeometry.Scheme.aXH_apply`: the pullback along `a_X` is the composite of the pullbacks
   along `π_X` and `ε`.
-* `AlgebraicGeometry.Scheme.equiv₀_piXH`: in degree zero, the pullback along `π_X` is the
-  restriction of global sections.
+* `AlgebraicGeometry.Scheme.equiv₀_piXH`, `equiv₀_epsilonFppfEtaleH`: in degree zero, the
+  pullbacks along `π_X` and `ε` are the restriction of global sections.
 
 ## References
 
@@ -71,6 +72,20 @@ noncomputable def epsilonFppfEtaleH (F : Sheaf (etaleTopology.over X) AddCommGrp
     (n : ℕ) : F.H n →+ ((epsilonFppfEtale X AddCommGrpCat.{w}).obj F).H n :=
   Sheaf.H.pullback _
     ((constantSheafCompEpsilonFppfEtaleIso X AddCommGrpCat.{w}).inv.app (of (ULift ℤ))) F n
+
+/-- In degree zero, the pullback of cohomology along `ε` is the restriction of global sections
+`F(X) ⟶ (ε⁻¹ F)(X)` along the unit of the adjunction `ε⁻¹ ⊣ ε_*`, at the terminal object `X` of the
+big site. -/
+lemma equiv₀_epsilonFppfEtaleH (F : Sheaf (etaleTopology.over X) AddCommGrpCat.{w})
+    (x : F.H 0) :
+    Sheaf.H.equiv₀ _ (Over.mkIdTerminal (X := X)) (epsilonFppfEtaleH X F 0 x) =
+      ((epsilonFppfEtaleAdjunction X _).unit.app F).hom.app (op (Over.mk (𝟙 X)))
+        (Sheaf.H.equiv₀ F (Over.mkIdTerminal (X := X)) x) :=
+  have : PreservesFiniteColimits (sheafInverseImage (etaleTopology.over X)
+      (fppfTopology.over X) AddCommGrpCat.{w}) :=
+    inferInstanceAs (PreservesFiniteColimits (epsilonFppfEtale X _))
+  Sheaf.H.equiv₀_pullback_sheafInverseImage (etaleTopology_over_le_fppfTopology_over X)
+    (Over.mkIdTerminal (X := X)) F x
 
 end Fppf
 
