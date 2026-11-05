@@ -21,9 +21,10 @@ the pullback of graded sections `⨁ n, Γ(Aₙ, U) → ⨁ n, Γ((g^* A)ₙ, V)
 `Proj` of the pulled-back sections over `Spec Γ(Y, V) ⟶ Spec Γ(X, U)` with the chart of `P`
 over `U`, it exhibits `Proj (⨁ n, Γ((g^* A)ₙ, V))` as the fibre product of `P` and
 `Spec Γ(Y, V)` over `X`, hence as the preimage of `V` in the base change `P ×_X Y ⟶ Y`. These
-are the charts over small affine opens of `Y` of the base change of `P` along `g`, which is to be
-identified with the relative `Proj` of `g^* A`. They are natural in `V` and do not depend on
-`U`: two choices agree along basic opens common to both, and these cover.
+are the charts over small affine opens of `Y` of the base change of `P` along `g`, through which
+`TauCeti.AlgebraicGeometry.RelativeProj.BaseChange` identifies it with the relative `Proj` of
+`g^* A`. They are natural in `V` and do not depend on `U`: two choices agree along basic opens
+common to both, and these cover.
 
 The basic opens of an affine open of `Y` that lie over affine opens of `X` cover it, so the
 finiteness conditions of a projective morphism, and generation in degree one, pass from `A` to

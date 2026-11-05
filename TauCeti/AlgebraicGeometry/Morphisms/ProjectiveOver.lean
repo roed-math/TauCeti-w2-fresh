@@ -10,12 +10,11 @@ public import TauCeti.AlgebraicGeometry.Modules.SymmetricPower.Affine
 public import TauCeti.AlgebraicGeometry.Morphisms.Projective
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ClosedImmersion
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ProjectiveOver
-public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.SymmetricBaseChange
-public import TauCeti.AlgebraicGeometry.RelativeProj.Pullback
+public import TauCeti.AlgebraicGeometry.RelativeProj.BaseChange
 public import TauCeti.RingTheory.GradedAlgebra.DegreeOne
 
 /-!
-# Projective schemes over a ring are projective morphisms
+# Projective schemes over a ring, and base change of projective morphisms
 
 A scheme `X` over `Spec R` is projective over `R` in the sense of
 `AlgebraicGeometry.Scheme.IsProjectiveOver` if it is a closed subscheme over `R` of
@@ -34,12 +33,10 @@ graded algebra `A` generated in degree one, which over the affine base is
 from its symmetric algebra is surjective in positive degrees, so `Proj (⨁ n, Γ(Aₙ, ⊤))` is a closed
 subscheme of `Proj (Sym_R Γ(A₁, ⊤))`.
 
-Through this description, projectivity over an affine base is stable under affine base change:
-`Proj (Sym_R M) ×_R Spec S` is `Proj (Sym_S (S ⊗[R] M))`.
-
-Over an affine open `U` of any base `S`, the relative `Proj` of `A` is `Proj (⨁ n, Γ(Aₙ, U))`,
-which is projective over `Γ(S, U)`. So a projective morphism stays projective after base change
-along `Spec Γ(S, U) ≅ U ⊆ S`, and hence along every morphism `Spec R ⟶ Spec Γ(S, U) ≅ U ⊆ S`.
+Projective morphisms are stable under base change: for `g : S' ⟶ S`, the base change of a closed
+immersion `X ⟶ Proj_S(A)` is a closed immersion into `Proj_S(A) ×_S S'`, which is the relative
+`Proj` of the pullback `g^* A` (`GradedQuasicoherentAlgebra.relativeProjPullbackIso`), and `g^* A`
+is again generated in degree one, of finite type and with finite degree-zero part.
 
 ## Main results
 
@@ -55,16 +52,11 @@ along `Spec Γ(S, U) ≅ U ⊆ S`, and hence along every morphism `Spec R ⟶ Sp
 * `TauCeti.AlgebraicGeometry.isProjective_toSpecCoeff`: the projective spectrum of a graded algebra
   of finite type, generated in degree one and with finite degree-zero part, is projective over its
   coefficient ring.
-* `TauCeti.AlgebraicGeometry.isProjective_pullback_snd_spec_map`: the base change of a projective
-  morphism `X ⟶ Spec R` along `Spec S ⟶ Spec R` is projective.
-* `TauCeti.AlgebraicGeometry.isProjective_pullback_snd_fromSpec` and
-  `isProjective_pullback_snd_spec_map_fromSpec`: the base change of a projective morphism
-  `X ⟶ S` along `Spec Γ(S, U) ⟶ S`, for an affine open `U`, and along `Spec R ⟶ Spec Γ(S, U) ⟶ S`
-  is projective. In particular, over an affine base, projectivity is stable under base change
-  along every morphism from the spectrum of a ring (`isProjective_pullback_snd_of_isAffine`).
 * `TauCeti.AlgebraicGeometry.isProjective_relativeProjToBase_pullback`: the relative `Proj` of the
   pullback of a graded algebra generated in degree one, of finite type and with finite degree-zero
   part, is projective.
+* `TauCeti.AlgebraicGeometry.isProjective_pullback_snd`: projective morphisms are stable under
+  base change (`isStableUnderBaseChange_isProjective`).
 -/
 
 public section
@@ -289,109 +281,6 @@ theorem _root_.AlgebraicGeometry.Scheme.isProjectiveOver_of_isProjective {R : Ty
     i ≫ inv (A.relativeProjCover.f ⟨⊤, isAffineOpen_top _⟩) ≫ g, inferInstance, ⟨?_⟩⟩⟩
   rw [over_eq_projToSpec, Category.assoc, key, hiX]
 
-/-- **Projectivity over an affine base is stable under base change along `Spec S ⟶ Spec R`**: if
-`f : X ⟶ Spec R` is projective, so is its base change `X ×_R Spec S ⟶ Spec S` for every
-`R`-algebra `S`. A closed immersion `X ⟶ Proj (Sym_R M)` over `R`
-(`AlgebraicGeometry.Scheme.isProjectiveOver_of_isProjective`) base changes to a closed immersion
-into `Proj (Sym_R M) ×_R Spec S`, which is `Proj (Sym_S (S ⊗[R] M))`
-(`AlgebraicGeometry.Proj.isPullback_symmetricAlgebra_baseChange`). -/
-theorem isProjective_pullback_snd_spec_map_algebraMap {R S : Type u} [CommRing R] [CommRing S]
-    [Algebra R S] {X : Scheme.{u}} (f : X ⟶ Spec (.of R)) [IsProjective f] :
-    IsProjective (pullback.snd f (Spec.map (CommRingCat.ofHom (algebraMap R S)))) := by
-  let : X.Over (Spec (.of R)) := ⟨f⟩
-  have : IsProjective (X ↘ Spec (.of R)) := ‹IsProjective f›
-  have : X.IsProjectiveOver R := Scheme.isProjectiveOver_of_isProjective
-  obtain ⟨M, _, _, _, g, hg, hgR⟩ :=
-    Scheme.IsProjectiveOver.exists_isClosedImmersion (R := R) (X := X)
-  have hgf : g ≫ projToSpec R M = f := by
-    rw [← over_eq_projToSpec]
-    exact comp_over g (Spec (.of R))
-  have hA := Proj.isPullback_symmetricAlgebra_baseChange R S M
-  -- The base change of `g` is a closed immersion into `Proj (Sym_S (S ⊗[R] M))`.
-  let l := hA.lift (pullback.fst f _ ≫ g) (pullback.snd f _) (by
-    rw [Category.assoc, hgf, pullback.condition])
-  have hL : IsPullback (pullback.fst f _) l g ((Proj.symmetricAlgebraScalarTensorIso R S M).hom ≫
-      Proj.baseChangeProjection (homogeneousSubmodule R M) S) :=
-    IsPullback.of_bot (by rw [hA.lift_snd, hgf]; exact IsPullback.of_hasPullback _ _)
-      (hA.lift_fst _ _ _).symm hA
-  have : IsClosedImmersion l :=
-    MorphismProperty.IsStableUnderBaseChange.of_isPullback (P := @IsClosedImmersion) hL hg
-  let : (pullback f (Spec.map (CommRingCat.ofHom (algebraMap R S)))).Over (Spec (.of S)) :=
-    ⟨pullback.snd _ _⟩
-  have : (pullback f (Spec.map (CommRingCat.ofHom (algebraMap R S)))).IsProjectiveOver S :=
-    ⟨⟨TensorProduct R S M, inferInstance, inferInstance, inferInstance, l, inferInstance,
-      ⟨by rw [over_eq_projToSpec]; exact hA.lift_snd _ _ _⟩⟩⟩
-  exact Scheme.IsProjectiveOver.isProjective (R := S)
-
-/-- **Projectivity over an affine base is stable under affine base change**: if
-`f : X ⟶ Spec R` is projective, then so is its base change `X ×_{Spec R} Spec S ⟶ Spec S` along
-`Spec φ` for every ring homomorphism `φ : R ⟶ S`. -/
-theorem isProjective_pullback_snd_spec_map {R S : CommRingCat.{u}} (φ : R ⟶ S) {X : Scheme.{u}}
-    (f : X ⟶ Spec R) [IsProjective f] : IsProjective (pullback.snd f (Spec.map φ)) :=
-  letI := φ.hom.toAlgebra
-  isProjective_pullback_snd_spec_map_algebraMap (R := R) (S := S) f
-
-/-- **Projectivity is stable under base change to an affine open of the base**: if `f : X ⟶ S` is
-projective and `U` is an affine open of `S`, then the base change
-`X ×_S Spec Γ(S, U) ⟶ Spec Γ(S, U)` of `f` along `Spec Γ(S, U) ≅ U ⊆ S` is projective.
-
-Write `f` as a closed immersion into the relative `Proj` of `A` followed by its structure
-morphism. Over `U` the relative `Proj` is `Proj (⨁ n, Γ(Aₙ, U))`
-(`CategoryTheory.CommMon.isPullback_relativeProjCover`), which is projective over `Γ(S, U)`
-(`isProjective_toSpecCoeff`), and the base change of the closed immersion is a closed immersion
-into it. -/
-theorem isProjective_pullback_snd_fromSpec {X S : Scheme.{u}} (f : X ⟶ S) [IsProjective f]
-    {U : S.Opens} (hU : IsAffineOpen U) : IsProjective (pullback.snd f hU.fromSpec) := by
-  obtain ⟨A, _, hA, h, h₀, i, hi, rfl⟩ := IsProjective.exists_isClosedImmersion (f := f)
-  have := h U hU
-  have : Module.Finite Γ(S, U) (A.gradedSectionsGrading U 0) := by
-    have := h₀ U hU
-    -- the degree-zero summand of `⨁ n, Γ(Aₙ, U)` is the image of `Γ(A₀, U)`
-    rw [CommMon.gradedSectionsGrading, DirectSum.summand_def]
-    infer_instance
-  have := isProjective_toSpecCoeff (A.gradedSectionsGrading U)
-    (CommMon.isGeneratedInDegreeOne_iff.mp hA U hU)
-  have hP : IsPullback (A.relativeProjCover.f ⟨U, hU⟩)
-      (Proj.toSpecCoeff (A.gradedSectionsGrading U)) A.relativeProjToBase hU.fromSpec :=
-    A.isPullback_relativeProjCover_fromSpec ⟨U, hU⟩
-  -- The target of `l` is stated as `Proj (⨁ n, Γ(Aₙ, U))` rather than as the chart, which instance
-  -- search does not unfold.
-  let l : pullback (i ≫ A.relativeProjToBase) hU.fromSpec ⟶ Proj (A.gradedSectionsGrading U) :=
-    hP.lift (pullback.fst _ _ ≫ i) (pullback.snd _ _) (by
-      rw [Category.assoc]
-      exact pullback.condition)
-  have hl : l ≫ Proj.toSpecCoeff (A.gradedSectionsGrading U) = pullback.snd _ _ :=
-    hP.lift_snd _ _ _
-  have hL : IsPullback (pullback.fst _ _) l i (A.relativeProjCover.f ⟨U, hU⟩) :=
-    IsPullback.of_bot (by rw [hl]; exact IsPullback.of_hasPullback _ _)
-      (hP.lift_fst _ _ _).symm hP
-  have : IsClosedImmersion l :=
-    MorphismProperty.IsStableUnderBaseChange.of_isPullback (P := @IsClosedImmersion) hL hi
-  rw [← hl]
-  infer_instance
-
-/-- **Projectivity is stable under base change along a morphism from an affine scheme into an
-affine open of the base**: if `f : X ⟶ S` is projective, `U` is an affine open of `S` and
-`φ : Γ(S, U) ⟶ R` is a ring homomorphism, then the base change of `f` along
-`Spec R ⟶ Spec Γ(S, U) ≅ U ⊆ S` is projective. -/
-theorem isProjective_pullback_snd_spec_map_fromSpec {X S : Scheme.{u}} (f : X ⟶ S)
-    [IsProjective f] {U : S.Opens} (hU : IsAffineOpen U) {R : CommRingCat.{u}} (φ : Γ(S, U) ⟶ R) :
-    IsProjective (pullback.snd f (Spec.map φ ≫ hU.fromSpec)) := by
-  have := isProjective_pullback_snd_fromSpec f hU
-  have := isProjective_pullback_snd_spec_map φ (pullback.snd f hU.fromSpec)
-  rw [← pullbackLeftPullbackSndIso_inv_snd_snd f hU.fromSpec (Spec.map φ)]
-  infer_instance
-
-/-- **Over an affine base, projectivity is stable under base change along morphisms from affine
-schemes**: if `S` is affine and `f : X ⟶ S` is projective, then so is the base change of `f` along
-every morphism `Spec R ⟶ S`. -/
-theorem isProjective_pullback_snd_of_isAffine {X S : Scheme.{u}} [IsAffine S] (f : X ⟶ S)
-    [IsProjective f] {R : CommRingCat.{u}} (g : Spec R ⟶ S) : IsProjective (pullback.snd f g) := by
-  have := isProjective_pullback_snd_spec_map_fromSpec f (isAffineOpen_top S)
-    (Spec.preimage (g ≫ S.isoSpec.hom))
-  rwa [Spec.map_preimage, IsAffineOpen.fromSpec_top, Category.assoc, Iso.hom_inv_id,
-    Category.comp_id] at this
-
 /-- **The relative `Proj` of a pulled-back graded algebra is projective**: if a graded
 quasicoherent algebra `A` on `S` is generated in degree one and of finite type with finite
 degree-zero part over every affine open, then for every morphism `g : S' ⟶ S` the relative `Proj`
@@ -408,6 +297,59 @@ theorem isProjective_relativeProjToBase_pullback {S S' : Scheme.{u}} (g : S' ⟶
     (GradedQuasicoherentAlgebra.isGeneratedInDegreeOne_pullback g A hA)
     (fun _ ↦ GradedQuasicoherentAlgebra.finiteType_pullback_sections_of_isAffineOpen g A h)
     fun _ ↦ GradedQuasicoherentAlgebra.finite_pullback_sections_zero_of_isAffineOpen g A h₀
+
+/-- **Projective morphisms are stable under base change**: if `f : X ⟶ S` is projective, then so
+is its base change `X ×_S S' ⟶ S'` along every morphism `g : S' ⟶ S`. Write `f` as a closed
+immersion `i : X ⟶ Proj_S(A)` followed by the structure morphism. The base change of `i` is a
+closed immersion into `Proj_S(A) ×_S S'`, which is the relative `Proj` of `g^* A`
+(`GradedQuasicoherentAlgebra.relativeProjPullbackIso`), and the latter is projective over `S'`
+(`isProjective_relativeProjToBase_pullback`). -/
+instance isProjective_pullback_snd {X S S' : Scheme.{u}} (f : X ⟶ S) [IsProjective f]
+    (g : S' ⟶ S) : IsProjective (pullback.snd f g) := by
+  obtain ⟨A, hq, hA, h, h₀, i, hi, rfl⟩ := IsProjective.exists_isClosedImmersion (f := f)
+  let A' : GradedQuasicoherentAlgebra S := ⟨A, (isGradedQuasicoherentAlgebra_iff A).mpr hq⟩
+  have := isProjective_relativeProjToBase_pullback g A' hA h h₀
+  let j := pullback.map (i ≫ A.relativeProjToBase) g A.relativeProjToBase g i (𝟙 _) (𝟙 _)
+    (by simp) (by simp)
+  -- the base change of `i` is cartesian over `i`
+  have hj : IsPullback j (pullback.fst _ _) (pullback.fst _ _) i :=
+    IsPullback.of_right (by simpa [j] using (IsPullback.of_hasPullback (i ≫ A.relativeProjToBase)
+      g).flip) (pullback.lift_fst _ _ _) (IsPullback.of_hasPullback A.relativeProjToBase g).flip
+  have : IsClosedImmersion j :=
+    MorphismProperty.IsStableUnderBaseChange.of_isPullback (P := @IsClosedImmersion) hj.flip hi
+  have hjs : j ≫ (GradedQuasicoherentAlgebra.relativeProjPullbackIso g A').inv ≫
+      ((GradedQuasicoherentAlgebra.pullback g).obj A').obj.relativeProjToBase =
+        pullback.snd _ _ := by
+    rw [(Iso.inv_comp_eq _).mpr
+      (GradedQuasicoherentAlgebra.relativeProjPullbackIso_hom_snd g A').symm]
+    exact (pullback.lift_snd _ _ _).trans (Category.comp_id _)
+  rw [← hjs, ← Category.assoc]
+  infer_instance
+
+/-- **Projective morphisms are stable under base change**, on the other side: if `g : S' ⟶ S` is
+projective, so is `X ×_S S' ⟶ X` for every `f : X ⟶ S`. -/
+instance isProjective_pullback_fst {X S S' : Scheme.{u}} (f : X ⟶ S) (g : S' ⟶ S)
+    [IsProjective g] : IsProjective (pullback.fst f g) := by
+  rw [← pullbackSymmetry_hom_comp_snd]
+  infer_instance
+
+/-- Projectivity is invariant under isomorphisms. Precomposition is a special case of
+precomposition with a closed immersion; for postcomposition with `e : S ≅ S'`, `f ≫ e.hom` is the
+base change of `f` along `e.inv`, up to the isomorphism `X ×_S S' ≅ X`. -/
+instance respectsIso_isProjective : MorphismProperty.RespectsIso @IsProjective :=
+  .mk _ (fun e f (_ : IsProjective f) ↦ inferInstanceAs (IsProjective (e.hom ≫ f)))
+    fun e f (_ : IsProjective f) ↦ by
+      have : f ≫ e.hom = inv (pullback.fst f e.inv) ≫ pullback.snd f e.inv := by
+        rw [IsIso.eq_inv_comp, ← cancel_mono e.inv, Category.assoc, Category.assoc,
+          e.hom_inv_id, Category.comp_id, pullback.condition]
+      change IsProjective (f ≫ e.hom)
+      rw [this]
+      infer_instance
+
+/-- **Projective morphisms are stable under base change**, as a property of morphisms. -/
+instance isStableUnderBaseChange_isProjective :
+    MorphismProperty.IsStableUnderBaseChange @IsProjective :=
+  .mk' fun _ _ _ f g _ (_ : IsProjective g) ↦ inferInstanceAs (IsProjective (pullback.fst f g))
 
 /-- **Projectivity over a ring is projectivity over its spectrum**: a scheme `X` over `Spec R` is a
 closed subscheme over `R` of `Proj (Sym_R M)` for a finite `R`-module `M` if and only if
