@@ -77,4 +77,19 @@ example (X : Scheme.{u}) : PreservesFiniteLimits (aX X AddCommGrpCat.{u + 1}) :=
     (forget AddCommGrpCat.{u + 1})
   inferInstance
 
+-- `a_X⁻¹` commutes with base change along `Y ⟶ X` on abelian sheaves.
+noncomputable example {X Y : Scheme.{u}} (g : Y ⟶ X) :
+    aX X AddCommGrpCat.{u + 1} ⋙ Scheme.fppfTopology.overMapPullback AddCommGrpCat.{u + 1} g ≅
+      (Etale.pullback g).sheafPullback AddCommGrpCat.{u + 1} _ Y.smallEtaleTopology ⋙
+        aX Y AddCommGrpCat.{u + 1} :=
+  aXBaseChangeIso g AddCommGrpCat.{u + 1}
+
+-- The sections of `π_X⁻¹ F` over `h : T ⟶ X` are `Γ(T_ét, h⁻¹ F)`, for abelian sheaves `F`.
+noncomputable example {X T : Scheme.{u}} (h : T ⟶ X)
+    (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{u + 1}) :
+    ((piX X AddCommGrpCat.{u + 1}).obj F).obj.obj (Opposite.op (Over.mk h)) ≅
+      (((Etale.pullback h).sheafPullback AddCommGrpCat.{u + 1} _ T.smallEtaleTopology).obj
+        F).obj.obj (Opposite.op (Etale.mk (𝟙 T))) :=
+  piXObjIso h AddCommGrpCat.{u + 1} F
+
 end TauCeti.Examples

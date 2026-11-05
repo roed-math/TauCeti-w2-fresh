@@ -6,8 +6,10 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Sites.Comparison
+public import TauCeti.AlgebraicGeometry.Sites.SmallEtaleBaseChange
 public import TauCeti.CategoryTheory.Functor.Flat
 public import TauCeti.CategoryTheory.Sites.ConstantSheaf
+public import TauCeti.CategoryTheory.Sites.PullbackFullyFaithful
 
 /-!
 # The comparison morphisms from the big sites of a scheme to its small étale site
@@ -21,6 +23,12 @@ image `ε⁻¹ = epsilonFppfEtale X A` from the big étale site to the big fppf 
 image `aX X A` of the morphism of topoi `a_X : Sh((Sch/X)_fppf) ⥤ Sh(X_ét)` (Stacks, Section 59.100
 (0DDK)).
 
+Both inverse images commute with base change along a morphism `g : Y ⟶ X`, where the small étale
+site changes by the pullback along `Etale.pullback g` and the big sites by restriction. Since the
+inclusion of the small étale site is moreover fully faithful and cocontinuous, `π_X⁻¹` is fully
+faithful, and the sections of `π_X⁻¹ F` over a scheme `h : T ⟶ X` are the global sections
+`Γ(T_ét, h⁻¹ F)` of the pullback of `F` to the small étale site of `T`.
+
 ## Main declarations
 
 * `AlgebraicGeometry.Scheme.coverPreserving_etaleForget`: étale coverings in `X.Etale` are étale
@@ -31,6 +39,11 @@ image `aX X A` of the morphism of topoi `a_X : Sh((Sch/X)_fppf) ⥤ Sh(X_ét)` (
   the direct image.
 * `AlgebraicGeometry.Scheme.constantSheafCompPiXIso`, `constantSheafCompAXIso`: `π_X⁻¹` and `a_X⁻¹`
   send constant sheaves to constant sheaves.
+* `AlgebraicGeometry.Scheme.piXBaseChangeIso`, `aXBaseChangeIso`: `π_X⁻¹` and `a_X⁻¹` commute with
+  base change.
+* `AlgebraicGeometry.Scheme.fullyFaithfulPiX`: `π_X⁻¹` is fully faithful.
+* `AlgebraicGeometry.Scheme.piXObjIso`: the sections of `π_X⁻¹ F` over `h : T ⟶ X` are
+  `Γ(T_ét, h⁻¹ F)`.
 
 ## References
 
@@ -39,7 +52,7 @@ image `aX X A` of the morphism of topoi `a_X : Sh((Sch/X)_fppf) ⥤ Sh(X_ét)` (
 
 public section
 
-open CategoryTheory Limits GrothendieckTopology
+open CategoryTheory Limits GrothendieckTopology Opposite
 
 universe w w' u
 
@@ -65,6 +78,16 @@ instance : RepresentablyFlat (Etale.forget X) :=
 instance : (Etale.forget X).IsContinuous X.smallEtaleTopology (etaleTopology.over X) :=
   Functor.isContinuous_iff_coverPreserving.mpr (coverPreserving_etaleForget X)
 
+/-- The inclusion of the small étale site of `X` into its big étale site is cocontinuous: an étale
+covering of a scheme étale over `X` consists of schemes étale over `X`. -/
+instance : (Etale.forget X).IsCocontinuous X.smallEtaleTopology (etaleTopology.over X) := by
+  have : MorphismProperty.IsStableUnderComposition @AlgebraicGeometry.Etale :=
+    MorphismProperty.IsMultiplicative.toIsStableUnderComposition
+  -- Instance search does not find the cocontinuity of the inclusion for the restricted topology
+  -- here, so the instance is applied to the local cover density explicitly.
+  exact @Functor.instIsCocontinuousRestrictedTopology _ _ _ _ (Etale.forget X)
+    (etaleTopology.over X) (locallyCoverDense_of_le X le_rfl)
+
 section
 
 variable (A : Type w) [Category.{w'} A]
@@ -85,6 +108,7 @@ noncomputable def piXAdjunction :
     piX X A ⊣ (Etale.forget X).sheafPushforwardContinuous A _ (etaleTopology.over X) :=
   (Etale.forget X).sheafAdjunctionContinuous A _ _
 
+/-- The inverse image `π_X⁻¹` is a left adjoint. -/
 instance : (piX X A).IsLeftAdjoint :=
   (piXAdjunction X A).isLeftAdjoint
 
@@ -111,6 +135,7 @@ noncomputable def aXAdjunction :
       (Etale.forget X).sheafPushforwardContinuous A _ (etaleTopology.over X) :=
   (piXAdjunction X A).comp (epsilonFppfEtaleAdjunction X A)
 
+/-- The inverse image `a_X⁻¹` is a left adjoint. -/
 instance : (aX X A).IsLeftAdjoint :=
   (aXAdjunction X A).isLeftAdjoint
 
@@ -122,6 +147,104 @@ noncomputable def constantSheafCompAXIso [HasWeakSheafify X.smallEtaleTopology A
     constantSheafCompEpsilonFppfEtaleIso X A
 
 end
+
+section BaseChange
+
+variable {X} {Y : Scheme.{u}} (g : Y ⟶ X) (A : Type w) [Category.{w'} A]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.forget X).op.HasLeftKanExtension F]
+  [∀ F : Y.Etaleᵒᵖ ⥤ A, (Etale.forget Y).op.HasLeftKanExtension F]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.pullback g).op.HasLeftKanExtension F]
+  [HasWeakSheafify (etaleTopology.over X) A] [HasWeakSheafify (etaleTopology.over Y) A]
+  [HasWeakSheafify Y.smallEtaleTopology A]
+
+/-- The direct image of `π_Y` followed by the direct image of the small étale base change
+`g_ét : Y_ét ⥤ X_ét` is the direct image along the big-site base change `Over.pullback g` followed
+by the direct image of `π_X`, since base change of schemes étale over `X` is base change of schemes
+over `X`. -/
+noncomputable def piXDirectImageBaseChangeIso :
+    (Etale.forget Y).sheafPushforwardContinuous A Y.smallEtaleTopology (etaleTopology.over Y) ⋙
+        (Etale.pullback g).sheafPushforwardContinuous A X.smallEtaleTopology Y.smallEtaleTopology ≅
+      (CategoryTheory.Over.pullback g).sheafPushforwardContinuous A (etaleTopology.over X)
+          (etaleTopology.over Y) ⋙
+        (Etale.forget X).sheafPushforwardContinuous A X.smallEtaleTopology (etaleTopology.over X) :=
+  have := Functor.isContinuous_comp (Etale.forget X) (CategoryTheory.Over.pullback g)
+    X.smallEtaleTopology (etaleTopology.over X) (etaleTopology.over Y)
+  Functor.sheafPushforwardContinuousComp' (Etale.pullbackCompForgetIso g) _ _ _ _ ≪≫
+    (Functor.sheafPushforwardContinuousComp _ _ _ _ _ _).symm
+
+/-- **The inverse image `π_X⁻¹` commutes with base change**: for a morphism `g : Y ⟶ X`,
+restricting `π_X⁻¹ F` to the big étale site over `Y` is `π_Y⁻¹` of the pullback of `F` to the
+small étale site of `Y`. -/
+noncomputable def piXBaseChangeIso :
+    piX X A ⋙ etaleTopology.overMapPullback A g ≅
+      (Etale.pullback g).sheafPullback A X.smallEtaleTopology Y.smallEtaleTopology ⋙ piX Y A :=
+  (conjugateIsoEquiv
+    (((Etale.pullback g).sheafAdjunctionContinuous A _ _).comp (piXAdjunction Y A))
+    ((piXAdjunction X A).comp
+      ((CategoryTheory.Over.mapPullbackAdj g).sheafPushforwardContinuous (E := A) _ _))).symm
+    (piXDirectImageBaseChangeIso g A)
+
+variable [HasWeakSheafify (fppfTopology.over X) A] [HasWeakSheafify (fppfTopology.over Y) A]
+  [∀ F : (Over Y)ᵒᵖ ⥤ A, (Over.map g).op.HasPointwiseRightKanExtension F]
+
+/-- **The inverse image `a_X⁻¹` commutes with base change**: for a morphism `g : Y ⟶ X`,
+restricting `a_X⁻¹ F` to the big fppf site over `Y` is `a_Y⁻¹` of the pullback of `F` to the
+small étale site of `Y`. -/
+noncomputable def aXBaseChangeIso :
+    aX X A ⋙ fppfTopology.overMapPullback A g ≅
+      (Etale.pullback g).sheafPullback A X.smallEtaleTopology Y.smallEtaleTopology ⋙ aX Y A :=
+  Functor.associator _ _ _ ≪≫ Functor.isoWhiskerLeft _ (epsilonFppfEtaleBaseChangeIso X A g) ≪≫
+    (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerRight (piXBaseChangeIso g A) _ ≪≫
+    Functor.associator _ _ _
+
+end BaseChange
+
+section Sections
+
+variable {X} {T : Scheme.{u}} (h : T ⟶ X) (A : Type w) [Category.{w'} A]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.forget X).op.HasLeftKanExtension F]
+  [∀ F : T.Etaleᵒᵖ ⥤ A, (Etale.forget T).op.HasPointwiseLeftKanExtension F]
+  [∀ F : T.Etaleᵒᵖ ⥤ A, (Etale.forget T).op.HasPointwiseRightKanExtension F]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.pullback h).op.HasLeftKanExtension F]
+  [HasWeakSheafify (etaleTopology.over X) A] [HasWeakSheafify (etaleTopology.over T) A]
+  [HasWeakSheafify T.smallEtaleTopology A]
+
+/-- **The values of `π_X⁻¹ F`**: for a scheme `h : T ⟶ X` over `X` and a sheaf `F` on the small
+étale site of `X`, the sections of `π_X⁻¹ F` over `T` are the global sections `Γ(T_ét, h⁻¹ F)` of
+the pullback of `F` to the small étale site of `T`. -/
+noncomputable def piXObjIso (F : Sheaf X.smallEtaleTopology A) :
+    ((piX X A).obj F).obj.obj (op (Over.mk h)) ≅
+      (((Etale.pullback h).sheafPullback A X.smallEtaleTopology T.smallEtaleTopology).obj F).obj.obj
+        (op (Etale.mk (𝟙 T))) :=
+  ((piX X A).obj F).obj.mapIso (Over.isoMk (Iso.refl T) : Over.mk (𝟙 T ≫ h) ≅ Over.mk h).op ≪≫
+    ((sheafToPresheaf _ A).mapIso ((piXBaseChangeIso h A).app F)).app
+      (op (Over.mk (𝟙 T))) ≪≫
+    ((sheafToPresheaf _ A).mapIso (((Etale.forget T).sheafPullbackCompSheafPushforwardContinuousIso
+      A T.smallEtaleTopology (etaleTopology.over T)).app _)).app (op (Etale.mk (𝟙 T)))
+
+end Sections
+
+section FullyFaithful
+
+variable (A : Type w) [Category.{w'} A]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.forget X).op.HasPointwiseLeftKanExtension F]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.forget X).op.HasPointwiseRightKanExtension F]
+  [HasWeakSheafify X.smallEtaleTopology A] [HasWeakSheafify (etaleTopology.over X) A]
+
+/-- The inverse image `π_X⁻¹` from the small to the big étale site is fully faithful: restricting
+`π_X⁻¹ F` to the small étale site gives `F` back. -/
+noncomputable def fullyFaithfulPiX : (piX X A).FullyFaithful :=
+  (Etale.forget X).fullyFaithfulSheafPullback A _ _
+
+/-- The inverse image `π_X⁻¹` is full. -/
+instance : (piX X A).Full :=
+  (fullyFaithfulPiX X A).full
+
+/-- The inverse image `π_X⁻¹` is faithful. -/
+instance : (piX X A).Faithful :=
+  (fullyFaithfulPiX X A).faithful
+
+end FullyFaithful
 
 section Exact
 
