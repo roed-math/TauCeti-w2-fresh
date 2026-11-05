@@ -78,7 +78,10 @@ every lattice is a rescaling of `ℤ τ + ℤ` for some `τ` in the upper half-p
   `TauCeti.UpperHalfPlane.mdifferentiable_weierstrassZeta_periodPair_div`: the division values
   `z ↦ ζ((b₀ z + b₁) / M; ℤ z + ℤ)` are locally uniform limits of their partial sums, hence
   holomorphic on `ℍ`.
+* `PeriodPair.exists_lattice_eq`: every discrete subgroup of `ℂ` spanning `ℂ` over `ℝ` is the
+  lattice of a period pair.
 * `PeriodPair.lattice_smul`: the lattice of `c • L` is `c Λ`.
+* `PeriodPair.lattice_smul_eq_self`: `c Λ = Λ` when `c Λ ⊆ Λ` and `c⁻¹ Λ ⊆ Λ`.
 * `PeriodPair.G_smul`, `PeriodPair.g₂_smul`, `PeriodPair.g₃_smul`,
   `PeriodPair.weierstrassP_smul`, `PeriodPair.derivWeierstrassP_smul`: rescaling the lattice by
   `c` rescales `G n` by `c⁻ⁿ`, `℘` by `c⁻²` and `℘'` by `c⁻³`.
@@ -551,6 +554,26 @@ lemma ext {L L' : PeriodPair} (h₁ : L.ω₁ = L'.ω₁) (h₂ : L.ω₂ = L'.�
   cases L'
   congr
 
+/-- **Every lattice of `ℂ` is the lattice of a period pair**: a discrete subgroup of `ℂ` spanning
+`ℂ` over `ℝ` has a `ℤ`-basis of two `ℝ`-linearly independent periods. -/
+theorem exists_lattice_eq (M : Submodule ℤ ℂ) [DiscreteTopology M] [IsZLattice ℝ M] :
+    ∃ L : PeriodPair, L.lattice = M := by
+  have := ZLattice.module_finite ℝ M
+  have := ZLattice.module_free ℝ M
+  let b := Module.finBasisOfFinrankEq ℤ M (by
+    rw [ZLattice.rank ℝ M, Complex.finrank_real_complex])
+  have hb : ![(b 0 : ℂ), b 1] = M.subtype ∘ b := by
+    ext i
+    fin_cases i <;> rfl
+  refine ⟨⟨b 0, b 1, ?_⟩, ?_⟩
+  · rw [hb, show M.subtype ∘ b = b.ofZLatticeBasis ℝ M from funext fun i ↦ by simp]
+    exact (b.ofZLatticeBasis ℝ M).linearIndependent
+  · rw [lattice]
+    dsimp only
+    rw [← Matrix.range_cons_cons_empty _ _ ![], hb, Set.range_comp, ← Submodule.map_span,
+      b.span_eq, Submodule.map_top,
+      Submodule.range_subtype]
+
 /-- Multiplying a period pair by a nonzero complex number: `c • (ω₁, ω₂) = (c ω₁, c ω₂)`. Its
 lattice is `c Λ` (`PeriodPair.lattice_smul`). -/
 instance instSMulUnitsComplex : SMul ℂˣ PeriodPair where
@@ -612,6 +635,14 @@ lemma mul_mem_lattice_smul_iff {x : ℂ} : (c : ℂ) * x ∈ (c • L).lattice �
 /-- The lattice of `c • L` consists of the products `c w` with `w` in the lattice of `L`. -/
 lemma mem_lattice_smul_iff {z : ℂ} : z ∈ (c • L).lattice ↔ ∃ w ∈ L.lattice, (c : ℂ) * w = z := by
   simp [lattice_smul]
+
+/-- A scalar `c` with `c Λ ⊆ Λ` and `c⁻¹ Λ ⊆ Λ` fixes the lattice: `c Λ = Λ`. -/
+lemma lattice_smul_eq_self {L : PeriodPair} {c : ℂˣ}
+    (h₁ : ∀ z ∈ L.lattice, (c : ℂ) * z ∈ L.lattice)
+    (h₂ : ∀ z ∈ L.lattice, (c : ℂ)⁻¹ * z ∈ L.lattice) : (c • L).lattice = L.lattice := by
+  ext z
+  rw [mem_lattice_smul_iff]
+  exact ⟨fun ⟨w, hw, e⟩ ↦ e ▸ h₁ w hw, fun hz ↦ ⟨_, h₂ z hz, mul_inv_cancel_left₀ c.ne_zero z⟩⟩
 
 /-- The lattice sums `G n` are homogeneous of degree `-n` in the lattice. -/
 @[simp]

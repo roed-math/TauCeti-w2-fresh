@@ -9,6 +9,7 @@ public import TauCeti.Analysis.SpecialFunctions.Elliptic.VeluIsogeny
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Isogeny.VariableChange
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Isogeny.Hom.ComplexMultiplication
 public import TauCeti.Analysis.SpecialFunctions.Elliptic.Endomorphism
+public import TauCeti.AlgebraicGeometry.EllipticCurve.Isogeny.Dual.Basic
 import TauCeti.AlgebraicGeometry.EllipticCurve.Isogeny.InvariantDifferential
 import TauCeti.AlgebraicGeometry.EllipticCurve.Isogeny.MulByInt.Separability
 
@@ -49,6 +50,8 @@ form of `PeriodPair.scalarPointHom_comp_dual`.
 * `PeriodPair.scalarIsogeny_intCast`: the scalar `n` gives multiplication by `n`.
 * `PeriodPair.scalarIsogeny_comp_dual`, `PeriodPair.scalarIsogeny_dual_comp`: the isogenies of `c`
   and of `[Λ' : c Λ] / c` compose to multiplication by `[Λ' : c Λ]` in both orders.
+* `PeriodPair.dual_scalarIsogeny`: hence the dual isogeny of the isogeny of `c` is the isogeny of
+  `[Λ' : c Λ] / c`.
 * `PeriodPair.pullbackDifferential_multiplierCMAction`: the action of the multiplier ring is
   normalised, `α` scaling `ω` by `α`.
 
@@ -205,6 +208,16 @@ theorem scalarIsogeny_dual_comp (c : ℂˣ) (h : ∀ z ∈ L.lattice, (c : ℂ) 
     mul_div_cancel₀ _ c.ne_zero,
     Isogeny.pullbackDifferential_mulByIntIsogeny_invariantDifferential,
     ← Int.cast_smul_eq_zsmul ℂ, Int.cast_natCast]
+
+/-- **The dual of the isogeny of a scalar map is the isogeny of the dual scalar**: with
+`n = [Λ' : c Λ]`, the dual isogeny of `scalarIsogeny c h` is the isogeny of `n / c`. -/
+theorem dual_scalarIsogeny (c : ℂˣ) (h : ∀ z ∈ L.lattice, (c : ℂ) * z ∈ L'.lattice) :
+    (scalarIsogeny c h).dual =
+      scalarIsogeny (Units.mk0 _ (relIndex_div_ne_zero c h))
+        (mk0_relIndex_div_mul_mem_lattice c h) := by
+  refine ((Isogeny.eq_dual_iff_comp_eq _).mpr ?_).symm
+  rw [scalarIsogeny_comp_dual]
+  simp only [degree_scalarIsogeny_eq_relIndex]
 
 /-! ### The algebraic action of the multiplier ring -/
 

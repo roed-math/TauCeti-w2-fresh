@@ -5,10 +5,11 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Analysis.SpecialFunctions.Elliptic.AlgebraicIsogeny
+public import TauCeti.Analysis.SpecialFunctions.Elliptic.LatticeIsogeny
 public import TauCeti.NumberTheory.ComplexMultiplication.IdealIsogeny
 public import TauCeti.NumberTheory.ComplexMultiplication.JInvariant
 import Mathlib.AlgebraicGeometry.EllipticCurve.IsomOfJ
+import TauCeti.NumberTheory.ComplexMultiplication.LatticeClass
 
 /-!
 # The algebraic curves with complex multiplication of an imaginary quadratic order
@@ -19,25 +20,32 @@ dictionary of `TauCeti/NumberTheory/ComplexMultiplication/` is here read on the 
 Weierstrass curve `E_I = E_L` over `ℂ`, through the algebraic isogenies of scalar maps
 (`PeriodPair.scalarIsogeny`).
 
-* **Endomorphism order.** `O` acts faithfully on `E_I` by algebraic endomorphisms, `α` acting by
-  the isogeny of `z ↦ σ(α) z`. This complex multiplication is normalised: `α` pulls the invariant
-  differential back to `σ(α)` times itself.
+* **Endomorphism order.** `O` is the ring of algebraic endomorphisms of `E_I`, `α` acting by the
+  isogeny of `z ↦ σ(α) z`: every isogeny between curves of lattices is a scalar map
+  (`PeriodPair.exists_eq_scalarIsogeny`). This complex multiplication is normalised: `α` pulls the
+  invariant differential back to `σ(α)` times itself.
 * **Ideal isogenies.** For an invertible integral ideal `𝔞` with inverse `𝔟`, the inclusion
   `σ(I) ⊆ σ(𝔟 I)` is an algebraic isogeny `E_I → E_{𝔞⁻¹ I}` with kernel the `𝔞`-torsion `E_I[𝔞]`
   and degree the norm `[O : 𝔞]`. It induces the action of `Pic O` on curves with CM by `O`.
 * **Classification.** `E_I` and `E_J` are isomorphic over `ℂ` exactly when `I` and `J` have the
   same ideal class. Both sides are equivalent to equality of `j`-invariants, by the `j`-invariant
   classification of ideal classes and over the algebraically closed field `ℂ`.
+* **Every curve with CM by `O` is some `E_I`.** An elliptic curve over `ℂ` whose algebraic
+  endomorphisms are a normalised action of `O` is isomorphic to `E_I` for a proper fractional ideal
+  `I`: it comes from a lattice, whose multiplier ring is then `σ(O)`.
 
 ## Main definitions
 
 * `TauCeti.GlobalNumberFields.NumberFieldOrder.cmAction`: the normalised action of `O` on `E_I` by
   algebraic endomorphisms.
+* `TauCeti.GlobalNumberFields.NumberFieldOrder.cmRingEquiv`: `O ≃+* End(E_I)`.
 
 ## Main results
 
 * `TauCeti.GlobalNumberFields.NumberFieldOrder.pullbackDifferential_cmAction`: `α` pulls `ω` back
   to `σ(α) ω`.
+* `TauCeti.GlobalNumberFields.NumberFieldOrder.cmAction_surjective`: every endomorphism of `E_I`
+  comes from `O`.
 * `TauCeti.GlobalNumberFields.NumberFieldOrder.ker_scalarIsogeny_one_eq_idealTorsion` and
   `TauCeti.GlobalNumberFields.NumberFieldOrder.degree_scalarIsogeny_one_eq_index`: the isogeny of
   `𝔞` has kernel `E_I[𝔞]` and degree `[O : 𝔞]`.
@@ -45,6 +53,8 @@ Weierstrass curve `E_I = E_L` over `ℂ`, through the algebraic isogenies of sca
   `Pic O` on curves with complex multiplication by `O` is realised by these algebraic isogenies.
 * `TauCeti.GlobalNumberFields.NumberFieldOrder.exists_variableChange_smul_eq_iff_mk_eq`: `E_I` and
   `E_J` are isomorphic over `ℂ` exactly when `[I] = [J]`.
+* `TauCeti.GlobalNumberFields.NumberFieldOrder.exists_isProper_variableChange_smul_eq`: every
+  elliptic curve over `ℂ` with a normalised action of `O` by all of its endomorphisms is some `E_I`.
 
 ## References
 
@@ -87,6 +97,90 @@ theorem pullbackDifferential_cmAction (hI : O.IsProperFractionalIdeal I)
       σ x • invariantDifferential _ := by
   rw [cmAction_apply, PeriodPair.pullbackDifferential_multiplierCMAction,
     coe_multiplierRingEquiv]
+
+/-- **The endomorphism order of `E_I` is `O`**: every algebraic endomorphism of `E_I` is the
+action of an element of `O`. -/
+theorem cmAction_surjective (hI : O.IsProperFractionalIdeal I)
+    (hL : (L.lattice : Set ℂ) = σ '' I) : Function.Surjective (cmAction hI hL) :=
+  PeriodPair.multiplierCMAction_surjective.comp (multiplierRingEquiv hI hL).surjective
+
+/-- **The endomorphism-order comparison**: for a proper fractional ideal `I` with lattice
+`L = σ(I)`, the order `O` is the ring of algebraic endomorphisms of `E_I`, `α ∈ O` acting by the
+isogeny of `z ↦ σ(α) z`. -/
+def cmRingEquiv (hI : O.IsProperFractionalIdeal I) (hL : (L.lattice : Set ℂ) = σ '' I) :
+    O.toSubalgebra.toSubring ≃+*
+      Isogeny.Hom L.weierstrassCurve.toAffine L.weierstrassCurve.toAffine :=
+  (multiplierRingEquiv hI hL).trans L.multiplierRingEquivHom
+
+@[simp]
+theorem cmRingEquiv_apply (hI : O.IsProperFractionalIdeal I) (hL : (L.lattice : Set ℂ) = σ '' I)
+    (x : O.toSubalgebra.toSubring) : cmRingEquiv hI hL x = cmAction hI hL x := by
+  rw [cmRingEquiv, RingEquiv.trans_apply, PeriodPair.multiplierRingEquivHom_apply,
+    cmAction_apply]
+
+/-- Conjugating an endomorphism of `W₂` by an isomorphism `W₁ ≅ W₂` of a change of variables
+keeps the constant by which it scales the invariant differential. -/
+private lemma pullbackDifferential_conj {W₁ W₂ : WeierstrassCurve.Affine ℂ} {C : VariableChange ℂ}
+    (h : C • W₁ = W₂) (h' : C⁻¹ • W₂ = W₁) {f : Isogeny.Hom W₂ W₂} {a : ℂ}
+    (hf : f.pullbackDifferential (invariantDifferential W₂) = a • invariantDifferential W₂) :
+    ((Isogeny.Hom.ofIsogeny (Isogeny.variableChangeIsogeny C⁻¹ h')).comp
+        (f.comp (Isogeny.Hom.ofIsogeny (Isogeny.variableChangeIsogeny C h)))).pullbackDifferential
+      (invariantDifferential W₁) = a • invariantDifferential W₁ := by
+  rw [Isogeny.Hom.pullbackDifferential_comp, Isogeny.Hom.pullbackDifferential_comp,
+    LinearMap.comp_apply, LinearMap.comp_apply, Isogeny.Hom.pullbackDifferential_ofIsogeny,
+    Isogeny.Hom.pullbackDifferential_ofIsogeny,
+    Isogeny.pullbackDifferential_variableChangeIsogeny_invariantDifferential, map_smul, map_smul,
+    hf, map_smul, Isogeny.pullbackDifferential_variableChangeIsogeny_invariantDifferential,
+    smul_smul, smul_smul]
+  have hu : ((C⁻¹).u : ℂ) = (C.u : ℂ)⁻¹ := by
+    rw [← Units.val_inv_eq_inv_val]
+    rfl
+  rw [hu, mul_comm _ a, mul_assoc, inv_mul_cancel₀ C.u.ne_zero, mul_one]
+
+/-- **Every curve with complex multiplication by `O` is some `E_I`.** An elliptic curve `E` over
+`ℂ` with a normalised action of `O` (`α` scaling the invariant differential by `σ(α)`) by all of
+its algebraic endomorphisms is isomorphic, by a change of variables, to the curve `E_I` of a
+lattice `σ(I)` of a proper fractional ideal `I` of `O`. -/
+theorem exists_isProper_variableChange_smul_eq (hK : Module.finrank ℚ K = 2)
+    (hσ : ¬ ComplexEmbedding.IsReal σ) (E : WeierstrassCurve ℂ) [E.IsElliptic]
+    (ι : CMAction O.toSubalgebra.toSubring E.toAffine)
+    (hι : ∀ x, (ι x).pullbackDifferential (invariantDifferential _) =
+      σ x • invariantDifferential _)
+    (hsurj : Function.Surjective ι) :
+    ∃ I : FractionalIdeal (nonZeroDivisors O.toSubalgebra) K, O.IsProperFractionalIdeal I ∧
+      ∃ L : PeriodPair, (L.lattice : Set ℂ) = σ '' I ∧
+        ∃ C : VariableChange ℂ, C • L.weierstrassCurve = E := by
+  obtain ⟨τ, C, hC⟩ := E.exists_variableChange_smul_weierstrassCurve_periodPair_eq
+  set L₀ := τ.periodPair
+  have h₁ : C • L₀.weierstrassCurve.toAffine = E.toAffine := hC
+  have h₂ : C⁻¹ • E.toAffine = L₀.weierstrassCurve.toAffine := by rw [← h₁, inv_smul_smul]
+  have h₂' : C⁻¹⁻¹ • L₀.weierstrassCurve.toAffine = E.toAffine := by rwa [inv_inv]
+  have hω := invariantDifferential_ne_zero L₀.weierstrassCurve.toAffine
+  have hω' := invariantDifferential_ne_zero E.toAffine
+  -- The multiplier ring of `ℤ τ + ℤ` is `σ(O)`.
+  have hmul : L₀.multiplierRing = O.toSubalgebra.toSubring.map σ := by
+    ext β
+    rw [Subring.mem_map]
+    constructor
+    · intro hβ
+      obtain ⟨x, hx⟩ := hsurj
+        ((Isogeny.Hom.ofIsogeny (Isogeny.variableChangeIsogeny C⁻¹⁻¹ h₂')).comp
+          ((L₀.multiplierCMAction ⟨β, hβ⟩).comp
+            (Isogeny.Hom.ofIsogeny (Isogeny.variableChangeIsogeny C⁻¹ h₂))))
+      have hd := pullbackDifferential_conj h₂ h₂'
+        (PeriodPair.pullbackDifferential_multiplierCMAction (L := L₀) ⟨β, hβ⟩)
+      rw [← hx, hι] at hd
+      exact ⟨x, x.2, smul_left_injective ℂ hω' hd⟩
+    · rintro ⟨x, hx, rfl⟩
+      obtain ⟨β, hβ⟩ := L₀.multiplierCMAction_surjective
+        ((Isogeny.Hom.ofIsogeny (Isogeny.variableChangeIsogeny C⁻¹ h₂)).comp
+          ((ι ⟨x, hx⟩).comp (Isogeny.Hom.ofIsogeny (Isogeny.variableChangeIsogeny C h₁))))
+      have hd := pullbackDifferential_conj h₁ h₂ (hι ⟨x, hx⟩)
+      rw [← hβ, PeriodPair.pullbackDifferential_multiplierCMAction] at hd
+      exact (smul_left_injective ℂ hω hd) ▸ β.2
+  obtain ⟨I, hI, c, hc⟩ := exists_isProper_lattice_smul_eq hK hσ hmul
+  refine ⟨I, hI, c • L₀, hc, C * (⟨c, 0, 0, 0⟩ : VariableChange ℂ)⁻¹, ?_⟩
+  rw [PeriodPair.weierstrassCurve_smul, mul_smul, inv_smul_smul, hC]
 
 /-! ### The isogeny of an invertible ideal -/
 

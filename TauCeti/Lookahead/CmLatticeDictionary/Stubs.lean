@@ -16,10 +16,11 @@ These are lookahead stubs for the supplier `weierstrass-uniformization`
 (ImaginaryQuadraticClassNumber, H3.1), in the form stated by its open pull request #28061
 (`PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul` in
 `TauCeti/Analysis/SpecialFunctions/Elliptic/Uniformization.lean` and
-`PeriodPair.weierstrassCurve_j_eq_iff` in
+`PeriodPair.weierstrassCurve_j_eq_iff` and
+`WeierstrassCurve.exists_variableChange_smul_weierstrassCurve_periodPair_eq` in
 `TauCeti/Analysis/SpecialFunctions/Elliptic/LatticeClassification.lean`). They are to be replaced
-by the landed declarations: homothetic lattices have the same `j`-invariant, and the `j`-invariant
-classifies lattices up to homothety.
+by the landed declarations: homothetic lattices have the same `j`-invariant, the `j`-invariant
+classifies lattices up to homothety, and every elliptic curve over `ℂ` comes from a lattice.
 -/
 
 public noncomputable section
@@ -40,3 +41,16 @@ theorem weierstrassCurve_j_eq_iff :
   sorry
 
 end PeriodPair
+
+namespace WeierstrassCurve
+
+variable (E : WeierstrassCurve ℂ) [E.IsElliptic]
+
+/-- **Every elliptic curve over `ℂ` comes from a lattice**: it is a change of variables of the
+Weierstrass curve `y² = x³ - (g₂ / 4) x - g₃ / 4` of `ℤ τ + ℤ` for some `τ ∈ ℍ`, namely any `τ`
+with `j(τ) = j(E)`. -/
+theorem exists_variableChange_smul_weierstrassCurve_periodPair_eq :
+    ∃ (τ : UpperHalfPlane) (C : VariableChange ℂ), C • τ.periodPair.weierstrassCurve = E := by
+  sorry
+
+end WeierstrassCurve
