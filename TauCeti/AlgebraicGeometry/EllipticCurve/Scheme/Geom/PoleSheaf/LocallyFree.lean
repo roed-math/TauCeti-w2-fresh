@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.Cohomology
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.PoleSheaf.DirectImage
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Pushforward.QuasiSeparated
 public import TauCeti.AlgebraicGeometry.Modules.Sheaf
