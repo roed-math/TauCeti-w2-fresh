@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.Analysis.SpecialFunctions.Elliptic.Endomorphism
+public import TauCeti.Lookahead.CmLatticeDictionary.Stubs
 public import TauCeti.NumberTheory.NumberField.Global.Orders.IdealClassMonoid
 public import TauCeti.NumberTheory.NumberField.Global.Orders.Lattice
 public import Mathlib.NumberTheory.NumberField.InfinitePlace.Embeddings
@@ -231,7 +232,7 @@ lemma jInvariant_eq (hK : Module.finrank ℚ K = 2) {σ : K →+* ℂ}
     (hσ : ¬ ComplexEmbedding.IsReal σ) (I : O.nonzeroFractionalIdeals) {L : PeriodPair}
     (hL : (L.lattice : Set ℂ) = σ '' (I : FractionalIdeal (nonZeroDivisors O.toSubalgebra) K)) :
     O.jInvariant hK hσ I = L.weierstrassCurve.j := by
-  refine PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul 1 ?_
+  refine PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul (c := 1) ?_
   rw [one_smul]
   exact SetLike.coe_injective
     ((exists_periodPair_lattice_eq hK hσ (nonZeroDivisors.ne_zero I.2)).choose_spec.trans hL.symm)
@@ -245,7 +246,7 @@ theorem jInvariant_eq_of_homothetyCon (hK : Module.finrank ℚ K = 2) {σ : K �
   have hL' := lattice_smul_eq_image_spanSingleton_mul hL x
   rw [hx] at hL'
   rw [jInvariant_eq hK hσ I hL, jInvariant_eq hK hσ J hL',
-    PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul _ rfl]
+    PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul rfl]
 
 end NumberFieldOrder
 
@@ -279,7 +280,7 @@ theorem exists_jInvariant_eq_j (hK : Module.finrank ℚ K = 2) {σ : K →+* ℂ
   obtain ⟨u, τ, hτ⟩ := L.exists_lattice_eq_smul_periodPair
   refine ⟨τ, ?_⟩
   rw [jInvariant_mk, NumberFieldOrder.jInvariant_eq hK hσ I hL,
-    PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul u hτ,
+    PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul hτ,
     UpperHalfPlane.weierstrassCurve_j_periodPair]
 
 end IdealClassMonoid

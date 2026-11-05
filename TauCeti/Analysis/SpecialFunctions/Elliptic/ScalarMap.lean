@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Lookahead.CmLatticeDictionary.Stubs
+public import TauCeti.Analysis.SpecialFunctions.Elliptic.AdditionTheorem
 public import Mathlib.GroupTheory.Index
 import Mathlib.LinearAlgebra.FreeModule.Finite.CardQuotient
 

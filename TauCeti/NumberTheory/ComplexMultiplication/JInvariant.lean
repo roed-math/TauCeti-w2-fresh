@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Analysis.SpecialFunctions.Elliptic.JInvariant
+public import TauCeti.Lookahead.CmLatticeDictionary.Stubs
 public import TauCeti.NumberTheory.ComplexMultiplication.ClassGroupAction
 
 /-!
@@ -80,7 +80,7 @@ lemma CMClass.jInvariant_mk {σ : K →+* ℂ} (L : CMLattice O σ) :
     (CMClass.mk L).jInvariant = L.1.weierstrassCurve.j := by
   obtain ⟨c, hc⟩ := CMClass.mk_eq_mk_iff.mp (Function.surjInv_eq CMClass.mk_surjective
     (CMClass.mk L)).symm
-  exact PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul c hc
+  exact PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul hc
 
 /-- **The `j`-invariant classifies curves with complex multiplication by `O`.** Two lattices with
 complex multiplication by `O` with the same `j`-invariant are homothetic. -/

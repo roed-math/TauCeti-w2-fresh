@@ -6,6 +6,9 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.NumberTheory.ComplexMultiplication.ClassGroupAction
+import Mathlib.LinearAlgebra.FreeModule.IdealQuotient
+import TauCeti.RingTheory.FractionalIdeal.Index
+import TauCeti.RingTheory.Ideal.Quotient.Artinian
 
 /-!
 # The isogeny attached to an invertible integral ideal
@@ -21,7 +24,9 @@ surjective homomorphism `E_I(ℂ) → E_{𝔞⁻¹ I}(ℂ)`, the `𝔞`-isogeny 
 (`NumberFieldOrder.picSMul_mk` sends the class of `σ(I)` to that of `σ(𝔞⁻¹ I)`). Its kernel is
 exactly `E_I[𝔞]` (`NumberFieldOrder.ker_scalarPointHom_one_eq_idealTorsion`), so `E_I[𝔞]` has
 `[𝔞⁻¹ I : I]` points, the degree of the isogeny
-(`NumberFieldOrder.natCard_idealTorsion_eq_relIndex`).
+(`NumberFieldOrder.natCard_idealTorsion_eq_relIndex`). For an order of an imaginary quadratic field
+this index is the norm `[O : 𝔞]` of `𝔞` (`NumberFieldOrder.natCard_idealTorsion_eq_index`), by
+`FractionalIdeal.relIndex_coeIdeal_mul_eq_index`.
 
 Every class of `Pic O` contains an invertible integral ideal
 (`NumberFieldOrder.exists_mkPic_eq_coeIdeal`), so the action of the Picard group on the classes of
@@ -39,6 +44,8 @@ lattices with complex multiplication by `O` is realized by these isogenies
 * `TauCeti.GlobalNumberFields.NumberFieldOrder.natCard_idealTorsion`,
   `TauCeti.GlobalNumberFields.NumberFieldOrder.natCard_idealTorsion_eq_relIndex`: `E_I[𝔞]` has
   `[σ(𝔞⁻¹ I) : σ(I)] = [𝔞⁻¹ I : I]` points.
+* `TauCeti.GlobalNumberFields.NumberFieldOrder.natCard_idealTorsion_eq_index`: in an imaginary
+  quadratic order, `E_I[𝔞]` has `[O : 𝔞]` points, the norm of `𝔞`.
 * `TauCeti.GlobalNumberFields.NumberFieldOrder.exists_isogeny_picSMul`: the class `a ∈ Pic O` acts
   on lattices with complex multiplication by an isogeny `E_L → E_{a · L}` with kernel `E_L[𝔞]`
   for an integral ideal `𝔞` in the class `a`.
@@ -179,6 +186,29 @@ theorem natCard_idealTorsion_eq_relIndex (hI : O.IsProperFractionalIdeal I)
     fun hJ ↦ SetLike.coe_injective (by rw [AddSubgroup.coe_map]; exact hJ)
   rw [natCard_idealTorsion hI hL h𝔞𝔟 hL', hmap hL, hmap hL',
     AddSubgroup.relIndex_map_map_of_injective _ _ σ.injective]
+
+/-- **The degree of the `𝔞`-isogeny is the norm of `𝔞`.** If `𝔞` is an integral ideal with
+inverse `𝔟` of an order of an imaginary quadratic field, the `𝔞`-torsion `E_I[𝔞]` of the curve of a
+proper fractional ideal `I` has `[O : 𝔞]` points. -/
+theorem natCard_idealTorsion_eq_index (hK : Module.finrank ℚ K = 2)
+    (hI : O.IsProperFractionalIdeal I) (hL : (L.lattice : Set ℂ) = σ '' I)
+    {𝔞 : Ideal O.toSubalgebra} {𝔟 : FractionalIdeal (nonZeroDivisors O.toSubalgebra) K}
+    (h𝔞𝔟 : (𝔞 : FractionalIdeal _ K) * 𝔟 = 1)
+    {L' : PeriodPair} (hL' : (L'.lattice : Set ℂ) = σ '' (𝔟 * I)) :
+    Nat.card (idealTorsion hI hL 𝔞) = 𝔞.toAddSubgroup.index := by
+  have h𝔞 : 𝔞 ≠ ⊥ := by
+    rintro rfl
+    rw [coeIdeal_bot, zero_mul] at h𝔞𝔟
+    exact zero_ne_one h𝔞𝔟
+  have : Finite (O.toSubalgebra ⧸ 𝔞) := Ideal.finiteQuotientOfFreeOfNeBot _ h𝔞
+  -- `I = 𝔞 (𝔟 I)` with `𝔟 I` invertible.
+  have h𝔟 : IsUnit 𝔟 := ⟨⟨𝔟, 𝔞, by rw [mul_comm, h𝔞𝔟], h𝔞𝔟⟩, rfl⟩
+  have hJ : IsUnit (𝔟 * I) := h𝔟.mul (hI.isUnit_of_finrank_eq_two hK)
+  have h𝔞J : (𝔞 : FractionalIdeal _ K) * (hJ.unit : FractionalIdeal _ K) = I := by
+    rw [IsUnit.unit_spec, ← mul_assoc, h𝔞𝔟, one_mul]
+  rw [natCard_idealTorsion_eq_relIndex hI hL h𝔞𝔟 hL',
+    ← FractionalIdeal.relIndex_coeIdeal_mul_eq_index hJ.unit
+      (Ideal.finite_setOfPred_isMaximal_and_le 𝔞), h𝔞J, IsUnit.unit_spec]
 
 /-! ### The action of the Picard group by isogenies -/
 

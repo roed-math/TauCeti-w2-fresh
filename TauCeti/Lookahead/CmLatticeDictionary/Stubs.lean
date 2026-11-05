@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.Analysis.SpecialFunctions.Elliptic.Uniformization
+public import TauCeti.Analysis.SpecialFunctions.Elliptic.AdditionTheorem
 
 set_option warningAsError false
 
@@ -13,36 +13,30 @@ set_option warningAsError false
 # Lookahead stubs for `weierstrass-uniformization`
 
 These are lookahead stubs for the supplier `weierstrass-uniformization`
-(ImaginaryQuadraticClassNumber, H3.1), in the form stated by its open pull request #22646
-(`TauCeti/Analysis/SpecialFunctions/Elliptic/AdditionTheorem.lean`). They are to be replaced by the
-landed declarations: the group law of the Weierstrass point map, the point map as a homomorphism
-`ℂ →+ E(ℂ)`, and its kernel.
+(ImaginaryQuadraticClassNumber, H3.1), in the form stated by its open pull request #28061
+(`PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul` in
+`TauCeti/Analysis/SpecialFunctions/Elliptic/Uniformization.lean` and
+`PeriodPair.weierstrassCurve_j_eq_iff` in
+`TauCeti/Analysis/SpecialFunctions/Elliptic/LatticeClassification.lean`). They are to be replaced
+by the landed declarations: homothetic lattices have the same `j`-invariant, and the `j`-invariant
+classifies lattices up to homothety.
 -/
 
 public noncomputable section
 
 namespace PeriodPair
 
-variable (L : PeriodPair)
+variable {L L' : PeriodPair} {c : ℂˣ}
 
-/-- **The addition law.** The point map `z ↦ (℘(z), ℘'(z) / 2)` (sending `Λ` to the point at
-infinity) is additive: `P(z + w) = P(z) + P(w)` in the group of points of the Weierstrass curve. -/
-@[simp]
-theorem weierstrassPoint_add (z w : ℂ) :
-    L.weierstrassPoint (z + w) = L.weierstrassPoint z + L.weierstrassPoint w := by
+/-- Homothetic lattices have the same `j`-invariant. -/
+lemma weierstrassCurve_j_eq_of_lattice_eq_smul (h : L'.lattice = (c • L).lattice) :
+    L'.weierstrassCurve.j = L.weierstrassCurve.j := by
   sorry
 
-/-- The point map `z ↦ (℘(z), ℘'(z) / 2)` as a group homomorphism from `ℂ` to the points of the
-Weierstrass curve of `L`. -/
-def weierstrassPointHom : ℂ →+ L.weierstrassCurve.toAffine.Point :=
-  sorry
-
-@[simp]
-lemma weierstrassPointHom_apply (z : ℂ) : L.weierstrassPointHom z = L.weierstrassPoint z := by
-  sorry
-
-/-- The kernel of the point map is the period lattice. -/
-lemma ker_weierstrassPointHom : L.weierstrassPointHom.ker = L.lattice.toAddSubgroup := by
+/-- **The `j`-invariant classifies lattices up to homothety**: `E_Λ` and `E_{Λ'}` have the same
+`j`-invariant exactly when `Λ' = c Λ` for some `c ∈ ℂˣ`. -/
+theorem weierstrassCurve_j_eq_iff :
+    L.weierstrassCurve.j = L'.weierstrassCurve.j ↔ ∃ c : ℂˣ, L'.lattice = (c • L).lattice := by
   sorry
 
 end PeriodPair
