@@ -34,7 +34,8 @@ a global function, then `H_Z^q(X, M)` vanishes for `q ≥ 2`.
 * `Scheme.Modules.cohomologyWithSupportBasicOpenOneLinearEquiv`:
   `H_{V(r)}^1(X, 𝒪) ≃ₗ[Γ(X, ⊤)] Γ(X, ⊤)_r / Γ(X, ⊤)` for affine `X` and `r : Γ(X, ⊤)`;
 * `Scheme.Modules.cohomologyWithSupportSpecOneEquiv`: `H_{V(a)}^1(Spec A, 𝒪) ≃+ L / A` for a
-  localization `L` of `A` away from `a`.
+  localization `L` of `A` away from `a`, and its `A`-linear form
+  `Scheme.Modules.cohomologyWithSupportSpecOneLinearEquiv`.
 -/
 
 public section
@@ -241,6 +242,46 @@ def cohomologyWithSupportSpecOneEquiv {A : Type u} [CommRing A] (a : A) (L : Typ
       refine ⟨_, ⟨(Scheme.ΓSpecIso (CommRingCat.of A)).inv b, rfl⟩, ?_⟩
       exact (IsLocalization.ringEquivOfRingEquiv_eq H _).trans
         (congrArg _ (Iso.inv_hom_id_apply (Scheme.ΓSpecIso (CommRingCat.of A)) b))))
+
+/-- `cohomologyWithSupportSpecOneEquiv` is linear over `A`, which acts on cohomology with supports
+through `A ≅ Γ(Spec A, ⊤)`: `H_{V(a)}^1(Spec A, 𝒪) ≃ₗ[A] L / A`. -/
+def cohomologyWithSupportSpecOneLinearEquiv {A : Type u} [CommRing A] (a : A) (L : Type*)
+    [CommRing L] [Algebra A L] [IsLocalization.Away a L] :
+    let 𝒪 : (Spec (CommRingCat.of A)).Modules := SheafOfModules.unit _
+    (ModuleCat.restrictScalars (Scheme.ΓSpecIso (CommRingCat.of A)).inv.hom).obj
+        (ModuleCat.of Γ(Spec (CommRingCat.of A), ⊤)
+          (cohomologyWithSupport ((Spec (CommRingCat.of A)).basicOpen
+            ((Scheme.ΓSpecIso (CommRingCat.of A)).inv a)).compl 𝒪 1)) ≃ₗ[A]
+      L ⧸ LinearMap.range (Algebra.linearMap A L) := by
+  intro 𝒪
+  let ψ := Scheme.ΓSpecIso (CommRingCat.of A)
+  let X := Spec (CommRingCat.of A)
+  have H : (Submonoid.powers (ψ.inv a)).map ψ.commRingCatIsoToRingEquiv.toMonoidHom =
+      Submonoid.powers a := by
+    rw [Submonoid.map_powers]
+    exact congrArg _ (Iso.inv_hom_id_apply ψ a)
+  let φ := IsLocalization.ringEquivOfRingEquiv Γ(X, X.basicOpen (ψ.inv a)) L
+    ψ.commRingCatIsoToRingEquiv H
+  have he (l : L) : (cohomologyWithSupportSpecOneEquiv a L).symm (QuotientAddGroup.mk l) =
+      cohomologyWithSupportBasicOpenOneEquiv _ (QuotientAddGroup.mk (φ.symm l)) :=
+    rfl
+  have hb (b : A) : φ.symm (algebraMap A L b) =
+      algebraMap Γ(X, ⊤) Γ(X, X.basicOpen (ψ.inv a)) (ψ.inv b) := by
+    apply φ.injective
+    rw [RingEquiv.apply_symm_apply, IsLocalization.ringEquivOfRingEquiv_eq]
+    exact congrArg _ (Iso.inv_hom_id_apply ψ b).symm
+  exact LinearEquiv.symm
+    { (QuotientAddGroup.quotientAddEquivOfEq (by ext; simp)).trans
+        (cohomologyWithSupportSpecOneEquiv a L).symm with
+      map_smul' b x := by
+        obtain ⟨l, rfl⟩ := Submodule.Quotient.mk_surjective _ x
+        have hlin := (cohomologyWithSupportBasicOpenOneLinearEquiv (X := X) (ψ.inv a)).map_smul
+          (ψ.inv b) (Submodule.Quotient.mk (φ.symm l))
+        rw [← Submodule.Quotient.mk_smul, Algebra.smul_def] at hlin
+        refine Eq.trans ?_ (hlin.trans rfl)
+        change (cohomologyWithSupportSpecOneEquiv a L).symm (QuotientAddGroup.mk (b • l)) = _
+        rw [he, Algebra.smul_def, map_mul, hb]
+        rfl }
 
 end Scheme.Modules
 

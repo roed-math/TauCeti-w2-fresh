@@ -4,7 +4,8 @@
 
 Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f` (session 14 merged `main` again,
 without conflicts).
-Status: **partial**. Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
+Status: **partial** (session 15: the README checks are proved; the scheme wrapper
+`localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and two compatibility clauses remain). Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
 splits numbered 5–11 before session 9 are now 8–14. Session 12 split the old split 9 into splits 9
 and 10, so the splits numbered 10–14 before session 12 are now 11–15. Session 13 inserted splits
 15 and 16, so the old final split 15 is now split 17. Session 14 split the old split 17 into
@@ -768,6 +769,46 @@ Use its `_apply` lemma. The degree-one injectivity argument uses only the elemen
 lemmas, not a five lemma, because the two long exact sequences live in different categories
 (`ModuleCat R` and abelian groups).
 
+### Session 15: the collected §2.7 checks (split 18, started)
+
+Session 15 found `main` unchanged (`e8758b7b2f8`) and wrote the checks file of split 18.
+
+`TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Checks.lean` (new, 144 lines, namespace
+`TauCeti.Supports`):
+
+- `test_support_all X M q`: `Nonempty (H^q_X(X, M) ≃ₗ[Γ(X, ⊤)] H^q(X, M))`, in every degree
+  (the README asks for `q = 1`), from `cohomologyWithSupportTopLinearEquiv`;
+- `test_support_empty`: `Subsingleton (H^q_∅(X, M))`;
+- `test_support_affine_line_origin`: `H⁰_{V(t)}(𝔸¹_k, 𝒪) = 0` and
+  `H¹_{V(t)}(𝔸¹_k, 𝒪) ≃+ k[T;T⁻¹] ⧸ k[X]`;
+- `test_support_not_restriction`: the origin is the image of `Spec k ⟶ 𝔸¹_k`, `Γ(Spec k, ⊤)` is
+  nontrivial, and `H⁰_{V(t)}(𝔸¹_k, 𝒪) = 0`;
+- `test_depth_dvr`: `H⁰_m(R) = 0` and `H¹_m(R) ≃ₗ[R] K ⧸ R` (native functors, split 14);
+- `DiscreteValuationRingExample.nonempty_localCohomology_iso_cohomologyWithSupport`: for a DVR
+  and a uniformizer `ϖ`, an `R`-linear isomorphism `H^q_m(R) ≅ H^q_{V(ϖ)}(Spec R, 𝒪)` (through
+  `restrictScalars (ΓSpecIso R).inv.hom`) in every degree, from split 17's
+  `localCohomologyIsoCohomologyWithSupport` (`V(m) = V(ϖ)`, and Mathlib's `tildeSelf` is
+  `Iso.refl`, so `R^~` is the structure sheaf by definition);
+- **`localCohomology_module_comparison_dvr`**: `H⁰_m(R) = 0` and `H¹_m(R) ≃ₗ[R] K ⧸ R`, derived
+  from the general comparison and the geometric computations (not from the native computation).
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support/Affine.lean` (+43 lines, now 292, split 13; only the
+examples import this file, so the port may also move it to split 18):
+
+- `cohomologyWithSupportSpecOneLinearEquiv a L`: the `A`-linear form
+  `restrictScalars (ΓSpecIso A).inv.hom (H¹_{V(a)}(Spec A, 𝒪)) ≃ₗ[A] L ⧸ range (Algebra.linearMap A L)`
+  of `cohomologyWithSupportSpecOneEquiv`, from the `Γ`-linearity of
+  `cohomologyWithSupportBasicOpenOneLinearEquiv` and `IsLocalization.ringEquivOfRingEquiv_eq`.
+
+`localCohomology_module_comparison_nil_ideal` (split 14) and `depth_localCohomology_zero_guard`
+(split 4) already carry their README names, so the checks file only points to them.
+
+Rubric audit (session 15): a scratch `#lint in TauCeti` over the import closure of `Checks.lean`
+found one simpNF failure, in split 6. `derivedExtOneLinearEquiv_mk` (`Principal.lean`) had
+`Submodule.Quotient.mk r` on its left-hand side, which simp rewrites to `Ideal.Quotient.mk`. It is
+now stated with `Ideal.Quotient.mk (Ideal.span {a} ^ n) r`, and the lint is clean. The DVR helper
+lives in `DiscreteValuationRingExample`, because it is specific to that example.
+
 ## What `main` already has (found in session 2)
 
 `sectionsWithSupport` is `CategoryTheory.Sheaf.supportedSections F S W`
@@ -800,22 +841,14 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
   `supportedHSheaf` and the `R`-linear `supportedModuleHPresheaf`, but no scheme wrapper yet.
 - `Γ(X, ⊤)`-linearity is done for the structure sheaf on `V(r)`
   (`cohomologyWithSupportBasicOpenOneLinearEquiv`) and, as a compatibility lemma, for any
-  quasi-coherent `M` (`cohomologyWithSupportOneEquiv_globalSectionsSmul`). The affine-line and
-  DVR geometric identifications are still stated additively, so the DVR comparison of session 9
-  is an `AddEquiv`.
-- Split 18 (final):
-  - check the comparison against the degree-one computations along a nonzerodivisor
-    (`localCohomologyOneLinearEquiv`, `cohomologyWithSupportSpecOneEquiv`);
-  - the checks `test_support_all` and `test_support_empty` (one line each, from
-    `cohomologyWithSupportTopEquiv` and `subsingleton_cohomologyWithSupport_bot`),
-    `test_support_affine_line_origin` and `test_support_not_restriction` (both proved in split 13;
-    split 18 only collects them), `test_depth_dvr` (complete in split 14:
-    `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`),
-    `localCohomology_module_comparison_nil_ideal` (complete in split 14; split 18 only collects
-    it) and `localCohomology_module_comparison_dvr`. Both sides of the DVR check are computed in
-    split 14 and agree in degrees zero and one. The check asks for them to follow from the general
-    comparison, so split 18 should rederive them from `localCohomologyIsoCohomologyWithSupport`
-    (`DiscreteValuationRing` is Noetherian);
+  quasi-coherent `M` (`cohomologyWithSupportOneEquiv_globalSectionsSmul`). Session 15 added the
+  `A`-linear `cohomologyWithSupportSpecOneLinearEquiv` on `Spec A`, so the DVR comparison check
+  is `R`-linear. The affine-line identification and session 9's DVR `AddEquiv` are still additive.
+- Split 18 (final). Done in session 15: every README check (`Checks.lean`, see session 15),
+  including `localCohomology_module_comparison_dvr` through the general comparison. Remaining:
+  - (optional) check that the comparison isomorphism itself matches the two degree-one
+    computations along a nonzerodivisor (`localCohomologyOneLinearEquiv` and
+    `cohomologyWithSupportSpecOneLinearEquiv`), not only that both sides are `K ⧸ R`;
   - the clause "compatibly with the geometric comparison" of `localCohomology_flat_baseChange`;
   - the scheme wrapper `localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and the connecting
     map compatibility of `cohomologyWithSupport_pullback` (see the items above).
@@ -933,5 +966,6 @@ before session 9 are now 8–14.
    `isZero_localCohomology_succ_of_injective`, split 7's exactness lemmas, split 8's derived
    torsion and split 15's dimension shifts, all through split 16's imports.
 18. **feat: the section 2.7 checks for cohomology with supports and local cohomology**. After:
-   1–17 (not yet written). The remaining scheme wrappers and §2.7 checks listed under "What
+   1–17 (started in session 15). `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Checks.lean`
+   (all README checks, see session 15), plus the remaining scheme wrappers listed under "What
    remains". This is the only split that completes the target.

@@ -179,9 +179,11 @@ noncomputable def derivedExtOneLinearEquiv {a : A} (ha : a ∈ nonZeroDivisors A
 /-- `derivedExtOneLinearEquiv` sends the class of `r` to `r • eₙ`. -/
 @[simp]
 theorem derivedExtOneLinearEquiv_mk {a : A} (ha : a ∈ nonZeroDivisors A) (n : ℕ) (r : A) :
-    derivedExtOneLinearEquiv ha n (Submodule.Quotient.mk r) = r • powExtClass ha n := by
-  rw [derivedExtOneLinearEquiv, LinearEquiv.trans_apply, Submodule.quotEquivOfEq_mk,
-    LinearMap.quotKerEquivOfSurjective_apply_mk, LinearMap.toSpanSingleton_apply]
+    derivedExtOneLinearEquiv ha n (Ideal.Quotient.mk (Ideal.span {a} ^ n) r) =
+      r • powExtClass ha n := by
+  rw [← Ideal.Quotient.mk_eq_mk, derivedExtOneLinearEquiv, LinearEquiv.trans_apply,
+    Submodule.quotEquivOfEq_mk, LinearMap.quotKerEquivOfSurjective_apply_mk,
+    LinearMap.toSpanSingleton_apply]
 
 section Localization
 
