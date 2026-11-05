@@ -129,6 +129,12 @@ theorem isLiftDerivation_coe {W : T'.Opens} (D : liftDerivationSubgroup f i a W)
     IsLiftDerivation f i a D.1 :=
   D.2
 
+variable {f i a} in
+/-- Two derivations over `W` are equal if their components agree. -/
+theorem liftDerivationSubgroup.ext {W : T'.Opens} {D E : liftDerivationSubgroup f i a W}
+    (h : ∀ p x, D.1 p x = E.1 p x) : D = E :=
+  Subtype.ext <| funext fun p ↦ AddMonoidHom.ext (h p)
+
 /-- Restriction of derivations from `W` to a smaller open `W' ⊆ W`. -/
 def liftDerivationSubgroupRestrict {W W' : T'.Opens} (e : W' ≤ W) :
     liftDerivationSubgroup f i a W →+ liftDerivationSubgroup f i a W' where
@@ -194,6 +200,7 @@ private lemma existsUnique_glue (p : LiftDerivationIndex i a (iSup U)) (x : Γ(X
       T'.presheaf.map (homOfLE inf_le_left).op t = (sf j).1 (p.cut j) x := by
   refine T'.sheaf.existsUnique_gluing' (U := fun j ↦ p.1.2 ⊓ U j) p.1.2
     (fun j ↦ homOfLE inf_le_left) (le_iSup_inf p) _ fun j k ↦ ?_
+  -- `IsCompatible` is stated with the generic inclusions `infLELeft` and `infLERight`.
   change T'.presheaf.map (homOfLE inf_le_left).op ((sf j).1 (p.cut j) x) =
     T'.presheaf.map (homOfLE inf_le_right).op ((sf k).1 (p.cut k) x)
   rw [(isLiftDerivation_coe (sf j)).map_apply, (isLiftDerivation_coe (sf k)).map_apply]
@@ -305,6 +312,7 @@ theorem liftDerivationPresheaf_isSheaf : (liftDerivationPresheaf f i a).IsSheaf 
   · -- On `q` below `U j`, the glued component restricts on every `V ⊓ U k` as `sf j` does.
     let p : LiftDerivationIndex i a (iSup U) := ⟨q.1, q.2.1.trans (le_iSup U j), q.2.2⟩
     refine eq_of_inf_eq p fun k ↦ ?_
+    -- Unfold the restriction of the glued derivation to `U j`.
     change T'.presheaf.map _ (glueHom sf hsf p x) = T'.presheaf.map _ ((sf j).1 q x)
     refine (glueHom_spec sf hsf p x k).trans ?_
     rw [(isLiftDerivation_coe (sf j)).map_apply]

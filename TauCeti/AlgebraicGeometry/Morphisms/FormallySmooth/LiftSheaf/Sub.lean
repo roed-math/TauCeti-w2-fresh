@@ -87,9 +87,27 @@ theorem preimage_ι_le_preimage_liftSheafObjEquiv [Surjective i] {U : X.Opens} {
   have hz : i z.1 ∈ V := by
     rw [← morphismRestrict_base_coe]
     exact hy
+  -- Membership in a preimage is membership of the image point.
   change (liftSheafObjEquiv f i a h W l).1 ((i ∣_ W) z) ∈ U
   rw [← Scheme.Hom.comp_apply, (liftSheafObjEquiv f i a h W l).2.1, Scheme.Hom.comp_apply]
   exact hU hz
+
+/-- If `i` is surjective, `a` maps the points of `T` over the image in `T'` of `l ⁻¹ U` into `U`,
+for every section `l` of the sheaf of lifts over `W`. -/
+theorem preimage_ι_image_preimage_liftSheafObjEquiv_le (l : (liftSheaf f i a h).obj.obj (op W))
+    (U : X.Opens) :
+    i ⁻¹ᵁ (W.ι ''ᵁ ((liftSheafObjEquiv f i a h W l).1 ⁻¹ᵁ U)) ≤ a ⁻¹ᵁ U := fun s hs ↦ by
+  have hsW : i s ∈ W := Scheme.Opens.ι_image_le _ _ hs
+  let s' : (i ⁻¹ᵁ W).toScheme := ⟨s, hsW⟩
+  have hy : (i ∣_ W) s' = ⟨i s, hsW⟩ := Subtype.ext (morphismRestrict_base_coe i W s')
+  have has : a s = (liftSheafObjEquiv f i a h W l).1 ⟨i s, hsW⟩ := by
+    rw [← hy, ← Scheme.Hom.comp_apply, (liftSheafObjEquiv f i a h W l).2.1,
+      Scheme.Hom.comp_apply]
+    rfl
+  -- Membership in a preimage is membership of the image point.
+  change a s ∈ U
+  rw [has]
+  exact (Scheme.Opens.mem_ι_image_iff (x := (⟨i s, hsW⟩ : W.toScheme))).1 hs
 
 /-- The preimage of `V` under `i ∣_ W ≫ W.ι` and under `(i ⁻¹ W).ι ≫ i` agree. -/
 private lemma preimage_morphismRestrict_preimage_ι (V : T'.Opens) :
@@ -211,7 +229,7 @@ theorem liftSheafSub_apply_eq_iff (l₁ l₂ : (liftSheaf f i a h).obj.obj (op W
 /-- The differences of three sections of the sheaf of lifts add up. -/
 theorem liftSheafSub_add_liftSheafSub (l₁ l₂ l₃ : (liftSheaf f i a h).obj.obj (op W)) :
     liftSheafSub l₁ l₂ + liftSheafSub l₂ l₃ = liftSheafSub l₁ l₃ :=
-  Subtype.ext <| funext fun p ↦ AddMonoidHom.ext fun x ↦ by
+  liftDerivationSubgroup.ext fun p x ↦ by
     rw [AddSubgroup.coe_add, Pi.add_apply, AddMonoidHom.add_apply, eq_comm,
       liftSheafSub_apply_eq_iff, map_add, ι_app_liftSheafSub_apply, ι_app_liftSheafSub_apply,
       ← AddMonoidHom.add_apply, Scheme.Hom.appLESub_add_appLESub]
@@ -219,7 +237,7 @@ theorem liftSheafSub_add_liftSheafSub (l₁ l₂ l₃ : (liftSheaf f i a h).obj.
 /-- The difference of a section of the sheaf of lifts with itself vanishes. -/
 @[simp]
 theorem liftSheafSub_self (l : (liftSheaf f i a h).obj.obj (op W)) : liftSheafSub l l = 0 :=
-  Subtype.ext <| funext fun p ↦ AddMonoidHom.ext fun x ↦ by
+  liftDerivationSubgroup.ext fun p x ↦ by
     rw [AddSubgroup.coe_zero, Pi.zero_apply, AddMonoidHom.zero_apply, liftSheafSub_apply_eq_iff,
       map_zero, Scheme.Hom.appLESub_self, AddMonoidHom.zero_apply]
 
@@ -230,17 +248,7 @@ theorem liftSheafSub_eq_zero_iff {l₁ l₂ : (liftSheaf f i a h).obj.obj (op W)
     fun H ↦ H ▸ liftSheafSub_self l₁⟩
   -- Read the difference on the open `V` of `T'` underlying `l₂ ⁻¹ U`.
   let V := W.ι ''ᵁ ((liftSheafObjEquiv f i a h W l₂).1 ⁻¹ᵁ U)
-  have hV : i ⁻¹ᵁ V ≤ a ⁻¹ᵁ U := fun t ht ↦ by
-    have htW : i t ∈ W := Scheme.Opens.ι_image_le _ _ ht
-    let t' : (i ⁻¹ᵁ W).toScheme := ⟨t, htW⟩
-    have hy : (i ∣_ W) t' = ⟨i t, htW⟩ := Subtype.ext (morphismRestrict_base_coe i W t')
-    have hat : a t = (liftSheafObjEquiv f i a h W l₂).1 ⟨i t, htW⟩ := by
-      rw [← hy, ← Scheme.Hom.comp_apply, (liftSheafObjEquiv f i a h W l₂).2.1,
-        Scheme.Hom.comp_apply]
-      rfl
-    change a t ∈ U
-    rw [hat]
-    exact (Scheme.Opens.mem_ι_image_iff (x := (⟨i t, htW⟩ : W.toScheme))).1 ht
+  have hV : i ⁻¹ᵁ V ≤ a ⁻¹ᵁ U := preimage_ι_image_preimage_liftSheafObjEquiv_le l₂ U
   let p : LiftDerivationIndex i a W := ⟨(U, V), Scheme.Opens.ι_image_le _ _, hV⟩
   have h0 := ι_app_liftSheafSub_apply l₁ l₂ p x
   rw [H, AddSubgroup.coe_zero, Pi.zero_apply, AddMonoidHom.zero_apply, map_zero] at h0
@@ -269,7 +277,7 @@ theorem liftSheafSub_map {W' : T'.Opens} (e : W' ≤ W)
     liftDerivationSubgroupRestrict f i a e (liftSheafSub l₁ l₂) =
       liftSheafSub ((liftSheaf f i a h).obj.map (homOfLE e).op l₁)
         ((liftSheaf f i a h).obj.map (homOfLE e).op l₂) :=
-  Subtype.ext <| funext fun q ↦ AddMonoidHom.ext fun x ↦ by
+  liftDerivationSubgroup.ext fun q x ↦ by
     have hle : W'.ι ⁻¹ᵁ q.1.2 ≤ T'.homOfLE e ⁻¹ᵁ (W.ι ⁻¹ᵁ q.1.2) := by
       rw [← Scheme.Hom.comp_preimage, Scheme.homOfLE_ι]
     rw [liftDerivationSubgroupRestrict_apply, eq_comm, liftSheafSub_apply_eq_iff]
@@ -291,29 +299,20 @@ theorem liftDerivation_eq_zero_of_isAffineOpen (l₀ : (liftSheaf f i a h).obj.o
     (hD : ∀ (V : T'.Opens) (hV : V ≤ W) (x : Γ(X, U)),
       D.1 ⟨(U, V), hV, (i.preimage_mono hV).trans hU⟩ x = 0) :
     D = 0 := by
-  refine Subtype.ext <| funext fun p ↦ AddMonoidHom.ext fun x ↦ ?_
+  refine liftDerivationSubgroup.ext fun p x ↦ ?_
   rw [AddSubgroup.coe_zero, Pi.zero_apply, AddMonoidHom.zero_apply]
   set m := (liftSheafObjEquiv f i a h W l₀).1
   refine T'.IsSheaf.section_ext fun t ht ↦ ?_
   have htW : t ∈ W := p.2.1 ht
-  have hyU : m ⟨t, htW⟩ ∈ U :=
-    preimage_ι_le_preimage_liftSheafObjEquiv hU l₀ (show ⟨t, htW⟩ ∈ W.ι ⁻¹ᵁ W from htW)
+  -- `l₀` maps `t` into `U` and into `U''`.
+  have hyU : m ⟨t, htW⟩ ∈ U := preimage_ι_le_preimage_liftSheafObjEquiv hU l₀ (x := ⟨t, htW⟩) htW
   have hyU'' : m ⟨t, htW⟩ ∈ p.1.1 :=
-    preimage_ι_le_preimage_liftSheafObjEquiv p.2.2 l₀ (show ⟨t, htW⟩ ∈ W.ι ⁻¹ᵁ p.1.2 from ht)
+    preimage_ι_le_preimage_liftSheafObjEquiv p.2.2 l₀ (x := ⟨t, htW⟩) ht
   obtain ⟨g, hg, hyg⟩ := hUa.exists_basicOpen_le ⟨_, hyU''⟩ hyU
   -- The open `V₃ ∋ t` of `T'` that `l₀` maps into the basic open `D(g) ⊆ U ∩ U''`.
   set V₃ := p.1.2 ⊓ W.ι ''ᵁ (m ⁻¹ᵁ X.basicOpen g)
-  have hV₃ : i ⁻¹ᵁ V₃ ≤ a ⁻¹ᵁ X.basicOpen g := fun s hs ↦ by
-    have hsW : i s ∈ W := Scheme.Opens.ι_image_le _ _ hs.2
-    let s' : (i ⁻¹ᵁ W).toScheme := ⟨s, hsW⟩
-    have hy : (i ∣_ W) s' = ⟨i s, hsW⟩ := Subtype.ext (morphismRestrict_base_coe i W s')
-    have has : a s = m ⟨i s, hsW⟩ := by
-      rw [← hy, ← Scheme.Hom.comp_apply, (liftSheafObjEquiv f i a h W l₀).2.1,
-        Scheme.Hom.comp_apply]
-      rfl
-    change a s ∈ X.basicOpen g
-    rw [has]
-    exact (Scheme.Opens.mem_ι_image_iff (x := (⟨i s, hsW⟩ : W.toScheme))).1 hs.2
+  have hV₃ : i ⁻¹ᵁ V₃ ≤ a ⁻¹ᵁ X.basicOpen g := (i.preimage_mono inf_le_right).trans
+    (preimage_ι_image_preimage_liftSheafObjEquiv_le l₀ _)
   refine ⟨V₃, inf_le_left,
     ⟨ht, (Scheme.Opens.mem_ι_image_iff (x := (⟨t, htW⟩ : W.toScheme))).2 hyg⟩, ?_⟩
   rw [map_zero, (isLiftDerivation_coe D).map_apply,
@@ -322,6 +321,7 @@ theorem liftDerivation_eq_zero_of_isAffineOpen (l₀ : (liftSheaf f i a h).obj.o
   have hV₃W : V₃ ≤ W := inf_le_left.trans p.2.1
   let q : LiftDerivationIndex i a W := ⟨(U, V₃), hV₃W, (i.preimage_mono hV₃W).trans hU⟩
   let q₃ : LiftDerivationIndex i a W := ⟨(X.basicOpen g, V₃), hV₃W, hV₃⟩
+  -- The index produced by `apply_map` is `q₃`.
   change D.1 q₃ (X.presheaf.map (homOfLE hg).op x) = 0
   have hq (y : Γ(X, U)) : D.1 q₃ (X.presheaf.map (homOfLE (X.basicOpen_le g)).op y) = 0 :=
     ((isLiftDerivation_coe D).apply_map q _ hV₃ (X.basicOpen_le g) y).trans (hD V₃ hV₃W y)

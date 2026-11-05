@@ -284,7 +284,8 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    `apply_map`: compatible with restriction in `V` and in `U`; `app_apply`: values in the ideal of
    `i`; `apply_appLE`: kills the sections of `S`; `map_mul`: the Leibniz rule
    `D (x * y) = z * D y + w * D x` for all `z`, `w` with `i^♯ z = a^♯ x`, `i^♯ w = a^♯ y`); the
-   additive subgroup `liftDerivationSubgroup f i a W` of such families with `isLiftDerivation_coe`;
+   additive subgroup `liftDerivationSubgroup f i a W` of such families with `isLiftDerivation_coe`,
+   `mem_liftDerivationSubgroup` and `liftDerivationSubgroup.ext`;
    the restriction `liftDerivationSubgroupRestrict` (simp lemma `_apply`); the presheaf of abelian
    groups `liftDerivationPresheaf f i a` on `T'` (simp lemma `liftDerivationPresheaf_map_apply`);
    `liftDerivationPresheaf_isSheaf` (gluing through the sheaf property of `𝒪_{T'}`, ideal
@@ -293,13 +294,18 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    The Leibniz rule quantifies over local lifts `z`, `w` of `a^♯ x`, `a^♯ y` to `T'` because over a
    non-affine `V` they need not exist; over affine `V` they do, and the families are indexed by
    all `V ⊆ W`, so nothing is lost. `liftDerivationPresheaf` carries `@[expose]` so that its
-   `map_apply` simp lemma can be stated about the underlying subgroup.
+   `map_apply` simp lemma can be stated about the underlying subgroup. A reviewer may ask to
+   export the private general helpers `map_map_apply` (two restrictions are one) and
+   `app_map_apply` (`i^♯` commutes with restriction) to a general home; they are kept private as
+   one-line uses of `Functor.map_comp` and `Scheme.Hom.naturality`.
 13. **`feat: the difference of two lifts as a derivation`** — after: 1, 2, 4, 6, 7, 8, 10, 11, 12.
    New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Sub.lean` (about 345
    lines; imports split 11's `Difference.lean` and split 12's `Derivation.lean`). For `i` a
    first-order thickening and two sections `l₁`, `l₂` of `liftSheaf f i a h` over `W`:
    `preimage_ι_le_preimage_liftSheafObjEquiv` (for `i ⁻¹ᵁ V ≤ a ⁻¹ᵁ U`, a section maps `W ∩ V`
-   into `U`; the local form of split 8's `range_subset_of_liftSheaf`); `liftSheafSub l₁ l₂ :
+   into `U`; the local form of split 8's `range_subset_of_liftSheaf`) and its converse
+   `preimage_ι_image_preimage_liftSheafObjEquiv_le` (`a` maps `i ⁻¹ (W ∩ l ⁻¹ U)` into `U`);
+   `liftSheafSub l₁ l₂ :
    liftDerivationSubgroup f i a W` (on `(U, V)`, the difference `Scheme.Hom.appLESub l₁ l₂ U
    (W.ι ⁻¹ᵁ V)` carried from `Γ(W, W ⁻¹ V)` to `Γ(T', V)` by the inverse of the isomorphism
    `W.ι.app V`, Mathlib's `Scheme.Hom.isIso_app`; the five `IsLiftDerivation` fields come from
@@ -315,9 +321,11 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    the Leibniz rule along the lifts given by the lift of `a`, where `g ^ n` lifts to a unit,
    kills it; Mathlib's `IsAffineOpen.isLocalization_basicOpen`, `RingedSpace.isUnit_res_basicOpen`,
    `TopCat.Presheaf.IsSheaf.section_ext`). Split 12 also gains the public
-   `mem_liftDerivationSubgroup` for this split. Private helpers: `ιAppIso`, `ι_app_injective`,
-   `ι_app_app` (`(i ⁻¹ W).ι^♯ ∘ i^♯ = (i ∣_ W)^♯ ∘ W.ι^♯`), `app_map_appLE`,
-   `app_liftSheafSubHom`.
+   `mem_liftDerivationSubgroup` and `liftDerivationSubgroup.ext` for this split. Private helpers:
+   `ιAppIso`, `ι_app_ιAppIso_inv`, `ι_app_injective`, `ι_app_app`
+   (`(i ⁻¹ W).ι^♯ ∘ i^♯ = (i ∣_ W)^♯ ∘ W.ι^♯`), `app_map_appLE`, `app_liftSheafSubHom`. The first
+   three are general facts about an open `V ⊆ W` (`Γ(Z, V) ≅ Γ(W, W ⁻¹ V)`); a reviewer may ask to
+   export them next to Mathlib's `Scheme.Hom.isIso_app`.
 14. **`feat: smooth iff formally smooth and the torsor of lifts`** — after: 1–13.
    **Not on this branch.** This is the only split that completes the target: the general
    `smooth_lifting_torsor`, `FormallySmooth.of_smooth`, `smooth_iff_formallySmooth`, and the ⇐ half
