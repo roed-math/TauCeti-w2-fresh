@@ -30,8 +30,9 @@ the map `W ⟶ Spec A` is injective because `D(f) ⊆ Spec R` is the preimage of
   a ring whose spectrum is locally of finite type over the terminal scheme is of finite type
   over `ℤ`.
 * `TauCeti.AlgebraicGeometry.exists_finset_isOpenImmersion_away_comp_SpecMap_val`: the case of a
-  single basic open.
-* `TauCeti.AlgebraicGeometry.Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val`: Stacks 01Z7.
+  single basic open, whose image in `Spec A` is the basic open `D(f)` of `Spec A`.
+* `TauCeti.AlgebraicGeometry.Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val`: Stacks 01Z7,
+  with the image of `W` in `Spec A` containing `D(f)` for finitely many prescribed `f`.
 -/
 
 @[expose] public section
@@ -63,12 +64,15 @@ variable {R : Type u} [CommRing R]
 
 /-- If `R_f` is of finite type over `ℤ`, there is a finite subset `s ⊆ R` containing `f` such
 that for every subring `A ⊆ R` containing `s`, the ring `R_f` is the localization of `A` away
-from `f`, so that `Spec R_f ⟶ Spec R ⟶ Spec A` is an open immersion. -/
+from `f`, so that `Spec R_f ⟶ Spec R ⟶ Spec A` is an open immersion with image `D(f)`. -/
 lemma exists_finset_isOpenImmersion_away_comp_SpecMap_val (f : R)
     [Algebra.FiniteType ℤ (Localization.Away f)] :
     ∃ s : Finset R, f ∈ s ∧ ∀ A : Subalgebra ℤ R, (s : Set R) ⊆ A →
       IsOpenImmersion (Spec.map (CommRingCat.ofHom (algebraMap R (Localization.Away f))) ≫
-        Spec.map (CommRingCat.ofHom A.val.toRingHom)) := by
+        Spec.map (CommRingCat.ofHom A.val.toRingHom)) ∧
+      ∀ (a : A) (p : Spec (.of A)), (a : R) = f → a ∉ p.asIdeal →
+        p ∈ Set.range (Spec.map (CommRingCat.ofHom (algebraMap R (Localization.Away f))) ≫
+          Spec.map (CommRingCat.ofHom A.val.toRingHom)) := by
   classical
   obtain ⟨T, hT⟩ := Algebra.FiniteType.out (R := ℤ) (A := Localization.Away f)
   choose x hx using fun t : Localization.Away f ↦ IsLocalization.surj (Submonoid.powers f) t
@@ -112,19 +116,29 @@ lemma exists_finset_isOpenImmersion_away_comp_SpecMap_val (f : R)
         (IsLocalization.eq_iff_exists (Submonoid.powers f) (Localization.Away f)).mp h
       exact ⟨⟨fA ^ n, n, rfl⟩, Subtype.ext (by simpa [fA] using hc)⟩
   have := IsOpenImmersion.of_isLocalization fA (S := Localization.Away f)
-  rwa [← Spec.map_comp, ← CommRingCat.ofHom_comp]
+  refine ⟨by rwa [← Spec.map_comp, ← CommRingCat.ofHom_comp], fun a p ha hp ↦ ?_⟩
+  obtain rfl : a = fA := Subtype.ext ha
+  obtain ⟨q, rfl⟩ := (PrimeSpectrum.localization_away_comap_range (Localization.Away f) fA).ge hp
+  exact ⟨q, rfl⟩
 
 /-- Let `ι : W ⟶ Spec R` be an open immersion with `W` quasi-compact and locally of finite type
 over `ℤ`. Then there is a finite subset `s ⊆ R` such that for every subring `A ⊆ R` containing
 `s`, the composite `W ⟶ Spec R ⟶ Spec A` is an open immersion. Taking `A = ℤ[s]` makes `W` an
 open subscheme of the spectrum of a finitely generated `ℤ`-algebra, and since these `A` are
 cofinal among the subrings of `R`, `R` is the directed union of such subrings.
-Stacks, Lemma 32.5.1 (01Z7). -/
+Stacks, Lemma 32.5.1 (01Z7).
+
+Moreover, given finitely many `f ∈ F₀` with `D(f)` contained in the image of `W`, `s` can be
+chosen so that the image of `W` in `Spec A` contains `D(f)` (taken in `Spec A`) for each of them.
+-/
 theorem Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val {W : Scheme.{u}}
     (ι : W ⟶ Spec (.of R)) [IsOpenImmersion ι] [CompactSpace W]
-    [LocallyOfFiniteType (terminal.from W)] :
+    [LocallyOfFiniteType (terminal.from W)] (F₀ : Finset R)
+    (hF₀ : ∀ f ∈ F₀, ∀ p : PrimeSpectrum R, f ∉ p.asIdeal → p ∈ Set.range ι) :
     ∃ s : Finset R, ∀ A : Subalgebra ℤ R, (s : Set R) ⊆ A →
-      IsOpenImmersion (ι ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom)) := by
+      IsOpenImmersion (ι ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom)) ∧
+      ∀ f ∈ F₀, ∀ (a : A) (p : Spec (.of A)), (a : R) = f → a ∉ p.asIdeal →
+        p ∈ Set.range (ι ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom)) := by
   classical
   obtain ⟨F, hF⟩ := PrimeSpectrum.isCompact_isOpen_iff.mp
     ⟨isCompact_range ι.continuous, ι.isOpenEmbedding.isOpen_range⟩
@@ -138,9 +152,11 @@ theorem Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val {W : Scheme.{u}}
   have hmem (x : W) : ∃ f ∈ F, ι x ∈ Set.range (j f) := by
     obtain ⟨f, hf, hfx⟩ := (hF' (ι x)).mp (Set.mem_range_self x)
     exact ⟨f, hf, (hj f _).mpr hfx⟩
-  have hle (f : R) (hf : f ∈ F) : Set.range (j f) ⊆ Set.range ι :=
-    fun p hp ↦ (hF' p).mpr ⟨f, hf, (hj f p).mp hp⟩
-  have hft (f : R) (hf : f ∈ F) : Algebra.FiniteType ℤ (Localization.Away f) := by
+  have hle (f : R) (hf : f ∈ F ∪ F₀) : Set.range (j f) ⊆ Set.range ι := fun p hp ↦ by
+    rcases Finset.mem_union.mp hf with hf | hf
+    · exact (hF' p).mpr ⟨f, hf, (hj f p).mp hp⟩
+    · exact hF₀ f hf p ((hj f p).mp hp)
+  have hft (f : R) (hf : f ∈ F ∪ F₀) : Algebra.FiniteType ℤ (Localization.Away f) := by
     have : LocallyOfFiniteType (terminal.from (Spec (.of (Localization.Away f)))) := by
       rw [terminal.hom_ext (terminal.from _)
         (IsOpenImmersion.lift ι (j f) (hle f hf) ≫ terminal.from W)]
@@ -149,16 +165,18 @@ theorem Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val {W : Scheme.{u}}
     convert finiteType_intCastRingHom_of_locallyOfFiniteType_terminal_from_Spec
       (.of (Localization.Away f))
     exact RingHom.ext_int _ _
-  choose! s hfs hs using fun f (hf : f ∈ F) ↦
+  choose! s hfs hs using fun f (hf : f ∈ F ∪ F₀) ↦
     have := hft f hf
     exists_finset_isOpenImmersion_away_comp_SpecMap_val f
-  refine ⟨F.biUnion s, fun A hA ↦ ?_⟩
-  have hsA (f : R) (hf : f ∈ F) : (s f : Set R) ⊆ A :=
+  refine ⟨(F ∪ F₀).biUnion s, fun A hA ↦ ?_⟩
+  have hsA (f : R) (hf : f ∈ F ∪ F₀) : (s f : Set R) ⊆ A :=
     fun y hy ↦ hA (Finset.mem_coe.mpr (Finset.mem_biUnion.mpr ⟨f, hf, hy⟩))
   let g := Spec.map (CommRingCat.ofHom A.val.toRingHom)
-  refine IsOpenImmersion.of_forall_source_exists _ (fun x y hxy ↦ ?_) fun x ↦ ?_
+  refine ⟨IsOpenImmersion.of_forall_source_exists _ (fun x y hxy ↦ ?_) fun x ↦ ?_,
+    fun f hf a p ha hp ↦ ?_⟩
   · obtain ⟨f, hf, x', hx'⟩ := hmem x
-    let fA : A := ⟨f, hsA f hf (hfs f hf)⟩
+    have hf' := Finset.mem_union_left F₀ hf
+    let fA : A := ⟨f, hsA f hf' (hfs f hf')⟩
     have hy : ι y ∈ Set.range (j f) := by
       have hx : f ∉ (ι x).asIdeal := (hj f _).mp ⟨x', hx'⟩
       have hg : g (ι x) = g (ι y) := hxy
@@ -166,18 +184,23 @@ theorem Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val {W : Scheme.{u}}
       have : fA ∈ (g (ι y)).asIdeal := h
       exact (hg ▸ this : fA ∈ (g (ι x)).asIdeal)
     obtain ⟨y', hy'⟩ := hy
-    have := hs f hf A (hsA f hf)
+    have := (hs f hf' A (hsA f hf')).1
     have : x' = y' := (j f ≫ g).isOpenEmbedding.injective (by
       simp only [Scheme.Hom.comp_apply]
       rw [hx', hy']
       exact hxy)
     exact ι.isOpenEmbedding.injective (by rw [← hx', ← hy', this])
   · obtain ⟨f, hf, x', hx'⟩ := hmem x
-    refine ⟨_, IsOpenImmersion.lift ι (j f) (hle f hf), inferInstance, ⟨x', ?_⟩, ?_⟩
+    have hf' := Finset.mem_union_left F₀ hf
+    refine ⟨_, IsOpenImmersion.lift ι (j f) (hle f hf'), inferInstance, ⟨x', ?_⟩, ?_⟩
     · apply ι.isOpenEmbedding.injective
       rw [← Scheme.Hom.comp_apply, IsOpenImmersion.lift_fac]
       exact hx'
     · rw [← Category.assoc, IsOpenImmersion.lift_fac]
-      exact hs f hf A (hsA f hf)
+      exact (hs f hf' A (hsA f hf')).1
+  · have hf' := Finset.mem_union_right F hf
+    obtain ⟨q, rfl⟩ := (hs f hf' A (hsA f hf')).2 a p ha hp
+    obtain ⟨w, hw⟩ := hle f hf' ⟨q, rfl⟩
+    exact ⟨w, by rw [Scheme.Hom.comp_apply, hw]; rfl⟩
 
 end TauCeti.AlgebraicGeometry

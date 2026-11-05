@@ -36,10 +36,16 @@ sides are `Γ(X, D(r))` by the qcqs lemma), so that `P` localized away from `(g 
   product `Γ(X, W) ×_{Γ(X, V)} A` localized away from `(r, b)` is `A_b`.
 * `TauCeti.AlgebraicGeometry.Scheme.isOpenImmersion_toSpecΓ_comp_SpecMap_pullbackCone_snd`: `Y`
   is an open subscheme of `Spec P`.
+* `TauCeti.AlgebraicGeometry.Scheme.mem_range_toSpecΓ_comp_SpecMap_pullbackCone_snd`: the basic
+  open of `(g k, b k)` in `Spec P` is contained in the image of `Y`.
+* `TauCeti.AlgebraicGeometry.Scheme.opensRange_toSpecΓ_comp_SpecMap_eq_iSup`: the image of an
+  open immersion `Y ⟶ Spec A` covered by such basic opens is their union.
 * `TauCeti.AlgebraicGeometry.Scheme.isPullback_toSpecΓ_comp_SpecMap`: if `Y` is open in `Spec A`
   for a ring `A` mapping compatibly to `Γ(X, ⊤)` and `Γ(Y, ⊤)`, its preimage in `X` is `V`.
 * `TauCeti.AlgebraicGeometry.Scheme.exists_finset_isPullback_toSpecΓ_comp_SpecMap`: the same for
-  every subring of `P` containing a finite set, if `Y` is locally of finite type over `ℤ`.
+  every subring of `P` containing a finite set, if `Y` is locally of finite type over `ℤ`; the
+  image of `Y` in `Spec A` is then the union of the basic opens of the `(g k, b k)`, so that it
+  pulls back to the image of the corresponding model under any compatible ring map.
 -/
 
 @[expose] public section
@@ -153,6 +159,49 @@ theorem isOpenImmersion_toSpecΓ_comp_SpecMap_pullbackCone_snd [CompactSpace X]
   rw [← Y.isoOfEq_hom_ι (hpre k), Category.assoc]
   exact MorphismProperty.comp_mem _ _ _ inferInstance (hloc k)
 
+/-- Let `V` be a quasi-compact open of a quasi-compact quasi-separated scheme `X`, and
+`h : Γ(Y, ⊤) ⟶ Γ(X, V)` a ring map from the global sections of a quasi-compact quasi-separated
+scheme `Y`. If `x = (g, b)` in the fibre product `P = Γ(X, ⊤) ×_{Γ(X, V)} Γ(Y, ⊤)` has
+`D(g) ⊆ V` and `D(b)` affine, then the basic open `D(x) ⊆ Spec P` lies in the image of
+`Y ⟶ Spec P`: it is the image of `D(b)`. Part of Stacks, Lemma 32.5.2 (01Z9). -/
+theorem mem_range_toSpecΓ_comp_SpecMap_pullbackCone_snd [CompactSpace X]
+    [QuasiSeparatedSpace X] (hV : IsCompact (V : Set X)) {Y : Scheme.{u}} [CompactSpace Y]
+    [QuasiSeparatedSpace Y] (h : Γ(Y, ⊤) ⟶ Γ(X, V)) (g : Γ(X, ⊤)) (b : Γ(Y, ⊤))
+    (hgb : h b = X.presheaf.map (homOfLE le_top).op g) (hg : X.basicOpen g ≤ V)
+    (hb : IsAffineOpen (Y.basicOpen b))
+    (p : PrimeSpectrum (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op) h).pt)
+    (hp : (⟨(g, b), hgb.symm⟩ : ((X.presheaf.map (homOfLE le_top).op).hom.comp
+      (RingHom.fst Γ(X, ⊤) Γ(Y, ⊤))).eqLocus (h.hom.comp (RingHom.snd Γ(X, ⊤) Γ(Y, ⊤)))) ∉
+        p.asIdeal) :
+    p ∈ Set.range (Y.toSpecΓ ≫
+      Spec.map (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op) h).snd) := by
+  let c := CommRingCat.pullbackCone (X.presheaf.map (homOfLE (le_top (a := V))).op) h
+  let x : ((X.presheaf.map (homOfLE (le_top (a := V))).op).hom.comp
+      (RingHom.fst Γ(X, ⊤) Γ(Y, ⊤))).eqLocus (h.hom.comp (RingHom.snd Γ(X, ⊤) Γ(Y, ⊤))) :=
+    ⟨(g, b), hgb.symm⟩
+  let xc : c.pt := x
+  let _ : Algebra (((X.presheaf.map (homOfLE (le_top (a := V))).op).hom.comp
+      (RingHom.fst Γ(X, ⊤) Γ(Y, ⊤))).eqLocus (h.hom.comp (RingHom.snd Γ(X, ⊤) Γ(Y, ⊤))))
+      Γ(Y, Y.basicOpen b) :=
+    (c.snd ≫ Y.presheaf.map (homOfLE le_top).op).hom.toAlgebra
+  have : IsLocalization.Away x.1.2 Γ(Y, Y.basicOpen b) :=
+    isLocalization_basicOpen_of_qcqs isCompact_univ isQuasiSeparated_univ b
+  have : IsLocalization.Away x Γ(Y, Y.basicOpen b) :=
+    isLocalization_away_eqLocus_of_basicOpen_le le_top hV isCompact_univ
+      isQuasiSeparated_univ x hg _ rfl
+  obtain ⟨q, rfl⟩ := (PrimeSpectrum.localization_away_comap_range Γ(Y, Y.basicOpen b) x).ge
+    ((PrimeSpectrum.mem_basicOpen xc p).mpr hp)
+  refine ⟨(Y.basicOpen b).ι (hb.isoSpec.inv q), ?_⟩
+  have H : (Y.basicOpen b).ι ≫ Y.toSpecΓ ≫ Spec.map c.snd =
+      hb.isoSpec.hom ≫ Spec.map (c.snd ≫ Y.presheaf.map (homOfLE le_top).op) := by
+    rw [← Category.assoc, ← Scheme.Opens.toSpecΓ_SpecMap_presheaf_map_top, Category.assoc,
+      ← Spec.map_comp, IsAffineOpen.isoSpec_hom]
+  rw [← Scheme.Hom.comp_apply, H]
+  change (hb.isoSpec.inv ≫ hb.isoSpec.hom ≫
+    Spec.map (c.snd ≫ Y.presheaf.map (homOfLE le_top).op)) q = _
+  rw [Iso.inv_hom_id_assoc]
+  rfl
+
 /-- Let `V` be an open of a scheme `X` and `φ : V ⟶ Y` a morphism of schemes. Let `α`, `β` map a
 ring `A` to the global sections of `X` and `Y`, compatibly over `Γ(X, V)`, such that
 `Y ⟶ Spec Γ(Y, ⊤) ⟶ Spec A` is an open immersion. Suppose `Y` is covered by basic opens
@@ -187,6 +236,22 @@ theorem isPullback_toSpecΓ_comp_SpecMap {Y : Scheme.{u}} (φ : V.toScheme ⟶ Y
     intro p hp
     exact ⟨φ ⟨p, hp⟩, congr($H ⟨p, hp⟩).symm⟩
 
+/-- Let `β : A ⟶ Γ(Y, ⊤)` be a ring map along which `Y ⟶ Spec A` is an open immersion, and let
+`Y` be covered by the basic opens `D(β (a k))`. If each `D(a k) ⊆ Spec A` lies in the image of
+`Y`, then this image is the union of the `D(a k)`. -/
+theorem opensRange_toSpecΓ_comp_SpecMap_eq_iSup {Y : Scheme.{u}} {A : CommRingCat.{u}}
+    (β : A ⟶ Γ(Y, ⊤)) [IsOpenImmersion (Y.toSpecΓ ≫ Spec.map β)] {ι : Type*} (a : ι → A)
+    (hY : ⨆ k, Y.basicOpen (β (a k)) = ⊤)
+    (ha : ∀ k, ∀ p : Spec A, a k ∉ p.asIdeal → p ∈ Set.range (Y.toSpecΓ ≫ Spec.map β)) :
+    (Y.toSpecΓ ≫ Spec.map β).opensRange = ⨆ k, PrimeSpectrum.basicOpen (a k) := by
+  refine le_antisymm ?_ (iSup_le fun k p hp ↦ ha k p hp)
+  rintro _ ⟨y, rfl⟩
+  obtain ⟨k, hk⟩ := TopologicalSpace.Opens.mem_iSup.mp (hY.ge (Set.mem_univ y))
+  have hpre : (Y.toSpecΓ ≫ Spec.map β) ⁻¹ᵁ PrimeSpectrum.basicOpen (a k) =
+      Y.basicOpen (β (a k)) :=
+    Y.toSpecΓ_preimage_basicOpen _
+  exact TopologicalSpace.Opens.mem_iSup.mpr ⟨k, hpre.ge hk⟩
+
 /-- Let `V` be a quasi-compact open of a quasi-compact quasi-separated scheme `X`, and
 `φ : V ⟶ Y` a morphism to a quasi-compact quasi-separated scheme `Y` locally of finite type over
 `ℤ`. Suppose `Y` is covered by finitely many affine basic opens `D(b k)`, where each `φ^* (b k)`
@@ -194,6 +259,8 @@ is the restriction of some `g k : Γ(X, ⊤)` with `D(g k) ⊆ V`. Then there is
 of `P = Γ(X, ⊤) ×_{Γ(X, V)} Γ(Y, ⊤)` such that for every subring `A ⊆ P` containing `s`, `Y` is
 an open subscheme of `Spec A` whose preimage in `X` is `V`. Taking `A = ℤ[s]`, `Y` is an open
 of the spectrum of a finitely generated `ℤ`-algebra mapping to `Γ(X, ⊤)`, with preimage `V`.
+Moreover, the image of `Y` in `Spec A` is the union of the basic opens of the `(g k, b k)`, so it
+is compatible with the maps between such rings `A`.
 Part of Stacks, Lemma 32.5.2 (01Z9). -/
 theorem exists_finset_isPullback_toSpecΓ_comp_SpecMap [CompactSpace X] [QuasiSeparatedSpace X]
     (hV : IsCompact (V : Set X)) {Y : Scheme.{u}} [CompactSpace Y] [QuasiSeparatedSpace Y]
@@ -208,16 +275,25 @@ theorem exists_finset_isPullback_toSpecΓ_comp_SpecMap [CompactSpace X] [QuasiSe
         (φ.appTop ≫ V.topIso.hom)).pt,
       (s : Set (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
         (φ.appTop ≫ V.topIso.hom)).pt) ⊆ A →
-      IsOpenImmersion (Y.toSpecΓ ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom ≫
+      ∃ _ : IsOpenImmersion (Y.toSpecΓ ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom ≫
         (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
-          (φ.appTop ≫ V.topIso.hom)).snd)) ∧
+          (φ.appTop ≫ V.topIso.hom)).snd)),
       IsPullback φ V.ι
         (Y.toSpecΓ ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom ≫
           (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
             (φ.appTop ≫ V.topIso.hom)).snd))
         (X.toSpecΓ ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom ≫
           (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
-            (φ.appTop ≫ V.topIso.hom)).fst)) := by
+            (φ.appTop ≫ V.topIso.hom)).fst)) ∧
+      ∀ a : ι → A, (∀ k, (CommRingCat.ofHom A.val.toRingHom ≫
+          (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
+            (φ.appTop ≫ V.topIso.hom)).fst) (a k) = g k ∧
+          (CommRingCat.ofHom A.val.toRingHom ≫
+          (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
+            (φ.appTop ≫ V.topIso.hom)).snd) (a k) = b k) →
+        (Y.toSpecΓ ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom ≫
+          (CommRingCat.pullbackCone (X.presheaf.map (homOfLE le_top).op)
+            (φ.appTop ≫ V.topIso.hom)).snd)).opensRange = ⨆ k, PrimeSpectrum.basicOpen (a k) := by
   classical
   cases nonempty_fintype ι
   have := isOpenImmersion_toSpecΓ_comp_SpecMap_pullbackCone_snd hV _ g b hgb hg hb hY
@@ -225,15 +301,30 @@ theorem exists_finset_isPullback_toSpecΓ_comp_SpecMap [CompactSpace X] [QuasiSe
     (φ.appTop ≫ V.topIso.hom)
   let x (k : ι) : c.pt := ⟨(g k, b k), (hgb k).symm⟩
   obtain ⟨s, hs⟩ := @Scheme.exists_finset_isOpenImmersion_comp_SpecMap_val c.pt _ Y
-    (Y.toSpecΓ ≫ Spec.map c.snd) this _ _
+    (Y.toSpecΓ ≫ Spec.map c.snd) this _ _ (Finset.univ.image x) (by
+      simp only [Finset.mem_image, Finset.mem_univ, true_and, forall_exists_index,
+        forall_apply_eq_imp_iff]
+      exact fun k ↦ mem_range_toSpecΓ_comp_SpecMap_pullbackCone_snd hV _ (g k) (b k) (hgb k) (hg k)
+        (hb k))
   refine ⟨s ∪ Finset.univ.image x, fun A hA ↦ ?_⟩
+  have hsA : (s : Set c.pt) ⊆ A := fun y hy ↦ hA (Finset.mem_coe.mpr (Finset.mem_union_left _ hy))
   have hopen : IsOpenImmersion
       (Y.toSpecΓ ≫ Spec.map (CommRingCat.ofHom A.val.toRingHom ≫ c.snd)) := by
     rw [Spec.map_comp, ← Category.assoc]
-    exact hs A (fun y hy ↦ hA (Finset.mem_coe.mpr (Finset.mem_union_left _ hy)))
+    exact (hs A hsA).1
   refine ⟨hopen, isPullback_toSpecΓ_comp_SpecMap φ _ _ ?_ (fun k ↦ (⟨x k, hA
     (Finset.mem_coe.mpr (Finset.mem_union_right _ (Finset.mem_image_of_mem x
-      (Finset.mem_univ k))))⟩ : A)) hg hY⟩
-  rw [Category.assoc, Category.assoc, c.condition]
+      (Finset.mem_univ k))))⟩ : A)) hg hY, fun a ha ↦
+    opensRange_toSpecΓ_comp_SpecMap_eq_iSup (CommRingCat.ofHom A.val.toRingHom ≫ c.snd) a ?_
+      fun k p hk ↦ ?_⟩
+  · rw [Category.assoc, Category.assoc, c.condition]
+  · simpa only [(ha _).2] using hY
+  · have hak : (a k : c.pt) = x k := Subtype.ext (Prod.ext (ha k).1 (ha k).2)
+    have := (hs A hsA).2 (x k) (Finset.mem_image_of_mem x (Finset.mem_univ k)) (a k) p
+      hak hk
+    obtain ⟨w, hw⟩ := this
+    refine ⟨w, ?_⟩
+    rw [Spec.map_comp]
+    exact hw
 
 end TauCeti.AlgebraicGeometry.Scheme
