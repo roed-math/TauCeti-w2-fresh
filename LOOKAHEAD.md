@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[1,2,3],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
 
 # Lookahead: `epsilon-fppf-etale` (SchemeAndStackFoundations §2.10)
 
@@ -8,9 +8,13 @@ its adjunction with the direct image: `epsilonFppfEtale X` (`ε⁻¹`), `aX X` (
 with `piX X` the inverse image from the small to the big étale site), `etaleToNisnevich X` and
 `nisnevichToZariski X`. Each sends constant sheaves to constant sheaves. `comparison_comp` is on the
 branch for the composites (`sheafInverseImageTrans`, `aX` by definition, and
-`nisnevichToZariskiCompEtaleToNisnevichIso`), `comparison_baseChange` for `ε`. The roadmap checks
+`nisnevichToZariskiCompEtaleToNisnevichIso`), `comparison_baseChange` for `ε`
+(`epsilonFppfEtaleBaseChangeIso`), for `etaleToNisnevich` (`etaleToNisnevichBaseChangeIso`) and for
+`nisnevichToZariski` (`nisnevichToZariskiBaseChangeIso`), the last two through the new small-site
+base change functor `Etale.pullback g : X.Etale ⥤ Y.Etale`, which is continuous for the small
+étale and the small Nisnevich topologies. The roadmap checks
 `test_comparison_id` and `test_aX_constant` (for `aX` itself) are in the examples file. Not yet
-proved: `aX_inverseImage_obj`, `comparison_baseChange` on the small sites, and the cohomology
+proved: `aX_inverseImage_obj`, `comparison_baseChange` for `piX`/`aX`, and the cohomology
 comparison theorems; see the end.
 
 ## Stubbed declarations
@@ -20,8 +24,8 @@ the branch. All come from supplier `is-nisnevich-covering` (open PR #28094, modu
 `TauCeti.AlgebraicGeometry.Sites.Nisnevich.Basic`). The roadmap's `Suggested.lean` §2.12 pins
 only `IsNisnevichCovering`, `nisnevichPrecoverage`, `nisnevichTopology`,
 `zariskiTopology_le_nisnevichTopology` and `nisnevichTopology_le_etaleTopology`; the README's
-§2.12 additionally pins `smallNisnevichTopology X` on `X.Etale`, *isNisnevichCovering_of_zariski*
-and `smallNisnevichTopology_le_smallEtale`. The stubs follow the PR's current diff (re-read this
+§2.12 additionally pins `smallNisnevichTopology X` on `X.Etale`, *isNisnevichCovering_of_zariski*,
+*IsNisnevichCovering.pullback* and `smallNisnevichTopology_le_smallEtale`. The stubs follow the PR's current diff (re-read this
 session), which differs from the previous session's stubs in the namespace of the small-site
 declarations (now `AlgebraicGeometry.Scheme`, previously `TauCeti.AlgebraicGeometry.Scheme`).
 
@@ -44,6 +48,23 @@ declarations (now `AlgebraicGeometry.Scheme`, previously `TauCeti.AlgebraicGeome
   with body `sorry`, since a structure cannot be stubbed;
   the proofs never use its fields, only `isNisnevichCovering_of_zariski` and
   `ofArrows_mem_smallNisnevichTopology_iff`.
+
+### `IsNisnevichCovering.of_isPullback`
+
+- `Suggested.lean`: not pinned there (README §2.12 API: *IsNisnevichCovering.pullback*).
+- PR #28094 (head `6c29c999512d`, namespace `TauCeti.AlgebraicGeometry.Scheme`, with
+  `variable {ι : Type*} {X : ι → Scheme.{u}} {f : ∀ i, X i ⟶ S}`) and stub (same statement, the
+  variables written as binders):
+  ```lean
+  theorem IsNisnevichCovering.of_isPullback {ι : Type*} {X : ι → Scheme.{u}} {f : ∀ i, X i ⟶ S}
+      (hf : IsNisnevichCovering f) {Y : Scheme.{u}} (g : Y ⟶ S)
+      {P : ι → Scheme.{u}} (p₁ : ∀ i, P i ⟶ Y) (p₂ : ∀ i, P i ⟶ X i)
+      (h : ∀ i, IsPullback (p₁ i) (p₂ i) g (f i)) : IsNisnevichCovering p₁
+  ```
+- Differences: none but the `sorry` proof. The PR proves the README's pinned
+  `IsNisnevichCovering.pullback` (the case `P i = pullback g (f i)`) from this form; the proof here
+  needs the general form, because the base change of a morphism of `X.Etale` along `g` is a
+  pullback square only up to the canonical isomorphism (`Etale.isPullback_pullback_map_left`).
 
 ### `isNisnevichCovering_of_zariski`
 
@@ -110,7 +131,7 @@ Roadmap attribution: `Roadmap: SchemeAndStackFoundations` (§2.10 `epsilonFppfEt
 
 Files:
 
-- `TauCeti/CategoryTheory/Sites/InverseImageOfLE.lean` (177 lines, new), namespace
+- `TauCeti/CategoryTheory/Sites/InverseImageOfLE.lean` (194 lines, new), namespace
   `CategoryTheory.GrothendieckTopology`. This is the general comparison for topologies `J ≤ K`
   on one category:
   - `sheafDirectImageOfLE` with `_obj_obj` and `_map_hom` (simp lemmas),
@@ -125,7 +146,10 @@ Files:
   - `presheafToSheafCompSheafInverseImageIso` and `constantSheafCompSheafInverseImageIso`
     (constant sheaves go to constant sheaves);
   - `sheafInverseImageCompSheafPushforwardContinuousIso` (base change along a functor that is
-    continuous and cocontinuous, the general form of `comparison_baseChange`).
+    continuous and cocontinuous, the general form of `comparison_baseChange` for big sites) and
+    `sheafInverseImageCompSheafPullbackIso` (pullback along a functor continuous for both pairs
+    of topologies, the general form of `comparison_baseChange` for small sites, as the conjugate
+    of the equality of the direct images).
 - `TauCeti/AlgebraicGeometry/Sites/Comparison.lean` (110 lines, new), namespace
   `AlgebraicGeometry.Scheme`:
   - `etalePrecoverage_le_fppfPrecoverage`, `etaleTopology_le_fppfTopology` and
@@ -135,7 +159,7 @@ Files:
     `constantSheafCompEpsilonFppfEtaleIso`, and `epsilonFppfEtaleBaseChangeIso` (base change
     along `g : Y ⟶ X`, through `overMapPullback`).
 
-About 290 lines in total.
+About 305 lines in total.
 
 ### Split 2: `feat: left Kan extension along a flat functor is exact without smallness assumptions`
 
@@ -175,56 +199,83 @@ Files:
 
 About 160 lines.
 
-### Split 4: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
+### Split 4: `feat: base change of the small étale site`
 
-Needs first: splits 1, 2 and 3, and supplier PR #28094 on `main`. This is the last split of the
+Needs first: none. Uses no supplier and can be opened on `main` now. `Roadmap:
+SchemeAndStackFoundations` (prerequisite of §2.10 `comparison_baseChange` on the small sites).
+
+Files:
+
+- `TauCeti/AlgebraicGeometry/Sites/SmallEtaleBaseChange.lean` (118 lines, new), namespace
+  `AlgebraicGeometry.Scheme`: `Etale.pullback g : X.Etale ⥤ Y.Etale` (`MorphismProperty.Over.pullback`
+  with its two `@Etale` instances passed explicitly, since instance search does not find them) with
+  `_obj_left`, `_obj_hom`, `_map_left` (simp lemmas), `Etale.isPullback_pullback_map_left`,
+  `Etale.pullbackCompForgetIso`, the `PreservesFiniteLimits` and `RepresentablyFlat` instances,
+  `coverPreserving_etalePullback` and the `IsContinuous` instance for the small étale topologies.
+- `TauCeti/AlgebraicGeometry/Sites/OpensEtale.lean` (127 lines, new; moved here from the previous
+  plan's last split, it uses no supplier), namespace `AlgebraicGeometry.Scheme`:
+  `restrictEtaleFunctor X : X.Opens ⥤ X.Etale` with `_obj_hom`/`_map_left`,
+  `restrictEtaleFunctor_hom_ext`, `Etale.liftOpens` and `Etale.liftOpens_ι`,
+  `restrictEtaleFunctorLift`, `range_subset_of_hom_restrictEtaleFunctor_obj`, the
+  `RepresentablyFlat` instance, and `restrictEtaleFunctorCompEtalePullbackIso` (`U ×ₓ Y ≅ g ⁻¹ᵁ U`
+  as schemes étale over `Y`, naturally in `U`).
+
+About 245 lines.
+
+### Split 5: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
+
+Needs first: splits 1, 2, 3 and 4, and supplier PR #28094 on `main`. This is the last split of the
 current plan and the only one that uses the supplier.
 
 `Roadmap: SchemeAndStackFoundations` (§2.10 `etaleToNisnevich`, `nisnevichToZariski`,
-`comparison_comp`; §2.12 `smallNisnevich_comparison`).
+`comparison_comp`, `comparison_baseChange`; §2.12 `smallNisnevich_comparison`).
 
 Port steps: delete `TauCeti/Lookahead/EpsilonFppfEtale/Stubs.lean`, and in both Nisnevich files
 replace its import with `public import TauCeti.AlgebraicGeometry.Sites.Nisnevich.Basic`.
 
 Files:
 
-- `TauCeti/AlgebraicGeometry/Sites/OpensEtale.lean` (112 lines, new; uses no supplier, and could
-  be opened earlier as its own PR if a reviewer prefers), namespace `AlgebraicGeometry.Scheme`:
-  `restrictEtaleFunctor X : X.Opens ⥤ X.Etale` with `_obj_hom`/`_map_left`,
-  `restrictEtaleFunctor_hom_ext`, `Etale.liftOpens` and `Etale.liftOpens_ι`,
-  `restrictEtaleFunctorLift`, `range_subset_of_hom_restrictEtaleFunctor_obj` and the
-  `RepresentablyFlat` instance.
-- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Comparison.lean` (81 lines, new):
+- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Comparison.lean` (121 lines, new):
   `etaleToNisnevich X A` with `etaleToNisnevich_obj`, `etaleToNisnevichAdjunction`, the
-  `IsLeftAdjoint` and `PreservesFiniteLimits` instances, and `constantSheafCompEtaleToNisnevichIso`.
-- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Zariski.lean` (145 lines, new):
+  `IsLeftAdjoint` and `PreservesFiniteLimits` instances, `constantSheafCompEtaleToNisnevichIso`,
+  `coverPreserving_etalePullback_smallNisnevichTopology` (base change preserves Nisnevich coverings,
+  through the stubbed `IsNisnevichCovering.of_isPullback`) with its `IsContinuous` instance, and
+  `etaleToNisnevichBaseChangeIso` (`comparison_baseChange`, through split 1's
+  `sheafInverseImageCompSheafPullbackIso`).
+- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Zariski.lean` (180 lines, new):
   `coverPreserving_restrictEtaleFunctor` (Zariski coverings are Nisnevich coverings) and the
   `IsContinuous` instance, `coverPreserving_restrictEtaleFunctor_smallEtaleTopology` and its
   `IsContinuous` instance, `nisnevichToZariski X A` (`Functor.sheafPullback` along
   `restrictEtaleFunctor`) with `nisnevichToZariskiAdjunction`, `IsLeftAdjoint`,
   `constantSheafCompNisnevichToZariskiIso`, `nisnevichToZariskiCompEtaleToNisnevichIso`
-  (`comparison_comp`: Zariski→Nisnevich→étale is the pullback from Zariski to étale sheaves) and
-  the `PreservesFiniteLimits` instance (through split 2).
-- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (70 lines, new): the roadmap checks
+  (`comparison_comp`: Zariski→Nisnevich→étale is the pullback from Zariski to étale sheaves),
+  `nisnevichToZariskiBaseChangeIso` (`comparison_baseChange`: compatibility with the pullbacks
+  along `Opens.map g.base` and `Etale.pullback g`, the conjugate of
+  `restrictEtaleFunctorCompEtalePullbackIso`) and the `PreservesFiniteLimits` instance (through
+  split 2).
+- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (80 lines, new): the roadmap checks
   `test_comparison_id` and `test_aX_constant` (`a_X⁻¹` of the constant sheaf `ℤ/2` is the constant
   fppf sheaf `ℤ/2`), the same for `ε⁻¹`, exactness of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on
-  abelian sheaves, and base change of `ε⁻¹` on abelian sheaves.
+  abelian sheaves, and base change of `ε⁻¹` and of `etaleToNisnevich` on abelian sheaves.
 
-About 410 lines.
+About 380 lines.
 
 ## What remains (status `partial`)
 
 Still unproved from §2.10:
 
 1. **`aX_inverseImage_obj`** (`a_X⁻¹ F (T) = Γ(T_ét, h⁻¹ F|_T)` for `h : T ⟶ X`, Stacks
-   59.100.1–2). This needs the small étale pullback `h⁻¹ : Sh(X_ét) ⥤ Sh(T_ét)` (not on `main`
-   or in Mathlib; it would be `Functor.sheafPullback` along `MorphismProperty.Over.pullback`
-   `X.Etale ⥤ T.Etale`), the identification of `π_X⁻¹ F (T)` with `Γ(T_ét, h⁻¹F)` (the presheaf
-   `T ↦ Γ(T_ét, h⁻¹F)` is already a big étale sheaf), and fppf descent for it (so that `ε⁻¹`
-   does not change its values).
-2. **`comparison_baseChange`** for `aX`, `piX`, `etaleToNisnevich` and `nisnevichToZariski`
-   along `g : Y ⟶ X`, which needs the same small-site pullbacks. The `ε` case is
-   `epsilonFppfEtaleBaseChangeIso`.
+   59.100.1–2). The small étale pullback `h⁻¹ : Sh(X_ét) ⥤ Sh(T_ét)` is now available as
+   `(Etale.pullback h).sheafPullback` (split 4); what remains is the identification of
+   `π_X⁻¹ F (T)` with `Γ(T_ét, h⁻¹F)` (the presheaf `T ↦ Γ(T_ét, h⁻¹F)` is already a big étale
+   sheaf), and fppf descent for it (so that `ε⁻¹` does not change its values).
+2. **`comparison_baseChange`** for `piX` and `aX` along `g : Y ⟶ X`: `π_Y⁻¹ ∘ g_ét⁻¹ ≅
+   g_big⁻¹ ∘ π_X⁻¹`, where `g_ét⁻¹` is the pullback along `Etale.pullback g` (split 4) and `g_big⁻¹`
+   is the restriction `etaleTopology.overMapPullback A g`. The two sides are left adjoints of
+   direct images of different kinds (a pullback against a pushforward along `Over.map g`), so this
+   needs the right adjoint of `overMapPullback` (the pushforward along `Over.pullback g`, through
+   `Over.mapPullbackAdj`) and its compatibility with `Etale.forget`. The `ε`, `etaleToNisnevich`
+   and `nisnevichToZariski` cases are on the branch.
 3. **`quasiCoherent_topology_comparison`** (`H^q(X_Zar, F) = H^q(X_ét, F^a) = H^q(X_fppf, F^a)`,
    Stacks 35.9.3). It needs `big-sheaf` (#27307), `qcoh-higher-direct-image-vanishing` (#27295)
    and `Sheaf.H.pullback` (on `main`) along `ε⁻¹` and `a_X⁻¹`. A practical obstacle: `HasExt`

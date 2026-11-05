@@ -5,10 +5,12 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.CategoryTheory.Adjunction.Mates
 public import Mathlib.CategoryTheory.Adjunction.Restrict
 public import Mathlib.CategoryTheory.Sites.ConstantSheaf
 public import Mathlib.CategoryTheory.Sites.CoverLifting
 public import Mathlib.CategoryTheory.Sites.Limits
+public import Mathlib.CategoryTheory.Sites.Pullback
 public import Mathlib.CategoryTheory.Sites.Sheafification
 
 /-!
@@ -21,7 +23,8 @@ inverse image `sheafInverseImage J K A : Sheaf J A ⥤ Sheaf K A` is the `K`-she
 underlying presheaf. The inverse image is left adjoint to the direct image, it is exact as soon as
 `K`-sheafification exists, and it sends constant sheaves to constant sheaves. When topologies on
 two categories are related by a functor that is continuous for both pairs and cocontinuous for the
-finer pair, the inverse images commute with restriction along the functor. The comparisons are
+finer pair, the inverse images commute with restriction along the functor; when it is continuous
+for both pairs, they commute with pullback along the functor. The comparisons are
 coherent: for `J` itself the inverse image is the identity, and the inverse images for `J ≤ K` and
 `K ≤ L` compose to the one for `J ≤ L`.
 
@@ -173,5 +176,19 @@ noncomputable def sheafInverseImageCompSheafPushforwardContinuousIso {D : Type*}
       (G.pushforwardContinuousSheafificationCompatibility A J₂ K₂).symm ≪≫
     Functor.isoWhiskerRight (G.sheafPushforwardContinuousCompSheafToPresheafIso A J₁ K₁).symm
       (presheafToSheaf J₂ A)
+
+/-- **The comparisons commute with pullback**: let `G : C ⥤ D` be a functor that is continuous
+for topologies `J₁ ≤ J₂` on `C` and `K₁ ≤ K₂` on `D`. Then the inverse images of the comparisons
+on `C` and on `D` commute with the pullbacks of sheaves along `G`. -/
+noncomputable def sheafInverseImageCompSheafPullbackIso {D : Type*} [Category* D]
+    (G : C ⥤ D) {J₁ J₂ : GrothendieckTopology C} {K₁ K₂ : GrothendieckTopology D}
+    (hJ : J₁ ≤ J₂) (hK : K₁ ≤ K₂) [G.IsContinuous J₁ K₁] [G.IsContinuous J₂ K₂]
+    [(G.sheafPushforwardContinuous A J₁ K₁).IsRightAdjoint]
+    [(G.sheafPushforwardContinuous A J₂ K₂).IsRightAdjoint]
+    [HasWeakSheafify J₂ A] [HasWeakSheafify K₂ A] :
+    sheafInverseImage J₁ J₂ A ⋙ G.sheafPullback A J₂ K₂ ≅
+      G.sheafPullback A J₁ K₁ ⋙ sheafInverseImage K₁ K₂ A :=
+  (conjugateIsoEquiv ((G.sheafAdjunctionContinuous A J₁ K₁).comp (sheafAdjunctionOfLE A hK))
+    ((sheafAdjunctionOfLE A hJ).comp (G.sheafAdjunctionContinuous A J₂ K₂))).symm (Iso.refl _)
 
 end CategoryTheory.GrothendieckTopology

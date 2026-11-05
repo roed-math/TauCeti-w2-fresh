@@ -14,15 +14,16 @@ set_option warningAsError false
 
 These are lookahead stubs for the supplier `is-nisnevich-covering` (open PR #28094, module
 `TauCeti.AlgebraicGeometry.Sites.Nisnevich.Basic`), to be replaced by the landed declarations.
-Only what the comparison morphisms consume is stated: Nisnevich coverings and the fact that
-Zariski coverings are Nisnevich coverings, the small Nisnevich topology on `X.Etale`, its
-description by Nisnevich coverings and its comparison with the small étale topology. The proofs
+Only what the comparison morphisms consume is stated: Nisnevich coverings, their stability under
+base change and the fact that Zariski coverings are Nisnevich coverings, the small Nisnevich
+topology on `X.Etale`, its description by Nisnevich coverings and its comparison with the small
+étale topology. The proofs
 use only the stated API, never the bodies of `IsNisnevichCovering` or `smallNisnevichTopology`.
 -/
 
 public section
 
-open CategoryTheory AlgebraicGeometry
+open CategoryTheory Limits AlgebraicGeometry
 
 universe u
 
@@ -34,6 +35,15 @@ variable {S : Scheme.{u}}
 is étale and every point of `S` has a preimage at which `pᵢ` induces an isomorphism of residue
 fields. -/
 def IsNisnevichCovering {ι : Type*} {X : ι → Scheme.{u}} (f : ∀ i, X i ⟶ S) : Prop :=
+  sorry
+
+/-- Stub: Nisnevich coverings are stable under base change: if `{pᵢ : Xᵢ ⟶ S}` is a Nisnevich
+covering and each `Pᵢ` is the fibre product of `Xᵢ` and `Y` over `S`, then `{Pᵢ ⟶ Y}` is a
+Nisnevich covering. -/
+theorem IsNisnevichCovering.of_isPullback {ι : Type*} {X : ι → Scheme.{u}} {f : ∀ i, X i ⟶ S}
+    (hf : IsNisnevichCovering f) {Y : Scheme.{u}} (g : Y ⟶ S)
+    {P : ι → Scheme.{u}} (p₁ : ∀ i, P i ⟶ Y) (p₂ : ∀ i, P i ⟶ X i)
+    (h : ∀ i, IsPullback (p₁ i) (p₂ i) g (f i)) : IsNisnevichCovering p₁ := by
   sorry
 
 /-- Stub: Zariski coverings are Nisnevich coverings. -/

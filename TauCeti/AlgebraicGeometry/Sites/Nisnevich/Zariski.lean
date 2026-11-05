@@ -21,8 +21,9 @@ subscheme is continuous for the Zariski topology on `X.Opens` and the small Nisn
 `X.Etale`. It therefore induces a
 morphism of topoi `Sh(X_Nis) ⥤ Sh(X_Zar)`, given here through its inverse image
 `nisnevichToZariski X A`. The inverse image is left adjoint to the direct image, which restricts a
-Nisnevich sheaf to the open subschemes of `X`; it is exact and it sends constant sheaves to
-constant sheaves.
+Nisnevich sheaf to the open subschemes of `X`; it is exact, it sends constant sheaves to
+constant sheaves, and it commutes with the pullbacks of sheaves along a morphism `g : Y ⟶ X`
+(`Opens.map g.base` on Zariski sites, `Etale.pullback g` on small Nisnevich sites).
 
 ## Main declarations
 
@@ -34,6 +35,8 @@ constant sheaves.
   constant sheaves to constant sheaves.
 * `AlgebraicGeometry.Scheme.nisnevichToZariskiCompEtaleToNisnevichIso`: composing with the inverse
   image from Nisnevich to étale sheaves gives the pullback from Zariski to étale sheaves.
+* `AlgebraicGeometry.Scheme.nisnevichToZariskiBaseChangeIso`: the inverse image commutes with base
+  change.
 
 ## References
 
@@ -130,6 +133,38 @@ noncomputable def nisnevichToZariskiCompEtaleToNisnevichIso
     (X.restrictEtaleFunctor.sheafAdjunctionContinuous A _ _)
 
 end
+
+section BaseChange
+
+variable {X} {Y : Scheme.{u}} (g : Y ⟶ X) (A : Type w) [Category.{w'} A]
+  [HasWeakSheafify X.smallNisnevichTopology A] [HasWeakSheafify Y.smallNisnevichTopology A]
+  [HasWeakSheafify (Opens.grothendieckTopology Y) A]
+  [∀ F : X.Opensᵒᵖ ⥤ A, X.restrictEtaleFunctor.op.HasLeftKanExtension F]
+  [∀ F : Y.Opensᵒᵖ ⥤ A, Y.restrictEtaleFunctor.op.HasLeftKanExtension F]
+  [∀ F : X.Etaleᵒᵖ ⥤ A, (Etale.pullback g).op.HasLeftKanExtension F]
+  [∀ F : X.Opensᵒᵖ ⥤ A, (Opens.map g.base).op.HasLeftKanExtension F]
+
+/-- **The comparison from Nisnevich to Zariski sheaves commutes with base change**: for
+`g : Y ⟶ X`, the inverse image from Zariski to Nisnevich sheaves followed by the pullback of
+Nisnevich sheaves along `g` is the pullback of Zariski sheaves along `g` followed by the inverse
+image from Zariski to Nisnevich sheaves. -/
+noncomputable def nisnevichToZariskiBaseChangeIso :
+    nisnevichToZariski X A ⋙ (Etale.pullback g).sheafPullback A _ Y.smallNisnevichTopology ≅
+      (Opens.map g.base).sheafPullback A _ (Opens.grothendieckTopology Y) ⋙
+        nisnevichToZariski Y A :=
+  have := Functor.isContinuous_comp X.restrictEtaleFunctor (Etale.pullback g)
+    (Opens.grothendieckTopology X) X.smallNisnevichTopology Y.smallNisnevichTopology
+  have := Functor.isContinuous_comp (Opens.map g.base) Y.restrictEtaleFunctor
+    (Opens.grothendieckTopology X) (Opens.grothendieckTopology Y) Y.smallNisnevichTopology
+  (conjugateIsoEquiv
+    (((Opens.map g.base).sheafAdjunctionContinuous A _ _).comp (nisnevichToZariskiAdjunction Y A))
+    ((nisnevichToZariskiAdjunction X A).comp
+      ((Etale.pullback g).sheafAdjunctionContinuous A _ _))).symm
+    (Functor.sheafPushforwardContinuousComp' (X.restrictEtaleFunctorCompEtalePullbackIso g).symm
+        A _ _ _ ≪≫
+      (Functor.sheafPushforwardContinuousComp' (Iso.refl _) A _ _ _).symm)
+
+end BaseChange
 
 /-- The inverse image from Zariski sheaves to Nisnevich sheaves is exact. -/
 instance (A : Type w) [Category.{u} A] {FA : A → A → Type*} {CA : A → Type u}

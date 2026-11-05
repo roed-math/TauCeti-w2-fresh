@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.AlgebraicGeometry.Sites.Etale
+public import TauCeti.AlgebraicGeometry.Sites.SmallEtaleBaseChange
 
 /-!
 # Open subschemes as schemes étale over a scheme
@@ -14,7 +15,8 @@ An open subscheme of a scheme `X` is étale over `X`, so taking an open subset t
 open subscheme is a functor `X.restrictEtaleFunctor : X.Opens ⥤ X.Etale`. A morphism of étale
 `X`-schemes into an open subscheme `U` exists exactly when the image lies in `U`, and is then
 unique; hence the open subsets through which an étale `X`-scheme factors contain `X` and are closed
-under intersections, and `X.restrictEtaleFunctor` is representably flat. This is the functor
+under intersections, and `X.restrictEtaleFunctor` is representably flat. Base change along
+`g : Y ⟶ X` takes the open subscheme `U` to the open subscheme `g ⁻¹ᵁ U`. This is the functor
 underlying the comparison morphisms from the small étale and Nisnevich sites of `X` to its Zariski
 site.
 
@@ -26,6 +28,8 @@ site.
   to the open subscheme `U` exactly when its image lies in `U`.
 * `AlgebraicGeometry.Scheme.restrictEtaleFunctor_hom_ext`: such a map is unique.
 * The `RepresentablyFlat` instance for `X.restrictEtaleFunctor`.
+* `AlgebraicGeometry.Scheme.restrictEtaleFunctorCompEtalePullbackIso`: compatibility with base
+  change.
 -/
 
 public section
@@ -108,5 +112,16 @@ instance : RepresentablyFlat X.restrictEtaleFunctor where
           rw [Category.id_comp, Category.id_comp]
           ext
           exact Subsingleton.elim _ _⟩ }
+
+/-- Base change of open subschemes: for `g : Y ⟶ X` and an open subset `U` of `X`, the base change
+`U ×ₓ Y` of the open subscheme `U` is the open subscheme `g ⁻¹ᵁ U` of `Y`. -/
+noncomputable def restrictEtaleFunctorCompEtalePullbackIso {Y : Scheme.{u}} (g : Y ⟶ X) :
+    X.restrictEtaleFunctor ⋙ Etale.pullback g ≅
+      TopologicalSpace.Opens.map g.base ⋙ Y.restrictEtaleFunctor :=
+  NatIso.ofComponents
+    (fun U ↦ MorphismProperty.Over.isoMk (pullbackSymmetry _ _ ≪≫ pullbackRestrictIsoRestrict g U)
+      ((Category.assoc _ _ _).trans ((congrArg _ (pullbackRestrictIsoRestrict_hom_ι g U)).trans
+        (pullbackSymmetry_hom_comp_fst _ _))))
+    fun _ ↦ restrictEtaleFunctor_hom_ext _ _
 
 end AlgebraicGeometry.Scheme

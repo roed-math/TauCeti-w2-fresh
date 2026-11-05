@@ -15,6 +15,7 @@ import TauCeti.AlgebraicGeometry.Sites.SmallEtaleComparison
 
 The comparison of the small étale topology with itself is the identity, the inverse image
 `ε⁻¹` from big étale to big fppf abelian sheaves is exact, preserves the constant sheaf `ℤ/2`,
+and commutes with base change, the inverse image from Nisnevich to étale abelian sheaves is exact
 and commutes with base change, and the inverse image `a_X⁻¹` from small étale to big fppf
 abelian sheaves is exact and preserves the constant sheaf `ℤ/2`.
 -/
@@ -52,6 +53,15 @@ noncomputable example {X Y : Scheme.{u}} (g : Y ⟶ X) :
 -- The inverse image from Nisnevich to étale abelian sheaves is exact.
 example (X : Scheme.{u}) : PreservesFiniteLimits (etaleToNisnevich X AddCommGrpCat.{u}) :=
   inferInstance
+
+-- The inverse image from Nisnevich to étale abelian sheaves commutes with base change along
+-- `Y ⟶ X`.
+noncomputable example {X Y : Scheme.{u}} (g : Y ⟶ X) :
+    etaleToNisnevich X AddCommGrpCat.{u + 1} ⋙
+        (Etale.pullback g).sheafPullback AddCommGrpCat.{u + 1} _ Y.smallEtaleTopology ≅
+      (Etale.pullback g).sheafPullback AddCommGrpCat.{u + 1} _ Y.smallNisnevichTopology ⋙
+        etaleToNisnevich Y AddCommGrpCat.{u + 1} :=
+  etaleToNisnevichBaseChangeIso AddCommGrpCat.{u + 1} g
 
 -- `test_aX_constant`: `a_X⁻¹` of the constant étale sheaf `ℤ/2` is the constant fppf sheaf `ℤ/2`.
 noncomputable example (X : Scheme.{u}) :
