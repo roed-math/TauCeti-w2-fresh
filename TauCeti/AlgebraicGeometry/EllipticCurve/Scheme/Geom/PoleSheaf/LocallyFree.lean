@@ -101,10 +101,7 @@ theorem finite_projective_sections_poleSheaf
         Module.rankAtStalk Γ((E.poleSheaf n).obj, j ''ᵁ ⊤) p = n := by
     refine ⟨e₂.toLinearMap.finite_of_surjective e₂.surjective, .of_equiv e₂, fun p ↦ ?_⟩
     rw [e₂.rankAtStalk_eq, ← h₁, h₀]
-  have hj : j ''ᵁ ⊤ = E.structureMap ⁻¹ᵁ c.baseMap.opensRange := by
-    rw [Scheme.Hom.image_top_eq_opensRange, Scheme.Hom.opensRange_comp_of_isIso,
-      c.opensRange_toTotal]
-  rwa [hj] at h₂
+  rwa [c.image_top_modelIso_inv_toTotal] at h₂
 
 /-- **The sections of `π_*𝒪_E(n[0])` over a chart.** Over the image `U` of the base of a pointed
 Weierstrass chart of `E`, the sections of `π_*𝒪_E(n[0])` form a finitely generated projective

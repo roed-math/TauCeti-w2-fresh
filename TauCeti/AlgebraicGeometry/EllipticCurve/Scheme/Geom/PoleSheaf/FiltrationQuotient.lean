@@ -5,6 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.Algebra.Module.Projective.Complement
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.FiltrationQuotient
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.PoleSheaf.Filtration
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.PoleSheaf.LocallyFree
@@ -22,7 +23,11 @@ Zariski-locally on `S`, its image is a direct summand with quotient of rank `n -
 (`EllipticCurveGeom.projective_quotient_range_pushforward_poleSheafMap` and
 `EllipticCurveGeom.rankAtStalk_quotient_range_pushforward_poleSheafMap`). These are the
 successive quotients of the pole filtration that the pole-filtration construction of a Weierstrass
-equation splits.
+equation splits, and they do split over `U`
+(`EllipticCurveGeom.exists_isCompl_range_pushforward_poleSheafMap`). For `m = 0` the first step is
+an equality: `π_*ℒ_0 ⟶ π_*ℒ_1` is an isomorphism
+(`EllipticCurveGeom.isIso_pushforward_map_poleSheafMap_zero_one`), as every section of `𝒪_E([0])`
+is a function.
 
 The inclusion `ℒ_m ⟶ ℒ_n` is the dual of the inclusion `𝒪_E(-n[0]) ⊆ 𝒪_E(-m[0])` of the ideal
 sheaves of the relative effective Cartier divisors `n[0] ≥ m[0]`. Its pullback along any morphism
@@ -31,16 +36,26 @@ sheaves of the relative effective Cartier divisors `n[0] ≥ m[0]`. Its pullback
 transported to the projective model of the chart's equation, it therefore satisfies the
 hypothesis of `WeierstrassCurve.projective_quotient_range_cohomologyMapBaseLinear_of_mono_pullback`:
 it stays a monomorphism on every fibre. The scheme isomorphisms of the chart carry that statement to
-the sections of `π_*ℒ_n` over `U`.
+the sections of `π_*ℒ_n` over `U`: `PointedWeierstrassChart.modelCohomologyEquiv` identifies `H⁰` of
+the model with the sections over `π⁻¹(U)`, semilinearly over the coefficient ring of the chart.
 
 ## Main results
 
+* `TauCeti.AlgebraicGeometry.PointedWeierstrassChart.modelCohomologyEquiv`: on a chart, an
+  identification of the restriction of `M` to the model with `N` identifies `H⁰(N)` with the
+  sections of `M` over the image of the model, compatibly with morphisms
+  (`PointedWeierstrassChart.modelCohomologyEquiv_cohomologyMapBaseLinear`).
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.mono_pullback_map_poleSheafMap_hom`: the pullback
   of `ℒ_m ⟶ ℒ_n` along a morphism pulling `m[0]` and `n[0]` back to effective Cartier divisors is a
   monomorphism.
 * `EllipticCurveGeom.projective_quotient_range_pushforward_poleSheafMap` and
   `EllipticCurveGeom.rankAtStalk_quotient_range_pushforward_poleSheafMap`: over a chart image `U`,
   `Γ(U, π_*ℒ_n) ⧸ Γ(U, π_*ℒ_m)` is projective of rank `n - m`.
+* `EllipticCurveGeom.exists_isCompl_range_pushforward_poleSheafMap`: so the image has a
+  complement, the Zariski-local splitting of the pole filtration.
+* `EllipticCurveGeom.bijective_app_pushforward_poleSheafMap_zero_one` and
+  `EllipticCurveGeom.isIso_pushforward_map_poleSheafMap_zero_one`: `π_*ℒ_0 ⟶ π_*ℒ_1` is bijective
+  over every chart image, hence an isomorphism.
 
 ## References
 
@@ -53,7 +68,64 @@ open CategoryTheory Limits AlgebraicGeometry
 
 universe u
 
+attribute [local instance] RingHomInvPair.of_ringEquiv RingHomInvPair.of_ringEquiv_symm
+
 namespace TauCeti.AlgebraicGeometry
+
+namespace PointedWeierstrassChart
+
+open Scheme.Modules
+
+variable {S X : Scheme.{u}} {π : X ⟶ S} {zero : S ⟶ X} (c : PointedWeierstrassChart π zero)
+
+/-- The coefficient ring of a pointed Weierstrass chart is the ring of functions on the image of
+its projective model in `X`: it is the ring of global functions on the model. -/
+noncomputable def modelRingEquiv : c.ring ≃+* Γ(X, (c.modelIso.inv ≫ c.toTotal) ''ᵁ ⊤) :=
+  (RingEquiv.ofBijective _ c.equation.bijective_baseRingToGlobalSections).trans
+    ((c.modelIso.inv ≫ c.toTotal).appIso ⊤).symm.commRingCatIsoToRingEquiv
+
+/-- **Sections over a chart as cohomology of the model.** On a pointed Weierstrass chart, an
+identification `e` of the restriction of an `𝒪_X`-module `M` to the projective model of the
+chart's equation with a module `N` on the model identifies `H⁰(N)` with the sections of `M` over
+the image of the model, semilinearly over `PointedWeierstrassChart.modelRingEquiv`. -/
+noncomputable def modelCohomologyEquiv {M : X.Modules} {N : c.equation.projModel.Modules}
+    (e : M.restrict (c.modelIso.inv ≫ c.toTotal) ≅ N) :
+    Cohomology N 0 ≃ₛₗ[(c.modelRingEquiv : c.ring →+* Γ(X, (c.modelIso.inv ≫ c.toTotal) ''ᵁ ⊤))]
+      Γ(M, (c.modelIso.inv ≫ c.toTotal) ''ᵁ ⊤) where
+  __ := (cohomologyZeroLinearEquiv N).toAddEquiv.trans (sectionsLinearEquiv e ⊤).symm.toAddEquiv
+  map_smul' r x := by
+    -- By the definition of `Scheme.Modules.restrictFunctor`, the sections of the restriction over
+    -- `⊤` are the sections over the image of the model, on which `Γ(projModel, ⊤)` acts through
+    -- `appIso`; and `c.ring` acts on `H⁰(N)` through the global functions of the model.
+    have h := (cohomologyZeroLinearEquiv N).map_smul
+      (baseRingToGlobalSections c.ring c.equation.projModel r) x
+    exact (congrArg (sectionsLinearEquiv e ⊤).symm h).trans (map_smul _ _ _)
+
+theorem modelCohomologyEquiv_apply {M : X.Modules} {N : c.equation.projModel.Modules}
+    (e : M.restrict (c.modelIso.inv ≫ c.toTotal) ≅ N) (x : Cohomology N 0) :
+    c.modelCohomologyEquiv e x = e.inv.app ⊤ (cohomologyZeroEquiv N x) := by
+  change (sectionsLinearEquiv e ⊤).symm (cohomologyZeroLinearEquiv N x) = _
+  rw [sectionsLinearEquiv_symm_apply, cohomologyZeroLinearEquiv_apply]
+
+/-- `PointedWeierstrassChart.modelCohomologyEquiv` carries `H⁰` of a morphism of modules on the
+model, transported from a morphism `φ : M ⟶ M'` on `X`, to the action of `φ` on sections. -/
+theorem modelCohomologyEquiv_cohomologyMapBaseLinear {M M' : X.Modules}
+    {N N' : c.equation.projModel.Modules} (e : M.restrict (c.modelIso.inv ≫ c.toTotal) ≅ N)
+    (e' : M'.restrict (c.modelIso.inv ≫ c.toTotal) ≅ N') (φ : M ⟶ M') (x : Cohomology N 0) :
+    c.modelCohomologyEquiv e' (cohomologyMapBaseLinear c.ring c.equation.projModel
+        (e.inv ≫ (restrictFunctor (c.modelIso.inv ≫ c.toTotal)).map φ ≫ e'.hom) 0 x) =
+      φ.appLinear _ (c.modelCohomologyEquiv e x) := by
+  have h : (e.inv ≫ (restrictFunctor (c.modelIso.inv ≫ c.toTotal)).map φ ≫ e'.hom) ≫ e'.inv =
+      e.inv ≫ (restrictFunctor (c.modelIso.inv ≫ c.toTotal)).map φ := by
+    simp only [Category.assoc, Iso.hom_inv_id, Category.comp_id]
+  rw [modelCohomologyEquiv_apply, modelCohomologyEquiv_apply, coe_cohomologyMapBaseLinear,
+    cohomologyZeroEquiv_cohomologyMap, ← ConcreteCategory.comp_apply, ← Hom.comp_app, h,
+    Hom.comp_app, ConcreteCategory.comp_apply]
+  -- By the definition of `Scheme.Modules.restrictFunctor`, the restriction of `φ` acts on the
+  -- sections over `⊤` as `φ` acts on the sections over the image of the model.
+  exact (Hom.appLinear_apply φ _ _).symm
+
+end PointedWeierstrassChart
 
 namespace EllipticCurveGeom
 
@@ -148,75 +220,20 @@ private theorem projective_rankAtStalk_quotient_range_pushforward_poleSheafMap
   have h₀ := W.rankAtStalk_quotient_range_cohomologyMapBaseLinear_of_mono_pullback hm h α
     fun _ _ ↦ E.mono_pullback_map_chart c h em en _
   have := W.finitePresentation_cohomology_zero_poleSheaf (hm.trans_le h)
-  -- The same holds for the global sections over `Γ(projModel W, ⊤)`, through which `c.ring` acts
-  -- by constants.
-  let σ₀ : c.ring ≃+* Γ(W.projModel, ⊤) :=
-    RingEquiv.ofBijective _ W.bijective_baseRingToGlobalSections
-  have := RingHomInvPair.of_ringEquiv σ₀
-  have := RingHomInvPair.of_ringEquiv_symm σ₀
-  let e₀ (k : ℕ) : Cohomology (W.poleSheaf k).obj 0 ≃ₛₗ[(σ₀ : c.ring →+* Γ(W.projModel, ⊤))]
-      Γ((W.poleSheaf k).obj, ⊤) :=
-    { (cohomologyZeroLinearEquiv (W.poleSheaf k).obj).toAddEquiv with
-      map_smul' r x := (cohomologyZeroLinearEquiv (W.poleSheaf k).obj).map_smul
-        (baseRingToGlobalSections c.ring W.projModel r) x }
-  have he₀ (x : Cohomology (W.poleSheaf m).obj 0) :
-      e₀ n (cohomologyMapBaseLinear c.ring W.projModel α 0 x) = α.appLinear ⊤ (e₀ m x) := by
-    have hx := cohomologyZeroEquiv_cohomologyMap α x
-    rw [← coe_cohomologyMapBaseLinear (R := c.ring), ← cohomologyZeroLinearEquiv_apply,
-      ← cohomologyZeroLinearEquiv_apply] at hx
-    rw [Hom.appLinear_apply]
-    exact hx
-  have := (e₀ m).projective_quotient_range (e₀ n) he₀
-  have h₁ (q : PrimeSpectrum Γ(W.projModel, ⊤)) :
-      Module.rankAtStalk (Γ((W.poleSheaf n).obj, ⊤) ⧸ LinearMap.range (α.appLinear ⊤)) q =
-        n - m := by
-    rw [(e₀ m).rankAtStalk_quotient_range_eq (e₀ n) he₀, h₀]
-  -- The same holds for the sections of the restriction of `ℒ_n` along `j`.
-  have := (W.finite_projective_globalSections_poleSheaf (hm.trans_le h)).1
-  have he₁ (x : Γ((W.poleSheaf m).obj, ⊤)) : (sectionsLinearEquiv en ⊤).symm (α.appLinear ⊤ x) =
-      ((restrictFunctor j).map φ).appLinear ⊤ ((sectionsLinearEquiv em ⊤).symm x) := by
-    have hα : α ≫ en.inv = em.inv ≫ (restrictFunctor j).map φ := by
-      simp only [α, Category.assoc, Iso.hom_inv_id, Category.comp_id]
-    rw [sectionsLinearEquiv_symm_apply, sectionsLinearEquiv_symm_apply, Hom.appLinear_apply,
-      Hom.appLinear_apply, ← ConcreteCategory.comp_apply, ← ConcreteCategory.comp_apply,
-      ← Hom.comp_app, ← Hom.comp_app, hα]
-  have := (sectionsLinearEquiv em ⊤).symm.projective_quotient_range _ he₁
-  have h₂ (q : PrimeSpectrum Γ(W.projModel, ⊤)) : Module.rankAtStalk
-      (Γ((E.poleSheaf n).obj.restrict j, ⊤) ⧸
-        LinearMap.range (((restrictFunctor j).map φ).appLinear ⊤)) q = n - m := by
-    rw [(sectionsLinearEquiv em ⊤).symm.rankAtStalk_quotient_range_eq _ he₁, h₁]
-  -- The same holds for the sections of `ℒ_n` over the image of `j`, which is `π⁻¹(U)`.
-  have := Module.Finite.equiv (sectionsLinearEquiv en ⊤).symm
-  let σ₂ : Γ(W.projModel, ⊤) ≃+* Γ(E.carrier, j ''ᵁ ⊤) :=
-    (j.appIso ⊤).symm.commRingCatIsoToRingEquiv
-  have := RingHomInvPair.of_ringEquiv σ₂
-  have := RingHomInvPair.of_ringEquiv_symm σ₂
-  -- By the definition of `Scheme.Modules.restrictFunctor`, the sections of the restriction over
-  -- `⊤` are the sections over `j ''ᵁ ⊤`, on which `Γ(projModel, ⊤)` acts through
-  -- `(j.appIso ⊤).inv`, and the restriction of `φ` acts on them as `φ`.
-  let e₂ (k : ℕ) : Γ((E.poleSheaf k).obj.restrict j, ⊤)
-      ≃ₛₗ[(σ₂ : Γ(W.projModel, ⊤) →+* Γ(E.carrier, j ''ᵁ ⊤))] Γ((E.poleSheaf k).obj, j ''ᵁ ⊤) :=
-    { AddEquiv.refl _ with map_smul' _ _ := rfl }
-  have he₂ (x : Γ((E.poleSheaf m).obj.restrict j, ⊤)) :
-      e₂ n (((restrictFunctor j).map φ).appLinear ⊤ x) = φ.appLinear (j ''ᵁ ⊤) (e₂ m x) := by
-    rw [Hom.appLinear_apply, Hom.appLinear_apply]
-    rfl
-  have := (e₂ m).projective_quotient_range (e₂ n) he₂
+  -- The same holds for the sections of `ℒ_n` over the image of the model, which is `π⁻¹(U)`.
+  have he := c.modelCohomologyEquiv_cohomologyMapBaseLinear em en φ
+  have := (c.modelCohomologyEquiv em).projective_quotient_range (c.modelCohomologyEquiv en) he
   have h₃ (q : PrimeSpectrum Γ(E.carrier, j ''ᵁ ⊤)) : Module.rankAtStalk
       (Γ((E.poleSheaf n).obj, j ''ᵁ ⊤) ⧸ LinearMap.range (φ.appLinear (j ''ᵁ ⊤))) q = n - m := by
-    rw [(e₂ m).rankAtStalk_quotient_range_eq (e₂ n) he₂, h₂]
-  have hj : j ''ᵁ ⊤ = E.structureMap ⁻¹ᵁ U := by
-    rw [Scheme.Hom.image_top_eq_opensRange, Scheme.Hom.opensRange_comp_of_isIso,
-      c.opensRange_toTotal]
-  rw [hj] at this h₃
+    rw [(c.modelCohomologyEquiv em).rankAtStalk_quotient_range_eq (c.modelCohomologyEquiv en) he,
+      h₀]
+  rw [c.image_top_modelIso_inv_toTotal] at this h₃
   -- The same holds for the sections of `π_*ℒ_n` over `U`, as `π` identifies `Γ(S, U)` with
   -- `Γ(E, π⁻¹(U))`.
   have := (E.finite_projective_sections_poleSheaf c (hm.trans_le h)).1
   have := c.isIso_app_opensRange
   let σ₁ : Γ(S, U) ≃+* Γ(E.carrier, E.structureMap ⁻¹ᵁ U) :=
     (asIso (E.structureMap.app U)).commRingCatIsoToRingEquiv
-  have := RingHomInvPair.of_ringEquiv σ₁
-  have := RingHomInvPair.of_ringEquiv_symm σ₁
   -- By the definition of `Scheme.Modules.pushforward`, `Γ(S, U)` acts on the sections of the
   -- direct image through `π.app U`, and the direct image of `φ` acts on them as `φ`.
   let e₃ (k : ℕ) : Γ((pushforward E.structureMap).obj (E.poleSheaf k).obj, U)
@@ -252,6 +269,55 @@ theorem rankAtStalk_quotient_range_pushforward_poleSheafMap
         LinearMap.range (((pushforward E.structureMap).map
           (E.poleSheafMap h).hom).appLinear c.baseMap.opensRange)) p = n - m :=
   (E.projective_rankAtStalk_quotient_range_pushforward_poleSheafMap c hm h).2 p
+
+/-- **The pole filtration splits Zariski-locally.** Over the image `U` of the base of a pointed
+Weierstrass chart of `E`, for `0 < m ≤ n`, the image of `Γ(U, π_*ℒ_m)` in `Γ(U, π_*ℒ_n)` has a
+complement: its quotient is projective. -/
+theorem exists_isCompl_range_pushforward_poleSheafMap
+    (c : PointedWeierstrassChart E.structureMap E.zero) (hm : 0 < m) (h : m ≤ n) :
+    ∃ q : Submodule Γ(S, c.baseMap.opensRange)
+        Γ((pushforward E.structureMap).obj (E.poleSheaf n).obj, c.baseMap.opensRange),
+      IsCompl (LinearMap.range (((pushforward E.structureMap).map
+        (E.poleSheafMap h).hom).appLinear c.baseMap.opensRange)) q :=
+  have := E.projective_quotient_range_pushforward_poleSheafMap c hm h
+  Submodule.exists_isCompl_of_projective_quotient _
+
+/-- **Every section of `𝒪_E([0])` over a chart is a function.** Over the image `U` of the base of
+a pointed Weierstrass chart of `E`, the inclusion `ℒ_0 ⟶ ℒ_1` is bijective on the sections of the
+direct images over `U`: every section of `𝒪_E([0])` over `π⁻¹(U)` comes from a unique section of
+`𝒪_E(0[0])`, which is a function on `π⁻¹(U)`. -/
+theorem bijective_app_pushforward_poleSheafMap_zero_one
+    (c : PointedWeierstrassChart E.structureMap E.zero) :
+    Function.Bijective (((pushforward E.structureMap).map
+      (E.poleSheafMap zero_le_one).hom).app c.baseMap.opensRange) := by
+  let j := c.modelIso.inv ≫ c.toTotal
+  let φ := (E.poleSheafMap zero_le_one).hom
+  obtain ⟨e₀⟩ := E.nonempty_restrict_poleSheaf_iso c 0
+  obtain ⟨e₁⟩ := E.nonempty_restrict_poleSheaf_iso c 1
+  -- On the model, the inclusion is bijective on `H⁰`.
+  have h := c.equation.bijective_cohomologyMapBaseLinear_of_mono_pullback_zero_one
+    (e₀.inv ≫ (restrictFunctor j).map φ ≫ e₁.hom)
+    fun _ _ ↦ E.mono_pullback_map_chart c zero_le_one e₀ e₁ _
+  -- Hence it is bijective on sections over the image of the model, which is `π⁻¹(U)`.
+  have h' : Function.Bijective (φ.app (j ''ᵁ ⊤)) := by
+    convert (c.modelCohomologyEquiv e₁).bijective.comp
+      (h.comp (c.modelCohomologyEquiv e₀).symm.bijective) using 1
+    funext y
+    rw [Function.comp_apply, Function.comp_apply, c.modelCohomologyEquiv_cohomologyMapBaseLinear,
+      LinearEquiv.apply_symm_apply, Hom.appLinear_apply]
+  rw [c.image_top_modelIso_inv_toTotal] at h'
+  exact h'
+
+/-- **`π_*𝒪_E(0[0]) ≅ π_*𝒪_E([0])`.** For an elliptic curve `π : E ⟶ S`, the direct image of the
+inclusion `ℒ_0 ⟶ ℒ_1` is an isomorphism: the first step of the pole filtration of `π_*ℒ_n` is an
+equality, as every section of `𝒪_E([0])` is a function. -/
+instance isIso_pushforward_map_poleSheafMap_zero_one :
+    IsIso ((pushforward E.structureMap).map (E.poleSheafMap zero_le_one).hom) := by
+  obtain ⟨A⟩ := E.localModel
+  -- the images of the restricted charts form a basis of the topology of `S`
+  exact Hom.isIso_of_isBasis _ A.isBasis_range_opensRange_restrict fun p ↦
+    (ConcreteCategory.isIso_iff_bijective _).mpr
+      (E.bijective_app_pushforward_poleSheafMap_zero_one ((A.chart p.1).restrict p.2))
 
 end EllipticCurveGeom
 

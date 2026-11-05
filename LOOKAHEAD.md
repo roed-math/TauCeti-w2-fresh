@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their fibre degrees"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: cohomology and base change for line bundles of positive fibre degree on a Weierstrass model"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*M vanishes for line bundles of positive fibre degree on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: a criterion for the base change morphism of a direct image on affine sections"},{"n":12,"after":[8,10,11],"title":"feat: π_*M commutes with arbitrary base change for line bundles of positive fibre degree"},{"n":13,"after":[],"title":"feat: the dual of a monomorphism of line bundles is a monomorphism"},{"n":14,"after":[2,10,13],"title":"feat: the pole filtration 𝒪(m[0]) ⊆ 𝒪(n[0]) of a Weierstrass model and of an elliptic curve"},{"n":15,"after":[10],"title":"feat: a fibrewise criterion for the cokernel of a map to a finite projective module to be projective"},{"n":16,"after":[13],"title":"feat: pullback preserves inclusions of effective Cartier divisors whose inverse images are effective Cartier"},{"n":17,"after":[7,10,14,15,16],"title":"feat: the quotients of the pole filtration of a Weierstrass model are projective of rank n - m"},{"n":18,"after":[10,17],"title":"feat: the successive quotients of the pole filtration of π_*𝒪_E(n[0]) are locally projective"},{"n":19,"after":[7,9,12],"title":"feat: π_*M is locally free of rank d for line bundles of fibre degree d on an elliptic curve"},{"n":20,"after":[19],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":21,"after":[18],"title":"feat: local splittings of the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":22,"after":[21],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":23,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their fibre degrees"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: cohomology and base change for line bundles of positive fibre degree on a Weierstrass model"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*M vanishes for line bundles of positive fibre degree on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: a criterion for the base change morphism of a direct image on affine sections"},{"n":12,"after":[8,10,11],"title":"feat: π_*M commutes with arbitrary base change for line bundles of positive fibre degree"},{"n":13,"after":[],"title":"feat: the dual of a monomorphism of line bundles is a monomorphism"},{"n":14,"after":[2,10,13],"title":"feat: the pole filtration 𝒪(m[0]) ⊆ 𝒪(n[0]) of a Weierstrass model and of an elliptic curve"},{"n":15,"after":[10],"title":"feat: a fibrewise criterion for the cokernel of a map to a finite projective module to be projective"},{"n":16,"after":[13],"title":"feat: pullback preserves inclusions of effective Cartier divisors whose inverse images are effective Cartier"},{"n":17,"after":[7,10,14,15,16],"title":"feat: the quotients of the pole filtration of a Weierstrass model are projective of rank n - m"},{"n":18,"after":[10,17],"title":"feat: the pole filtration of π_*𝒪_E(n[0]) splits locally, with π_*ℒ_0 ≅ π_*ℒ_1"},{"n":19,"after":[7,9,12],"title":"feat: π_*M is locally free of rank d for line bundles of fibre degree d on an elliptic curve"},{"n":20,"after":[19],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":21,"after":[18],"title":"feat: local splittings of the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":22,"after":[21],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":23,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
 
 # Lookahead: `pole-sheaf` (ModularCurves, Layer 1C)
 
-Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174`. Status: **partial**. Splits
+Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f`. Status: **partial**. Splits
 1–18 are on this branch, fully proved, with no `sorry`. Two of the three clauses of the
 positive-degree theorem on `E` (`R¹π_*M = 0` and base change of `π_*M`) are also proved, inside
 splits 8 and 12. Splits 19–23 are the plan for the rest of the target and are **not** on the
@@ -74,14 +74,27 @@ splits 15–19 are renumbered 19–23. Later in the round, the `m = 0` case was 
 model (split 17): every section of `𝒪([0])` is constant over every ring, which replaces split
 14's field-only version.
 
+The twelfth round left tip `34752c48f0ac`. The thirteenth round (this one) merged current `main`
+(`e8758b7b2f82`, whose only change was a CI workflow) without conflicts. It then closed the `m = 0` case of
+the pole filtration on `E`, the first bullet of the old split 21: `π_*ℒ_0 ⟶ π_*ℒ_1` is bijective
+over every chart image and hence an isomorphism. As the old plan asked, the chain of equivalences
+that split 18 used inline is now factored out first, as the semilinear equivalence
+`PointedWeierstrassChart.modelCohomologyEquiv`, so the `m > 0` and `m = 0` cases share it. The image
+computation `(modelIso.inv ≫ toTotal) ''ᵁ ⊤ = π⁻¹(U)`, which split 10 and split 18 each proved
+inline, is now the lemma `PointedWeierstrassChart.image_top_modelIso_inv_toTotal` in split 8. The
+round also proved the local splitting of the pole filtration (the second bullet of the old
+split 21): over every chart image and for `0 < m ≤ n`, `Γ(U, π_*ℒ_m)` has a complement in
+`Γ(U, π_*ℒ_n)`, from a new general lemma, a submodule with projective quotient is complemented.
+These changes enlarge splits 8 and 18 and do not renumber any split.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
 consumes neither supplier:
 
 - `relative-cartier-divisor` (open PR #27087, the geometric-fibre criterion of 0A item 1;
-  re-checked again in the twelfth round on 2026-11-05, still open and still unused by
-  splits 1–18).
+  re-checked again in the twelfth and thirteenth rounds on 2026-11-05, still open and still unused
+  by splits 1–18).
   `Suggested.lean` pins no declaration for it. Its §Finite flat group schemes says the carrier
   "is supplied once by the Jacobian Challenge", and the file "deliberately introduces no
   substitute". PR #27087 adds
@@ -95,7 +108,7 @@ consumes neither supplier:
   where the zero divisor of the evaluation section must be shown relative effective Cartier on geometric
   fibres.
 - `polarised-descent` (open PR #27128, descent of stable opens; re-checked on 2026-11-05, still
-  open; re-checked again in the twelfth round). `Suggested.lean` pins no
+  open; re-checked again in the twelfth and thirteenth rounds). `Suggested.lean` pins no
   declaration for it either. It first enters at split 20, for the fppf-descent compatibility of
   the degree-one divisor–section correspondence. It may also enter at split 23, if the
   presentation is descended rather than built Zariski-locally.
@@ -298,7 +311,7 @@ for `W` elliptic over any ring and `n > 0`; it imports split 6's `FiniteGlobalSe
 
 PR subject: `feat: R¹π_*M vanishes for line bundles of positive fibre degree on an elliptic curve`
 
-- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/GlobalSections.lean` (+44/−30 lines, 145 in
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/GlobalSections.lean` (+51/−30 lines, 152 in
   total). Steps of the existing proof of `isIso_structureMap_app` become public, because the new
   files need them:
   - `PointedWeierstrassChart.isOpenImmersion_toTotal` (instance): `toTotal` is an open immersion.
@@ -306,6 +319,8 @@ PR subject: `feat: R¹π_*M vanishes for line bundles of positive fibre degree o
     base. `isIso_app_opensRange` now uses it.
   - `PointedWeierstrassAtlas.isBasis_range_opensRange_restrict`: the images of the restricted
     charts form a basis of `S`. `isIso_structureMap_app` is now three lines.
+  - `PointedWeierstrassChart.image_top_modelIso_inv_toTotal`: the image of the model under
+    `modelIso.inv ≫ toTotal` is `π⁻¹(U)`. Splits 10 and 18 use it.
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PositiveDegree/DirectImage.lean` (new, 216
   lines), namespace `TauCeti.AlgebraicGeometry`:
   - `PointedWeierstrassAtlas.exists_eq_specMap_comp_baseMap`: every point `Spec K ⟶ S` with
@@ -382,7 +397,7 @@ PR subject: `feat: π_*𝒪_E(n[0]) is locally free of rank n`
   `WeierstrassCurve.finite_projective_globalSections_poleSheaf`: `Γ(⊤, 𝒪(n[0]))` is finite
   projective of constant rank `n` over `Γ(projModel, ⊤)`. This transports split 7 along
   `R ≃+* Γ(projModel, ⊤)`.
-- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/LocallyFree.lean` (new, 169
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/LocallyFree.lean` (new, 166
   lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`:
   - `finite_projective_sections_poleSheaf`: `Γ(π⁻¹(U), ℒ_n)` is finite projective of rank `n`
     over `Γ(E, π⁻¹(U))` for a chart image `U`.
@@ -625,7 +640,7 @@ PR subject: `feat: the quotients of the pole filtration of a Weierstrass model a
 
 ### Split 18 — after: 10, 17
 
-PR subject: `feat: the successive quotients of the pole filtration of π_*𝒪_E(n[0]) are locally projective`
+PR subject: `feat: the pole filtration of π_*𝒪_E(n[0]) splits locally, with π_*ℒ_0 ≅ π_*ℒ_1`
 
 - `TauCeti/AlgebraicGeometry/Modules/AppLinear.lean` (new, 42 lines):
   `AlgebraicGeometry.Scheme.Modules.Hom.appLinear φ U : Γ(M, U) →ₗ[Γ(X, U)] Γ(N, U)` and
@@ -634,23 +649,55 @@ PR subject: `feat: the successive quotients of the pole filtration of π_*𝒪_E
   `Γ(X, U)`-module instance; neither Mathlib nor `TauCeti/` has this map. It is a new module only
   to keep the rebuild small: the port should put it in `TauCeti/AlgebraicGeometry/Modules/Sheaf.lean`
   next to `sectionsLinearEquiv`.
+- `TauCeti/Algebra/Module/Projective/Complement.lean` (new, 46 lines):
+  `Submodule.exists_isCompl_of_projective_quotient`: a submodule with projective quotient has a
+  complement (the kernel of `x ↦ x - s (x mod p)` for a section `s` of the quotient map, through
+  Mathlib's `Module.projective_lifting_property` and `LinearMap.isCompl_of_proj`). Neither Mathlib
+  nor `TauCeti/` has this statement.
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/FiltrationQuotient.lean` (new,
-  258 lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`:
-  - `mono_pullback_map_poleSheafMap_hom`: the pullback of `ℒ_m ⟶ ℒ_n` along any `φ : X ⟶ E`
-    pulling `m[0]` and `n[0]` back to effective Cartier divisors is a monomorphism.
-  - `zeroDivisor_pow_comap_modelIso_inv_toTotal`: on a chart, `n[0]` pulls back to the model's
-    `zeroSectionDivisor ^ n`.
-  - private `mono_pullback_map_chart`: the inclusion, transported to the model of a chart along
-    any isomorphisms `ℒ_k|_{model} ≅ 𝒪(k[0])` (split 8's `nonempty_restrict_poleSheaf_iso`), has
-    monomorphic pullbacks to all fibres (through `pullbackComp` and `restrictFunctorIsoPullback`).
-  - private `projective_rankAtStalk_quotient_range_pushforward_poleSheafMap`, and its two halves
-    `projective_quotient_range_pushforward_poleSheafMap` and
-    `rankAtStalk_quotient_range_pushforward_poleSheafMap`: **over a chart image `U` and for
-    `0 < m ≤ n`, `Γ(U, π_*ℒ_n) ⧸ Γ(U, π_*ℒ_m)` is a projective `Γ(S, U)`-module of rank `n - m`**,
-    from split 17 transported along `H⁰ ≅ Γ(⊤)`, the chart isomorphisms and `π.app U` (split 15's
-    `LinearEquiv.projective_quotient_range`, as in split 10). Chart images cover `S`, so this is
-    the Zariski-local splitting of the successive quotients of the pole filtration of `π_*ℒ_n`
-    that the README asks for, stated on sections.
+  324 lines).
+  - Namespace `TauCeti.AlgebraicGeometry.PointedWeierstrassChart`, for a chart `c` of any
+    `π : X ⟶ S`, with `j = c.modelIso.inv ≫ c.toTotal`:
+    - `modelRingEquiv : c.ring ≃+* Γ(X, j ''ᵁ ⊤)`, through `bijective_baseRingToGlobalSections`
+      and `j.appIso ⊤`.
+    - `modelCohomologyEquiv e : H⁰(N) ≃ₛₗ[modelRingEquiv] Γ(M, j ''ᵁ ⊤)`, for any
+      `e : M.restrict j ≅ N` (`cohomologyZeroLinearEquiv`, then `sectionsLinearEquiv e ⊤`), with
+      `modelCohomologyEquiv_apply`.
+    - `modelCohomologyEquiv_cohomologyMapBaseLinear`: it carries `H⁰` of
+      `e.inv ≫ (restrictFunctor j).map φ ≫ e'.hom` to `φ.appLinear (j ''ᵁ ⊤)`, for any
+      `φ : M ⟶ M'`. This is the chain `e₀`, `e₁`, `e₂` that split 18's proof used inline in the
+      twelfth round, now shared by the `m > 0` and `m = 0` cases. It is stated for any modules
+      because neither case needs anything specific to pole sheaves.
+  - Namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`:
+    - `mono_pullback_map_poleSheafMap_hom`: the pullback of `ℒ_m ⟶ ℒ_n` along any `φ : X ⟶ E`
+      pulling `m[0]` and `n[0]` back to effective Cartier divisors is a monomorphism.
+    - `zeroDivisor_pow_comap_modelIso_inv_toTotal`: on a chart, `n[0]` pulls back to the model's
+      `zeroSectionDivisor ^ n`.
+    - private `mono_pullback_map_chart`: the inclusion, transported to the model of a chart along
+      any isomorphisms `ℒ_k|_{model} ≅ 𝒪(k[0])` (split 8's `nonempty_restrict_poleSheaf_iso`), has
+      monomorphic pullbacks to all fibres (through `pullbackComp` and `restrictFunctorIsoPullback`).
+      It holds for `m = 0` too.
+    - private `projective_rankAtStalk_quotient_range_pushforward_poleSheafMap`, and its two halves
+      `projective_quotient_range_pushforward_poleSheafMap` and
+      `rankAtStalk_quotient_range_pushforward_poleSheafMap`: **over a chart image `U` and for
+      `0 < m ≤ n`, `Γ(U, π_*ℒ_n) ⧸ Γ(U, π_*ℒ_m)` is a projective `Γ(S, U)`-module of rank
+      `n - m`**. This is split 17 transported along `modelCohomologyEquiv`, then
+      `image_top_modelIso_inv_toTotal` and `π.app U` (split 15's
+      `LinearEquiv.projective_quotient_range`, as in split 10). Chart images cover `S`, so this is
+      the Zariski-local splitting of the successive quotients of the pole filtration of `π_*ℒ_n`
+      that the README asks for, stated on sections.
+    - `exists_isCompl_range_pushforward_poleSheafMap`: **the pole filtration splits over every
+      chart image**: for `0 < m ≤ n`, the image of `Γ(U, π_*ℒ_m)` in `Γ(U, π_*ℒ_n)` has a
+      complement (by `Submodule.exists_isCompl_of_projective_quotient`). This is the README's
+      "split the successive quotients" step, Zariski-locally on the base.
+    - `bijective_app_pushforward_poleSheafMap_zero_one`: **over a chart image `U`,
+      `Γ(U, π_*ℒ_0) ⟶ Γ(U, π_*ℒ_1)` is bijective**. This is split 17's
+      `bijective_cohomologyMapBaseLinear_of_mono_pullback_zero_one` applied to the transported
+      inclusion and carried along `modelCohomologyEquiv`.
+    - `isIso_pushforward_map_poleSheafMap_zero_one` (instance): **`π_*ℒ_0 ⟶ π_*ℒ_1` is an
+      isomorphism**, via `Hom.isIso_of_isBasis` on the restricted charts
+      (`isBasis_range_opensRange_restrict`, split 8). So the first step of the pole filtration
+      of `π_*ℒ_n` is an equality, the row `n = 1: 1` of the README's table, on `E`.
 
 ## What remains (splits 19–23, not on this branch)
 
@@ -686,22 +733,15 @@ PR subject: `feat: the successive quotients of the pole filtration of π_*𝒪_E
 21. **(after 18)** The rest of the pole filtration of `π_*ℒ_n`. Splits 14, 17 and 18 have the
     inclusions, their injectivity on `H⁰`, the dimension count over a field, and, over any ring
     and over every chart image of `E`, the projectivity of rank `n - m` of the quotients
-    `H⁰(𝒪(n[0])) ⧸ H⁰(𝒪(m[0]))` for `0 < m ≤ n`. What remains:
-    - The case `m = 0` on `E`: over a chart image `U`, `Γ(U, π_*ℒ_0) ⟶ Γ(U, π_*ℒ_1)` is
-      bijective (so `π_*𝒪_E ≅ π_*ℒ_1`). The model statement is done (split 17's
-      `bijective_cohomologyMapBaseLinear_of_mono_pullback_zero_one`, stated for any `α` with
-      monomorphic fibres precisely so that it applies to the transported inclusion of `E`, which
-      split 18's private `mono_pullback_map_chart` provides for `m = 0` too). What remains is the
-      transport of bijectivity along the same chain of equivalences as split 18
-      (`e₀`, `sectionsLinearEquiv`, `e₂`, `e₃` there). To avoid repeating that chain, factor it out
-      of split 18's private lemma first, as a semilinear equivalence `H⁰(𝒪(k[0])) ≃ Γ(U, π_*ℒ_k)`
-      over `c.ring ≃+* Γ(S, U)` intertwining `H⁰(α)` with the direct image of `ℒ_m ⟶ ℒ_n`.
+    `H⁰(𝒪(n[0])) ⧸ H⁰(𝒪(m[0]))` for `0 < m ≤ n`. The case `m = 0` is done too: on `E`,
+    `π_*ℒ_0 ⟶ π_*ℒ_1` is an isomorphism (split 18), and the filtration splits over every chart
+    image (split 18). What remains:
     - A sheaf-level form of split 18, if wanted: the cokernel of `π_*ℒ_m ⟶ π_*ℒ_n` (quasicoherent
       by `isQuasicoherent_cokernel` on `main`) is finite locally free of rank `n - m`. This needs the
       sections of a cokernel of quasicoherent sheaves over an affine open to be the quotient of
       the sections, which is not on `main` in this form.
-    - Local splittings of the successive quotients (by projectivity, split 18), the choice of `x`
-      and `y` in the pieces of pole order 2 and 3, the multiplication maps
+    - The choice of `x` and `y` in the pieces of pole order 2 and 3 (complements of the lower
+      pieces exist over every chart image, split 18), the multiplication maps
       `ℒ_a ⊗ ℒ_b ⟶ ℒ_{a+b}`, the unique relation in pole order six, and the unit discriminant.
 22. **(after 21)** The bases `1, x, y, x², xy, x³` after a pointed Weierstrass trivialisation, the
     multiplication maps, the relation equal to the Weierstrass equation, and their independence of
@@ -722,7 +762,8 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 ## Verification
 
 `lake exe cache get`, `lake build` (green, warnings as errors) and
-`/opt/round/lookahead-check` all pass. In the twelfth round, `#lint in TauCeti` (15 linters)
+`/opt/round/lookahead-check` all pass. In the thirteenth round, `#lint in TauCeti` (15 linters) passes, with
+0 errors, on the import closure of `Geom/PoleSheaf/FiltrationQuotient.lean`. In the twelfth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 9913 declarations, on the import closure of the new modules of splits
 15–18, run from a scratch file importing `Geom/PoleSheaf/FiltrationQuotient.lean` and
 `RingTheory/Flat/Fiber.lean`. In the eleventh round, `#lint in TauCeti` (the same 15

@@ -32,6 +32,8 @@ isomorphism.
 
 * `TauCeti.AlgebraicGeometry.PointedWeierstrassChart.opensRange_toTotal`: the restriction of `X` to
   the base of a chart is the open subscheme `π⁻¹(U)` over the image `U` of the base.
+* `TauCeti.AlgebraicGeometry.PointedWeierstrassChart.image_top_modelIso_inv_toTotal`: so is the
+  image of the projective model of the chart's equation.
 * `TauCeti.AlgebraicGeometry.PointedWeierstrassAtlas.isBasis_range_opensRange_restrict`: the images
   of the restrictions of the charts of an atlas to the affine opens of their bases form a basis of
   the topology of `S`.
@@ -81,6 +83,13 @@ theorem opensRange_toTotal (c : PointedWeierstrassChart π zero) :
     c.toTotal.opensRange = π ⁻¹ᵁ c.baseMap.opensRange := by
   simpa only [c.isPullback.isoPullback_hom_fst, Scheme.Hom.opensRange_pullbackFst] using
     Scheme.Hom.opensRange_comp_of_isIso c.isPullback.isoPullback.hom (pullback.fst π c.baseMap)
+
+/-- The image of the projective model of a pointed Weierstrass chart in `X` is `π⁻¹(U)`, for `U`
+the image of the base of the chart. -/
+theorem image_top_modelIso_inv_toTotal (c : PointedWeierstrassChart π zero) :
+    (c.modelIso.inv ≫ c.toTotal) ''ᵁ ⊤ = π ⁻¹ᵁ c.baseMap.opensRange := by
+  rw [Scheme.Hom.image_top_eq_opensRange, Scheme.Hom.opensRange_comp_of_isIso,
+    c.opensRange_toTotal]
 
 /-- Over the image `U` of the base of a pointed Weierstrass chart of `π`, the functions on `π⁻¹(U)`
 are the functions on `U`: `π` induces an isomorphism `Γ(S, U) ≅ Γ(X, π⁻¹(U))`. -/
