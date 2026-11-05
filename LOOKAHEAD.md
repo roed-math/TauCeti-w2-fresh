@@ -113,6 +113,17 @@ without conflicts. Both suppliers' PRs (#27087, #27128) are still open. It added
 algebras `⨁ₙ 𝒪(n[0])` of a Weierstrass model and `⨁ₙ ℒ_n` of an elliptic curve, which were the
 first bullet of the old split 25. The old splits 23–27 are renumbered 24–28.
 
+The sixteenth round left tip `62df7864bbfa`. The seventeenth round (this one) found `main`
+unchanged (`b3b0334ab920`) and both suppliers' PRs (#27087, #27128) still open, so it merged
+nothing. It attempted the first bullet of split 26, starting with the compatibility of the
+multiplication with the pole filtration in the **second** factor (split 20 has only the first),
+`ℒ_a ◁ (ℒ_b ⟶ ℒ_b') ≫ μ = μ ≫ (ℒ_(a+b) ⟶ ℒ_(a+b'))`, derived from the first-factor statement
+`pre_sheafOfLE_whiskerRight_dualPowMulIso_hom` by moving it across `braiding_poleMul`. The
+elaborated proof (cancel the braiding, `braiding_naturality_left`, then the commutativity on both
+sides and transport of `pre (sheafOfLE _)` along `add_comm`) goes through, but the kernel check
+of the resulting term hits a deterministic timeout, and the round ran out of time before it
+could be restructured. Nothing from that attempt is on the branch. See split 26 for the hint.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -910,6 +921,16 @@ that owns its definition, so it ships with that split: `IsEffectiveCartier.dualP
     `⨁ₙ 𝒪_X(nD)` of any effective Cartier divisor, are split 22, and its specialisation to `[0]`,
     the pole algebras `⨁ₙ 𝒪(n[0])` and `⨁ₙ ℒ_n` with components the pole sheaves, is split 23.
     What remains:
+    - The compatibility of the multiplication with the filtration in the second factor (the
+      seventeenth round's attempt, see the history above). Proving it from
+      `pre_sheafOfLE_whiskerRight_dualPowMulIso_hom` and `braiding_poleMul` by a term-level `calc`
+      times out in the kernel, as `PoleAlgebra.lean`'s implementation note warns for unfolded
+      monoidal structure. Two routes avoid this: prove it directly by `uncurry_injective`, mirroring
+      the first-factor proof with `whiskerLeft_dualPowMulIso_hom_comp_ev`; or state the helper
+      equalities with the opaque `ιU`-style wrappers so that the kernel does not unfold the
+      monoidal structure of `X.Modules`. `rw` with `braiding_poleMul` also fails to match after
+      `braiding_naturality_left`, because the braiding object is the unfolded
+      `(ihom (I ^ b').sheaf).obj (𝟙_ _)` rather than `I.poleComponent b'`.
     - The multiplication on the graded pieces: `ℒ_a/ℒ_(a-1) ⊗ ℒ_b/ℒ_(b-1) ≅ ℒ_(a+b)/ℒ_(a+b-1)`,
       so that the leading terms of `x², xy, x³, y²` are as expected.
     - A sheaf-level form of split 18, if wanted: the cokernel of `π_*ℒ_m ⟶ π_*ℒ_n` (quasicoherent
