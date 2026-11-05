@@ -129,7 +129,7 @@ private lemma hasDerivAt_addition (s : ℂ) (hz : z ∉ L.lattice) (hsz : s - z 
     (L.derivWeierstrassP_sq z hz - L.derivWeierstrassP_sq _ hsz)
 
 /-- Near `0`, `℘` avoids every function continuous at `0`, since `℘` has a pole there. -/
-private lemma eventually_weierstrassP_ne {g : ℂ → ℂ} (hg : ContinuousAt g 0) :
+lemma eventually_weierstrassP_ne {g : ℂ → ℂ} (hg : ContinuousAt g 0) :
     ∀ᶠ t in 𝓝[≠] 0, ℘[L] t ≠ g t := by
   have hcont : ContinuousAt (fun t ↦ 1 + t ^ 2 * (L.weierstrassPExcept 0 t - g t)) 0 := by
     have := (L.analyticAt_weierstrassPExcept 0).continuousAt

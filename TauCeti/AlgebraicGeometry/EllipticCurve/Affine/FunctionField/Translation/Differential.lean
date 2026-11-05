@@ -21,9 +21,10 @@ The statement includes translations by points of order two, where `2y + a₁x + 
 the translating point: its coordinates have zero differential, so no division by that value is
 needed. The computation is valid in every characteristic.
 
-## Main result
+## Main results
 
 * `WeierstrassCurve.Affine.mapSemilinear_translation_invariantDifferential`: `τ_P^*ω = ω`.
+* `WeierstrassCurve.Affine.D_translation_genericX`: `d(x ∘ τ_P) = ((2y + a₁x + a₃) ∘ τ_P) ω`.
 
 ## References
 
@@ -77,6 +78,19 @@ theorem mapSemilinear_translation_invariantDifferential (P : (W⁄F).toAffine.Po
       KaehlerDifferential.mapSemilinear_D, map_inv₀, AlgEquiv.toAlgHom_apply,
       AlgEquiv.toAlgHom_apply, D_translation_genericX_some W h,
       smul_smul, inv_mul_cancel₀ hdenom, one_smul]
+
+/-- **The differential of a translate of `x`**: `d(x ∘ τ_P) = ((2y + a₁x + a₃) ∘ τ_P) ω`, the
+translation invariance `τ_P^*ω = ω` read on the coordinate `x`. -/
+theorem D_translation_genericX (P : (W⁄F).toAffine.Point) :
+    KaehlerDifferential.D F W.FunctionField (translation W P (genericX W)) =
+      translation W P (invariantDifferentialDenom W) • invariantDifferential W := by
+  have hdenom : translation W P (invariantDifferentialDenom W) ≠ 0 :=
+    (map_ne_zero _).mpr (invariantDifferentialDenom_ne_zero W)
+  have h := mapSemilinear_translation_invariantDifferential W P
+  nth_rw 1 [invariantDifferential_def] at h
+  rw [KaehlerDifferential.mapSemilinear_smul, KaehlerDifferential.mapSemilinear_D, map_inv₀,
+    AlgEquiv.toAlgHom_apply, AlgEquiv.toAlgHom_apply] at h
+  rw [← h, smul_smul, mul_inv_cancel₀ hdenom, one_smul]
 
 end WeierstrassCurve.Affine
 

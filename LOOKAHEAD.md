@@ -1,8 +1,9 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-lattice-dictionary","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["weierstrass-uniformization"],"splits":[{"n":1,"after":[],"title":"feat: scalar maps between period lattices, their kernels, degrees and duals"},{"n":2,"after":[1],"title":"feat: the multiplier ring of a period lattice and its analytic endomorphisms"},{"n":3,"after":[2],"title":"feat: fractional ideals of imaginary quadratic orders as period lattices"},{"n":4,"after":[3],"title":"feat: ideal classes of an imaginary quadratic order and lattices with CM"},{"n":5,"after":[4],"title":"feat: the Picard group acts simply transitively on lattices with CM"},{"n":6,"after":[],"title":"feat: the index of 𝔞 J in an invertible fractional ideal J is the index of 𝔞"},{"n":7,"after":[5,6],"title":"feat: the isogeny of an invertible integral ideal, its torsion kernel and its degree"},{"n":8,"after":[1],"title":"feat: Vélu's formulas for ℘ of a superlattice"},{"n":9,"after":[5],"title":"feat: the j-invariant classifies ideal classes and curves with complex multiplication"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: scalar maps between lattices are algebraic isogenies"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-lattice-dictionary","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["weierstrass-uniformization"],"splits":[{"n":1,"after":[],"title":"feat: scalar maps between period lattices, their kernels, degrees and duals"},{"n":2,"after":[1],"title":"feat: the multiplier ring of a period lattice and its analytic endomorphisms"},{"n":3,"after":[2],"title":"feat: fractional ideals of imaginary quadratic orders as period lattices"},{"n":4,"after":[3],"title":"feat: ideal classes of an imaginary quadratic order and lattices with CM"},{"n":5,"after":[4],"title":"feat: the Picard group acts simply transitively on lattices with CM"},{"n":6,"after":[],"title":"feat: the index of 𝔞 J in an invertible fractional ideal J is the index of 𝔞"},{"n":7,"after":[5,6],"title":"feat: the isogeny of an invertible integral ideal, its torsion kernel and its degree"},{"n":8,"after":[1],"title":"feat: Vélu's formulas for ℘ of a superlattice"},{"n":9,"after":[5],"title":"feat: the j-invariant classifies ideal classes and curves with complex multiplication"},{"n":10,"after":[1,8],"title":"feat: Vélu's quotient of E_Λ by Λ'/Λ is E_Λ'"},{"n":11,"after":[2,10],"title":"feat: scalar maps between lattices are algebraic isogenies"},{"n":12,"after":[1,2,3,4,5,6,7,8,9,10,11],"title":"feat: the algebraic curves with complex multiplication of an imaginary quadratic order"}]}-->
 # Lookahead: `cm-lattice-dictionary` (ImaginaryQuadraticClassNumber, H3.1)
 
 Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f`. Status: **partial** (see the end).
-Split 10 is the planned final split and is **not yet written**; splits 1–9 are on the branch.
+All twelve planned splits are on the branch; split 12 is the final one. The target is not
+complete: the converse direction (every isogeny comes from a scalar map) is missing; see the end.
 
 Target (H3.1): "Prove that scalar maps between lattices correspond to algebraic isogenies, with
 kernel/degree/dual comparisons to EllipticCurves, by the rational elliptic-function description in
@@ -10,22 +11,40 @@ wp and wp prime. Then, for every imaginary quadratic order, construct the orient
 ideal-lattice/complex elliptic-curve equivalence, endomorphism-order comparison, class-group action
 and j-invariant classification."
 
-## Changes since the previous session (tip `64acec3e391`)
+## Changes since the previous session (tip `a0b51905cfc`)
 
-- The supplier PR #22646 (addition theorem, `weierstrassPointHom`, its kernel) **landed on `main`**
-  (`TauCeti/Analysis/SpecialFunctions/Elliptic/AdditionTheorem.lean`). Its four stubs are deleted and
-  `ScalarMap.lean` imports the landed module.
-- The supplier's next PR **#28061** (`feat: complex uniformization ℂ/Λ ≃ E(ℂ) and the lattice of a
-  complex elliptic curve`, head `15ddff1bbbb`) states `PeriodPair.weierstrassCurve_j_eq_iff` and
-  `PeriodPair.weierstrassCurve_j_eq_of_lattice_eq_smul`. The previous branch proved both itself
-  (split 7, `Elliptic/JInvariant.lean`, by a differential-equation argument, and an addition to
-  `Uniformization.lean`). Keeping them would duplicate the supplier, so they are **removed** and
-  stubbed from #28061 instead; the CM `j`-classification (now split 9) uses the stubs.
-- New: `FractionalIdeal.relIndex_coeIdeal_mul_eq_index` (split 6) and the norm form of the degree of
-  the `𝔞`-isogeny, `NumberFieldOrder.natCard_idealTorsion_eq_index` (split 7). This closes the old
-  remaining item "degree of the `𝔞`-isogeny as a norm".
-- New: Vélu's formulas and the rational description of `℘_{Λ'}`, `℘'_{Λ'}` in `℘_Λ`, `℘'_Λ`
-  (split 8): the analytic half of remaining item 1.
+- `main` is unchanged (`e8758b7b2f8`); #28061 is still open, so both stubs stay.
+- New **split 10** (`Elliptic/VeluIsogeny.lean`) supplies the algebraic half of the old remaining
+  item. For `Λ ⊆ Λ'`, Vélu's quotient curve of `E_Λ` by `P_Λ(Λ')` is `E_{Λ'}`
+  (`PeriodPair.veluCurve_latticePoints`), so Vélu's isogeny is an algebraic isogeny
+  `isogenyOfLE : E_Λ → E_{Λ'}`. It has degree `[Λ' : Λ]`, kernel `P_Λ(Λ')`, and it preserves the
+  invariant differential.
+  The proof evaluates the function field of `E_Λ` at `(℘_Λ, ℘'_Λ/2)` in the field of germs
+  along an ultrafilter at the punctured origin. The evaluation is injective because `℘_Λ` is
+  transcendental there (pole at `0`). Translates by `P_Λ(t)` evaluate to `℘_Λ(z+t)`, `℘'_Λ(z+t)/2`
+  by the addition theorem, and split 8's Vélu sums give `℘_{Λ'}`, `℘'_{Λ'}/2`.
+- New **split 11** (`Elliptic/AlgebraicIsogeny.lean`): for every scalar map `cΛ ⊆ Λ'`, the
+  algebraic isogeny `scalarIsogeny c h : E_Λ → E_{Λ'}`, which is `isogenyOfLE` for `Λ ⊆ c⁻¹Λ'`
+  followed by a change of variables. It has the kernel of the analytic `scalarPointHom c h` and
+  degree `[Λ' : cΛ]`, and it pulls `ω` back to `c ω`.
+  A new general lemma, `Isogeny.eq_of_pullbackDifferential_invariantDifferential_eq` (in
+  characteristic zero a morphism is determined by its `ω`-constant), then gives:
+  `scalarIsogeny` is the unique isogeny scaling `ω` by `c`, it is injective in `c`, it is
+  compatible with composition, `scalarIsogeny n = [n]`, and the dual pair
+  `scalarIsogeny ([Λ' : cΛ]/c)` composes to `[n]` in both orders. Finally the
+  multiplier ring acts on `E_Λ` by a normalised `CMAction` (`multiplierCMAction`).
+- New final **split 12** (`ComplexMultiplication/AlgebraicCM.lean`) covers, for proper `I` of an
+  imaginary quadratic order `O`:
+  - the normalised algebraic CM action `cmAction : CMAction O E_I`;
+  - the algebraic `𝔞`-isogeny with kernel `E_I[𝔞]` and degree `[O : 𝔞]`;
+  - `E_I ≅ E_J` over `ℂ` ⇔ `[I] = [J]`, via split 9 and Mathlib's `exists_variableChange_of_j_eq`.
+- Supporting changes to files on `main`:
+  - `TauCeti/Order/Filter/Germ.lean` gains `Filter.Germ.algebra_aeval_coe` and `Filter.Germ.coe_sum`
+    (split 10; `main`'s `Filter.Germ.algebra` instance is used).
+  - `Translation/Differential.lean` gains `D_translation_genericX` (split 10).
+  - `Isogeny/InvariantDifferential.lean` gains `Hom.eq_of_pullbackDifferential_invariantDifferential_eq`
+    and `eq_of_pullbackDifferential_invariantDifferential_eq` (split 11).
+  - `PeriodPair.eventually_weierstrassP_ne` in `AdditionTheorem.lean` becomes public (split 10).
 
 ## Stubbed supplier declarations (`weierstrass-uniformization`)
 
@@ -61,7 +80,7 @@ Each split builds on `main` plus the splits it lists as needed first.
 
 ### Split 1 — `feat: scalar maps between period lattices, their kernels, degrees and duals`
 - Needs first: none (the supplier's #22646 is on `main`).
-- Files: new `TauCeti/Analysis/SpecialFunctions/Elliptic/ScalarMap.lean` (304 lines); adds
+- Files: new `TauCeti/Analysis/SpecialFunctions/Elliptic/ScalarMap.lean` (316 lines); adds
   `PeriodPair.intCast_mul_mem_lattice` and `PeriodPair.latticeBasis_repr_eq` to
   `TauCeti/Analysis/Complex/UpperHalfPlane/PeriodPair.lean`.
 - Declarations (`PeriodPair`): `weierstrassPointHom_surjective`, `mem_ker_weierstrassPointHom`,
@@ -71,7 +90,8 @@ Each split builds on `main` plus the splits it lists as needed first.
   `scalarPointHom_surjective`, `natCard_ker_scalarPointHom` (degree `[Λ' : c Λ]`),
   `relIndex_lattice_smul_eq_natAbs`, `mul_sub_mul_ne_zero`, `relIndex_lattice_smul_ne_zero`,
   `natCard_zsmul_eq_zero` (`#E_Λ(ℂ)[n] = n²`), `relIndex_div_mul_mem_lattice`,
-  `scalarPointHom_comp_dual`, `scalarPointHom_dual_comp`; private `kerParam`, `latticeBasis'`.
+  `relIndex_div_ne_zero`, `mk0_relIndex_div_mul_mem_lattice`, `scalarPointHom_comp_dual`,
+  `scalarPointHom_dual_comp`; private `kerParam`, `latticeBasis'`.
   If #28061's `weierstrassPointEquiv` lands first, `weierstrassPointHom_surjective` may be restated
   through it.
 
@@ -150,10 +170,53 @@ Each split builds on `main` plus the splits it lists as needed first.
   `CMClass.jInvariant_injective`, `injective_jInvariant_cmClassEquiv`;
   (`IdealClassMonoid`) `jInvariant_injective`.
 
-### Split 10 (planned, not yet written) — `feat: scalar maps between lattices are algebraic isogenies`
-- Needs first: 1–9.
-- Content: see "Remains" below. It carries the target's exported comparison theorems and is the
-  only split that completes the target.
+### Split 10 — `feat: Vélu's quotient of E_Λ by Λ'/Λ is E_Λ'`
+- Needs first: 1 (`relIndex_lattice_smul_ne_zero`, via 8) and 8 (`hasSum_weierstrassP_of_le`,
+  `hasSum_derivWeierstrassP_of_le`, `finite_quotient_of_le`); no supplier.
+- Files: new `TauCeti/Analysis/SpecialFunctions/Elliptic/VeluIsogeny.lean` (413 lines). It also adds
+  `Filter.Germ.algebra_aeval_coe` and `Filter.Germ.coe_sum` to `TauCeti/Order/Filter/Germ.lean`, and
+  `WeierstrassCurve.Affine.D_translation_genericX` to
+  `TauCeti/AlgebraicGeometry/EllipticCurve/Affine/FunctionField/Translation/Differential.lean`.
+  It makes `PeriodPair.eventually_weierstrassP_ne` public in `Elliptic/AdditionTheorem.lean`.
+- Declarations (`PeriodPair`): `xCoord_weierstrassPoint`, `yCoord_weierstrassPoint`,
+  `latticePoints`, `mem_latticePoints`, `finite_latticePoints`, `veluCurve_latticePoints`,
+  `isogenyOfLE`, `fieldPullback_isogenyOfLE_genericX`, `fieldPullback_isogenyOfLE_genericY`,
+  `degree_isogenyOfLE`, `ker_isogenyOfLE`, `natCard_ker_isogenyOfLE`,
+  `pullbackDifferential_isogenyOfLE`.
+  Private helpers:
+  - the germ field `Germs` and its ultrafilter;
+  - the evaluations `evalCoord` and `evalFF`, their injectivity, and their values on `genericX`,
+    `genericY` and translates;
+  - `quotientToLatticePoints` (bijective) and the Vélu coordinate evaluations;
+  - the cast lemmas `*_eqRec`.
+
+### Split 11 — `feat: scalar maps between lattices are algebraic isogenies`
+- Needs first: 2 (`multiplierRing`) and 10; through them 1 and 8.
+- Files: new `TauCeti/Analysis/SpecialFunctions/Elliptic/AlgebraicIsogeny.lean` (274 lines); adds
+  `TauCeti.Isogeny.Hom.eq_of_pullbackDifferential_invariantDifferential_eq` and
+  `TauCeti.Isogeny.eq_of_pullbackDifferential_invariantDifferential_eq` to
+  `TauCeti/AlgebraicGeometry/EllipticCurve/Isogeny/InvariantDifferential.lean`.
+- Declarations (`PeriodPair`): `scalarIsogeny`, `ker_scalarIsogeny`,
+  `pullbackDifferential_scalarIsogeny`, `degree_scalarIsogeny`,
+  `degree_scalarIsogeny_eq_relIndex`, `eq_scalarIsogeny_iff`, `scalarIsogeny_inj`,
+  `scalarIsogeny_comp`, `scalarIsogeny_intCast`, `scalarIsogeny_comp_dual`,
+  `scalarIsogeny_dual_comp`,
+  `multiplierCMAction`, `pullbackDifferential_multiplierCMAction`,
+  `multiplierCMAction_apply_of_ne_zero`.
+  Private: `mem_lattice_inv_smul_iff`, `variableChange_weierstrassCurve_inv_smul`,
+  `ker_scalarIsogeny_eq`, `multiplierHom`, `pullbackDifferential_multiplierHom`.
+
+### Split 12 (final) — `feat: the algebraic curves with complex multiplication of an imaginary quadratic order`
+- Needs first: 1–11. It imports split 11 (`AlgebraicIsogeny`), split 7 (`IdealIsogeny`, through it
+  3–6) and split 9 (`JInvariant`). It uses the supplier's `weierstrassCurve_j_eq_iff` through
+  split 9.
+- Files: new `TauCeti/NumberTheory/ComplexMultiplication/AlgebraicCM.lean` (164 lines).
+- Declarations (`TauCeti.GlobalNumberFields.NumberFieldOrder`): `cmAction`, `cmAction_apply`,
+  `pullbackDifferential_cmAction`, `ker_scalarIsogeny_one_eq_idealTorsion`,
+  `degree_scalarIsogeny_one_eq_index`, `exists_scalarIsogeny_picSMul` (the algebraic form of
+  split 7's `exists_isogeny_picSMul`, with degree `[O : 𝔞]`),
+  `exists_variableChange_smul_eq_iff_mk_eq`.
+- The only split that completes the target, once the remaining converse below is added to it.
 
 ## What is proved and what remains (`partial`)
 
@@ -169,18 +232,36 @@ the action is realized by the `𝔞`-isogenies `E_I → E_{𝔞⁻¹I}` with ker
 Vélu's formulas express `℘_{Λ'}` and `℘'_{Λ'}` (hence `℘_{Λ'}(α z)`, `℘'_{Λ'}(α z)`) as explicit
 rational functions of `℘_Λ(z)`, `℘'_Λ(z)`.
 
-Remains (split 10): **the algebraic isogeny.** `main` already has the algebraic Vélu isogeny
-`WeierstrassCurve.Affine.veluIsogeny W Φ : W → W / Φ` with `veluX = ∑_{Q ∈ Φ} (x ∘ τ_Q - x(Q))`,
-`veluY = ∑_Q (y ∘ τ_Q - y(Q))`, degree `#Φ`, kernel `Φ` and the quotient universal property
-(`TauCeti/AlgebraicGeometry/EllipticCurve/Isogeny/Velu/`). These are exactly split 8's analytic
-formulas evaluated along `P_Λ` with `Φ = P_Λ(Λ'/Λ) = ker (scalarPointHom 1)`. The plan:
-1. an evaluation injection: an element of the function field of `E_Λ` vanishing at `P_Λ(z)` for
-   `z` in a nonempty open set is `0` (write it as `(a + b y)/d`; use `z ↦ -z` and that `℘` is open);
-2. evaluate `veluX`, `veluY` at `P_Λ(z)` (translation by `Q = P_Λ(t)` is `z ↦ z + t`, by
-   `weierstrassPoint_add`) and compare with `hasSum_weierstrassP_of_le` (the sum over `Φ` is the sum
-   over `Λ'/Λ`; `∑ y(Q) = 0` by `Q ↦ -Q`), so `veluCurve E_Λ Φ = E_{Λ'}` by step 1 applied to the two
-   Weierstrass equations;
-3. compose with the variable change of `Λ' = α (α⁻¹Λ')` (#28061's `pointAddEquivOfLatticeEq`) to get
-   an isogeny `E_Λ → E_{Λ'}` whose point map is `scalarPointHom α`; read off degree
-   (`degree_veluIsogeny` vs `natCard_ker_scalarPointHom`), kernel and the dual from the universal
-   property, and identify the algebraic endomorphism ring of `E_I` with `O` via `orderEndRingHom`.
+Splits 10–12 add the algebraic side.
+- *Scalar map ↦ isogeny.* Every scalar map `cΛ ⊆ Λ'` gives an algebraic isogeny
+  `scalarIsogeny c h`. Its kernel is the analytic kernel, its degree is `[Λ' : cΛ]`, and it pulls
+  `ω` back to `c ω`. It is the unique isogeny with that differential, injective in `c`, compatible
+  with composition, equal to `[n]` for `c = n`, and the duals compose to `[n]` in both orders.
+- *Endomorphism order.* `O` acts on `E_I` by a faithful, normalised algebraic CM action.
+- *Class group.* The class-group action is realised by algebraic `𝔞`-isogenies with kernel `E_I[𝔞]`
+  and degree `N(𝔞)`.
+- *Classification.* `E_I ≅ E_J` over `ℂ` exactly when `[I] = [J]`.
+
+Remains (to be added to the final split 12, or to a new final split 13 after it): **the converse,
+isogeny ↦ scalar map**, and with it the surjectivity halves.
+1. Every isogeny `φ : E_Λ → E_{Λ'}` is `scalarIsogeny c h` for `φ^*ω = c ω` (`c ≠ 0` in
+   characteristic zero), and in particular `cΛ ⊆ Λ'`. Route:
+   - `M = P_Λ⁻¹(ker φ)` is a lattice containing `Λ` with finite index. Build its `PeriodPair`,
+     e.g. from a ℤ-basis of `M ⊆ (1/#ker φ) Λ` with an oriented basis.
+   - `ker φ = ker (isogenyOfLE (Λ ⊆ M))`, so
+     `existsUnique_variableChangeIsogeny_comp_eq_of_ker_eq` writes `φ = C ∘ isogenyOfLE` for a
+     change of variables `C : E_M ≅ E_{Λ'}`.
+   - Both curves have `a₁ = a₂ = a₃ = 0`, so `C = (u, 0, 0, 0)`, and the differential gives
+     `u = c`.
+   - Then `E_{Λ'} = C • E_M = E_{cM}` (`weierstrassCurve_smul`). The missing input is **period
+     lattice recovery**: equal Weierstrass curves have equal lattices. #28061 states only the
+     homothety form (`exists_variableChange_smul_weierstrassCurve_eq_iff`: `Λ' = d (cM)` for
+     some `d`). Equality also needs `dN = N` whenever `d⁴ = 1`, `d⁶ = 1` or `g₂ g₃ = 0` allows
+     it. This is the supplier's "period-lattice recovery for every complex elliptic curve";
+     stub it when it is stated, or prove it from the homothety form.
+2. Consequences: `multiplierCMAction` and `cmAction` are onto `Hom E E`, so `End(E_I) ≅ O`. With
+   the supplier's uniformization of every complex elliptic curve, every curve with CM by `O` is
+   some `E_I`, which completes the ideal-class / CM-curve equivalence (split 12 already has
+   injectivity).
+3. Optionally, the point maps: `Isogeny.toPointHom (scalarIsogeny c h)` read through
+   `equivBaseChangeSelf` is `scalarPointHom c h`.

@@ -42,6 +42,9 @@ zeros or poles, and since `F` is the exact constant field of `F(W₁)`, `a` is a
   characteristic zero it is always nonzero.
 * `TauCeti.Isogeny.Hom.existsUnique_pullbackDifferential_invariantDifferential_eq_smul`: the same
   for every morphism `W₁ → W₂`.
+* `TauCeti.Isogeny.Hom.eq_of_pullbackDifferential_invariantDifferential_eq` and
+  `TauCeti.Isogeny.eq_of_pullbackDifferential_invariantDifferential_eq`: in characteristic zero a
+  morphism, in particular an isogeny, is determined by this constant.
 
 ## References
 
@@ -180,5 +183,30 @@ theorem Hom.existsUnique_pullbackDifferential_invariantDifferential_eq_smul (f :
   · exact ⟨0, by rw [Hom.pullbackDifferential_zero, LinearMap.zero_apply, zero_smul]⟩
   · rw [Hom.pullbackDifferential_ofIsogeny]
     exact (Isogeny.existsUnique_pullbackDifferential_invariantDifferential_eq_smul φ).exists
+
+/-- **In characteristic zero a morphism is determined by its pullback of the invariant
+differential**: if `f^*ω₂ = g^*ω₂`, then `f = g`. The morphism `f - g` pulls `ω₂` back to `0`, so it
+is not an isogeny, every isogeny being separable in characteristic zero. -/
+theorem Hom.eq_of_pullbackDifferential_invariantDifferential_eq [CharZero F] {f g : Hom W₁ W₂}
+    (h : f.pullbackDifferential (invariantDifferential W₂) =
+      g.pullbackDifferential (invariantDifferential W₂)) :
+    f = g := by
+  refine sub_eq_zero.mp ?_
+  rcases Hom.eq_zero_or_exists_ofIsogeny (f - g) with h' | ⟨χ, hχ⟩
+  · exact h'
+  have h₀ : χ.pullbackDifferential (invariantDifferential W₂) =
+      (0 : F) • invariantDifferential W₁ := by
+    rw [zero_smul, ← Hom.pullbackDifferential_ofIsogeny, ← hχ,
+      Hom.pullbackDifferential_sub_invariantDifferential, h, sub_self]
+  exact absurd rfl (ne_zero_of_pullbackDifferential_eq_smul χ h₀)
+
+/-- **In characteristic zero an isogeny is determined by its pullback of the invariant
+differential**: if `φ^*ω₂ = ψ^*ω₂`, then `φ = ψ`. -/
+theorem eq_of_pullbackDifferential_invariantDifferential_eq [CharZero F] {φ ψ : Isogeny W₁ W₂}
+    (h : φ.pullbackDifferential (invariantDifferential W₂) =
+      ψ.pullbackDifferential (invariantDifferential W₂)) :
+    φ = ψ :=
+  Hom.ofIsogeny_injective (Hom.eq_of_pullbackDifferential_invariantDifferential_eq (by
+    rwa [Hom.pullbackDifferential_ofIsogeny, Hom.pullbackDifferential_ofIsogeny]))
 
 end TauCeti.Isogeny

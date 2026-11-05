@@ -277,6 +277,18 @@ lemma relIndex_div_mul_mem_lattice (c : ℂˣ) {z : ℂ} (hz : z ∈ L'.lattice)
     field_simp [c.ne_zero]
   rwa [Submodule.mem_toAddSubgroup, nsmul_eq_mul, key, mul_mem_lattice_smul_iff] at hn
 
+/-- With `n = [Λ' : c Λ]`, the scalar `n / c` is nonzero. -/
+lemma relIndex_div_ne_zero (c : ℂˣ) (h : ∀ z ∈ L.lattice, (c : ℂ) * z ∈ L'.lattice) :
+    ((c • L).lattice.toAddSubgroup.relIndex L'.lattice.toAddSubgroup / (c : ℂ)) ≠ 0 :=
+  div_ne_zero (Nat.cast_ne_zero.mpr (relIndex_lattice_smul_ne_zero c h)) c.ne_zero
+
+/-- With `n = [Λ' : c Λ]`, the unit `n / c` maps `Λ'` into `Λ`. -/
+lemma mk0_relIndex_div_mul_mem_lattice (c : ℂˣ) (h : ∀ z ∈ L.lattice, (c : ℂ) * z ∈ L'.lattice) :
+    ∀ z ∈ L'.lattice, ((Units.mk0 _ (relIndex_div_ne_zero c h) : ℂˣ) : ℂ) * z ∈ L.lattice :=
+  fun _ hz ↦ by
+    rw [Units.val_mk0]
+    exact relIndex_div_mul_mem_lattice c hz
+
 /-- **The dual, on the source.** With `n = [Λ' : c Λ]`, the map induced by `n / c` after the map
 induced by `c` is multiplication by `n` on `E_Λ(ℂ)`. -/
 theorem scalarPointHom_comp_dual (c : ℂˣ) (h : ∀ z ∈ L.lattice, (c : ℂ) * z ∈ L'.lattice) :
