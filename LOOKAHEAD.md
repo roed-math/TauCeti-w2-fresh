@@ -3,7 +3,7 @@
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
 Built on `main` at `b3b0334ab9203d9faee4b2f34cd75161463ecdd0` (session 18 merged `main` again,
-without conflicts; `main` changed nothing under `TauCeti/` since `e8758b7b2f8`).
+without conflicts; session 19 found no newer `main`; `main` changed nothing under `TauCeti/` since `e8758b7b2f8`).
 Status: **partial** (session 15: the README checks are proved; session 16: the long exact sequence
 of cohomology with supports of sheaves of modules and its compatibility with pullback; the scheme
 wrapper `localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and the flat base change
@@ -897,6 +897,33 @@ Session 18 merged `main` at `b3b0334ab92` (infrastructure commits only, nothing 
 (with `k[t]` acting through `ΓSpecIso`), a direct instance of session 15's
 `cohomologyWithSupportSpecOneLinearEquiv`. The check `test_support_affine_line_origin`
 (`Checks.lean`, split 18) now states the `k[t]`-linear isomorphism instead of an `AddEquiv`.
+
+### Session 19: refresh on `main`, and the plan for what remains
+
+Session 19 resumed the branch at `2e303f92c4d`; `origin/main` was still `b3b0334ab92`, so the merge
+was a no-op. It rebuilt the whole branch and reran `lookahead-check`; no declaration changed. Each
+remaining item was scoped against `main` and is larger than one session:
+
+- **Flat base change compatibly with the geometric comparison.** For `g = Spec.map (algebraMap A B)`,
+  the statement is that `localCohomologyIsoCohomologyWithSupport` for `B` composed with
+  `localCohomologyBaseChangeIso` agrees with `cohomologyWithSupportPullback g` (with
+  `g⁻¹ V(I) = V(IB)`) after `B ⊗_A −` on the source. Stage by stage this needs: an isomorphism
+  `g^* (M^~) ≅ (B ⊗_A M)^~` compatible with the pullback of the sections `1` of `(A ⧸ Iᵏ)^~`
+  (`quotientPowOne`), and the identity `Ext.mapExactFunctor (tilde ⋙ toSheaf)` intertwining
+  `extBaseChangeLinearEquiv` with `cohomologyWithSupportPullback`. The second needs `g^*` to be
+  exact on the quasi-coherent sheaves involved (`main`'s `shortExact_map_pullback_of_flat` gives it on
+  short exact sequences, not as an exact functor), so the stage comparison must be done through a
+  projective resolution of `A ⧸ Iᵏ`, as in `Support/Comparison.lean`.
+- **`localCohomologySheaf` as an `𝒪_X`-module.** The abelian sheaf is `main`'s
+  `Sheaf.supportedHSheaf` of the underlying abelian sheaf, and a bare renaming of it would add
+  nothing. The `𝒪_X(W)`-action on `H_Z^q(W, M)` comes from `cohomologyWithSupportModule` on the open
+  subscheme `W` applied to `M|_W` (with `Γ(W, ⊤) ≅ 𝒪_X(W)`). The missing ingredient is the
+  restriction isomorphism `H_Z^q(W, M) ≃+ H_{Z ∩ W}^q(W, M|_W)` of supported cohomology along an open
+  immersion, natural in `W`; `main` has excision (`supportedHExcisionEquiv`) and pullback
+  (`supportedHPullback`, split 3) but not this isomorphism. After it, the presheaf of
+  `𝒪_X`-modules is assembled as `supportedModuleHPresheaf` is, and sheafified in `X.Modules`.
+- **`rHZ_adjunction` and `localToGlobal`** need `RΓ_Z` and `RH_Z` as functors on `D(X)`; `main`
+  has no derived pushforward along a closed immersion, so both wait on that infrastructure.
 
 ## What remains
 
