@@ -351,7 +351,7 @@ theorem liftDerivationPresheaf_isSheaf : (liftDerivationPresheaf f i a).IsSheaf 
 /-- The sheaf of derivations of `a⁻¹ 𝒪_X` over `𝒪_S` into the ideal of `i`, on `T'`: its
 sections over `W` are the families of additive maps `D U V : Γ(X, U) → Γ(T', V)`, for `V ⊆ W`
 and `i ⁻¹ V ⊆ a ⁻¹ U`, satisfying `IsLiftDerivation f i a`. -/
-noncomputable def liftDerivationSheaf : TopCat.Sheaf AddCommGrpCat.{u} T' :=
+@[expose] noncomputable def liftDerivationSheaf : TopCat.Sheaf AddCommGrpCat.{u} T' :=
   ⟨liftDerivationPresheaf f i a, liftDerivationPresheaf_isSheaf f i a⟩
 
 end TauCeti.AlgebraicGeometry
