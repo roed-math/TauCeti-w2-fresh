@@ -23,6 +23,7 @@ affine `T'` is what makes a smooth morphism formally smooth (Stacks, Lemma 37.11
 ## Main definitions
 
 * `TauCeti.AlgebraicGeometry.liftSheaf f i a h`: the sheaf of lifts of `a` along `i` over `S`.
+* `TauCeti.AlgebraicGeometry.liftSheafObjEquiv f i a h W`: its sections over `W`.
 
 ## Main results
 
@@ -132,6 +133,23 @@ theorem liftPresheaf_isSheaf : (liftPresheaf f i a h).IsSheaf := by
 morphisms `l : W ⟶ X` with `i ∣_ W ≫ l = a` on `i ⁻¹ᵁ W` and `l ≫ f = h` on `W`. -/
 noncomputable def liftSheaf : TopCat.Sheaf (Type u) T' :=
   ⟨liftPresheaf f i a h, liftPresheaf_isSheaf f i a h⟩
+
+/-- The sections of the sheaf of lifts over `W` are the morphisms `l : W ⟶ X` with
+`i ∣_ W ≫ l = a` on `i ⁻¹ᵁ W` and `l ≫ f = h` on `W`. -/
+noncomputable def liftSheafObjEquiv (W : T'.Opens) :
+    (liftSheaf f i a h).obj.obj (op W) ≃
+      { l : W.toScheme ⟶ X // i ∣_ W ≫ l = (i ⁻¹ᵁ W).ι ≫ a ∧ l ≫ f = W.ι ≫ h } :=
+  Equiv.refl _
+
+/-- Restricting a section of the sheaf of lifts to a smaller open `W' ⊆ W` precomposes the
+morphism with `W' ⟶ W`. -/
+@[simp]
+theorem coe_liftSheafObjEquiv_map {W W' : T'.Opens} (e : W' ≤ W)
+    (l : (liftSheaf f i a h).obj.obj (op W)) :
+    (liftSheafObjEquiv f i a h W' ((liftSheaf f i a h).obj.map (homOfLE e).op l) :
+        W'.toScheme ⟶ X) =
+      T'.homOfLE e ≫ (liftSheafObjEquiv f i a h W l : W.toScheme ⟶ X) :=
+  (rfl)
 
 /-- The sheaf of lifts has a section over `⊤` if and only if `a` lifts along `i` over `S`. -/
 theorem nonempty_liftSheaf_top_iff :
