@@ -1,10 +1,17 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[],"title":"feat: Ext and sheaf cohomology from acyclic resolutions"},{"n":3,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":4,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":5,"after":[4],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":6,"after":[5],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":7,"after":[1,2,14,15],"title":"feat: the Grothendieck spectral sequence of a composite of left exact functors"},{"n":8,"after":[],"title":"feat: total complexes of first-quadrant cochain bicomplexes"},{"n":9,"after":[2,5,6,8],"title":"feat: the Čech double complex of a complex of abelian sheaves"},{"n":10,"after":[8],"title":"feat: the spectral sequence of a first-quadrant cochain bicomplex"},{"n":11,"after":[9,10],"title":"feat: the Čech-to-cohomology spectral sequence"},{"n":12,"after":[],"title":"feat: the connecting map of a degreewise split short exact sequence"},{"n":13,"after":[11],"title":"feat: the Čech-to-cohomology spectral sequence of a covering of an object"},{"n":14,"after":[],"title":"feat: the horseshoe lemma for injective resolutions"},{"n":15,"after":[14],"title":"feat: Cartan–Eilenberg resolutions of cochain complexes"},{"n":16,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"leray-spectral-sequence","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["sheaf-h-pullback"],"splits":[{"n":1,"after":[],"title":"feat: dimension shifting for right derived functors"},{"n":2,"after":[],"title":"feat: Ext and sheaf cohomology from acyclic resolutions"},{"n":3,"after":[1],"title":"feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem"},{"n":4,"after":[],"title":"feat: Čech complexes along a functor preserving products"},{"n":5,"after":[4],"title":"feat: Čech complexes of injective sheaves are exact in positive degrees"},{"n":6,"after":[5],"title":"feat: Leray's acyclicity theorem for a covering of a site"},{"n":7,"after":[8,10,14,15],"title":"feat: the Grothendieck spectral sequence"},{"n":8,"after":[],"title":"feat: total complexes of first-quadrant cochain bicomplexes"},{"n":9,"after":[2,5,6,8],"title":"feat: the Čech double complex of a complex of abelian sheaves"},{"n":10,"after":[8],"title":"feat: the spectral sequence of a first-quadrant cochain bicomplex"},{"n":11,"after":[9,10],"title":"feat: the Čech-to-cohomology spectral sequence"},{"n":12,"after":[],"title":"feat: the connecting map of a degreewise split short exact sequence"},{"n":13,"after":[11],"title":"feat: the Čech-to-cohomology spectral sequence of a covering of an object"},{"n":14,"after":[],"title":"feat: the horseshoe lemma for injective resolutions"},{"n":15,"after":[14],"title":"feat: Cartan–Eilenberg resolutions of cochain complexes"},{"n":16,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"title":"feat: the Leray and Čech-to-cohomology spectral sequences"}]}-->
 
 # Lookahead: `leray-spectral-sequence` (SchemeAndStackFoundations §2.2)
 
-Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174` (ninth round, 2026-11-05, same
-`main` as the eighth round; #27242 is still open at head `fc88ca0a5dc2`, so its stub stays).
-Status: **partial**.
+Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f` (tenth round, 2026-11-05; `main`
+moved only by a CI change since the ninth round; #27242 is still open at head `fc88ca0a5dc2`, so
+its stub stays). Status: **partial**.
+
+The tenth round built the **Leray spectral sequence itself**: the `E₂ = RˢG(Hᵏ)` page and the
+abutment of the Cartan–Eilenberg spectral sequence, the **Grothendieck spectral sequence**
+`RˢG(RᵏF(X)) ⇒ Rˢ⁺ᵏ(F ⋙ G)(X)`, and from it `leraySpectralSequence` with
+`E₂^{p,q} = Hᵖ(C, Rᵠ f_* F)` and abutment `Hᵖ⁺ᵠ(D, F)`, and the relative form
+`Rᵖ g_* Rᵠ f_* F ⇒ Rᵖ⁺ᵠ(g ∘ f)_* F`. See "New in the tenth round". What remains of the target is
+naturality in `F` and the identification of the edge map with `lerayEdge` (see "What remains").
 
 Earlier sessions proved the Čech half of the target's inputs on a general site (Čech complexes of
 injective sheaves are exact in positive degrees; Leray's acyclicity theorem for a covering of a site,
@@ -52,6 +59,65 @@ The seventh round (2026-11-04, merged `main` forward to `57ab0f657d7`; #27242 st
 `fc88ca0a5dc2`, so the stub stays) closed the remaining Čech item (a3) of "What remains" 3: the
 **first differential of the Čech-to-cohomology spectral sequence of a covering of an object `V`**
 is `(-1)ᵠ` times the Čech differential of `Hᵠ(-, F)` on `C`. See "New in the seventh round".
+
+## New in the tenth round: the Grothendieck and Leray spectral sequences (no stub used)
+
+New files (no existing file changed except the move of `LerayEdge.lean`, below):
+
+- `TauCeti/Algebra/Homology/SpectralSequence/CartanEilenberg.lean` (296 lines):
+  - namespace `CategoryTheory.InjectiveResolution`: **`quasiIso_of_isZero_rightDerived`** — for
+    `G` left exact and `RⁿG(X) = 0` (`n > 0`), any cochain map from `G(X)` in degree `0` to a
+    complex isomorphic to `G(I)`, compatible with `G(X ⟶ I⁰)`, is a quasi-isomorphism.
+    **Port note:** general; it belongs in `TauCeti/CategoryTheory/Abelian/RightDerived.lean`
+    (split 1's file), kept here to avoid rebuilding that `main` file's dependents.
+  - namespace `CochainComplex`, for `G : C ⥤ D` additive: `mapCartanEilenberg G` (`G(J)` as a
+    bicomplex, `abbrev`), `cartanEilenbergSpectralSequence G` (its row-filtration spectral
+    sequence, filtered by the resolution degree, `abbrev`), `mapCartanEilenbergRowIso` (the row
+    `s` of `G(J)` is `cartanEilenbergRow G s`; this explicit isomorphism with identity components
+    replaces the definitional equality, which is not reducible and broke `rw`/`simp`),
+    `mapCartanEilenbergRowIso_inv_dRow_hom`, `cartanEilenbergSpectralSequenceFirstPageXIso`
+    (`E₁ = G(J(Hᵏ)ˢ)`), `cartanEilenbergSpectralSequenceFirstPageXIso_inv_d_hom` (`d₁ = (-1)ᵏ G(d)`),
+    `cartanEilenbergSpectralSequencePageTwoHomologyIsoOfEpi` and
+    `cartanEilenbergSpectralSequencePageTwoHomologyIso` (the cohomology of the first page is that
+    of `G(J(Hᵏ))`, by a morphism of short complexes with the sign `(-1)ᵏ` absorbed in its last
+    components), **`cartanEilenbergSpectralSequencePageThreeXIso G s k`** (the classical `E₂`:
+    `((…).page 3).X (k + 2s + 1, -(s + 1)) ≅ (G.rightDerived s).obj (K.homology k)`);
+    the abutment: `mapCartanEilenbergCoaugmentation` (`G(K) ⟶` row `0` of `G(J)`),
+    `mapCartanEilenbergCoaugmentation_comp_d`, **`quasiIso_totalCoaugmentation_mapCartanEilenberg`**
+    (for `G` left exact and `Kᵠ` `G`-acyclic, `G(K) ⟶ Tot G(J)` is a quasi-isomorphism, from
+    split 8's `quasiIso_totalCoaugmentation` on the flipped bicomplex) and
+    **`cartanEilenbergSpectralSequenceAbutmentIso`** (`abutment n ≅ Hⁿ(G(K))`, through split 10's
+    `rowFiltrationUpAbutmentIso` and Mathlib's `totalFlipIso`).
+- `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck.lean` (90 lines), namespace
+  `CategoryTheory.Functor`, for `F : C ⥤ D`, `G : D ⥤ E` additive and an injective resolution `I`
+  of `X`: `grothendieckSpectralSequence F G I` (the Cartan–Eilenberg spectral sequence of `G` at
+  `F(I)`), **`grothendieckSpectralSequencePageThreeXIso`** (`E₂^{s,k} ≅ RˢG(RᵏF(X))`) and
+  **`grothendieckSpectralSequenceAbutmentIso`** (for `G` left exact and `F` sending injectives to
+  `G`-acyclics: `abutment n ≅ Rⁿ(F ⋙ G)(X)`).
+- `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray/SpectralSequence.lean` (197 lines):
+  - namespace `TauCeti.CategoryTheory` (that of split 2's `Ext/AcyclicResolution.lean`):
+    **`rightDerivedObjAddEquivExt`** — `RⁿG(F) ≃+ Extⁿ(P, F)` for `G : C ⥤ Ab` corepresented by `P`
+    (split 2's `extAddEquivHomologyOfResolution` on the chosen injective resolution). **Port
+    note:** general; it belongs at the end of split 2's `Ext/AcyclicResolution.lean` (with a
+    `Mathlib.CategoryTheory.Abelian.RightDerived` import), kept here to avoid rebuilding the
+    `main` dependents of `Sites/SheafCohomology/AcyclicResolution.lean`.
+  - namespace `CategoryTheory.Sheaf.H`, in the setting of `Leray/Edge.lean` (`adj : pb ⊣ pf`, `pb`
+    left exact, `pf` additive, now `c : ℤ_K ≅ pb ℤ_J` an isomorphism, enough injectives on both
+    sheaf categories): `globalSectionsCorepresentableBy` (`Hom(ℤ_J, -)` is corepresented by
+    `ℤ_J`), `pushforwardGlobalSectionsCorepresentableBy` (`Hom(ℤ_J, pf -)` is corepresented by
+    `ℤ_K`), **`leraySpectralSequence pf I`**, **`leraySpectralSequencePageThreeXAddEquiv`**
+    (`E₂^{p,q} ≃+ H ((pf.rightDerived q).obj F) p`) and
+    **`leraySpectralSequenceAbutmentAddEquiv`** (`abutment n ≃+ H F n`), and the relative form
+    **`relativeLeraySpectralSequence pf I pg`**, `relativeLeraySpectralSequencePageThreeXIso`
+    (`Rᵖ g_* Rᵠ f_* F`) and `relativeLeraySpectralSequenceAbutmentIso` (`Rⁿ(f_* ⋙ g_*) F`).
+- Moved (branch-only file, so no compatibility concern): `Sites/SheafCohomology/LerayEdge.lean`
+  is now `Sites/SheafCohomology/Leray/Edge.lean`, since `Leray.lean`-style siblings sharing the
+  `Leray` prefix must form a directory (placement rubric). Its content is unchanged.
+
+These statements are the target's spectral sequence for a morphism of sites with the higher direct
+images written `pf.rightDerived q` (PR #27242 makes `sheafHigherDirectImage` a reducible
+abbreviation of exactly this), Mathlib's `Sheaf.H`, and Mathlib's `SpectralSequence` with the
+convergence lemmas of split 10.
 
 ## New in the ninth round: the rows of the Cartan–Eilenberg double complex (no stub used)
 
@@ -338,7 +404,7 @@ The supplier `sheaf-h-pullback` (§2.1) has partly landed: `Sheaf.H.pullback` wi
 `addEquiv₀_pullback`, `pullback_naturality` and `pullback_δ` is on `main`
 (`TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean`, from #22647). The stubs of those four
 declarations that the previous round of this branch carried are deleted, and
-`LerayEdge.lean` now imports the landed module. The higher direct images of §2.1 are in the open
+`LerayEdge.lean` (now `Leray/Edge.lean`) imports the landed module. The higher direct images of §2.1 are in the open
 pull request #27242 (head `fc88ca0a5dc24100b268478d2ad74bb1f0259ca8`).
 
 ## Stubbed declarations (supplier `sheaf-h-pullback`, PR #27242)
@@ -363,7 +429,7 @@ pull request #27242 (head `fc88ca0a5dc24100b268478d2ad74bb1f0259ca8`).
      written `u.sheafHigherDirectImage AddCommGrpCat J K (q + 1)` with no change of meaning.
 
 The proof uses only the statement of this instance. When #27242 lands: delete `Stubs.lean` and
-replace its import in `LerayEdge.lean` by `TauCeti.CategoryTheory.Sites.Continuous`.
+replace its import in `Leray/Edge.lean` by `TauCeti.CategoryTheory.Sites.Continuous`.
 
 ## What is proved
 
@@ -380,7 +446,7 @@ replace its import in `LerayEdge.lean` by `TauCeti.CategoryTheory.Sites.Continuo
   `Functor.shortExact_map_of_isZero_rightDerived_one` — for left exact `G`, `R¹G(X) = 0` makes
   `0 ⟶ GX ⟶ GI ⟶ GQ ⟶ 0` short exact.
 
-`TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (namespace `CategoryTheory.Sheaf.H`),
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Leray/Edge.lean` (formerly `LerayEdge.lean`; namespace `CategoryTheory.Sheaf.H`),
 for `adj : pb ⊣ pf` with `pb` exact additive and `c : ℤ_K ⟶ pb ℤ_J` (for a morphism of sites:
 `pb = f⁻¹ = u.sheafPullback`, `pf = f_*`, `c` the inverse of `sheafPullbackConstantSheafIso`):
 
@@ -660,23 +726,22 @@ finite products, terminal `T`, `U : ι → C` with `Sieve.ofArrows U (hT.from �
 ## What remains
 
 The spectral sequence itself:
-1. A Grothendieck spectral sequence for `G ∘ F` with `F` sending injectives to `G`-acyclics, in
-   Mathlib's `Abelian.SpectralObject`/`HasSpectralSequence` language: Cartan–Eilenberg (or
-   injective) resolutions, the double complex, and the identification of its `E₂` page
-   `R^p G (R^q F)`. **Partly done** (eighth round): the horseshoe lemma and the Cartan–Eilenberg
-   double complex `CochainComplex.cartanEilenberg K` with injective-resolution columns (splits
-   14–15), and (ninth round) the row property: after any additive `G`, the `p`-th row has
-   cohomology `G(J(Hᵠ)ᵖ)`, compatibly with the vertical differentials (split 15). Still missing:
-   the two filtrations of `Tot G(cartanEilenberg K)` via
-   split 10, and the comparison of the abutment with `Hⁿ(G K)` for `G`-acyclic `Kᵠ`. `main` has the row-filtration spectral sequence of a first-quadrant
-   (homological) bicomplex, `TauCeti/Algebra/Homology/SpectralSequence/Bicomplex.lean`, and
-   finite/exhaustive-filtration convergence under `.../SpectralSequence/Filtered/`; the `E₂`
-   identification and the cohomological reindexing are not there. Acyclic resolutions computing
-   `Ext(P, -)`, hence `Hⁿ(V, -)`, are now done (split 2): with `I` an injective resolution of `F`,
-   this identifies `Hⁿ(C, F)` with `Hⁿ(Γ(D, f_* I))` (the abutment; `f_*` preserves injectives as
-   the right adjoint of an exact functor). The analogue for a general left exact `G` (`R•G` rather
-   than `Ext`) still needs a long exact sequence of `Functor.rightDerived`, which neither Mathlib
-   nor `main` has; `ofShortExact` and the dimension-shift lemmas of split 1 are its inductive step.
+1. ~~A Grothendieck spectral sequence for `G ∘ F`~~: **done** (tenth round, split 7:
+   `grothendieckSpectralSequence` with `E₂ = RˢG(RᵏF(X))` and abutment `R•(F ⋙ G)(X)`), and with it
+   the **Leray spectral sequence** `leraySpectralSequence` (`E₂ = Hᵖ(C, Rᵠ f_* F) ⇒ Hᵖ⁺ᵠ(D, F)`) and
+   its relative form, in `Leray/SpectralSequence.lean` (split 16). Still missing for
+   `leray_spectral_sequence` (see 3(b)): (i) **naturality in `F`** — the spectral sequence is
+   attached to a chosen resolution `I`; a map `F ⟶ F'` lifts to `I ⟶ I'` and induces a map of
+   Cartan–Eilenberg bicomplexes only up to homotopy, so naturality needs either functorial
+   Cartan–Eilenberg resolutions (`InjectiveResolution.desc` is not functorial on the nose) or the
+   independence of the spectral sequence from page `3` on of the choice (a map of filtered
+   complexes inducing an isomorphism on page `3`; morphisms of filtered complexes induce
+   morphisms of spectral sequences by `CochainComplex.filtrationFunctorMap` in `main`'s
+   `SpectralSequence/Filtered/Naturality.lean`); (ii) the **edge map** `E₂^{n,0} ⟶ Hⁿ(D, F)` identified with
+   `lerayEdge` (split 3) — the edge `Hⁿ(C, f_* F) = E₂^{n,0} ↠ E∞^{n,0} ↪ Hⁿ(D, F)` must be compared
+   with the pullback-then-counit definition, through `rightDerivedObjAddEquivExt` on both sides;
+   (iii) optionally the `Checks` of the README (`leray_test_identity` follows from
+   `lerayEdge_id` once (ii) holds).
 2. ~~Čech acyclicity of injective abelian sheaves on a general site~~ and ~~Leray's acyclicity
    theorem for coverings~~: **done** (`Cech/Injective.lean`, `Cech/Leray.lean`).
 3. The Čech double complex `Čᵖ(U, Iᵠ)` is defined, with exact augmented rows, column cohomology
@@ -706,8 +771,9 @@ The spectral sequence itself:
    its first differential in terms of `Hᵠ(-, F)` on `C`
    (`cechToCohomologyOverSpectralSequenceFirstPageAddEquiv_d`). Still missing: the degeneration
    recovering split 6 (optional; split 6 already proves Leray's acyclicity theorem directly).
-   (b) `leray_spectral_sequence` (natural in `F`, the relative form for `g ∘ f` and the
-   identification of its `E₂^{n,0}` edge with `lerayEdge`), from item 1.
+   (b) `leray_spectral_sequence`: the spectral sequence, its `E₂` page, abutment and the relative
+   form for `g ∘ f` are **done** (tenth round, `Leray/SpectralSequence.lean`); naturality in `F`
+   and the identification of its edge map with `lerayEdge` remain (item 1 (i)–(ii)).
 
 ## Split plan
 
@@ -733,7 +799,7 @@ The spectral sequence itself:
    all; if a reviewer asks, the naturality section can be its own follow-up PR (after 2).
    After: none. Can be opened now.
 3. **feat: the edge map of the Leray spectral sequence and Leray's acyclicity theorem** — file:
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/LerayEdge.lean` (new, 350 lines). Adds every
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray/Edge.lean` (new, 350 lines). Adds every
    `lerayEdge*` declaration above and `subsingleton_H_obj_of_injective`. After: 1, and #27242 on
    `main` for its last theorem (`lerayEdge_sheafAdjunctionContinuous_bijective`); without #27242
    that theorem can be held back and everything else opened.
@@ -754,10 +820,13 @@ The spectral sequence itself:
    `quasiIsoAt_cechAugmentation_zero_of_mem`, `homologyZeroCechIso`,
    `homologyMap_comp_homologyZeroCechIso_hom`, `homologyCechComplexIsoH`,
    `homologyCechComplexIsoH_zero`, `homologyMap_comp_homologyCechComplexIsoH_hom`. After: 5.
-7. **feat: the Grothendieck spectral sequence of a composite of left exact functors** — files
-   under `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck*.lean`. After: 1, 2, 14, 15
-   (split 2 identifies the abutment; splits 14–15 give the Cartan–Eilenberg double complex).
-   Not yet written beyond splits 14–15.
+7. **feat: the Grothendieck spectral sequence** — files:
+   `TauCeti/Algebra/Homology/SpectralSequence/CartanEilenberg.lean` (new, 296 lines) and
+   `TauCeti/Algebra/Homology/SpectralSequence/Grothendieck.lean` (new, 90 lines). Adds every
+   declaration listed in "New in the tenth round" for those files
+   (`InjectiveResolution.quasiIso_of_isZero_rightDerived` moved into split 1's `RightDerived.lean`
+   by the port, see the port note). After: 8, 10, 14, 15 (and 1 if the port moves
+   `quasiIso_of_isZero_rightDerived` into split 1's file). Written.
 8. **feat: total complexes of first-quadrant cochain bicomplexes** — files:
    `TauCeti/Algebra/Homology/TotalComplex/UpNat.lean` (new, 611 lines),
    `TauCeti/Algebra/Homology/ComplexShape/Signs.lean` (+37) and
@@ -861,8 +930,13 @@ The spectral sequence itself:
    After: 14. Written. (If a reviewer finds it too long, the ninth-round row property, ~275
    lines, can be its own follow-up PR `feat: the rows of a Cartan–Eilenberg double complex`.)
 16. **feat: the Leray and Čech-to-cohomology spectral sequences** —
-   `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray.lean`: `leray_spectral_sequence`, its
-   naturality, relative form and edge maps (identified with `lerayEdge`), `cech_to_cohomology`
-   (with its degeneration recovering split 6; its first page `Hᵠ(U_a, F)` read off by split 2).
-   After: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15. The only split that
-   completes the target. Not yet written.
+   `TauCeti/CategoryTheory/Sites/SheafCohomology/Leray/SpectralSequence.lean` (new, 197 lines
+   now): `rightDerivedObjAddEquivExt` (moved by the port into split 2's file, see the port note),
+   `globalSectionsCorepresentableBy`, `pushforwardGlobalSectionsCorepresentableBy`,
+   `leraySpectralSequence`, `leraySpectralSequencePageThreeXAddEquiv`,
+   `leraySpectralSequenceAbutmentAddEquiv`, `relativeLeraySpectralSequence`,
+   `relativeLeraySpectralSequencePageThreeXIso`, `relativeLeraySpectralSequenceAbutmentIso`
+   (written), and still to write: the naturality in `F`, the edge map identified with
+   `lerayEdge`, and `cech_to_cohomology` gathered from splits 11 and 13 (with its degeneration
+   recovering split 6). After: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15. The only split
+   that completes the target. Partly written.
