@@ -17,8 +17,10 @@ The composition equation identifies direct and iterated pullback through the can
 pullback-composition isomorphism, so sections can be compared across successive morphisms.
 Along an open immersion, pullback of sections is restriction to the image, so it is bijective
 over opens contained in the image (`Scheme.Hom.bijective_pullbackSections_of_isOpenImmersion`).
-Along the inclusion `U.ι` of an open, pulling back sections over `U` is a bijection onto the global
-sections of the pullback (`Scheme.Modules.bijective_pullbackSectionsLE_ι`).
+The same holds from `U` to any open equal to `j⁻¹ U`
+(`Scheme.Hom.bijective_pullbackSectionsLE_of_isOpenImmersion`); in particular, along the inclusion
+`U.ι` of an open, pulling back sections over `U` is a bijection onto the global sections of the
+pullback (`Scheme.Modules.bijective_pullbackSectionsLE_ι`).
 -/
 
 public section
@@ -175,6 +177,18 @@ lemma pullbackSectionsLE_comp_hom {W : Z.Opens} (hW : W ≤ f ⁻¹ᵁ V)
     (fun a : (pullback (f ≫ g)).obj M ⟶ (pullback (f ≫ g)).obj M ↦ a.app W
       (pullbackSectionsLE (f ≫ g) M U W _ s)) ((pullbackComp f g).app M).inv_hom_id
 
+/-- Along an open immersion `j`, pulling back sections from an open `U` contained in the image of
+`j` to an open equal to `j⁻¹ U` is bijective. -/
+theorem bijective_pullbackSectionsLE_of_isOpenImmersion {X Y : Scheme.{u}} (j : X ⟶ Y)
+    [IsOpenImmersion j] (M : Y.Modules) {U : Y.Opens} (hU : U ≤ j.opensRange) {V : X.Opens}
+    (hV : V ≤ j ⁻¹ᵁ U) (hV' : j ⁻¹ᵁ U ≤ V) :
+    Function.Bijective (j.pullbackSectionsLE M U V hV) := by
+  have h : homOfLE hV = eqToHom (le_antisymm hV hV') := Subsingleton.elim _ _
+  rw [show ⇑(j.pullbackSectionsLE M U V hV) = _ ∘ _ from
+    funext fun s ↦ pullbackSectionsLE_apply j M U V hV s, h]
+  exact (ConcreteCategory.bijective_of_isIso _).comp
+    (j.bijective_pullbackSections_of_isOpenImmersion M U hU)
+
 /-- Pulling back sections over `U` along the open immersion `U.ι : U ⟶ Y` identifies them with the
 global sections of the pullback to `U`. The global open is given as any `T` equal to `⊤`, such as
 the preimage of `⊤` under a morphism into `U`. -/
@@ -182,25 +196,6 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.bijective_pullbackSectionsLE_ι 
     (P : Y.Modules) (U : Y.Opens) (T : U.toScheme.Opens) (hT : T = ⊤) :
     Function.Bijective (U.ι.pullbackSectionsLE P U T (hT ▸ by simp)) := by
   subst hT
-  have hu := Adjunction.unit_leftAdjointUniq_hom_app (restrictAdjunction U.ι)
-    (pullbackPushforwardAdjunction U.ι) P
-  have h₁ : IsIso (((restrictAdjunction U.ι).unit.app P).app U) :=
-    isIso_restrictAdjunction_unit_app_app U P le_rfl
-  have h₂ : IsIso (((pullback U.ι).obj P).presheaf.map
-      (homOfLE (show ⊤ ≤ U.ι ⁻¹ᵁ U by simp)).op) :=
-    have : homOfLE (show ⊤ ≤ U.ι ⁻¹ᵁ U by simp) = eqToHom (by simp) := Subsingleton.elim _ _
-    this ▸ inferInstance
-  -- The pullback of sections along `U.ι` is the restriction-pushforward unit followed by the
-  -- comparison of restriction with pullback, then restriction from `U.ι ⁻¹ᵁ U` to `⊤`.
-  have h₃ : (U.ι.pullbackSectionsLE P U ⊤ (by simp) : Γ(P, U) → _) =
-      ((pullback U.ι).obj P).presheaf.map (homOfLE (show ⊤ ≤ U.ι ⁻¹ᵁ U by simp)).op ∘
-        ((restrictFunctorIsoPullback U.ι).hom.app P).app (U.ι ⁻¹ᵁ U) ∘
-        ((restrictAdjunction U.ι).unit.app P).app U := by
-    ext s
-    rw [pullbackSectionsLE_apply, pullbackSections_apply, ← hu]
-    rfl
-  rw [h₃]
-  exact (ConcreteCategory.bijective_of_isIso _).comp
-    ((ConcreteCategory.bijective_of_isIso _).comp (ConcreteCategory.bijective_of_isIso _))
+  exact U.ι.bijective_pullbackSectionsLE_of_isOpenImmersion P (by simp) _ le_top
 
 end AlgebraicGeometry.Scheme.Hom

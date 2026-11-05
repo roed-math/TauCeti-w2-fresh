@@ -9,6 +9,8 @@ public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.PoleSheaf.Loca
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.BaseChange.Basic
 public import TauCeti.AlgebraicGeometry.Modules.Pushforward.BaseChange
 import TauCeti.AlgebraicGeometry.Cohomology.FlatBaseChange
+import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Pushforward.BaseChange
+import TauCeti.AlgebraicGeometry.Restrict
 import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.Cohomology
 import TauCeti.RingTheory.TensorProduct.IsBaseChange.BijectiveAlgebraMap
 
@@ -24,11 +26,13 @@ Since `g^* 𝒪_E(n[0])` is `𝒪_{E'}(n[0])`
 (`TauCeti.AlgebraicGeometry.EllipticCurveGeom.pullback_mk_poleSheaf_of_isPullback`), the formation
 of `π_* 𝒪_E(n[0])` commutes with arbitrary base change.
 
-By `AlgebraicGeometry.Scheme.Modules.isIso_pushforwardBaseChange_app_of_bijective` it suffices to
-check the base change property on sections over a basis of affine opens. We use the images `V` of
-the bases of the pointed Weierstrass charts `k` of `E'` whose bases map over `f` into the base `U`
-of a chart `c` of `E`. Over such a pair the restrictions of `E` and `E'` are the projective models
-of the chart equations, the second the base change of the first
+It suffices to check bijectivity on sections over a basis of affine opens, and over an affine
+open `V` lying over an affine open `U` it suffices that pulling back sections exhibits the
+sections of `g^* 𝒪_E(n[0])` over `π'⁻¹ V` as a base change of those of `𝒪_E(n[0])` over `π⁻¹ U`
+(`AlgebraicGeometry.Scheme.Modules.bijective_pushforwardBaseChange_app_app_of_isBaseChange`).
+We use the images `V` of the bases of the pointed Weierstrass charts `k` of `E'` whose bases map
+over `f` into the base `U` of a chart `c` of `E`. Over such a pair the restrictions of `E` and `E'`
+are the projective models of the chart equations, the second the base change of the first
 (`TauCeti.AlgebraicGeometry.PointedWeierstrassChart.isPullback_modelMap`), and the base change
 property is cohomology and base change for `H⁰` of the pole sheaf of a Weierstrass model
 (`WeierstrassCurve.bijective_cohomologyBaseChange_zero_poleSheaf`). The rings of the charts are
@@ -52,24 +56,12 @@ transports the base change statement along these identifications.
 public section
 
 open CategoryTheory AlgebraicGeometry Opposite TopologicalSpace
-open scoped TensorProduct ChangeOfRings
 
 universe u
 
 namespace TauCeti.AlgebraicGeometry
 
 open Scheme.Modules
-
-/-- Pulling back sections along an open immersion `j`, from `U` inside the image of `j` to an
-open equal to `j⁻¹ U`, is bijective. -/
-private lemma bijective_pullbackSectionsLE {X Y : Scheme.{u}} (j : X ⟶ Y) [IsOpenImmersion j]
-    (M : Y.Modules) {U : Y.Opens} (hU : U ≤ j.opensRange) {V : X.Opens} (hV : V ≤ j ⁻¹ᵁ U)
-    (hV' : j ⁻¹ᵁ U ≤ V) : Function.Bijective (j.pullbackSectionsLE M U V hV) := by
-  have h : homOfLE hV = eqToHom (le_antisymm hV hV') := Subsingleton.elim _ _
-  rw [show ⇑(j.pullbackSectionsLE M U V hV) = _ ∘ _ from
-    funext fun s ↦ Scheme.Hom.pullbackSectionsLE_apply j M U V hV s, h]
-  exact (ConcreteCategory.bijective_of_isIso _).comp
-    (j.bijective_pullbackSections_of_isOpenImmersion M U hU)
 
 /-- The functions on `U` inside the image of an open immersion `j` are the functions on an open
 equal to `j⁻¹ U`. -/
@@ -80,12 +72,6 @@ private lemma bijective_appLE {X Y : Scheme.{u}} (j : X ⟶ Y) [IsOpenImmersion 
   have h : homOfLE hV = eqToHom (le_antisymm hV hV') := Subsingleton.elim _ _
   rw [Scheme.Hom.appLE, h]
   exact ConcreteCategory.bijective_of_isIso _
-
-/-- Equal morphisms of schemes induce equal maps of functions between the same opens. -/
-private lemma appLE_eq_of_eq {X Y : Scheme.{u}} {p q : X ⟶ Y} (e : p = q) (U : Y.Opens)
-    (V : X.Opens) (hp : V ≤ p ⁻¹ᵁ U) (hq : V ≤ q ⁻¹ᵁ U) : p.appLE U V hp = q.appLE U V hq := by
-  subst e
-  rfl
 
 namespace PointedWeierstrassChart
 
@@ -137,7 +123,7 @@ private lemma appLE_comp_app_comp_appLE :
     rw [← Category.assoc, modelMap_comp_modelIso_inv_toTotal hg hh, Category.assoc, hg.w]
   rw [Scheme.Hom.app_eq_appLE π', ← Category.assoc, Scheme.Hom.appLE_comp_appLE,
     Scheme.Hom.appLE_comp_appLE]
-  refine (appLE_eq_of_eq hw.symm _ ⊤ _ (by
+  refine (Scheme.Hom.congr_appLE _ hw.symm _ ⊤ _ (by
     rw [Scheme.Hom.comp_preimage, Scheme.Hom.comp_preimage]
     exact fun x _ ↦ c.top_le_preimage_modelIso_inv_toTotal
       (show modelMap hg hh x ∈ (⊤ : Opens _) from trivial))).trans ?_
@@ -158,7 +144,7 @@ private lemma app_comp_appLE :
     rw [Scheme.Hom.comp_preimage]; exact preimage_le_preimage_preimage hg hh)
   have e2 := Scheme.Hom.appLE_comp_appLE π' f c.baseMap.opensRange k.baseMap.opensRange
     (π' ⁻¹ᵁ k.baseMap.opensRange) (opensRange_le_preimage_opensRange hh) le_rfl
-  have e3 := appLE_eq_of_eq hg.w c.baseMap.opensRange (π' ⁻¹ᵁ k.baseMap.opensRange)
+  have e3 := Scheme.Hom.congr_appLE _ hg.w c.baseMap.opensRange (π' ⁻¹ᵁ k.baseMap.opensRange)
     (by rw [Scheme.Hom.comp_preimage]; exact preimage_le_preimage_preimage hg hh)
     (by rw [Scheme.Hom.comp_preimage]
         exact fun x hx ↦ opensRange_le_preimage_opensRange hh hx)
@@ -234,24 +220,19 @@ variable {S S' : Scheme.{u}} {E : EllipticCurveGeom S} {E' : EllipticCurveGeom S
   {c : PointedWeierstrassChart E.structureMap E.zero} {h : k.base ⟶ c.base}
   (hh : h ≫ c.baseMap = k.baseMap ≫ f)
 
+include hh in
 open PointedWeierstrassChart in
 /-- **Base change for `𝒪_E(n[0])` over a pair of charts.** Let `k` and `c` be pointed Weierstrass
-charts of `E'` and `E` whose bases are related by `h` over `f`, with images `V` and `U`. For
-`n > 0` the `Γ(S', V)`-linear extension `Γ(S', V) ⊗_{Γ(S, U)} Γ(π⁻¹ U, 𝒪_E(n[0])) →
-Γ(π'⁻¹ V, g^* 𝒪_E(n[0]))` of the pullback of sections along `g` is bijective. Through the charts
-this is cohomology and base change for `H⁰` of the pole sheaf of the model of `c`. -/
-private theorem exists_bijective_pullbackSectionsLE_poleSheaf {n : ℕ} (hn : 0 < n) :
-    ∃ Φ : (ModuleCat.extendScalars
-        (f.appLE _ _ (opensRange_le_preimage_opensRange hh)).hom).obj
-        (.of Γ(S, c.baseMap.opensRange)
-          Γ((pushforward E.structureMap).obj (E.poleSheaf n).obj, c.baseMap.opensRange)) →ₗ[
-        Γ(S', k.baseMap.opensRange)]
-        Γ((pushforward E'.structureMap).obj ((pullback g).obj (E.poleSheaf n).obj),
-          k.baseMap.opensRange),
-      (∀ s, Φ ((1 : Γ(S', k.baseMap.opensRange)) ⊗ₜ[Γ(S, c.baseMap.opensRange),
-          (f.appLE _ _ (opensRange_le_preimage_opensRange hh)).hom] s) =
-        g.pullbackSectionsLE (E.poleSheaf n).obj _ _ (preimage_le_preimage_preimage hg hh) s) ∧
-      Function.Bijective Φ := by
+charts of `E'` and `E` whose bases are related by `h` over `f`, with image `V` of the base of `k`.
+For `n > 0` the base change morphism of `π_* 𝒪_E(n[0])` is bijective on the sections over `V`.
+Through the charts this is cohomology and base change for `H⁰` of the pole sheaf of the model of
+`c`. -/
+private theorem bijective_pushforwardBaseChange_app_app_poleSheaf {n : ℕ} (hn : 0 < n) :
+    Function.Bijective (((pushforwardBaseChange hg.toCommSq).app (E.poleSheaf n).obj).app
+      k.baseMap.opensRange) := by
+  have : (E.poleSheaf n).obj.IsQuasicoherent :=
+    inferInstanceAs
+      ((InvertibleSheaf.toFiniteLocallyFree _).obj (E.poleSheaf n)).obj.IsQuasicoherent
   let G := modelMap hg hh
   let j := c.modelIso.inv ≫ c.toTotal
   let j' := k.modelIso.inv ≫ k.toTotal
@@ -353,8 +334,9 @@ private theorem exists_bijective_pullbackSectionsLE_poleSheaf {n : ℕ} (hn : 0 
       eR'.apply_symm_apply (β r)]
   let e₁ : M ≃ₗ[A] M₀ :=
     { (AddEquiv.ofBijective (j.pullbackSectionsLE ℒ Uc ⊤ hj).toAddMonoidHom
-        (bijective_pullbackSectionsLE j ℒ (opensRange_modelIso_inv_toTotal c).ge hj
-          (by simp))).trans ((sectionsLinearEquiv θ ⊤).toAddEquiv.trans
+        (j.bijective_pullbackSectionsLE_of_isOpenImmersion ℒ
+          (opensRange_modelIso_inv_toTotal c).ge hj (by simp))).trans
+          ((sectionsLinearEquiv θ ⊤).toAddEquiv.trans
             (cohomologyZeroLinearEquiv ℒW).symm.toAddEquiv) with
       map_smul' r s := by
         rw [RingHom.id_apply, hsm₁]
@@ -365,7 +347,7 @@ private theorem exists_bijective_pullbackSectionsLE_poleSheaf {n : ℕ} (hn : 0 
         rfl }
   let e₂ : N ≃ₗ[B] N₀ :=
     { (AddEquiv.ofBijective (j'.pullbackSectionsLE ((pullback g).obj ℒ) V' ⊤ hj').toAddMonoidHom
-        (bijective_pullbackSectionsLE j' ((pullback g).obj ℒ)
+        (j'.bijective_pullbackSectionsLE_of_isOpenImmersion ((pullback g).obj ℒ)
           (opensRange_modelIso_inv_toTotal k).ge hj' (by simp))).trans
           ((sectionsLinearEquiv Ξ ⊤).toAddEquiv.trans
             (cohomologyZeroLinearEquiv ((pullback G).obj ℒW)).symm.toAddEquiv) with
@@ -392,17 +374,15 @@ private theorem exists_bijective_pullbackSectionsLE_poleSheaf {n : ℕ} (hn : 0 
     exact (pullbackModelIso_hom_app_pullbackSectionsLE hg hh θ s).symm
   have hψB : IsBaseChange B ψ :=
     (IsBaseChange.iff_of_equiv_comm e₁ e₂ (LinearMap.ext hc)).mpr hB
-  exact ⟨ψ.liftBaseChange B, fun s ↦ (ψ.liftBaseChange_tmul B 1 s).trans (one_smul _ _),
-    hψB.liftBaseChange_bijective⟩
+  exact bijective_pushforwardBaseChange_app_app_of_isBaseChange hg.toCommSq ℒ
+    (isAffineOpen_opensRange _) (isAffineOpen_opensRange _)
+    (opensRange_le_preimage_opensRange hh) rfl ψ (fun _ ↦ rfl) hψB
 
 /-- **`π_*𝒪_E(n[0])` commutes with base change.** Let `E'` over `S'` be the base change of the
 elliptic curve `E` over `S` along `f : S' ⟶ S`, with projection `g : E' ⟶ E`. For `n > 0` the
 base change morphism `f^* π_* 𝒪_E(n[0]) ⟶ π'_* g^* 𝒪_E(n[0])` is an isomorphism. -/
 theorem isIso_pushforwardBaseChange_app_poleSheaf {n : ℕ} (hn : 0 < n) :
     IsIso ((pushforwardBaseChange hg.toCommSq).app (E.poleSheaf n).obj) := by
-  have : (E.poleSheaf n).obj.IsQuasicoherent :=
-    inferInstanceAs
-      ((InvertibleSheaf.toFiniteLocallyFree _).obj (E.poleSheaf n)).obj.IsQuasicoherent
   -- the pairs of charts of `E'` and `E` whose bases are related over `f`
   let ι := Σ' (k : PointedWeierstrassChart E'.structureMap E'.zero)
     (c : PointedWeierstrassChart E.structureMap E.zero) (h : k.base ⟶ c.base),
@@ -424,12 +404,8 @@ theorem isIso_pushforwardBaseChange_app_poleSheaf {n : ℕ} (hn : 0 < n) :
       (hrange _).mpr ⟨x, hxW, rfl⟩, fun t ht ↦ ?_⟩
     obtain ⟨y, hy, rfl⟩ := (hrange t).mp ht
     exact hWO hy
-  choose Φ hΦ hbij using fun p : ι ↦
-    exists_bijective_pullbackSectionsLE_poleSheaf hg p.2.2.2 hn
-  exact isIso_pushforwardBaseChange_app_of_bijective hg.toCommSq _
-    (W := fun p : ι ↦ p.2.1.baseMap.opensRange) (W' := fun p : ι ↦ p.1.baseMap.opensRange)
-    (fun _ ↦ isAffineOpen_opensRange _) (fun _ ↦ isAffineOpen_opensRange _)
-    (fun p ↦ PointedWeierstrassChart.opensRange_le_preimage_opensRange p.2.2.2) hB Φ hΦ hbij
+  exact Hom.isIso_of_isBasis _ hB fun p ↦ (ConcreteCategory.isIso_iff_bijective _).mpr
+    (bijective_pushforwardBaseChange_app_app_poleSheaf hg p.2.2.2 hn)
 
 
 include hg in

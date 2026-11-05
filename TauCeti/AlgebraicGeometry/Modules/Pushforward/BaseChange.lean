@@ -5,8 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.AlgebraicGeometry.Modules.Pullback.BaseChange
-import TauCeti.AlgebraicGeometry.Modules.Sheaf
+public import TauCeti.AlgebraicGeometry.Modules.Pullback.Sections
 
 /-!
 # The base change morphism for the pushforward of modules
@@ -24,13 +23,6 @@ quasi-compact quasi-separated `f` and flat `g` is
 `Scheme.Modules.isIso_pushforwardBaseChange_app`, in
 `TauCeti.AlgebraicGeometry.Modules.Quasicoherent.Pushforward.BaseChange`.
 
-Without flatness one can still check the isomorphism over affine opens. When `f_* M` is
-quasi-coherent, over affine opens `W' ≤ g⁻¹ W` the sections of `g^* f_* M` over `W'` are
-`Γ(S', W') ⊗_{Γ(S, W)} Γ(X, f⁻¹ W; M)` (`Scheme.Hom.pullbackSectionsLEEquiv`), on which the base
-change morphism is `r ⊗ s ↦ r • g'^* s`. So the direct image commutes with base change along `g` as
-soon as these maps are bijective for a basis of such `W'`
-(`Scheme.Modules.isIso_pushforwardBaseChange_app_of_bijective`).
-
 ## Main declarations
 
 * `AlgebraicGeometry.Scheme.Modules.pushforwardBaseChange`: the base change morphism
@@ -38,9 +30,7 @@ soon as these maps are bijective for a basis of such `W'`
 * `AlgebraicGeometry.Scheme.Modules.unit_comp_pushforward_map_pushforwardBaseChange_app`: its
   characterization through the units of the adjunctions, and
   `AlgebraicGeometry.Scheme.Modules.pushforwardBaseChange_app_app_pullbackSectionsLE`, its effect on
-  pulled-back sections;
-* `AlgebraicGeometry.Scheme.Modules.isIso_pushforwardBaseChange_app_of_bijective`: the base change
-  morphism is an isomorphism once it is bijective on the sections over a basis of affine opens.
+  pulled-back sections.
 
 ## References
 
@@ -51,7 +41,6 @@ soon as these maps are bijective for a basis of such `W'`
 public section
 
 open CategoryTheory AlgebraicGeometry Opposite
-open scoped ChangeOfRings TensorProduct
 
 noncomputable section
 
@@ -120,75 +109,5 @@ lemma pushforwardBaseChange_app_app_pullbackSectionsLE (w : CommSq g' f' f g) (M
   refine (congrArg _ (pushforwardBaseChange_app_app_pullbackSections w M W s)).trans ?_
   refine Eq.trans ?_ (Scheme.Hom.pullbackSectionsLE_apply g' M _ _ _ s).symm
   exact (((pullback g').obj M).presheaf.map_comp_apply _ _ _).symm
-
-/-- **The base change morphism over an affine open.** Let `W' ≤ g⁻¹ W` be affine opens and let
-`f_* M` be quasicoherent, so that the sections of `g^* f_* M` over `W'` are
-`Γ(S', W') ⊗_{Γ(S, W)} Γ(X, f⁻¹ W; M)` (`Scheme.Hom.pullbackSectionsLEEquiv`). On them the
-`Γ(S', W')`-linear base change morphism sends `1 ⊗ s` to the pullback of `s` along `g'`, restricted
-to `f'⁻¹ W'`. So the direct image commutes with base change along `g` over `W'` exactly when the
-extension `r ⊗ s ↦ r • g'^* s` of this map is bijective. -/
-theorem pushforwardBaseChange_app_pullbackSectionsLEEquiv_one_tmul (w : CommSq g' f' f g)
-    (M : X.Modules) [((pushforward f).obj M).IsQuasicoherent] {W : S.Opens} {W' : S'.Opens}
-    (hW : IsAffineOpen W) (hW' : IsAffineOpen W') (hW'W : W' ≤ g ⁻¹ᵁ W)
-    (s : Γ((pushforward f).obj M, W)) :
-    ((pushforwardBaseChange w).app M).app W'
-        (g.pullbackSectionsLEEquiv ((pushforward f).obj M) hW hW' hW'W
-          ((1 : Γ(S', W')) ⊗ₜ[Γ(S, W), (g.appLE W W' hW'W).hom] s)) =
-      g'.pullbackSectionsLE M (f ⁻¹ᵁ W) (f' ⁻¹ᵁ W')
-        (by
-          rw [← Scheme.Hom.comp_preimage, w.w, Scheme.Hom.comp_preimage]
-          exact fun x hx ↦ hW'W hx)
-        s := by
-  rw [Scheme.Hom.pullbackSectionsLEEquiv_one_tmul,
-    pushforwardBaseChange_app_app_pullbackSectionsLE]
-
-/-- **Base change of a direct image, checked over affine opens.** Let `f_* M` be quasicoherent
-and let `W' i ≤ g⁻¹ (W i)` be affine opens, with the `W' i` forming a basis of `S'` and the `W i`
-affine. If for every `i` the `Γ(S', W' i)`-linear extension `r ⊗ s ↦ r • g'^* s` of the pullback
-of sections `Γ(X, f⁻¹ (W i); M) → Γ(X', f'⁻¹ (W' i); g'^* M)` along `g'` is bijective, then the
-direct image of `M` commutes with base change along `g`: the base change morphism
-`g^* f_* M ⟶ f'_* g'^* M` is an isomorphism. -/
-theorem isIso_pushforwardBaseChange_app_of_bijective (w : CommSq g' f' f g) (M : X.Modules)
-    [((pushforward f).obj M).IsQuasicoherent] {ι : Type*} {W : ι → S.Opens} {W' : ι → S'.Opens}
-    (hW : ∀ i, IsAffineOpen (W i)) (hW' : ∀ i, IsAffineOpen (W' i)) (hW'W : ∀ i, W' i ≤ g ⁻¹ᵁ W i)
-    (hB : TopologicalSpace.Opens.IsBasis (Set.range W'))
-    (Φ : ∀ i, (ModuleCat.extendScalars (g.appLE (W i) (W' i) (hW'W i)).hom).obj
-        (.of Γ(S, W i) Γ((pushforward f).obj M, W i)) →ₗ[Γ(S', W' i)]
-      Γ((pushforward f').obj ((pullback g').obj M), W' i))
-    (hΦ : ∀ i s,
-      Φ i ((1 : Γ(S', W' i)) ⊗ₜ[Γ(S, W i),(g.appLE (W i) (W' i) (hW'W i)).hom] s) =
-        g'.pullbackSectionsLE M (f ⁻¹ᵁ W i) (f' ⁻¹ᵁ W' i)
-          (by
-            rw [← Scheme.Hom.comp_preimage, w.w, Scheme.Hom.comp_preimage]
-            exact fun x hx ↦ hW'W i hx)
-          s)
-    (h : ∀ i, Function.Bijective (Φ i)) : IsIso ((pushforwardBaseChange w).app M) := by
-  refine Hom.isIso_of_isBasis _ hB fun i ↦ (ConcreteCategory.isIso_iff_bijective _).mpr ?_
-  let e := g.pullbackSectionsLEEquiv ((pushforward f).obj M) (hW i) (hW' i) (hW'W i)
-  -- the base change morphism after `e` is a `Γ(S', W' i)`-linear map agreeing with `Φ i` on the
-  -- elements `1 ⊗ s`, hence equal to it
-  let Ψ : (ModuleCat.extendScalars (g.appLE (W i) (W' i) (hW'W i)).hom).obj
-        (.of Γ(S, W i) Γ((pushforward f).obj M, W i)) →ₗ[Γ(S', W' i)]
-      Γ((pushforward f').obj ((pullback g').obj M), W' i) :=
-    { toFun x := ((pushforwardBaseChange w).app M).app (W' i) (e x)
-      map_add' x y := by rw [map_add, map_add]
-      map_smul' r x := by rw [LinearEquiv.map_smul, Hom.app_smul, RingHom.id_apply] }
-  have hΨ : Φ i = Ψ := by
-    have := ModuleCat.ExtendScalars.hom_ext
-      (N := ModuleCat.of Γ(S', W' i) Γ((pushforward f').obj ((pullback g').obj M), W' i))
-      (α := ConcreteCategory.ofHom (C := ModuleCat Γ(S', W' i)) (Φ i))
-      (β := ConcreteCategory.ofHom (C := ModuleCat Γ(S', W' i)) Ψ) fun s ↦ by
-        change Φ i _ = ((pushforwardBaseChange w).app M).app (W' i) (e _)
-        exact (hΦ i s).trans (pushforwardBaseChange_app_pullbackSectionsLEEquiv_one_tmul w M
-          (hW i) (hW' i) (hW'W i) s).symm
-    exact congrArg (ConcreteCategory.hom (C := ModuleCat Γ(S', W' i))) this
-  have hc : ⇑(((pushforwardBaseChange w).app M).app (W' i)) = Φ i ∘ e.symm := by
-    funext y
-    rw [hΨ]
-    change _ = ((pushforwardBaseChange w).app M).app (W' i) (e (e.symm y))
-    rw [LinearEquiv.apply_symm_apply]
-  rw [hc]
-  exact (h i).comp e.symm.bijective
-
 
 end AlgebraicGeometry.Scheme.Modules
