@@ -4,8 +4,10 @@
 
 Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f` (session 14 merged `main` again,
 without conflicts).
-Status: **partial** (session 15: the README checks are proved; the scheme wrapper
-`localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and two compatibility clauses remain). Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
+Status: **partial** (session 15: the README checks are proved; session 16: the long exact sequence
+of cohomology with supports of sheaves of modules and its compatibility with pullback; the scheme
+wrapper `localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and the flat base change
+compatibility clause remain). Session 9 inserted splits 5 and 6 and session 10 inserted split 7, so the
 splits numbered 5–11 before session 9 are now 8–14. Session 12 split the old split 9 into splits 9
 and 10, so the splits numbered 10–14 before session 12 are now 11–15. Session 13 inserted splits
 15 and 16, so the old final split 15 is now split 17. Session 14 split the old split 17 into
@@ -818,10 +820,69 @@ degree zero. `localCohomologySheaf` is `supportedHSheaf`, with `supportedHSheafZ
 exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_cohomologyPresheaf_map`,
 `exact_cohomologyPresheaf_map_δ` and `exact_δ_toH'`. Excision is `supportedHExcisionEquiv`.
 
+### Session 16: the long exact sequence of cohomology with supports and its pullback
+
+Session 16 merged `main` (no new commits since `e8758b7b2f8`) and closed the item "compatibility
+of `cohomologyWithSupport_pullback` with the connecting maps" from "What remains".
+
+`TauCeti/CategoryTheory/Sites/SheafCohomology/Relative/Pullback.lean` (+12 lines, split 3):
+
+- `CategoryTheory.Sheaf.relativeH'.pullback_comp_extClass`: for a short exact sequence `T` of
+  abelian sheaves, `pullback u T.X₁ i n₁ (x ⬝ [T]) = pullback u T.X₃ i n₀ x ⬝ [u^* T]`
+  (`Ext.mapExactFunctor_comp`, `Ext.mapExactFunctor_extClass`, associativity), the relative
+  analogue of `main`'s `Sheaf.H.pullback_δ`.
+
+`TauCeti/Topology/Sheaves/SupportedCohomology/Pullback.lean` (+17 lines, split 3):
+
+- `TopCat.Hom.supportedHPullback_comp_extClass`: the same for `f.supportedHPullback`.
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (+79 lines, now 353, split 12), namespace
+`TauCeti.AlgebraicGeometry.Scheme.Modules`:
+
+- **`cohomologyWithSupportδ Z hS n₀ n₁ h : H_Z^{n₀}(X, S.X₃) →+ H_Z^{n₁}(X, S.X₁)`** for a short
+  exact sequence `S` of `X.Modules` (Yoneda product with the class of the underlying short exact
+  sequence of abelian sheaves), with `cohomologyWithSupportδ_eq` and `cohomologyWithSupportδ_apply`;
+- exactness of the long exact sequence: `exact_cohomologyWithSupportMap_cohomologyWithSupportMap`,
+  `exact_cohomologyWithSupportMap_cohomologyWithSupportδ`,
+  `exact_cohomologyWithSupportδ_cohomologyWithSupportMap` (Mathlib's
+  `Ext.covariant_sequence_exact₁'`/`₂'`/`₃'`);
+- `cohomologyWithSupportδ_naturality` (in morphisms of short exact sequences, via
+  `ShortComplex.ShortExact.extClass_naturality`) and `cohomologyWithSupportδ_smul` (linearity over
+  `Γ(X, ⊤)`, naturality along multiplication by `r`).
+
+`TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` (+42 lines, now 164, split 12):
+
+- **`Scheme.Hom.cohomologyWithSupportPullback_cohomologyWithSupportδ`**: for `S` short exact with
+  `S.map (pullback g)` short exact (e.g. `g` flat and `S.X₁`, `S.X₂` quasi-coherent, `main`'s
+  `shortExact_map_pullback_of_flat`), `g^*` intertwines the two connecting maps. It mirrors `main`'s
+  `cohomologyPullback_cohomologyδ`: the comparison `g⁻¹ ⟶ g^*` is a morphism of short exact
+  sequences, and `extClass_naturality` moves it past the extension class.
+
+Refactor (rubric audit, reuse): the general connecting map replaces the tilde-specific one of
+session 13. `Support/Tilde.lean` (now 238 lines) drops `shortExact_map_tilde_toSheaf`,
+`cohomologyWithSupportTildeδ`, `cohomologyWithSupportTildeδ_apply` and
+`exists_cohomologyWithSupportMap_tilde_eq`. It gains `shortExact_map_tilde : (S.map (tilde.functor
+R)).ShortExact`, and the dimension shifts are restated as `bijective_cohomologyWithSupportδ_tilde_succ`
+and `surjective_cohomologyWithSupportδ_tilde_zero` about
+`cohomologyWithSupportδ Z (shortExact_map_tilde hS)`. `Support/LocalCohomology.lean`
+(`extToCohomologyWithSupport_comp_extClass`, `localCohomologyToCohomologyWithSupport_δ`) and
+`Support/Comparison.lean` (the degree-one injectivity now uses
+`exact_cohomologyWithSupportMap_cohomologyWithSupportδ`) follow. Session-13/14 notes above that
+name the deleted declarations describe the state before this refactor.
+
+Gotchas (session 16): `rw` with `Ext.comp_assoc_of_*_deg_zero` or with the `_apply` lemmas fails
+when `x : cohomologyWithSupport Z M q` (stated through `SheafOfModules.toSheaf X.ringCatSheaf`)
+meets terms stated through `toSheaf X` or `(S.map (toSheaf X)).Xᵢ`: the motive is not type-correct
+at instances transparency. State each step as a `have` with explicit arguments and chain them
+with `Eq.trans`/`congrArg`. In the same way, give `hS.map_of_exact F` an explicit `F`, including
+its topologies. Otherwise elaboration postpones it and fails with a universe or type mismatch.
+`cohomologyWithSupportδ` is not exposed, so other modules rewrite with `cohomologyWithSupportδ_eq`
+before applying a lemma stated through `Ext.postcomp`.
+
 ## What remains
 
-- `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 12). Its compatibility with the
-  connecting maps of short exact sequences is not stated yet.
+- `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 12), including its
+  compatibility with the connecting maps (session 16).
 - `rHZ_adjunction` and `localToGlobal`: derived-category statements; `main` has only the edge map
   `supportedHEdgeEquiv`.
 - `localCohomology_colimit_ext_comparison`: done in every degree. Session 11 proved
@@ -850,8 +911,8 @@ exact sequence of `supports_localization_triangle` is `relativeH'.exact_toH'_coh
     computations along a nonzerodivisor (`localCohomologyOneLinearEquiv` and
     `cohomologyWithSupportSpecOneLinearEquiv`), not only that both sides are `K ⧸ R`;
   - the clause "compatibly with the geometric comparison" of `localCohomology_flat_baseChange`;
-  - the scheme wrapper `localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and the connecting
-    map compatibility of `cohomologyWithSupport_pullback` (see the items above).
+  - the scheme wrapper `localCohomologySheaf`, `rHZ_adjunction` and `localToGlobal` (see the
+    items above).
 
 ## Split plan
 
@@ -871,7 +932,8 @@ before session 9 are now 8–14.
 3. **feat: pullback of cohomology with supports**. After: none (done, about 290 lines).
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative/Pullback.lean` and
    `TauCeti/Topology/Sheaves/SupportedCohomology/Pullback.lean`; the declarations listed under
-   session 6 (all but the scheme wrapper).
+   session 6 (all but the scheme wrapper), plus session 16's `relativeH'.pullback_comp_extClass`
+   and `TopCat.Hom.supportedHPullback_comp_extClass`.
 4. **feat: local cohomology vanishes below the depth and not in degree the depth**. After: 1
    (done, about 345 lines). `TauCeti/Algebra/Homology/Ext/ProjectiveResolution.lean` (+138 lines):
    `ShortComplex.injective_homologyMap_moduleCat`,
@@ -922,8 +984,11 @@ before session 9 are now 8–14.
    400 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support.lean` (274 lines) plus
    `globalSectionsSmul_app_top_apply` in `TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean`;
    the declarations listed under sessions 4, 7 and 8. Also
-   `TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` (122 lines, session 6):
-   `cohomologyWithSupportPullback` and its three lemmas.
+   `TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` (164 lines, session 6):
+   `cohomologyWithSupportPullback` and its three lemmas. Session 16 added (about 120 lines)
+   `cohomologyWithSupportδ` with its long exact sequence, naturality and linearity, and
+   `cohomologyWithSupportPullback_cohomologyWithSupportδ`; `Support.lean` is now 353 lines. If this
+   split grows past 600 lines, the port can open the session-16 additions as a follow-up split.
 13. **feat: cohomology with supports on affine schemes and at the origin of the affine line**.
    After: 11 (done, about 425 lines). `oneAddEquivOfSubsingleton` (+18 lines in
    `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative.lean`), `supportedHOneEquiv` (+28 lines
@@ -942,9 +1007,10 @@ before session 9 are now 8–14.
    (`localCohomologyOneMaximalIdealLinearEquiv`, `localCohomologyOneAddEquivCohomologyWithSupport`,
    `isZero_localCohomology_zero_and_nonempty_one_linearEquiv`).
 15. **feat: cohomology with supports of the sheaf associated to a module**. After: 12 (done,
-   261 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support/Tilde.lean`: the session-13
-   declarations of that file (`zeroLocusCloseds` through `surjective_cohomologyWithSupportTildeδ_zero`)
-   and the session-14 `tilde_map_smul_id` and `exists_cohomologyWithSupportMap_tilde_eq`.
+   238 lines). `TauCeti/AlgebraicGeometry/Cohomology/Support/Tilde.lean`: the session-13
+   declarations of that file as refactored in session 16 (`zeroLocusCloseds` through
+   `surjective_cohomologyWithSupportδ_tilde_zero`, using split 12's `cohomologyWithSupportδ`) and
+   the session-14 `tilde_map_smul_id`.
    Uses `main`'s `isFlasque_tilde_of_injective` and `relativeH'` flasque lemmas.
 16. **feat: comparison map from local cohomology to cohomology with supports**. After: 7, 8, 15
    (done, 350 lines; it uses split 7's `extLinearEquiv`, `localCohomology_map_smul_id`, `extLinearEquiv_zero_apply`,

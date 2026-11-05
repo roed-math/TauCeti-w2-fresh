@@ -212,12 +212,13 @@ lemma extToCohomologyWithSupport_comp_extClass (hI : I.FG) (k : ℕ)
     {S : ShortComplex (ModuleCat.{u} R)} (hS : S.ShortExact) (n : ℕ)
     (z : Abelian.Ext (ModuleCat.of R (R ⧸ I ^ k)) S.X₃ n) :
     extToCohomologyWithSupport hI k S.X₁ (n + 1) (z.comp hS.extClass rfl) =
-      cohomologyWithSupportTildeδ (zeroLocusCloseds I) hS n
+      cohomologyWithSupportδ (zeroLocusCloseds I) (shortExact_map_tilde hS) n (n + 1) rfl
         (extToCohomologyWithSupport hI k S.X₃ n z) := by
   rw [extToCohomologyWithSupport_apply, extToCohomologyWithSupport_apply,
     Abelian.Ext.mapExactFunctor_comp, Abelian.Ext.mapExactFunctor_extClass]
   exact (Abelian.Ext.comp_assoc _ _ _ _ rfl (by lia)).symm.trans
-    (cohomologyWithSupportTildeδ_apply _ _ _ _).symm
+    (cohomologyWithSupportδ_apply (zeroLocusCloseds I) (shortExact_map_tilde hS) n (n + 1) rfl
+      _).symm
 
 /-- **Naturality of the comparison map** in the module `M`. -/
 lemma localCohomologyToCohomologyWithSupport_naturality (hI : I.FG) (q : ℕ)
@@ -237,17 +238,17 @@ lemma localCohomologyToCohomologyWithSupport_naturality (hI : I.FG) (q : ℕ)
 
 /-- **The comparison map commutes with the connecting maps** of a short exact sequence of
 modules: the native connecting map `Supports.localCohomologyδ` corresponds to the connecting map
-`cohomologyWithSupportTildeδ` of cohomology with supports. -/
+`cohomologyWithSupportδ` of cohomology with supports. -/
 lemma localCohomologyToCohomologyWithSupport_δ (hI : I.FG) {S : ShortComplex (ModuleCat.{u} R)}
     (hS : S.ShortExact) (n : ℕ) (x : (localCohomology I n).obj S.X₃) :
     localCohomologyToCohomologyWithSupport hI (n + 1) S.X₁ (Supports.localCohomologyδ I hS n x) =
-      cohomologyWithSupportTildeδ (zeroLocusCloseds I) hS n
+      cohomologyWithSupportδ (zeroLocusCloseds I) (shortExact_map_tilde hS) n (n + 1) rfl
         (localCohomologyToCohomologyWithSupport hI n S.X₃ x) := by
   obtain ⟨j, y, rfl⟩ := TauCeti.ModuleCat.exists_colimit_ι_app_eq _ S.X₃ x
   refine (congrArg (localCohomologyToCohomologyWithSupport hI (n + 1) S.X₁)
     (ConcreteCategory.congr_hom (Supports.ι_app_localCohomologyδ I hS n j) y)).trans ?_
   refine (localCohomologyToCohomologyWithSupport_ι_app hI (n + 1) S.X₁ j _).trans (Eq.trans ?_
-    (congrArg (cohomologyWithSupportTildeδ (zeroLocusCloseds I) hS n)
+    (congrArg (cohomologyWithSupportδ (zeroLocusCloseds I) (shortExact_map_tilde hS) n (n + 1) rfl)
       (localCohomologyToCohomologyWithSupport_ι_app hI n S.X₃ j y).symm))
   exact (congrArg (extToCohomologyWithSupport hI _ S.X₁ (n + 1))
     (Supports.extLinearEquiv_extδ _ hS n y)).trans

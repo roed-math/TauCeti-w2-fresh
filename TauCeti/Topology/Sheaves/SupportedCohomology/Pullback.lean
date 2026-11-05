@@ -20,13 +20,15 @@ inverse image map on cohomology with supports
 `f.supportedHPullback F S W n : H_Sⁿ(W, F) →+ H_{f⁻¹ S}ⁿ(f⁻¹ W, f⁻¹ F)`,
 
 the case `u = Opens.map f` of `CategoryTheory.Sheaf.relativeH'.pullback` (Stacks, Section 20.34
-(0G6Y), for the functoriality of `RΓ_Z` along `f`). It is natural in `F`, and in degree zero it
-is the map on sections supported in `S` given by the unit `F ⟶ f_* f⁻¹ F`.
+(0G6Y), for the functoriality of `RΓ_Z` along `f`). It is natural in `F`, it commutes with the
+connecting maps of short exact sequences, and in degree zero it is the map on sections supported
+in `S` given by the unit `F ⟶ f_* f⁻¹ F`.
 
 ## Main declarations
 
 * `TopCat.Hom.supportedHPullback`: the map `H_Sⁿ(W, F) →+ H_{f⁻¹ S}ⁿ(f⁻¹ W, f⁻¹ F)`;
 * `TopCat.Hom.supportedHPullback_naturality`: its naturality in `F`;
+* `TopCat.Hom.supportedHPullback_comp_extClass`: its compatibility with connecting maps;
 * `TopCat.Hom.coe_supportedHZeroEquiv_supportedHPullback`: its description in degree zero.
 -/
 
@@ -67,6 +69,21 @@ lemma supportedHPullback_naturality
     CategoryTheory.Sheaf.relativeH'.pullback_naturality,
     CategoryTheory.Sheaf.relativeH'.map_apply]
   exact (Ext.comp_assoc _ _ _ (zero_add n) (add_zero n) (by lia)).symm
+
+/-- The inverse image map on cohomology with supports commutes with the connecting maps of a short
+exact sequence of sheaves and of its (exact) inverse image. -/
+lemma supportedHPullback_comp_extClass
+    {T : ShortComplex (CategoryTheory.Sheaf (Opens.grothendieckTopology Y) AddCommGrpCat.{u})}
+    (hT : T.ShortExact) (S : Closeds Y) (W : Opens Y) {n₀ n₁ : ℕ} (h : n₀ + 1 = n₁)
+    (x : T.X₃.supportedH S W n₀) :
+    f.supportedHPullback T.X₁ S W n₁ (x.comp hT.extClass h) =
+      (f.supportedHPullback T.X₃ S W n₀ x).comp
+        (hT.map_of_exact ((Opens.map f).sheafPullback AddCommGrpCat.{u}
+          (Opens.grothendieckTopology Y) (Opens.grothendieckTopology X))).extClass h := by
+  simp only [supportedHPullback, AddMonoidHom.comp_apply,
+    CategoryTheory.Sheaf.relativeH'.pullback_comp_extClass,
+    CategoryTheory.Sheaf.relativeH'.map_apply]
+  exact (Ext.comp_assoc _ _ _ (zero_add n₀) h (by lia)).symm
 
 /-- In degree zero, the inverse image map on cohomology with supports is the map on sections
 supported in `S` given by the unit `F ⟶ f_* f⁻¹ F`. -/

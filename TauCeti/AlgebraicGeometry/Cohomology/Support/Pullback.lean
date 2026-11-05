@@ -24,9 +24,9 @@ induced by the comparison `g⁻¹ M ⟶ g^* M`
 (`AlgebraicGeometry.Scheme.Hom.toSheafPullbackComparison`), exactly as
 `AlgebraicGeometry.Scheme.Hom.cohomologyPullback` is built for ordinary cohomology.
 
-The pullback map is natural in `M`, semilinear for the action of global functions along
-`g^♯ : Γ(X, 𝒪_X) ⟶ Γ(Y, 𝒪_Y)`, and in degree zero it is the pullback of global sections
-supported in `Z`.
+The pullback map is natural in `M`, compatible with connecting maps, semilinear for the action of
+global functions along `g^♯ : Γ(X, 𝒪_X) ⟶ Γ(Y, 𝒪_Y)`, and in degree zero it is the pullback of
+global sections supported in `Z`.
 
 ## Main declarations
 
@@ -34,6 +34,8 @@ supported in `Z`.
   `H_Z^q(X, M) →+ H_{g⁻¹ Z}^q(Y, g^* M)`;
 * `AlgebraicGeometry.Scheme.Hom.cohomologyWithSupportPullback_cohomologyWithSupportMap`:
   naturality in `M`;
+* `AlgebraicGeometry.Scheme.Hom.cohomologyWithSupportPullback_cohomologyWithSupportδ`:
+  compatibility with connecting maps;
 * `AlgebraicGeometry.Scheme.Hom.cohomologyWithSupportPullback_smul`: semilinearity over global
   functions;
 * `Scheme.Hom.coe_cohomologyWithSupportZeroLinearEquiv_cohomologyWithSupportPullback`: the
@@ -90,6 +92,46 @@ theorem cohomologyWithSupportPullback_cohomologyWithSupportMap {M N : X.Modules}
     Ext.comp_assoc_of_third_deg_zero, Ext.mk₀_comp_mk₀, Ext.mk₀_comp_mk₀]
   exact congrArg (fun φ ↦ Ext.comp _ (Ext.mk₀ φ) (add_zero q))
     ((toSheafPullbackComparison g).naturality α)
+
+/-- The pullback map on cohomology with supports commutes with the connecting maps of a short exact
+sequence `S` of sheaves of modules on `X` whose pullback to `Y` is short exact, for instance when
+`g` is flat and the first two terms of `S` are quasi-coherent
+(`AlgebraicGeometry.Scheme.Hom.shortExact_map_pullback_of_flat`). -/
+theorem cohomologyWithSupportPullback_cohomologyWithSupportδ {S : ShortComplex X.Modules}
+    (hS : S.ShortExact) (hS' : (S.map (Scheme.Modules.pullback g)).ShortExact) {n₀ n₁ : ℕ}
+    (h : n₀ + 1 = n₁) (x : cohomologyWithSupport Z S.X₃ n₀) :
+    g.cohomologyWithSupportPullback Z S.X₁ n₁ (cohomologyWithSupportδ Z hS n₀ n₁ h x) =
+      cohomologyWithSupportδ _ hS' n₀ n₁ h (g.cohomologyWithSupportPullback Z S.X₃ n₀ x) := by
+  let φ := toSheafPullbackComparison g
+  -- The comparison, as a morphism from the inverse image of the underlying short exact sequence
+  -- of abelian sheaves to the underlying short exact sequence of the pullback.
+  let ψ : ((S.map (toSheaf X)).map ((Opens.map g.base).sheafPullback AddCommGrpCat.{u}
+      (Opens.grothendieckTopology X) (Opens.grothendieckTopology Y))) ⟶
+      (S.map (Scheme.Modules.pullback g)).map (toSheaf Y) :=
+    { τ₁ := φ.app S.X₁
+      τ₂ := φ.app S.X₂
+      τ₃ := φ.app S.X₃
+      comm₁₂ := (φ.naturality S.f).symm
+      comm₂₃ := (φ.naturality S.g).symm }
+  let pb := (Opens.map g.base).sheafPullback AddCommGrpCat.{u} (Opens.grothendieckTopology X)
+    (Opens.grothendieckTopology Y)
+  have h₀ := g.base.supportedHPullback_comp_extClass (shortExact_map_toSheaf hS) Z ⊤ h x
+  have key := ((shortExact_map_toSheaf hS).map_of_exact pb).extClass_naturality
+    (shortExact_map_toSheaf hS') ψ
+  have e₁ := Ext.comp_assoc_of_third_deg_zero (g.base.supportedHPullback _ Z ⊤ n₀ x)
+    ((shortExact_map_toSheaf hS).map_of_exact pb).extClass (Ext.mk₀ (φ.app S.X₁)) h
+  have e₂ := Ext.comp_assoc_of_second_deg_zero (g.base.supportedHPullback _ Z ⊤ n₀ x)
+    (Ext.mk₀ (φ.app S.X₃)) (shortExact_map_toSheaf hS').extClass h
+  exact (congrArg (g.cohomologyWithSupportPullback Z S.X₁ n₁)
+    (cohomologyWithSupportδ_apply Z hS n₀ n₁ h x)).trans <|
+    (cohomologyWithSupportPullback_apply g Z S.X₁ n₁ _).trans <|
+    (congrArg (fun z ↦ Ext.comp z (Ext.mk₀ (φ.app S.X₁)) (add_zero n₁)) h₀).trans <|
+    e₁.trans <|
+    (congrArg (fun e ↦ (g.base.supportedHPullback _ Z ⊤ n₀ x).comp e h) key).trans <|
+    e₂.symm.trans <|
+    (congrArg (fun z ↦ Ext.comp z (shortExact_map_toSheaf hS').extClass h)
+      (cohomologyWithSupportPullback_apply g Z S.X₃ n₀ x)).symm.trans
+    (cohomologyWithSupportδ_apply _ hS' n₀ n₁ h _).symm
 
 /-- The pullback map on cohomology with supports is semilinear for the action of global functions
 along `g^♯ : Γ(X, 𝒪_X) ⟶ Γ(Y, 𝒪_Y)`. -/

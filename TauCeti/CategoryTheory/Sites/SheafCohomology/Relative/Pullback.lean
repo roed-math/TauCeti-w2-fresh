@@ -37,6 +37,8 @@ of topological spaces this is the pullback of cohomology with supports
   `ℤ_{u V, u U} ⟶ u^* ℤ_{V, U}`;
 * `CategoryTheory.Sheaf.relativeH'.pullback`: the pullback `Hⁿ(V, U; F) →+ Hⁿ(u V, u U; u^* F)`;
 * `CategoryTheory.Sheaf.relativeH'.pullback_naturality`: its naturality in the coefficient sheaf;
+* `CategoryTheory.Sheaf.relativeH'.pullback_comp_extClass`: its compatibility with connecting
+  maps;
 * `CategoryTheory.Sheaf.relativeH'.coe_zeroEquiv_pullback`: its description in degree zero.
 -/
 
@@ -179,6 +181,16 @@ lemma pullback_naturality {F G : Sheaf J AddCommGrpCat.{v}} (f : F ⟶ G) {U V :
       (pullback u F i n x).comp (Ext.mk₀ ((u.sheafPullback AddCommGrpCat.{v} J K).map f))
         (add_zero n) := by
   simp [pullback_apply, Ext.mapExactFunctor_comp, Ext.mapExactFunctor_mk₀]
+
+/-- The pullback of relative cohomology commutes with the connecting maps of a short exact sequence
+of abelian sheaves and of its image under the exact functor `u^*`. -/
+lemma pullback_comp_extClass {T : ShortComplex (Sheaf J AddCommGrpCat.{v})} (hT : T.ShortExact)
+    {U V : C} (i : U ⟶ V) {n₀ n₁ : ℕ} (h : n₀ + 1 = n₁) (x : T.X₃.relativeH' i n₀) :
+    pullback u T.X₁ i n₁ (x.comp hT.extClass h) =
+      (pullback u T.X₃ i n₀ x).comp
+        (hT.map_of_exact (u.sheafPullback AddCommGrpCat.{v} J K)).extClass h := by
+  rw [pullback_apply, pullback_apply, Ext.mapExactFunctor_comp, Ext.mapExactFunctor_extClass]
+  exact (Ext.comp_assoc _ _ _ (zero_add n₀) h (by lia)).symm
 
 /-- In degree zero, the pullback of relative cohomology is the map on sections vanishing along `i`
 induced by the unit `F ⟶ u_* u^* F`. -/

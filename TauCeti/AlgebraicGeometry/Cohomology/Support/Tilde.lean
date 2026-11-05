@@ -49,12 +49,9 @@ derived functors of `Γ_I` by dimension shifting (Stacks, Lemma 51.2.1 (0A6T)).
 * `TauCeti.AlgebraicGeometry.Scheme.Modules.subsingleton_cohomologyWithSupport_tilde_succ`:
   `H^{n+1}_Z(Spec R, J^~) = 0` for an injective module `J` over a Noetherian ring and any closed
   `Z`;
-* `TauCeti.AlgebraicGeometry.Scheme.Modules.cohomologyWithSupportTildeδ`: the connecting map
-  `H^n_Z(Spec R, S.X₃^~) ⟶ H^{n+1}_Z(Spec R, S.X₁^~)` of a short exact sequence of modules, and
-  `TauCeti.AlgebraicGeometry.Scheme.Modules.exists_cohomologyWithSupportMap_tilde_eq`: exactness
-  of the long exact sequence at `H^n_Z(Spec R, S.X₃^~)`;
-* `TauCeti.AlgebraicGeometry.Scheme.Modules.bijective_cohomologyWithSupportTildeδ_succ` and
-  `TauCeti.AlgebraicGeometry.Scheme.Modules.surjective_cohomologyWithSupportTildeδ_zero`:
+* `TauCeti.AlgebraicGeometry.Scheme.Modules.shortExact_map_tilde`: `M ↦ M^~` is exact;
+* `TauCeti.AlgebraicGeometry.Scheme.Modules.bijective_cohomologyWithSupportδ_tilde_succ` and
+  `TauCeti.AlgebraicGeometry.Scheme.Modules.surjective_cohomologyWithSupportδ_tilde_zero`:
   dimension shifting along `0 ⟶ M ⟶ J ⟶ N ⟶ 0` with `J` injective over a Noetherian ring.
 
 ## References
@@ -202,55 +199,35 @@ section DimensionShift
 variable (Z : Closeds (Spec R)) {S : ShortComplex (ModuleCat.{u} R)} (hS : S.ShortExact)
 
 include hS in
-/-- The sequence of abelian sheaves `0 ⟶ S.X₁^~ ⟶ S.X₂^~ ⟶ S.X₃^~ ⟶ 0` associated to a short
+/-- The sequence `0 ⟶ S.X₁^~ ⟶ S.X₂^~ ⟶ S.X₃^~ ⟶ 0` of sheaves of modules associated to a short
 exact sequence of `R`-modules is short exact. -/
-lemma shortExact_map_tilde_toSheaf :
-    (S.map (tilde.functor R ⋙ toSheaf (Spec R))).ShortExact :=
+lemma shortExact_map_tilde : (S.map (tilde.functor R)).ShortExact :=
   hS.map_of_exact _
-
-/-- The connecting map `H^n_Z(Spec R, S.X₃^~) ⟶ H^{n+1}_Z(Spec R, S.X₁^~)` of a short exact
-sequence of `R`-modules: the Yoneda product with the extension class of the associated short exact
-sequence of sheaves. -/
-noncomputable def cohomologyWithSupportTildeδ (n : ℕ) :
-    cohomologyWithSupport Z (tilde S.X₃) n →+ cohomologyWithSupport Z (tilde S.X₁) (n + 1) :=
-  (shortExact_map_tilde_toSheaf hS).extClass.postcomp _ rfl
-
-lemma cohomologyWithSupportTildeδ_apply (n : ℕ) (x : cohomologyWithSupport Z (tilde S.X₃) n) :
-    cohomologyWithSupportTildeδ Z hS n x = x.comp (shortExact_map_tilde_toSheaf hS).extClass rfl :=
-  (rfl)
-
-/-- Exactness of the long exact sequence of cohomology with supports at `H^n_Z(Spec R, S.X₃^~)`:
-a class killed by the connecting map comes from `H^n_Z(Spec R, S.X₂^~)`. -/
-lemma exists_cohomologyWithSupportMap_tilde_eq (n : ℕ)
-    (y : cohomologyWithSupport Z (tilde S.X₃) n) (hy : cohomologyWithSupportTildeδ Z hS n y = 0) :
-    ∃ x, cohomologyWithSupportMap Z (tilde.map S.g) n x = y := by
-  obtain ⟨x, hx⟩ := Abelian.Ext.covariant_sequence_exact₃
-    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤))
-    (shortExact_map_tilde_toSheaf hS) y rfl hy
-  exact ⟨x, (cohomologyWithSupportMap_apply _ _ _ _).trans hx⟩
 
 variable [IsNoetherianRing R] [Module.Injective R S.X₂]
 
 /-- **Dimension shifting.** For a short exact sequence `0 ⟶ M ⟶ J ⟶ N ⟶ 0` of modules over a
 Noetherian ring with `J` injective, the connecting maps
 `H^{n+1}_Z(Spec R, N^~) ⟶ H^{n+2}_Z(Spec R, M^~)` are bijective. -/
-theorem bijective_cohomologyWithSupportTildeδ_succ (n : ℕ) :
-    Function.Bijective (cohomologyWithSupportTildeδ Z hS (n + 1)) :=
-  have : TopCat.Presheaf.IsFlasque (S.map (tilde.functor R ⋙ toSheaf (Spec R))).X₂.obj :=
+theorem bijective_cohomologyWithSupportδ_tilde_succ (n : ℕ) :
+    Function.Bijective
+      (cohomologyWithSupportδ Z (shortExact_map_tilde hS) (n + 1) (n + 2) rfl) := by
+  have : TopCat.Presheaf.IsFlasque ((S.map (tilde.functor R)).map (toSheaf (Spec R))).X₂.obj :=
     isFlasque_tilde_of_injective S.X₂
-  Sheaf.relativeH'.extClass_postcomp_bijective_of_isFlasque (shortExact_map_tilde_toSheaf hS)
-    (Z.complInclusion ⊤) n
+  rw [cohomologyWithSupportδ_eq]
+  exact Sheaf.relativeH'.extClass_postcomp_bijective_of_isFlasque
+    (shortExact_map_toSheaf (shortExact_map_tilde hS)) (Z.complInclusion ⊤) n
 
 /-- For a short exact sequence `0 ⟶ M ⟶ J ⟶ N ⟶ 0` of modules over a Noetherian ring with `J`
 injective, every class in `H^1_Z(Spec R, M^~)` comes from `H^0_Z(Spec R, N^~)`. -/
-theorem surjective_cohomologyWithSupportTildeδ_zero :
-    Function.Surjective (cohomologyWithSupportTildeδ Z hS 0) := fun x ↦ by
-  have hT := shortExact_map_tilde_toSheaf hS
-  have : TopCat.Presheaf.IsFlasque (S.map (tilde.functor R ⋙ toSheaf (Spec R))).X₂.obj :=
+theorem surjective_cohomologyWithSupportδ_tilde_zero :
+    Function.Surjective (cohomologyWithSupportδ Z (shortExact_map_tilde hS) 0 1 rfl) := fun x ↦ by
+  have : TopCat.Presheaf.IsFlasque ((S.map (tilde.functor R)).map (toSheaf (Spec R))).X₂.obj :=
     isFlasque_tilde_of_injective S.X₂
+  rw [cohomologyWithSupportδ_eq]
   exact Abelian.Ext.covariant_sequence_exact₁ (n₁ := 0 + 1)
-    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤)) hT x
-    (Subsingleton.elim _ _) rfl
+    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤))
+    (shortExact_map_toSheaf (shortExact_map_tilde hS)) x (Subsingleton.elim _ _) rfl
 
 end DimensionShift
 

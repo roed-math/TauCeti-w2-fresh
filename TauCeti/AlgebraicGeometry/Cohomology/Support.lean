@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Cohomology.Module.Basic
+public import TauCeti.AlgebraicGeometry.Modules.Sheaf
 public import TauCeti.Topology.Sheaves.SupportedCohomology.Univ
 import Mathlib.Algebra.Category.Grp.Zero
 
@@ -17,7 +18,9 @@ Let `X` be a scheme, `Z ⊆ X` a closed subset and `M` a sheaf of `𝒪_X`-modul
 supports `CategoryTheory.Sheaf.supportedH` of the underlying abelian sheaf of `M` on the whole
 space. As for `Scheme.Modules.Cohomology`, the global functions act on it through their action
 on `M` by scalar endomorphisms, which makes `H_Z^q(X, M)` a `Γ(X, ⊤)`-module and every map
-induced by a morphism of coefficient sheaves `Γ(X, ⊤)`-linear.
+induced by a morphism of coefficient sheaves `Γ(X, ⊤)`-linear. A short exact sequence of sheaves
+of modules gives a long exact sequence of cohomology with supports, whose connecting maps are the
+Yoneda products with its extension class.
 
 In degree zero, `H_Z^0(X, M)` is the `Γ(X, ⊤)`-submodule `Γ_Z(X, M)` of global sections whose
 restriction to `X ∖ Z` vanishes. With supports in `Z = X` it is ordinary cohomology, and with
@@ -29,6 +32,12 @@ supports in `Z = ∅` it vanishes.
 * `Scheme.Modules.cohomologyWithSupportMap`: the map induced by a morphism of sheaves of modules,
   and `Scheme.Modules.cohomologyWithSupportMapLinear`, the same map as a `Γ(X, ⊤)`-linear map;
 * `Scheme.Modules.cohomologyWithSupportModule`: the `Γ(X, ⊤)`-module structure;
+* `Scheme.Modules.cohomologyWithSupportδ`: the connecting map of a short exact sequence of
+  sheaves of modules, with the exactness of the long exact sequence
+  (`Scheme.Modules.exact_cohomologyWithSupportMap_cohomologyWithSupportMap`,
+  `Scheme.Modules.exact_cohomologyWithSupportMap_cohomologyWithSupportδ`,
+  `Scheme.Modules.exact_cohomologyWithSupportδ_cohomologyWithSupportMap`), its naturality and its
+  linearity over global functions;
 * `Scheme.Modules.sectionsWithSupport Z M`: the `Γ(X, ⊤)`-submodule `Γ_Z(X, M)` of `Γ(M, ⊤)`,
   all of `Γ(M, ⊤)` for `Z = X` (`Scheme.Modules.sectionsWithSupport_top`);
 * `Scheme.Modules.cohomologyWithSupportZeroLinearEquiv`: `H_Z^0(X, M) ≃ₗ[Γ(X, ⊤)] Γ_Z(X, M)`,
@@ -157,6 +166,84 @@ lemma cohomologyWithSupportMapLinear_apply (f : M ⟶ N) (q : ℕ)
     (x : cohomologyWithSupport Z M q) :
     cohomologyWithSupportMapLinear Z f q x = cohomologyWithSupportMap Z f q x :=
   (rfl)
+
+section connecting
+
+variable {S : ShortComplex X.Modules} (hS : S.ShortExact)
+
+/-- The connecting map `H_Z^{n₀}(X, M₃) →+ H_Z^{n₁}(X, M₁)`, for `n₀ + 1 = n₁`, of the long exact
+sequence of cohomology with supports of a short exact sequence `0 ⟶ M₁ ⟶ M₂ ⟶ M₃ ⟶ 0` of sheaves
+of modules: the Yoneda product with the extension class of the underlying short exact sequence of
+abelian sheaves. -/
+def cohomologyWithSupportδ (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁) :
+    cohomologyWithSupport Z S.X₃ n₀ →+ cohomologyWithSupport Z S.X₁ n₁ :=
+  (shortExact_map_toSheaf hS).extClass.postcomp _ h
+
+lemma cohomologyWithSupportδ_eq (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁) :
+    cohomologyWithSupportδ Z hS n₀ n₁ h = (shortExact_map_toSheaf hS).extClass.postcomp _ h :=
+  (rfl)
+
+lemma cohomologyWithSupportδ_apply (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁)
+    (x : cohomologyWithSupport Z S.X₃ n₀) :
+    cohomologyWithSupportδ Z hS n₀ n₁ h x = x.comp (shortExact_map_toSheaf hS).extClass h :=
+  (rfl)
+
+include hS in
+/-- The long exact sequence of cohomology with supports is exact at `H_Z^n(X, M₂)`. -/
+theorem exact_cohomologyWithSupportMap_cohomologyWithSupportMap (n : ℕ) :
+    Function.Exact (cohomologyWithSupportMap Z S.f n) (cohomologyWithSupportMap Z S.g n) := by
+  have := Ext.covariant_sequence_exact₂'
+    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤))
+    (shortExact_map_toSheaf hS) n
+  rwa [ShortComplex.ab_exact_iff_function_exact] at this
+
+/-- The long exact sequence of cohomology with supports is exact at `H_Z^{n₀}(X, M₃)`. -/
+theorem exact_cohomologyWithSupportMap_cohomologyWithSupportδ (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁) :
+    Function.Exact (cohomologyWithSupportMap Z S.g n₀) (cohomologyWithSupportδ Z hS n₀ n₁ h) := by
+  have := Ext.covariant_sequence_exact₃'
+    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤))
+    (shortExact_map_toSheaf hS) n₀ n₁ h
+  rwa [ShortComplex.ab_exact_iff_function_exact] at this
+
+/-- The long exact sequence of cohomology with supports is exact at `H_Z^{n₁}(X, M₁)`. -/
+theorem exact_cohomologyWithSupportδ_cohomologyWithSupportMap (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁) :
+    Function.Exact (cohomologyWithSupportδ Z hS n₀ n₁ h) (cohomologyWithSupportMap Z S.f n₁) := by
+  have := Ext.covariant_sequence_exact₁'
+    (TauCeti.CategoryTheory.relativeFreeYonedaSheaf _ (Z.complInclusion ⊤))
+    (shortExact_map_toSheaf hS) n₀ n₁ h
+  rwa [ShortComplex.ab_exact_iff_function_exact] at this
+
+omit hS in
+/-- The connecting map of cohomology with supports is natural in the short exact sequence. -/
+theorem cohomologyWithSupportδ_naturality {S₁ S₂ : ShortComplex X.Modules} (h₁ : S₁.ShortExact)
+    (h₂ : S₂.ShortExact) (φ : S₁ ⟶ S₂) (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁)
+    (x : cohomologyWithSupport Z S₁.X₃ n₀) :
+    cohomologyWithSupportMap Z φ.τ₁ n₁ (cohomologyWithSupportδ Z h₁ n₀ n₁ h x) =
+      cohomologyWithSupportδ Z h₂ n₀ n₁ h (cohomologyWithSupportMap Z φ.τ₃ n₀ x) := by
+  have key := (shortExact_map_toSheaf h₁).extClass_naturality (shortExact_map_toSheaf h₂)
+    ((toSheaf X).mapShortComplex.map φ)
+  have e₁ := Ext.comp_assoc_of_third_deg_zero x (shortExact_map_toSheaf h₁).extClass
+    (Ext.mk₀ ((toSheaf X).map φ.τ₁)) h
+  have e₂ := Ext.comp_assoc_of_second_deg_zero x (Ext.mk₀ ((toSheaf X).map φ.τ₃))
+    (shortExact_map_toSheaf h₂).extClass h
+  rw [cohomologyWithSupportMap_apply, cohomologyWithSupportδ_apply, cohomologyWithSupportδ_apply,
+    cohomologyWithSupportMap_apply]
+  exact e₁.trans ((congrArg (fun e ↦ x.comp e h) key).trans e₂.symm)
+
+/-- The connecting map of cohomology with supports is linear over global functions. -/
+theorem cohomologyWithSupportδ_smul (n₀ n₁ : ℕ) (h : n₀ + 1 = n₁) (r : Γ(X, ⊤))
+    (x : cohomologyWithSupport Z S.X₃ n₀) :
+    cohomologyWithSupportδ Z hS n₀ n₁ h (r • x) = r • cohomologyWithSupportδ Z hS n₀ n₁ h x := by
+  let φ : S ⟶ S :=
+    { τ₁ := S.X₁.globalSectionsSmul r
+      τ₂ := S.X₂.globalSectionsSmul r
+      τ₃ := S.X₃.globalSectionsSmul r
+      comm₁₂ := globalSectionsSmul_naturality S.f r
+      comm₂₃ := globalSectionsSmul_naturality S.g r }
+  rw [smul_cohomologyWithSupport, smul_cohomologyWithSupport]
+  exact (cohomologyWithSupportδ_naturality Z hS hS φ n₀ n₁ h x).symm
+
+end connecting
 
 /-- The `Γ(X, ⊤)`-submodule `Γ_Z(X, M)` of global sections of `M` supported in `Z`, that is,
 whose restriction to `X ∖ Z` vanishes. -/

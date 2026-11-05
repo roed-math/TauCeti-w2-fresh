@@ -86,21 +86,25 @@ theorem bijective_localCohomologyToCohomologyWithSupport [IsNoetherianRing R] (h
       obtain ⟨v, hv⟩ : ∃ v, (localCohomology I q).map S.g v = w := by
         cases q with
         | zero =>
-          obtain ⟨v, hv⟩ := exists_cohomologyWithSupportMap_tilde_eq _ hS 0 _ hx
+          obtain ⟨v, hv⟩ :=
+            (exact_cohomologyWithSupportMap_cohomologyWithSupportδ _ (shortExact_map_tilde hS) 0 1
+              rfl _).1 hx
           obtain ⟨v, rfl⟩ := (IH S.X₂).2 v
           refine ⟨v, (IH S.X₃).1 ?_⟩
-          rw [localCohomologyToCohomologyWithSupport_naturality, hv]
+          rw [localCohomologyToCohomologyWithSupport_naturality]
+          exact hv
         | succ q =>
           refine ⟨0, (map_zero _).trans ((IH S.X₃).1 ?_).symm⟩
           rw [map_zero]
-          exact (bijective_cohomologyWithSupportTildeδ_succ _ hS q).1 (hx.trans (map_zero _).symm)
+          exact (bijective_cohomologyWithSupportδ_tilde_succ _ hS q).1 (hx.trans (map_zero _).symm)
       rw [← hv]
       exact ConcreteCategory.congr_hom
         (Supports.localCohomology_map_g_comp_localCohomologyδ I hS q) v
-    · obtain ⟨z, rfl⟩ : ∃ z, cohomologyWithSupportTildeδ (zeroLocusCloseds I) hS q z = y := by
+    · obtain ⟨z, rfl⟩ : ∃ z, cohomologyWithSupportδ (zeroLocusCloseds I) (shortExact_map_tilde hS)
+          q (q + 1) rfl z = y := by
         cases q with
-        | zero => exact surjective_cohomologyWithSupportTildeδ_zero _ hS y
-        | succ q => exact (bijective_cohomologyWithSupportTildeδ_succ _ hS q).2 y
+        | zero => exact surjective_cohomologyWithSupportδ_tilde_zero _ hS y
+        | succ q => exact (bijective_cohomologyWithSupportδ_tilde_succ _ hS q).2 y
       obtain ⟨w, rfl⟩ := (IH S.X₃).2 z
       exact ⟨_, hcomm w⟩
 
