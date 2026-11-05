@@ -1,11 +1,11 @@
-<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their fibre degrees"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: cohomology and base change for line bundles of positive fibre degree on a Weierstrass model"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*M vanishes for line bundles of positive fibre degree on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: a criterion for the base change morphism of a direct image on affine sections"},{"n":12,"after":[8,10,11],"title":"feat: π_*M commutes with arbitrary base change for line bundles of positive fibre degree"},{"n":13,"after":[],"title":"feat: the dual of a monomorphism of line bundles is a monomorphism"},{"n":14,"after":[2,10,13],"title":"feat: the pole filtration 𝒪(m[0]) ⊆ 𝒪(n[0]) of a Weierstrass model and of an elliptic curve"},{"n":15,"after":[10],"title":"feat: a fibrewise criterion for the cokernel of a map to a finite projective module to be projective"},{"n":16,"after":[13],"title":"feat: pullback preserves inclusions of effective Cartier divisors whose inverse images are effective Cartier"},{"n":17,"after":[7,10,14,15,16],"title":"feat: the quotients of the pole filtration of a Weierstrass model are projective of rank n - m"},{"n":18,"after":[10,17],"title":"feat: the pole filtration of π_*𝒪_E(n[0]) splits locally, with π_*ℒ_0 ≅ π_*ℒ_1"},{"n":19,"after":[13],"title":"feat: multiplication of the line bundles 𝒪(aD) ⊗ 𝒪(bD) ≅ 𝒪((a + b)D) of an effective Cartier divisor"},{"n":20,"after":[14,19],"title":"feat: the multiplication maps of the pole sheaves of a Weierstrass model and of an elliptic curve"},{"n":21,"after":[7,9,12],"title":"feat: π_*M is locally free of rank d for line bundles of fibre degree d on an elliptic curve"},{"n":22,"after":[21],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":23,"after":[18,20],"title":"feat: local splittings of the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":24,"after":[23],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":25,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularCurves","slug":"pole-sheaf","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the pole sheaves 𝒪(n[0]) of a Weierstrass model and their fibre degrees"},{"n":2,"after":[1],"title":"feat: the divisors n[0] and the pole sheaves 𝒪_E(n[0]) of an elliptic curve"},{"n":3,"after":[],"title":"refactor: share the restriction algebra of global functions on local sections"},{"n":4,"after":[3],"title":"feat: H¹ of a finite-type sheaf on a projective Weierstrass model is finitely generated"},{"n":5,"after":[1,4],"title":"feat: cohomology and base change for line bundles of positive fibre degree on a Weierstrass model"},{"n":6,"after":[4],"title":"feat: H⁰ of a finite-type sheaf on a projective Weierstrass model over a Noetherian ring is finitely generated"},{"n":7,"after":[5,6],"title":"feat: H⁰ of 𝒪(n[0]) on a Weierstrass model is projective of rank n"},{"n":8,"after":[2,5],"title":"feat: R¹π_*M vanishes for line bundles of positive fibre degree on an elliptic curve"},{"n":9,"after":[5],"title":"feat: finite local freeness from finite projective sections over an affine cover"},{"n":10,"after":[7,8,9],"title":"feat: π_*𝒪_E(n[0]) is locally free of rank n"},{"n":11,"after":[],"title":"feat: a criterion for the base change morphism of a direct image on affine sections"},{"n":12,"after":[8,10,11],"title":"feat: π_*M commutes with arbitrary base change for line bundles of positive fibre degree"},{"n":13,"after":[],"title":"feat: the dual of a monomorphism of line bundles is a monomorphism"},{"n":14,"after":[2,10,13],"title":"feat: the pole filtration 𝒪(m[0]) ⊆ 𝒪(n[0]) of a Weierstrass model and of an elliptic curve"},{"n":15,"after":[10],"title":"feat: a fibrewise criterion for the cokernel of a map to a finite projective module to be projective"},{"n":16,"after":[13],"title":"feat: pullback preserves inclusions of effective Cartier divisors whose inverse images are effective Cartier"},{"n":17,"after":[7,10,14,15,16],"title":"feat: the quotients of the pole filtration of a Weierstrass model are projective of rank n - m"},{"n":18,"after":[10,17],"title":"feat: the pole filtration of π_*𝒪_E(n[0]) splits locally, with π_*ℒ_0 ≅ π_*ℒ_1"},{"n":19,"after":[13],"title":"feat: multiplication of the line bundles 𝒪(aD) ⊗ 𝒪(bD) ≅ 𝒪((a + b)D) of an effective Cartier divisor"},{"n":20,"after":[14,19],"title":"feat: the multiplication maps of the pole sheaves of a Weierstrass model and of an elliptic curve"},{"n":21,"after":[],"title":"feat: swapping nested evaluations in a symmetric monoidal category"},{"n":22,"after":[19,21],"title":"feat: the pole algebra ⨁ₙ 𝒪_X(nD) of an effective Cartier divisor"},{"n":23,"after":[7,9,12],"title":"feat: π_*M is locally free of rank d for line bundles of fibre degree d on an elliptic curve"},{"n":24,"after":[23],"title":"feat: degree-one line bundles and sections of an elliptic curve"},{"n":25,"after":[18,20,22],"title":"feat: local splittings of the pole filtration of π_*𝒪_E(6[0]) and its Weierstrass relation"},{"n":26,"after":[25],"title":"feat: Weierstrass bases of the pole sheaves and their multiplication maps"},{"n":27,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26],"title":"feat: the Weierstrass-presentation theorem for pointed genus-one curves"}]}-->
 
 # Lookahead: `pole-sheaf` (ModularCurves, Layer 1C)
 
 Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f`. Status: **partial**. Splits
-1–20 are on this branch, fully proved, with no `sorry`. Two of the three clauses of the
+1–22 are on this branch, fully proved, with no `sorry`. Two of the three clauses of the
 positive-degree theorem on `E` (`R¹π_*M = 0` and base change of `π_*M`) are also proved, inside
-splits 8 and 12. Splits 21–25 are the plan for the rest of the target and are **not** on the
+splits 8 and 12. Splits 23–27 are the plan for the rest of the target and are **not** on the
 branch.
 
 History. The first round left tip `a1900430f893` with splits 1 and 2. The second round left tip
@@ -64,7 +64,7 @@ The eleventh round left tip `c77307f19d38`. The twelfth round (this one) found `
 new splits 15–18: for `0 < m ≤ n`, the image of `H⁰(𝒪(m[0]))` in `H⁰(𝒪(n[0]))` is a direct summand
 with projective quotient of rank `n - m`, on a Weierstrass model over any ring and, over every chart
 image `U`, for `Γ(U, π_*ℒ_m) ⊆ Γ(U, π_*ℒ_n)` on `E`. This settles the first bullet of the old
-split 17 (now 23), except the `m = 0` case on `E` (see split 23 below). The route differs from the one the old plan sketched:
+split 17 (now 25), except the `m = 0` case on `E` (see split 25 below). The route differs from the one the old plan sketched:
 no specified isomorphism `g^*𝒪(n[0]) ≅ 𝒪(n[0])` is needed. It is enough that the pullback of the
 inclusion along any base change is again a monomorphism, which holds because the divisors are
 relative effective Cartier (split 16), and then the field statements apply to any monomorphism
@@ -76,14 +76,14 @@ model (split 17): every section of `𝒪([0])` is constant over every ring, whic
 
 The twelfth round left tip `34752c48f0ac`. The thirteenth round (this one) merged current `main`
 (`e8758b7b2f82`, whose only change was a CI workflow) without conflicts. It then closed the `m = 0` case of
-the pole filtration on `E`, the first bullet of the old split 21 (now 23): `π_*ℒ_0 ⟶ π_*ℒ_1` is bijective
+the pole filtration on `E`, the first bullet of the old split 21 (now 25): `π_*ℒ_0 ⟶ π_*ℒ_1` is bijective
 over every chart image and hence an isomorphism. As the old plan asked, the chain of equivalences
 that split 18 used inline is now factored out first, as the semilinear equivalence
 `PointedWeierstrassChart.modelCohomologyEquiv`, so the `m > 0` and `m = 0` cases share it. The image
 computation `(modelIso.inv ≫ toTotal) ''ᵁ ⊤ = π⁻¹(U)`, which split 10 and split 18 each proved
 inline, is now the lemma `PointedWeierstrassChart.image_top_modelIso_inv_toTotal` in split 8. The
 round also proved the local splitting of the pole filtration (the second bullet of the old
-split 21, now 23): over every chart image and for `0 < m ≤ n`, `Γ(U, π_*ℒ_m)` has a complement in
+split 21, now 25): over every chart image and for `0 < m ≤ n`, `Γ(U, π_*ℒ_m)` has a complement in
 `Γ(U, π_*ℒ_n)`, from a new general lemma, a submodule with projective quotient is complemented.
 These changes enlarge splits 8 and 18 and do not renumber any split.
 
@@ -97,14 +97,24 @@ sections by `(φ ψ)(t s) = φ(s) ψ(t)` and compatible with the inclusions `�
 specialises it to `𝒪(n[0])` on a Weierstrass model and to `ℒ_n` on `E`, compatibly with the pole
 filtration of split 14. The old splits 19–23 are renumbered 21–25.
 
+The fourteenth round left tip `458c0088540e`. The fifteenth round (this one) found `main`
+unchanged (`e8758b7b2f82`) and both suppliers' PRs (#27087, #27128) still open. It proved the
+**algebra laws of the multiplication** of split 19, the first bullet of the old split 23 (now 25),
+and assembled the graded commutative algebra `⨁ₙ 𝒪_X(nD)` of an effective Cartier divisor as a
+`GradedQuasicoherentAlgebra` on `main`'s API, as two new splits 21 and 22. Split 21 is a general
+lemma about symmetric monoidal categories (swapping two nested evaluations to the unit), which
+commutativity needs. Split 22 proves unit, associativity and commutativity by evaluating against
+the powers of `I` and reducing to the laws of the multiplication of ideal sheaves, which are
+those of `𝒪_X`. The old splits 21–25 are renumbered 23–27.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
 consumes neither supplier:
 
 - `relative-cartier-divisor` (open PR #27087, the geometric-fibre criterion of 0A item 1;
-  re-checked again in the twelfth, thirteenth and fourteenth rounds on 2026-11-05, still open and
-  still unused by splits 1–20).
+  re-checked again in the twelfth to fifteenth rounds on 2026-11-05, still open and
+  still unused by splits 1–22).
   `Suggested.lean` pins no declaration for it. Its §Finite flat group schemes says the carrier
   "is supplied once by the Jacobian Challenge", and the file "deliberately introduces no
   substitute". PR #27087 adds
@@ -114,18 +124,18 @@ consumes neither supplier:
   `Scheme.Hom.isRelativeEffectiveCartier_ker_of_smoothOfRelativeDimension` on `main`, and sums
   and base change are on `main` too. Splits 16–18 need only that `m[0]` and `n[0]` pull back to
   effective Cartier divisors along base changes of the model, which `main`'s
-  `zeroSectionDivisor_pow_map` and split 2 give. The fibre criterion first enters at split 22,
+  `zeroSectionDivisor_pow_map` and split 2 give. The fibre criterion first enters at split 24,
   where the zero divisor of the evaluation section must be shown relative effective Cartier on geometric
   fibres.
 - `polarised-descent` (open PR #27128, descent of stable opens; re-checked on 2026-11-05, still
-  open; re-checked again in the twelfth, thirteenth and fourteenth rounds). `Suggested.lean` pins no
-  declaration for it either. It first enters at split 22, for the fppf-descent compatibility of
-  the degree-one divisor–section correspondence. It may also enter at split 25, if the
+  open; re-checked again in the twelfth to fifteenth rounds). `Suggested.lean` pins no
+  declaration for it either. It first enters at split 24, for the fppf-descent compatibility of
+  the degree-one divisor–section correspondence. It may also enter at split 27, if the
   presentation is descended rather than built Zariski-locally.
 
 Neither supplier's statement was restated, so there are no differences to record.
 
-## What is proved (splits 1–20)
+## What is proved (splits 1–22)
 
 ### Split 1 — after: none
 
@@ -773,9 +783,61 @@ Neither supplier is used. About 190 lines.
   lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`: the same four declarations for
   `ℒ_n = 𝒪_E(n[0])` on an elliptic curve `E` over any scheme.
 
-## What remains (splits 21–25, not on this branch)
+### Split 21 — after: none
 
-21. **(after 7, 9, 12)** The remaining clause of the positive-degree theorem on `E`: for an
+PR subject: `feat: swapping nested evaluations in a symmetric monoidal category`
+
+Neither supplier is used. About 115 lines; depends only on Mathlib.
+
+- `TauCeti/CategoryTheory/Monoidal/Braided/Evaluation.lean` (new, 114 lines), namespace `TauCeti`:
+  - `whiskerLeft_whiskerLeft_comp_evaluate` (any monoidal category, `@[reassoc]`): a morphism on
+    the outer factor commutes past an evaluation `f : A ⊗ B ⟶ 𝟙` of the inner factors;
+  - in a symmetric monoidal category, `nestedEvaluation_eq_tensorHom`: the nested evaluation
+    `(B ⊗ A) ⊗ (A' ⊗ B') ⟶ 𝟙`, `f : A ⊗ A' ⟶ 𝟙` inside and `g : B ⊗ B' ⟶ 𝟙` outside, is
+    `g ⊗ f` after moving `B'` past `A ⊗ A'`;
+  - `nestedEvaluation_braiding` (`@[reassoc]`): the braided structural identity relating the two
+    rearrangements, proved by the hexagon expansions, cancelling inverse crossings by symmetry,
+    and `monoidal`;
+  - `braiding_tensorHom_braiding_comp_nestedEvaluation`: **braiding `B` past `A` and `A'` past `B'`
+    exchanges the roles of `f` and `g` in the nested evaluation.** This is the shape of the
+    evaluation formula of split 19 (`whiskerLeft_dualPowMulIso_hom_comp_ev`), so it is the
+    commutativity input of split 22. The neighbouring `Braided/Basic.lean` on `main` holds the
+    braided (not symmetric) moves of morphisms to the unit; the port may merge the two files.
+
+### Split 22 — after: 19, 21
+
+PR subject: `feat: the pole algebra ⨁ₙ 𝒪_X(nD) of an effective Cartier divisor`
+
+Neither supplier is used. About 330 lines.
+
+- `TauCeti/AlgebraicGeometry/EffectiveCartierDivisor/PoleAlgebra.lean` (new, 324 lines):
+  - `Scheme.IdealSheafData.poleComponent I n := 𝓗om(Iⁿ, 𝒪_X)` (`abbrev`), the named family the
+    graded algebra is built from.
+  - namespace `Scheme.IdealSheafData.IsEffectiveCartier`, for `hI : I.IsEffectiveCartier`:
+    - laws of the multiplication `powTensorIso hI a b : I^b ⊗ I^a ≅ I^(a + b)` of split 19:
+      `whiskerLeft_powTensorIso_hom_comp_powTensorIso_hom`, its inverse form
+      `powTensorIso_inv_whiskerLeft_powTensorIso_inv`, and `braiding_powTensorIso_hom`
+      (`main`'s `IdealSheaf/ReesAlgebra.lean` proves the same laws privately for `reesMul`; the
+      port may share them);
+    - `poleMul hI a b : 𝒪_X(aD) ⊗ 𝒪_X(bD) ⟶ 𝒪_X((a + b)D)` (the `hom` of `dualPowMulIso`) and
+      `poleOne : 𝒪_X ⟶ 𝒪_X(0D)` (the curried `I⁰ ⊗ 𝒪_X ≅ I⁰ ⊆ 𝒪_X`);
+    - **the algebra laws** `poleOne_whiskerRight_poleMul`, `whiskerLeft_poleOne_poleMul`,
+      `poleMul_assoc` and `braiding_poleMul`, each by `uncurry_injective`, the evaluation formula
+      of split 19, and the corresponding law for ideal sheaves (commutativity also uses split 21);
+    - `isQuasicoherent_poleComponent`, and **`poleAlgebra hI : GradedQuasicoherentAlgebra X`**, the
+      graded commutative quasi-coherent algebra `⨁ₙ 𝒪_X(nD)` built with `main`'s
+      `GradedQuasicoherentAlgebra.ofHomogeneous`, with `@[simp]` `poleAlgebra_obj_X`,
+      `mul_poleAlgebra` and `one_poleAlgebra`. `main`'s `CommMon.gAlgebraSections` then gives the
+      graded ring of sections `⨁ₙ Γ(U, 𝒪_X(nD))`.
+  - Implementation notes (also in the module docstring): as for `main`'s `reesAlgebra`, the laws
+    are stated with the named family `poleComponent` and the named `poleMul`; with
+    `fun a b ↦ (dualPowMulIso hI a b).hom` the kernel times out checking `ofHomogeneous`. The
+    inclusions `Iⁿ ⟶ 𝒪_X` are read through an opaque private `ιU` with target `𝟙_ X.Modules`. The
+    module still takes about 95 s, most of it kernel checking of `poleMul_assoc` and one unit law.
+
+## What remains (splits 23–27, not on this branch)
+
+23. **(after 7, 9, 12)** The remaining clause of the positive-degree theorem on `E`: for an
     invertible `M` on `E` of degree `d > 0` on every geometric fibre, `π_*M` is locally free of
     rank `d`. The other two clauses were done in the tenth round, in splits 8
     (`isZero_higherDirectImage_one_of_forall_eulerDegree_pos`) and 12
@@ -801,24 +863,22 @@ Neither supplier is used. About 190 lines.
       `nonempty_restrict_poleSheaf_iso`; the second is `restrictFunctorIsoPullback` for general `M`.
       The `ℒ_n` statements then become corollaries through `eulerDegree_pullback_snd_poleSheaf`, as
       splits 8 and 12 already are.
-22. **(after 21)** For `d = 1`: the evaluation section has a relative effective Cartier zero
+24. **(after 23)** For `d = 1`: the evaluation section has a relative effective Cartier zero
     divisor of degree one, hence is the divisor of a unique section. Prove compatibility with
     base change and fppf descent. This needs `relative-cartier-divisor` and `polarised-descent`.
-23. **(after 18, 20)** The rest of the pole filtration of `π_*ℒ_n`. Splits 14, 17 and 18 have the
-    inclusions, their injectivity on `H⁰`, the dimension count over a field, and, over any ring
+25. **(after 18, 20, 22)** The rest of the pole filtration of `π_*ℒ_n`. Splits 14, 17 and 18 have
+    the inclusions, their injectivity on `H⁰`, the dimension count over a field, and, over any ring
     and over every chart image of `E`, the projectivity of rank `n - m` of the quotients
     `H⁰(𝒪(n[0])) ⧸ H⁰(𝒪(m[0]))` for `0 < m ≤ n`. The case `m = 0` is done too: on `E`,
     `π_*ℒ_0 ⟶ π_*ℒ_1` is an isomorphism (split 18), and the filtration splits over every chart
     image (split 18). The multiplication maps `ℒ_a ⊗ ℒ_b ≅ ℒ_(a+b)`, compatible with the
-    filtration, are split 20. What remains:
-    - The algebra laws of the multiplication: unit (`ℒ_0 ≅ 𝒪_E` and `μ_{0,b} = λ`),
-      commutativity and associativity, so that `⊕ ℒ_n` is a graded commutative algebra in
-      `X.Modules` (`main`'s `CommMon` of graded objects then gives the graded ring of sections
-      through `CommMon.gAlgebraSections`). Commutativity at the level of ideal sheaves is easy:
-      `sheafMul` composed with the braiding is `sheafMul` of the swapped factors, by `sheafMul_sheafι`
-      and `braiding_tensorUnit_left` (proved during this round but not kept, as nothing used it yet).
-      Its dual for `dualPowMulIso` needs the nested evaluation of split 19 to be compared with the
-      braided one.
+    filtration, are split 20, and their algebra laws, with the graded commutative algebra
+    `⨁ₙ 𝒪_X(nD)` of any effective Cartier divisor, are split 22. What remains:
+    - The pole algebra of `[0]` on a Weierstrass model and on `E`: `hI.poleAlgebra` for the ideal
+      sheaf of `[0]`, whose components are the pole sheaves through `poleSheaf_obj` (split 20).
+      This is a short wrapper; the pole sheaves are not definitionally `poleComponent`, so its
+      components are identified with them by the equality `poleSheaf_obj`, as
+      `dualPowMulIsoOfEq` does for the multiplication.
     - The multiplication on the graded pieces: `ℒ_a/ℒ_(a-1) ⊗ ℒ_b/ℒ_(b-1) ≅ ℒ_(a+b)/ℒ_(a+b-1)`,
       so that the leading terms of `x², xy, x³, y²` are as expected.
     - A sheaf-level form of split 18, if wanted: the cokernel of `π_*ℒ_m ⟶ π_*ℒ_n` (quasicoherent
@@ -828,10 +888,10 @@ Neither supplier is used. About 190 lines.
     - The choice of `x` and `y` in the pieces of pole order 2 and 3 (complements of the lower
       pieces exist over every chart image, split 18), the unique relation in pole order six, and
       the unit discriminant.
-24. **(after 23)** The bases `1, x, y, x², xy, x³` after a pointed Weierstrass trivialisation, the
+26. **(after 25)** The bases `1, x, y, x², xy, x³` after a pointed Weierstrass trivialisation, the
     multiplication maps (split 20) in these bases, the relation equal to the Weierstrass equation,
     and their independence of the chosen pointed equation.
-25. **(after 1–24; exported)** The Weierstrass-presentation theorem: a smooth proper genus-one
+27. **(after 1–26; exported)** The Weierstrass-presentation theorem: a smooth proper genus-one
     curve with a section is Zariski-locally pointed-isomorphic to a projective Weierstrass model,
     producing a `PointedWeierstrassAtlas`. This split completes the target.
 
@@ -841,13 +901,16 @@ dropped: `main` already has it, over affine bases
 `Scheme/VariableChange/Basic.lean`) and over arbitrary bases
 (`WeierstrassCurve.existsUnique_hom_comp_eq_comp_projModelVariableChangeIso_hom`, in
 `Scheme/VariableChange/OverScheme.lean`). The variable-change group and its action on the
-coefficients are Mathlib's `WeierstrassCurve.VariableChange`. Split 24 should check what remains
+coefficients are Mathlib's `WeierstrassCurve.VariableChange`. Split 26 should check what remains
 of the README's action on `x`, `y` and the invariant differential before adding any of it.
 
 ## Verification
 
 `lake exe cache get`, `lake build` (green, warnings as errors) and
-`/opt/round/lookahead-check` all pass. In the fourteenth round, `#lint in TauCeti` (15 linters)
+`/opt/round/lookahead-check` all pass. In the fifteenth round, `#lint in TauCeti` (15 linters)
+passes, with 0 errors in 1588 declarations, on the import closure of the two new modules of
+splits 21 and 22 (`PoleAlgebra.lean` imports `Braided/Evaluation.lean`), run from a scratch file
+outside the repository. In the fourteenth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 9793 declarations, on the import closure of the two new
 `Multiplication.lean` files of split 20, run from a scratch file outside the repository. It first
 found two `simpNF` failures, now fixed: `eqToHom_sheafι` carries `@[simp, reassoc]`, so its
