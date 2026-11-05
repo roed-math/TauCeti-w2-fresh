@@ -6,7 +6,9 @@ Authors: The Tau Ceti contributors
 module
 
 import Mathlib.AlgebraicGeometry.Sites.AffineEtale
+import TauCeti.AlgebraicGeometry.Sites.CohomologyComparison
 import TauCeti.AlgebraicGeometry.Sites.Comparison
+import TauCeti.AlgebraicGeometry.Sites.Nisnevich.Cohomology
 import TauCeti.AlgebraicGeometry.Sites.Nisnevich.Comparison
 import TauCeti.AlgebraicGeometry.Sites.SmallEtaleComparison
 
@@ -17,7 +19,9 @@ The comparison of the small étale topology with itself is the identity, the inv
 `ε⁻¹` from big étale to big fppf abelian sheaves is exact, preserves the constant sheaf `ℤ/2`,
 and commutes with base change, the inverse image from Nisnevich to étale abelian sheaves is exact
 and commutes with base change, and the inverse image `a_X⁻¹` from small étale to big fppf
-abelian sheaves is exact and preserves the constant sheaf `ℤ/2`.
+abelian sheaves is exact and preserves the constant sheaf `ℤ/2`. On cohomology, the pullback along
+`a_X` is the pullback along `π_X` followed by the pullback along `ε`, and the pullbacks from the
+Zariski site to the small Nisnevich and étale sites compose.
 -/
 
 open CategoryTheory Limits AlgebraicGeometry GrothendieckTopology Scheme
@@ -72,9 +76,6 @@ noncomputable example (X : Scheme.{u}) :
 
 -- `a_X⁻¹` is exact on abelian sheaves.
 example (X : Scheme.{u}) : PreservesFiniteLimits (aX X AddCommGrpCat.{u + 1}) :=
-  have := hasColimitsOfSizeShrink.{u, u + 1, u + 1, 0} AddCommGrpCat.{u + 1}
-  have := preservesFilteredColimitsOfSize_shrink.{u + 1, 0, u, u + 1}
-    (forget AddCommGrpCat.{u + 1})
   inferInstance
 
 -- `a_X⁻¹` commutes with base change along `Y ⟶ X` on abelian sheaves.
@@ -91,5 +92,25 @@ noncomputable example {X T : Scheme.{u}} (h : T ⟶ X)
       (((Etale.pullback h).sheafPullback AddCommGrpCat.{u + 1} _ T.smallEtaleTopology).obj
         F).obj.obj (Opposite.op (Etale.mk (𝟙 T))) :=
   piXObjIso h AddCommGrpCat.{u + 1} F
+
+-- The pullback of cohomology `Hⁿ(X_ét, F) → Hⁿ((Sch/X)_fppf, a_X⁻¹ F)` along `a_X` is the
+-- pullback along `π_X` followed by the pullback along `ε`.
+example (X : Scheme.{u}) [HasExt.{u + 1} (Sheaf X.smallEtaleTopology AddCommGrpCat.{u + 1})]
+    [HasExt.{u + 1} (Sheaf (etaleTopology.over X) AddCommGrpCat.{u + 1})]
+    [HasExt.{u + 1} (Sheaf (fppfTopology.over X) AddCommGrpCat.{u + 1})]
+    (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{u + 1}) (n : ℕ) (x : F.H n) :
+    aXH X F n x =
+      epsilonFppfEtaleH X ((piX X AddCommGrpCat.{u + 1}).obj F) n (piXH X F n x) :=
+  aXH_apply X F n x
+
+-- The pullback of cohomology from the Zariski site to the small Nisnevich site, followed by the
+-- pullback to the small étale site.
+noncomputable example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}]
+    [HasExt.{u} (Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u})]
+    [HasExt.{u} (Sheaf X.smallNisnevichTopology AddCommGrpCat.{u})]
+    [HasExt.{u} (Sheaf X.smallEtaleTopology AddCommGrpCat.{u})]
+    (F : Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u}) (n : ℕ) :
+    F.H n →+ ((etaleToNisnevich X _).obj ((nisnevichToZariski X _).obj F)).H n :=
+  (etaleToNisnevichH X _ n).comp (nisnevichToZariskiH X F n)
 
 end TauCeti.Examples

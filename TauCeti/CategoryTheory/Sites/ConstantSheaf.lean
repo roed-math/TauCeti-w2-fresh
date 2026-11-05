@@ -165,6 +165,16 @@ def constantSheafCompSheafPullbackIso [u.Final] :
   NatIso.ofComponents (u.sheafPullbackConstantSheafIso A J K)
     (sheafPullbackConstantSheafHom_naturality u A J K)
 
+/-- The components of `constantSheafCompSheafPullbackIso` are `sheafPullbackConstantSheafIso`. -/
+@[simp]
+lemma constantSheafCompSheafPullbackIso_inv_app [u.Final] (X : A) :
+    (u.constantSheafCompSheafPullbackIso A J K).inv.app X =
+      (u.sheafPullbackConstantSheafIso A J K X).inv := by
+  -- Rewriting with `NatIso.ofComponents_inv_app` tries to discharge its naturality auto-parameter
+  -- by `aesop`, which fails here; the components agree by definition.
+  rw [constantSheafCompSheafPullbackIso]
+  rfl
+
 end
 
 end CategoryTheory.Functor

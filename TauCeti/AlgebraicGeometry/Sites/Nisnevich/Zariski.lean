@@ -100,13 +100,13 @@ variable (A : Type w) [Category.{w'} A] [HasWeakSheafify X.smallNisnevichTopolog
 /-- The inverse image of the morphism of topoi from the small Nisnevich site to the Zariski site
 of `X`: the pullback of sheaves along `X.restrictEtaleFunctor`, the Nisnevich sheafification of
 the left Kan extension of a Zariski sheaf. -/
-noncomputable def nisnevichToZariski :
+@[expose] noncomputable def nisnevichToZariski :
     Sheaf (Opens.grothendieckTopology X) A ⥤ Sheaf X.smallNisnevichTopology A :=
   X.restrictEtaleFunctor.sheafPullback A _ _
 
 /-- The inverse image from Zariski sheaves to Nisnevich sheaves is left adjoint to the direct
 image, which restricts a Nisnevich sheaf to the open subschemes of `X`. -/
-noncomputable def nisnevichToZariskiAdjunction :
+@[expose] noncomputable def nisnevichToZariskiAdjunction :
     nisnevichToZariski X A ⊣
       X.restrictEtaleFunctor.sheafPushforwardContinuous A _ X.smallNisnevichTopology :=
   X.restrictEtaleFunctor.sheafAdjunctionContinuous A _ _
@@ -119,8 +119,15 @@ the constant Nisnevich sheaf. -/
 noncomputable def constantSheafCompNisnevichToZariskiIso
     [HasWeakSheafify (Opens.grothendieckTopology X) A] :
     constantSheaf _ A ⋙ nisnevichToZariski X A ≅ constantSheaf _ A :=
-  have := final_of_representablyFlat X.restrictEtaleFunctor
   X.restrictEtaleFunctor.constantSheafCompSheafPullbackIso A _ _
+
+/-- The comparison `M_Nis ⟶ (M_Zar)^Nis` of constant sheaves is the comparison of constant sheaves
+for the pullback along `X.restrictEtaleFunctor`. -/
+lemma constantSheafCompNisnevichToZariskiIso_inv_app
+    [HasWeakSheafify (Opens.grothendieckTopology X) A] (M : A) :
+    (constantSheafCompNisnevichToZariskiIso X A).inv.app M =
+      (X.restrictEtaleFunctor.sheafPullbackConstantSheafIso A _ _ M).inv := by
+  rw [constantSheafCompNisnevichToZariskiIso, Functor.constantSheafCompSheafPullbackIso_inv_app]
 
 /-- **Composition of the comparison morphisms**: the inverse image from Zariski sheaves to
 Nisnevich sheaves followed by the inverse image from Nisnevich sheaves to étale sheaves is the

@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4,5],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
 
 # Lookahead: `epsilon-fppf-etale` (SchemeAndStackFoundations §2.10)
 
@@ -14,7 +14,13 @@ this session), `etaleToNisnevich` (`etaleToNisnevichBaseChangeIso`) and `nisnevi
 (`nisnevichToZariskiBaseChangeIso`), the small-site ones through the base change functor
 `Etale.pullback g : X.Etale ⥤ Y.Etale`. New this session as well: `π_X⁻¹` is fully faithful
 (`fullyFaithfulPiX`), and the big-étale half of `aX_inverseImage_obj`, `piXObjIso`:
-`π_X⁻¹ F (T) ≅ Γ(T_ét, h⁻¹ F)` for `h : T ⟶ X`. The roadmap checks `test_comparison_id` and
+`π_X⁻¹ F (T) ≅ Γ(T_ét, h⁻¹ F)` for `h : T ⟶ X`. New in the third session: the pullback maps on
+sheaf cohomology along every comparison morphism (`epsilonFppfEtaleH`, `piXH`, `aXH`,
+`etaleToNisnevichH`, `nisnevichToZariskiH`, through `main`'s `CategoryTheory.Sheaf.H.pullback`),
+which are the maps the remaining comparison theorems assert to be bijective; `comparison_comp` on
+cohomology for `a_X` (`aXH_apply`: the pullback along `a_X` is the pullback along `π_X` followed by
+the pullback along `ε`); and the degree-zero descriptions as restriction of global sections
+(`equiv₀_piXH`, `equiv₀_nisnevichToZariskiH`). The roadmap checks `test_comparison_id` and
 `test_aX_constant` (for `aX` itself) are in the examples file. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
@@ -188,9 +194,10 @@ Needs first: splits 1, 2 and 4. Uses no supplier. `Roadmap: SchemeAndStackFounda
 
 Files:
 
-- `TauCeti/CategoryTheory/Sites/ConstantSheaf.lean` (existing, +9 lines): the natural isomorphism
+- `TauCeti/CategoryTheory/Sites/ConstantSheaf.lean` (existing, +19 lines): the natural isomorphism
   `Functor.constantSheafCompSheafPullbackIso` (for `u` final) built from the existing pointwise
-  `sheafPullbackConstantSheafIso` and its naturality.
+  `sheafPullbackConstantSheafIso` and its naturality, and the simp lemma
+  `constantSheafCompSheafPullbackIso_inv_app` giving its components.
 - `TauCeti/CategoryTheory/Sites/PullbackFullyFaithful.lean` (72 lines, new), namespace
   `CategoryTheory.Functor`: for `G` fully faithful, continuous and cocontinuous (with pointwise
   left and right Kan extensions along `G.op`), `sheafPullbackCompSheafPushforwardContinuousIso :
@@ -198,20 +205,24 @@ Files:
   through Mathlib's `pushforwardContinuousSheafificationCompatibility`, and the left Kan extension
   along a fully faithful functor restricts back through `lanUnit`), `fullyFaithfulSheafPullback`
   and the `Full`/`Faithful` instances.
-- `TauCeti/AlgebraicGeometry/Sites/SmallEtaleComparison.lean` (268 lines, new), namespace
-  `AlgebraicGeometry.Scheme`: `coverPreserving_etaleForget`, the `RepresentablyFlat`,
+- `TauCeti/AlgebraicGeometry/Sites/SmallEtaleComparison.lean` (298 lines, new), namespace
+  `AlgebraicGeometry.Scheme`: `coverPreserving_etaleForget`, the `RepresentablyFlat`, `Final`,
   `IsContinuous` and `IsCocontinuous` instances for `Etale.forget X`, `piX X A`
-  (`Functor.sheafPullback` along `Etale.forget X`) with `piXAdjunction`, `IsLeftAdjoint` and
-  `constantSheafCompPiXIso`; `aX X A := piX X A ⋙ epsilonFppfEtale X A` with `aXAdjunction`,
-  `IsLeftAdjoint` and `constantSheafCompAXIso`; base change along `g : Y ⟶ X`:
+  (`Functor.sheafPullback` along `Etale.forget X`) with `piXAdjunction`, `IsLeftAdjoint`,
+  `constantSheafCompPiXIso` and `constantSheafCompPiXIso_inv_app`; `aX X A := piX X A ⋙
+  epsilonFppfEtale X A` with `aXAdjunction`, `IsLeftAdjoint`, `constantSheafCompAXIso` and
+  `constantSheafCompAXIso_inv_app`; `piX`, `piXAdjunction` and `aX` carry `@[expose]`, because the
+  cohomology files must unfold them to apply the `Functor.sheafPullback` and composite-functor API
+  (in particular `Sheaf.H.equiv₀_pullback_sheafPullback` and `Sheaf.H.pullback_comp_apply`); base change along `g : Y ⟶ X`:
   `piXDirectImageBaseChangeIso` (the direct images, from `Etale.pullbackCompForgetIso`),
   `piXBaseChangeIso` (its conjugate through `Over.mapPullbackAdj g`) and `aXBaseChangeIso`
   (composed with `epsilonFppfEtaleBaseChangeIso`); `piXObjIso` (`π_X⁻¹ F (T) ≅ Γ(T_ét, h⁻¹ F)`,
   from `piXBaseChangeIso h` at `𝟙 T` and the fully faithful restriction); `fullyFaithfulPiX` with
-  `Full`/`Faithful` instances; and `PreservesFiniteLimits` instances for `piX` and `aX` for
-  concrete coefficients with sections in `Type (u + 1)` (through split 2).
+  `Full`/`Faithful` instances; and `PreservesFiniteLimits` instances: for `piX` with concrete
+  coefficients with sections in `Type (u + 1)` (through split 2), in particular for
+  `AddCommGrpCat.{u + 1}`, and for `aX` whenever `piX` is exact.
 
-About 350 lines.
+About 380 lines.
 
 ### Split 4: `feat: base change of the small étale site`
 
@@ -226,26 +237,50 @@ Files:
   `_obj_left`, `_obj_hom`, `_map_left` (simp lemmas), `Etale.isPullback_pullback_map_left`,
   `Etale.pullbackCompForgetIso`, the `PreservesFiniteLimits` and `RepresentablyFlat` instances,
   `coverPreserving_etalePullback` and the `IsContinuous` instance for the small étale topologies.
-- `TauCeti/AlgebraicGeometry/Sites/OpensEtale.lean` (127 lines, new; moved here from the previous
+- `TauCeti/AlgebraicGeometry/Sites/OpensEtale.lean` (140 lines, new; moved here from the previous
   plan's last split, it uses no supplier), namespace `AlgebraicGeometry.Scheme`:
   `restrictEtaleFunctor X : X.Opens ⥤ X.Etale` with `_obj_hom`/`_map_left`,
   `restrictEtaleFunctor_hom_ext`, `Etale.liftOpens` and `Etale.liftOpens_ι`,
-  `restrictEtaleFunctorLift`, `range_subset_of_hom_restrictEtaleFunctor_obj`, the
-  `RepresentablyFlat` instance, and `restrictEtaleFunctorCompEtalePullbackIso` (`U ×ₓ Y ≅ g ⁻¹ᵁ U`
+  `restrictEtaleFunctorLift`, `isTerminalRestrictEtaleFunctorObjTop` (the open subscheme `X` is
+  terminal in `X.Etale`), `range_subset_of_hom_restrictEtaleFunctor_obj`, the `RepresentablyFlat`
+  and `Final` instances, and `restrictEtaleFunctorCompEtalePullbackIso` (`U ×ₓ Y ≅ g ⁻¹ᵁ U`
   as schemes étale over `Y`, naturally in `U`).
 
-About 245 lines.
+About 260 lines.
 
-### Split 5: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
+### Split 5: `feat: pullback of cohomology along the comparison morphisms from the big fppf site`
 
-Needs first: splits 1, 2, 3 and 4, and supplier PR #28094 on `main`. This is the last split of the
-current plan and the only one that uses the supplier.
+Needs first: splits 1, 2, 3 and 4. Uses no supplier. `Roadmap: SchemeAndStackFoundations`
+(§2.10: the cohomology maps of `quasiCoherent_topology_comparison`,
+`etale_pullback_fppf_comparison` and `smoothGroup_fppf_etale_comparison`; uses §2.1's
+`Sheaf.H.pullback`, already on `main`).
+
+Files:
+
+- `TauCeti/AlgebraicGeometry/Sites/CohomologyComparison.lean` (148 lines, new), namespace
+  `AlgebraicGeometry.Scheme`: the `Additive` instances for `epsilonFppfEtale`, `piX` and `aX` on
+  abelian sheaves; `epsilonFppfEtaleH X F n : Hⁿ((Sch/X)_ét, F) →+ Hⁿ((Sch/X)_fppf, ε⁻¹ F)`,
+  `piXH X F n : Hⁿ(X_ét, F) →+ Hⁿ((Sch/X)_ét, π_X⁻¹ F)` and
+  `aXH X F n : Hⁿ(X_ét, F) →+ Hⁿ((Sch/X)_fppf, a_X⁻¹ F)` (each `Sheaf.H.pullback` with the
+  inverse of the constant-sheaf comparison); `equiv₀_piXH` (in degree zero, `piXH` is the
+  restriction of global sections along the unit of `π_X⁻¹ ⊣ π_{X,*}`, from `main`'s
+  `Sheaf.H.equiv₀_pullback_sheafPullback`); `aXH_apply` (`comparison_comp` on cohomology:
+  `aXH = epsilonFppfEtaleH ∘ piXH`, from `Sheaf.H.pullback_comp_apply`). The coefficient universe
+  is arbitrary, with `HasExt` and the exactness of `π_X⁻¹` as instance hypotheses (the latter an
+  instance for `w = u + 1`).
+
+About 150 lines.
+
+### Split 6: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
+
+Needs first: splits 1, 2, 3, 4 and 5, and supplier PR #28094 on `main`. This is the last split of
+the current plan and the only one that uses the supplier.
 
 `Roadmap: SchemeAndStackFoundations` (§2.10 `etaleToNisnevich`, `nisnevichToZariski`,
 `comparison_comp`, `comparison_baseChange`; §2.12 `smallNisnevich_comparison`).
 
-Port steps: delete `TauCeti/Lookahead/EpsilonFppfEtale/Stubs.lean`, and in both Nisnevich files
-replace its import with `public import TauCeti.AlgebraicGeometry.Sites.Nisnevich.Basic`.
+Port steps: delete `TauCeti/Lookahead/EpsilonFppfEtale/Stubs.lean`, and in the Nisnevich files
+`Comparison.lean` and `Zariski.lean` replace its import with `public import TauCeti.AlgebraicGeometry.Sites.Nisnevich.Basic`.
 
 Files:
 
@@ -256,24 +291,34 @@ Files:
   through the stubbed `IsNisnevichCovering.of_isPullback`) with its `IsContinuous` instance, and
   `etaleToNisnevichBaseChangeIso` (`comparison_baseChange`, through split 1's
   `sheafInverseImageCompSheafPullbackIso`).
-- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Zariski.lean` (180 lines, new):
+- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Zariski.lean` (187 lines, new):
   `coverPreserving_restrictEtaleFunctor` (Zariski coverings are Nisnevich coverings) and the
   `IsContinuous` instance, `coverPreserving_restrictEtaleFunctor_smallEtaleTopology` and its
   `IsContinuous` instance, `nisnevichToZariski X A` (`Functor.sheafPullback` along
   `restrictEtaleFunctor`) with `nisnevichToZariskiAdjunction`, `IsLeftAdjoint`,
-  `constantSheafCompNisnevichToZariskiIso`, `nisnevichToZariskiCompEtaleToNisnevichIso`
+  `constantSheafCompNisnevichToZariskiIso` with `constantSheafCompNisnevichToZariskiIso_inv_app`
+  (`nisnevichToZariski` and its adjunction carry `@[expose]`, as for `piX`),
+  `nisnevichToZariskiCompEtaleToNisnevichIso`
   (`comparison_comp`: Zariski→Nisnevich→étale is the pullback from Zariski to étale sheaves),
   `nisnevichToZariskiBaseChangeIso` (`comparison_baseChange`: compatibility with the pullbacks
   along `Opens.map g.base` and `Etale.pullback g`, the conjugate of
   `restrictEtaleFunctorCompEtalePullbackIso`) and the `PreservesFiniteLimits` instance (through
   split 2).
-- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (95 lines, new): the roadmap checks
+- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Cohomology.lean` (110 lines, new): the `Additive`
+  instances for `etaleToNisnevich` and `nisnevichToZariski` on abelian sheaves,
+  `etaleToNisnevichH X F n : Hⁿ(X_Nis, F) →+ Hⁿ(X_ét, F^ét)`,
+  `nisnevichToZariskiH X F n : Hⁿ(X_Zar, F) →+ Hⁿ(X_Nis, F^Nis)` and
+  `equiv₀_nisnevichToZariskiH` (degree zero: restriction of global sections, at the terminal
+  objects `⊤` and `isTerminalRestrictEtaleFunctorObjTop`).
+- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (116 lines, new): the roadmap checks
   `test_comparison_id` and `test_aX_constant` (`a_X⁻¹` of the constant sheaf `ℤ/2` is the constant
   fppf sheaf `ℤ/2`), the same for `ε⁻¹`, exactness of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on
   abelian sheaves, base change of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on abelian sheaves, and
-  `piXObjIso` on abelian sheaves.
+  `piXObjIso` on abelian sheaves; on cohomology, `aXH_apply` for `AddCommGrpCat.{u + 1}` (all
+  hypotheses but `HasExt` discharged) and the composite of `nisnevichToZariskiH` and
+  `etaleToNisnevichH` for `AddCommGrpCat.{u}`.
 
-About 395 lines.
+About 535 lines.
 
 ## What remains (status `partial`)
 
@@ -285,10 +330,18 @@ Still unproved from §2.10:
    descent for the sheaf `T ↦ Γ(T_ét, h⁻¹ F)`, which in the Stacks Project goes through descent of
    étale morphisms (or algebraic spaces) along fppf coverings; nothing in Mathlib or on `main`
    supplies it yet, and no listed supplier pins it.
-2. *(done this session)* `comparison_baseChange` for `piX` and `aX`.
+2. *(done in the second session)* `comparison_baseChange` for `piX` and `aX`. *(Done in the third
+   session)* the cohomology maps along every comparison morphism, which the comparison theorems
+   below assert to be bijective (split 5 and split 6). Not done: identifying the composite of
+   `nisnevichToZariskiH` and `etaleToNisnevichH` with the pullback along
+   `X.restrictEtaleFunctor.sheafPullback` from the Zariski to the étale site; it needs the
+   compatibility of the constant-sheaf comparisons with `nisnevichToZariskiCompEtaleToNisnevichIso`
+   (a `leftAdjointUniq` chase) and a naturality lemma for `Sheaf.H.pullback` in the exact functor
+   (via Mathlib's `Ext.mapExactFunctor_comp_mk₀_natTransApp`, which proves it in three rewrites).
 3. **`quasiCoherent_topology_comparison`** (`H^q(X_Zar, F) = H^q(X_ét, F^a) = H^q(X_fppf, F^a)`,
    Stacks 35.9.3). It needs `big-sheaf` (#27307), `qcoh-higher-direct-image-vanishing` (#27295)
-   and `Sheaf.H.pullback` (on `main`) along `ε⁻¹` and `a_X⁻¹`. A practical obstacle: `HasExt`
+   and the cohomology maps of split 5. It is the statement that `nisnevichToZariskiH`,
+   `etaleToNisnevichH`, `piXH` and `epsilonFppfEtaleH` are bijective on `F^a`. A practical obstacle: `HasExt`
    for `Sheaf X.smallEtaleTopology AddCommGrpCat.{u}` and for the big fppf site currently times
    out in instance synthesis at the default heartbeats; the cohomology API on `main`
    (`TauCeti/CategoryTheory/Sites/SheafCohomology/`) takes `HasExt` as a hypothesis, so the

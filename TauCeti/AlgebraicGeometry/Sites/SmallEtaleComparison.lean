@@ -74,6 +74,10 @@ since it preserves finite limits. -/
 instance : RepresentablyFlat (Etale.forget X) :=
   flat_of_preservesFiniteLimits _
 
+/-- The inclusion of the small étale site of `X` into its big étale site is final. -/
+instance : (Etale.forget X).Final :=
+  final_of_representablyFlat _
+
 /-- The inclusion of the small étale site of `X` into its big étale site is continuous. -/
 instance : (Etale.forget X).IsContinuous X.smallEtaleTopology (etaleTopology.over X) :=
   Functor.isContinuous_iff_coverPreserving.mpr (coverPreserving_etaleForget X)
@@ -99,12 +103,12 @@ variable [HasWeakSheafify (etaleTopology.over X) A]
 
 /-- The inverse image of the morphism of topoi `π_X` from the big étale site to the small étale
 site of `X`: the pullback of sheaves along the inclusion `X.Etale ⥤ Over X`. -/
-noncomputable def piX : Sheaf X.smallEtaleTopology A ⥤ Sheaf (etaleTopology.over X) A :=
+@[expose] noncomputable def piX : Sheaf X.smallEtaleTopology A ⥤ Sheaf (etaleTopology.over X) A :=
   (Etale.forget X).sheafPullback A _ _
 
 /-- The inverse image `π_X⁻¹` is left adjoint to the direct image, which restricts a sheaf on the
 big étale site to the small étale site. -/
-noncomputable def piXAdjunction :
+@[expose] noncomputable def piXAdjunction :
     piX X A ⊣ (Etale.forget X).sheafPushforwardContinuous A _ (etaleTopology.over X) :=
   (Etale.forget X).sheafAdjunctionContinuous A _ _
 
@@ -116,8 +120,14 @@ instance : (piX X A).IsLeftAdjoint :=
 sheaf on the big étale site. -/
 noncomputable def constantSheafCompPiXIso [HasWeakSheafify X.smallEtaleTopology A] :
     constantSheaf _ A ⋙ piX X A ≅ constantSheaf _ A :=
-  have := final_of_representablyFlat (Etale.forget X)
   (Etale.forget X).constantSheafCompSheafPullbackIso A _ _
+
+/-- The comparison `M_big ⟶ π_X⁻¹ M_small` of constant sheaves is the comparison of constant
+sheaves for the pullback along `Etale.forget X`. -/
+lemma constantSheafCompPiXIso_inv_app [HasWeakSheafify X.smallEtaleTopology A] (M : A) :
+    (constantSheafCompPiXIso X A).inv.app M =
+      ((Etale.forget X).sheafPullbackConstantSheafIso A _ _ M).inv := by
+  rw [constantSheafCompPiXIso, Functor.constantSheafCompSheafPullbackIso_inv_app]
 
 end Etale
 
@@ -125,7 +135,7 @@ variable [HasWeakSheafify (etaleTopology.over X) A] [HasWeakSheafify (fppfTopolo
 
 /-- The inverse image of the morphism of topoi `a_X` from the big fppf site to the small étale
 site of `X`: the composite of `π_X⁻¹` and `ε⁻¹`. Stacks, Section 59.100 (0DDK). -/
-noncomputable def aX : Sheaf X.smallEtaleTopology A ⥤ Sheaf (fppfTopology.over X) A :=
+@[expose] noncomputable def aX : Sheaf X.smallEtaleTopology A ⥤ Sheaf (fppfTopology.over X) A :=
   piX X A ⋙ epsilonFppfEtale X A
 
 /-- The inverse image `a_X⁻¹` is left adjoint to the direct image, which regards a sheaf on the big
@@ -145,6 +155,22 @@ noncomputable def constantSheafCompAXIso [HasWeakSheafify X.smallEtaleTopology A
     constantSheaf _ A ⋙ aX X A ≅ constantSheaf _ A :=
   (Functor.associator _ _ _).symm ≪≫ Functor.isoWhiskerRight (constantSheafCompPiXIso X A) _ ≪≫
     constantSheafCompEpsilonFppfEtaleIso X A
+
+/-- The comparison `M_fppf ⟶ a_X⁻¹ M_ét` of constant sheaves is the comparison for `ε` followed by
+`ε⁻¹` of the comparison for `π_X`. -/
+lemma constantSheafCompAXIso_inv_app [HasWeakSheafify X.smallEtaleTopology A] (M : A) :
+    (constantSheafCompAXIso X A).inv.app M =
+      (constantSheafCompEpsilonFppfEtaleIso X A).inv.app M ≫
+        (epsilonFppfEtale X A).map ((constantSheafCompPiXIso X A).inv.app M) := by
+  -- `simp` does not unfold `Iso.trans` here; the components of the associator are identities, so
+  -- the composite reduces to the right-hand side followed by an identity.
+  exact Category.comp_id _
+
+/-- The inverse image `a_X⁻¹` is exact if `π_X⁻¹` is. -/
+instance [HasFiniteLimits A] [HasSheafify (fppfTopology.over X) A]
+    [PreservesFiniteLimits (piX X A)] : PreservesFiniteLimits (aX X A) := by
+  dsimp only [aX]
+  infer_instance
 
 end
 
@@ -260,11 +286,13 @@ instance : PreservesFiniteLimits (piX X A) := by
   dsimp only [piX]
   infer_instance
 
-/-- The inverse image `a_X⁻¹` is exact. -/
-instance [HasSheafify (fppfTopology.over X) A] : PreservesFiniteLimits (aX X A) := by
-  dsimp only [aX]
-  infer_instance
-
 end Exact
+
+/-- The inverse image `π_X⁻¹` on abelian sheaves with sections in `Type (u + 1)` is exact. -/
+instance : PreservesFiniteLimits (piX X AddCommGrpCat.{u + 1}) :=
+  have := hasColimitsOfSizeShrink.{u, u + 1, u + 1, 0} AddCommGrpCat.{u + 1}
+  have := preservesFilteredColimitsOfSize_shrink.{u + 1, 0, u, u + 1}
+    (CategoryTheory.forget AddCommGrpCat.{u + 1})
+  inferInstance
 
 end AlgebraicGeometry.Scheme

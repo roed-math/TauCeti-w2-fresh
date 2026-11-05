@@ -27,6 +27,8 @@ site.
   `AlgebraicGeometry.Scheme.range_subset_of_hom_restrictEtaleFunctor_obj`: an étale `X`-scheme maps
   to the open subscheme `U` exactly when its image lies in `U`.
 * `AlgebraicGeometry.Scheme.restrictEtaleFunctor_hom_ext`: such a map is unique.
+* `AlgebraicGeometry.Scheme.isTerminalRestrictEtaleFunctorObjTop`: the open subscheme `X` is a
+  terminal object of the small étale site.
 * The `RepresentablyFlat` instance for `X.restrictEtaleFunctor`.
 * `AlgebraicGeometry.Scheme.restrictEtaleFunctorCompEtalePullbackIso`: compatibility with base
   change.
@@ -84,6 +86,13 @@ noncomputable def restrictEtaleFunctorLift {V : X.Etale} {U : X.Opens}
     (h : Set.range (V.left ↘ X) ⊆ U) : V ⟶ X.restrictEtaleFunctor.obj U :=
   MorphismProperty.Over.homMk (Etale.liftOpens h) (Etale.liftOpens_ι h)
 
+variable (X) in
+/-- The open subscheme `X` itself is a terminal object of the small étale site. -/
+noncomputable def isTerminalRestrictEtaleFunctorObjTop :
+    IsTerminal (X.restrictEtaleFunctor.obj ⊤) :=
+  IsTerminal.ofUniqueHom (fun _ ↦ restrictEtaleFunctorLift (by simp))
+    fun _ _ ↦ restrictEtaleFunctor_hom_ext _ _
+
 /-- The image of an étale `X`-scheme mapping to an open subscheme `U` lies in `U`. -/
 lemma range_subset_of_hom_restrictEtaleFunctor_obj {V : X.Etale} {U : X.Opens}
     (f : V ⟶ X.restrictEtaleFunctor.obj U) : Set.range (V.left ↘ X) ⊆ U := by
@@ -112,6 +121,10 @@ instance : RepresentablyFlat X.restrictEtaleFunctor where
           rw [Category.id_comp, Category.id_comp]
           ext
           exact Subsingleton.elim _ _⟩ }
+
+/-- The functor from open subsets of `X` to schemes étale over `X` is final. -/
+instance : X.restrictEtaleFunctor.Final :=
+  final_of_representablyFlat _
 
 /-- Base change of open subschemes: for `g : Y ⟶ X` and an open subset `U` of `X`, the base change
 `U ×ₓ Y` of the open subscheme `U` is the open subscheme `g ⁻¹ᵁ U` of `Y`. -/
