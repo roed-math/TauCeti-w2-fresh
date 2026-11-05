@@ -5,12 +5,26 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import TauCeti.AlgebraicGeometry.Chow.ClosedImmersion
 public import TauCeti.AlgebraicGeometry.Chow.PrincipalPushforward
+import TauCeti.AlgebraicGeometry.Chow.PrincipalVanishing
 import TauCeti.AlgebraicGeometry.Morphisms.ClosedImmersion.Basic
 import TauCeti.Lookahead.ChowProperPushforward.Stubs
 
 /-!
-# Proper pushforward of rational equivalences
+# Proper pushforward of Chow groups
+
+Let `k` be a field and `f : X ⟶ Y` a proper morphism over `k` of schemes locally of finite type
+over `k`. Mathlib's pushforward of cycles with residue-degree weights,
+`f_*[V] = [K(V) : K(f(V))] [f(V)]` when `dim f(V) = dim V` and `0` otherwise (`Chow.cyclesMap`),
+preserves rational equivalence (Fulton, *Intersection Theory*, Theorem 1.4), so it descends to
+the proper pushforward `f_* : CH_n(X) →+ CH_n(Y)` of Chow groups
+(`Chow.ChowGroup.properPushforward`), with `(g ∘ f)_* = g_* ∘ f_*`. For `X` proper over `k`, the
+degree of zero-cycles descends to `deg : CH_0(X) →+ ℤ` (`Chow.ChowGroup.degree`), and
+`deg ∘ f_* = deg`.
+
+Without properness, pushforward does not respect rational equivalence: on the affine line over
+`k`, the class of the origin is rationally equivalent to zero but has degree one.
 
 Let `F` be a family witnessing a rational equivalence to zero on `X`: integral closed subschemes
 `i_j : W_j ⟶ X` of dimension `n + 1` with nonzero rational functions `r_j`, whose cycle is
@@ -22,9 +36,29 @@ members whose image has smaller dimension
 (`Chow.RatEquivFamily.map_cycle_eq_cycle_map_add_finsum`, from Fulton, *Intersection Theory*,
 Proposition 1.4(b), as `Chow.map_height_div_eq_map_imageι`).
 
-Fulton's Proposition 1.4(a), that these remaining pushforwards vanish, then makes the pushforward
-of the cycle of `F` the cycle of `F.map f` (`Chow.RatEquivFamily.cycle_map_eq_map_cycle`), so that
-proper pushforward preserves rational equivalence; Proposition 1.4(a) is not proved here.
+Fulton's Proposition 1.4(a), that these remaining pushforwards vanish
+(`Chow.map_height_div_eq_zero_of_height_lt`), then makes the pushforward of the cycle of `F` the
+cycle of `F.map f` (`Chow.RatEquivFamily.cycle_map_eq_map_cycle`), so that proper pushforward
+preserves rational equivalence (`Chow.cyclesMap_mem_ratEquiv`).
+
+## Main definitions
+
+* `TauCeti.AlgebraicGeometry.Chow.ChowGroup.properPushforward`: the proper pushforward
+  `f_* : CH_n(X) →+ CH_n(Y)`.
+* `TauCeti.AlgebraicGeometry.Chow.ChowGroup.degree`: the degree `CH_0(X) →+ ℤ` for `X` proper
+  over `k`.
+
+## Main results
+
+* `TauCeti.AlgebraicGeometry.Chow.cyclesMap_mem_ratEquiv`: proper pushforward preserves rational
+  equivalence.
+* `TauCeti.AlgebraicGeometry.Chow.ChowGroup.properPushforward_comp`: `(g ∘ f)_* = g_* ∘ f_*`.
+* `TauCeti.AlgebraicGeometry.Chow.ChowGroup.degree_comp_properPushforward`: `deg ∘ f_* = deg`.
+
+## References
+
+* W. Fulton, *Intersection Theory*, Theorem 1.4 and Definition 1.4.
+* The Stacks Project, Sections 02R3, 02S0 and 0AZ0.
 -/
 
 public section
@@ -157,17 +191,149 @@ theorem map_cycle_eq_cycle_map_add_finsum (f : X ⟶ Y) [f.IsOver (Spec (.of k))
   exact (finsum_set_coe_eq_finsum_mem (F.mapIndex f)).symm.trans <| finsum_congr fun j ↦
     congrArg (fun c : AlgebraicCycle Y ℤ ↦ c y) (F.map_comp_div_eq_component_map k f j)
 
-/-- For `f` proper over `k`, if the members whose image has smaller dimension push forward to
-zero (Fulton, *Intersection Theory*, Proposition 1.4(a)), then the pushforward of the cycle of a
-family is the cycle of its image family. -/
-theorem cycle_map_eq_map_cycle (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f]
-    (h : ∀ j ∉ F.mapIndex f,
-      AlgebraicCycle.map (F.i j ≫ f) height height (AlgebraicCycle.div (F.r j)) = 0) :
+omit [IsLocallyNoetherian Y] in
+/-- For `f` proper over `k`, a member whose image has smaller dimension pushes forward to zero
+(Fulton, *Intersection Theory*, Proposition 1.4(a)). -/
+lemma map_comp_div_eq_zero_of_notMem_mapIndex (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f]
+    {j : F.ι} (hj : j ∉ F.mapIndex f) :
+    AlgebraicCycle.map (F.i j ≫ f) height height (AlgebraicCycle.div (F.r j)) = 0 := by
+  -- `W_j` is a scheme over `k` through `X`, and `i_j ≫ f` is a proper morphism over `k`.
+  let _ : (F.W j).Over (Spec (.of k)) := ⟨F.i j ≫ X ↘ Spec (.of k)⟩
+  have : LocallyOfFiniteType (F.W j ↘ Spec (.of k)) :=
+    inferInstanceAs (LocallyOfFiniteType (F.i j ≫ X ↘ Spec (.of k)))
+  have : (F.i j ≫ f).IsOver (Spec (.of k)) := ⟨by
+    -- The structure morphism of `W_j` is, by the definition above, `i_j` followed by that of `X`.
+    change (F.i j ≫ f) ≫ Y ↘ Spec (.of k) = F.i j ≫ X ↘ Spec (.of k)
+    rw [Category.assoc, comp_over]⟩
+  refine map_height_div_eq_zero_of_height_lt k (F.i j ≫ f)
+    ((height_apply_le_height k (F.i j ≫ f) _).lt_of_ne ?_) (F.r j)
+  rw [Scheme.Hom.comp_apply]
+  exact hj
+
+/-- **Proper pushforward of a rational equivalence.** For `f` proper over `k`, the pushforward of
+the cycle of a family is the cycle of its image family. -/
+theorem cycle_map_eq_map_cycle (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f] :
     (F.map f).cycle = AlgebraicCycle.map f height height F.cycle := by
   ext y
   rw [F.map_cycle_eq_cycle_map_add_finsum k f y, finsum_mem_eq_zero_of_forall_eq_zero
-    fun j hj ↦ by rw [h j hj, Function.locallyFinsuppWithin.coe_zero, Pi.zero_apply], add_zero]
+    fun j hj ↦ by
+      rw [F.map_comp_div_eq_zero_of_notMem_mapIndex k f hj,
+        Function.locallyFinsuppWithin.coe_zero, Pi.zero_apply], add_zero]
 
 end RatEquivFamily
+
+variable (k : Type u) [Field k] {X Y Z : Scheme.{u}}
+  [X.Over (Spec (.of k))] [Y.Over (Spec (.of k))] [Z.Over (Spec (.of k))]
+  [IsLocallyNoetherian X] [IsLocallyNoetherian Y] [IsLocallyNoetherian Z]
+
+section Pushforward
+
+variable [LocallyOfFiniteType (X ↘ Spec (.of k))] [LocallyOfFiniteType (Y ↘ Spec (.of k))]
+  [LocallyOfFiniteType (Z ↘ Spec (.of k))]
+
+/-- **Proper pushforward preserves rational equivalence** (Fulton, *Intersection Theory*,
+Theorem 1.4). For `f` proper over a field `k`, the pushforward of an `n`-cycle rationally
+equivalent to zero is rationally equivalent to zero. -/
+theorem cyclesMap_mem_ratEquiv (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f] {n : ℤ}
+    {α : cyclesOfDimension X n} (hα : α ∈ RatEquiv X n) : cyclesMap k f α ∈ RatEquiv Y n := by
+  obtain ⟨F, hF⟩ := mem_ratEquiv_iff.mp hα
+  exact mem_ratEquiv_iff.mpr
+    ⟨F.map f, by rw [F.cycle_map_eq_map_cycle k f, hF, coe_cyclesMap]⟩
+
+namespace ChowGroup
+
+/-- The **proper pushforward** `f_* : CH_n(X) →+ CH_n(Y)` of Chow groups along a proper morphism
+over a field `k`, induced by the pushforward of cycles `[V] ↦ [K(V) : K(f(V))] [f(V)]`. -/
+noncomputable def properPushforward (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f]
+    {n : ℤ} : ChowGroup X n →+ ChowGroup Y n :=
+  lift (cycleClass.comp (cyclesMap k f)) fun _ hα ↦
+    cycleClass_eq_zero_iff.mpr (cyclesMap_mem_ratEquiv k f hα)
+
+variable {k}
+
+/-- The proper pushforward of the class of a cycle is the class of its pushforward. -/
+@[simp]
+lemma properPushforward_cycleClass (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f] {n : ℤ}
+    (α : cyclesOfDimension X n) :
+    properPushforward k f (cycleClass α) = cycleClass (cyclesMap k f α) :=
+  lift_cycleClass _ _ α
+
+variable (k)
+
+/-- Proper pushforward along the identity is the identity. -/
+@[simp]
+lemma properPushforward_id {n : ℤ} :
+    properPushforward k (𝟙 X) = AddMonoidHom.id (ChowGroup X n) := by
+  ext α
+  simp
+
+/-- **Functoriality of proper pushforward**: `(g ∘ f)_* = g_* ∘ f_*`. -/
+lemma properPushforward_comp (f : X ⟶ Y) (g : Y ⟶ Z) [f.IsOver (Spec (.of k))]
+    [g.IsOver (Spec (.of k))] [IsProper f] [IsProper g] {n : ℤ} :
+    properPushforward k (f ≫ g) =
+      (properPushforward k g).comp (properPushforward k f : _ →+ ChowGroup Y n) := by
+  ext α
+  simp [cyclesMap_comp]
+
+/-- Along a closed immersion over `k`, proper pushforward is the closed-immersion pushforward
+`Chow.ChowGroup.pushforward`. -/
+lemma properPushforward_eq_pushforward (i : X ⟶ Y) [i.IsOver (Spec (.of k))]
+    [IsClosedImmersion i] {n : ℤ} :
+    properPushforward k i = (pushforward i : ChowGroup X n →+ ChowGroup Y n) := by
+  ext α
+  simp [cyclesMap_eq_cyclesPushforward]
+
+end ChowGroup
+
+end Pushforward
+
+namespace ChowGroup
+
+section Degree
+
+variable (X) [CompactSpace X] [IsProper (X ↘ Spec (.of k))]
+
+/-- The **degree** `deg : CH_0(X) →+ ℤ` of zero-cycle classes on a scheme proper over a field
+`k`, induced by the degree `Σ n_x [x] ↦ Σ n_x [κ(x) : k]` of zero-cycles. It is well defined
+because the degree of a zero-cycle is the coefficient of its pushforward to `Spec k`, and proper
+pushforward preserves rational equivalence. -/
+noncomputable def degree : ChowGroup X 0 →+ ℤ :=
+  lift (cyclesDegree k X) fun α hα ↦ by
+    -- The degree of `α` is the coefficient of its pushforward to `Spec k`, which is rationally
+    -- equivalent to zero, hence zero.
+    let _ : (Spec (.of k)).Over (Spec (.of k)) := ⟨𝟙 _⟩
+    have : (X ↘ Spec (.of k)).IsOver (Spec (.of k)) := ⟨Category.comp_id _⟩
+    have h := congrArg (equivIntOfUnique (Spec (.of k)))
+      (cycleClass_eq_zero_iff.mpr (cyclesMap_mem_ratEquiv k (X ↘ Spec (.of k)) hα))
+    rw [equivIntOfUnique_cycleClass, map_zero, coe_cyclesMap] at h
+    rw [AddMonoidHom.mem_ker, cyclesDegree_apply, ← AlgebraicCycle.degree_apply]
+    exact (degree_eq_map_height_apply k _).trans h
+
+variable {k X}
+
+/-- The degree of the class of a zero-cycle is its degree. -/
+@[simp]
+lemma degree_cycleClass (α : cyclesOfDimension X 0) :
+    degree k X (cycleClass α) = cyclesDegree k X α :=
+  lift_cycleClass _ _ α
+
+variable [CompactSpace Y] [IsProper (Y ↘ Spec (.of k))]
+
+/-- **Proper pushforward preserves degrees**: `deg (f_* c) = deg c` for `f` proper over `k`
+between schemes proper over `k`. -/
+@[simp]
+lemma degree_properPushforward (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f]
+    (c : ChowGroup X 0) : degree k Y (properPushforward k f c) = degree k X c := by
+  obtain ⟨α, rfl⟩ := cycleClass_surjective c
+  rw [properPushforward_cycleClass, degree_cycleClass, degree_cycleClass, cyclesDegree_cyclesMap]
+
+/-- **Proper pushforward preserves degrees**: `deg ∘ f_* = deg`. -/
+lemma degree_comp_properPushforward (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [IsProper f] :
+    (degree k Y).comp (properPushforward k f) = degree k X :=
+  AddMonoidHom.ext (degree_properPushforward f)
+
+end Degree
+
+end ChowGroup
 
 end TauCeti.AlgebraicGeometry.Chow

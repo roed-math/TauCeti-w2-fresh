@@ -41,9 +41,7 @@ divisors can be computed after a finite map to another curve.
 
 For a proper morphism `f` from an integral scheme whose image has the same dimension,
 `Chow.map_height_div_eq_map_imageι` applies this to the factorization of `f` through its integral
-scheme-theoretic image: `f_* div(r)` is `div(N(r))` on `f(X)`, pushed into `Y`. When instead the
-image has dimension less than `dim X - 1`, `f_* div(r) = 0`
-(`Chow.map_height_div_eq_zero_of_height_add_one_lt`, part of Fulton's Proposition 1.4(a)).
+scheme-theoretic image: `f_* div(r)` is `div(N(r))` on `f(X)`, pushed into `Y`.
 -/
 
 public section
@@ -153,35 +151,6 @@ theorem map_height_div_eq_map_imageι (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [I
     rintro g _ rfl
     rfl
   exact key _ f.toImage_imageι
-
-omit [IsIntegral Y] [IsLocallyNoetherian Y] in
-/-- **Principal divisors vanish under a large drop of dimension.** Let `f : X ⟶ Y` be a
-quasi-compact morphism over a field `k` from an integral scheme, between schemes locally of
-finite type over `k`, whose image has dimension less than `dim X - 1`. Then `f_* div r = 0` for
-every nonzero rational function `r` on `X`: the points of `div r` have dimension `dim X - 1`, and
-those with finite residue extension would keep that dimension in the image. -/
-theorem map_height_div_eq_zero_of_height_add_one_lt (f : X ⟶ Y) [f.IsOver (Spec (.of k))]
-    [QuasiCompact f] (h : height (f (genericPoint X)) + 1 < height (genericPoint X))
-    (r : X.functionFieldˣ) :
-    AlgebraicCycle.map f height height (AlgebraicCycle.div r) = 0 := by
-  ext y
-  rw [map_height_apply k, Function.locallyFinsuppWithin.coe_zero, Pi.zero_apply]
-  refine finsum_mem_eq_zero_of_forall_eq_zero fun x _ ↦ ?_
-  by_contra hne
-  rw [AlgebraicCycle.div_apply] at hne
-  have hd : f.residueDegree x ≠ 0 := by exact_mod_cast right_ne_zero_of_mul hne
-  -- `x` has codimension one, so `height x + 1 = dim X`.
-  have hx1 : coheight x = 1 := by
-    by_contra h'
-    exact left_ne_zero_of_mul hne (Scheme.ord_eq_zero_of_coheight_neq_one h' _)
-  have hdim := coheight_add_height_eq_topologicalKrullDim k x
-  rw [topologicalKrullDim_eq_height_genericPoint, hx1, add_comm] at hdim
-  have hdim' : height x + 1 = height (genericPoint X) := WithBot.coe_injective hdim
-  -- `f x` is a specialization of `f η`, of the height of `x`.
-  have hle : height (f x) ≤ height (f (genericPoint X)) :=
-    height_mono (((genericPoint_spec X).specializes (Set.mem_univ x)).map f.continuous)
-  rw [height_apply_eq_height_of_residueDegree_ne_zero k f hd] at hle
-  exact h.not_ge (hdim' ▸ add_le_add_left hle 1)
 
 end Chow
 
