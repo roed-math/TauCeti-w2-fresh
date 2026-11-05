@@ -34,7 +34,9 @@ over `V` is the base change of that of `A` over `U`. By
 `AlgebraicGeometry.Proj.isPullback_map_of_isBaseChange`, `Proj` of the sections of `g^* A` over
 `V` is then the fibre product of `Proj` of the sections of `A` over `U` with `Spec Γ(Y, V)` over
 `Spec Γ(X, U)`. This is the affine-local input for base change of relative `Proj` along an
-arbitrary morphism of the base.
+arbitrary morphism of the base. Since the pulled-back sections span the sections over `V`
+(`span_range_pullbackGradedSectionsLE`), generation in degree one, finite type and finiteness in
+degree zero pass from `U` to `V`.
 
 ## Main declarations
 
@@ -45,7 +47,11 @@ arbitrary morphism of the base.
   the same followed by restriction to an open `V ⊆ g⁻¹ U`;
 * `GradedQuasicoherentAlgebra.isPullback_proj_map_pullbackGradedSectionsLEGradedHom`: for affine
   `U` and `V`, `Proj` of the pulled-back graded sections over `V` is the base change of `Proj` of
-  the graded sections over `U` along `Spec Γ(Y, V) ⟶ Spec Γ(X, U)`.
+  the graded sections over `U` along `Spec Γ(Y, V) ⟶ Spec Γ(X, U)`;
+* `GradedQuasicoherentAlgebra.adjoin_gradedSectionsGrading_pullback_eq_top`,
+  `finiteType_pullback_sections` and `finite_pullback_sections_zero`: generation in degree one,
+  finite type and finiteness of the degree-zero part pass from the sections over `U` to the
+  pulled-back sections over `V`.
 -/
 
 public section
@@ -243,6 +249,35 @@ lemma pullbackGradedSectionsLEGradedHom_apply (x : ⨁ n, Γ(A.obj.X n, U)) :
     CommMon.restrictGradedSectionsGradedHom_apply, pullbackGradedSectionsGradedHom_apply]
   rfl
 
+/-- Pulling back graded sections to `V` and restricting them to `W ⊆ V` is pulling them back to
+`W`. -/
+lemma restrictGradedSections_comp_pullbackGradedSectionsLE {W : Y.Opens} (i : W ⟶ V) :
+    (((pullback g).obj A).obj.restrictGradedSections i).comp (pullbackGradedSectionsLE A hV) =
+      pullbackGradedSectionsLE A ((leOfHom i).trans hV) := by
+  rw [pullbackGradedSectionsLE, pullbackGradedSectionsLE, ← RingHom.comp_assoc,
+    ← CommMon.restrictGradedSections_comp]
+  rfl
+
+/-- Restricting graded sections from `U` to `U' ⊆ U` and pulling them back to `V ⊆ g⁻¹ U'` is
+pulling them back from `U` to `V`. -/
+lemma pullbackGradedSectionsLE_comp_restrictGradedSections {U' : X.Opens} (j : U' ⟶ U)
+    (hV' : V ≤ g ⁻¹ᵁ U') :
+    (pullbackGradedSectionsLE A hV').comp (A.obj.restrictGradedSections j) =
+      pullbackGradedSectionsLE A hV := by
+  refine DirectSum.ringHom_ext fun n x ↦ ?_
+  simp only [RingHom.comp_apply, CommMon.restrictGradedSections_of, pullbackGradedSectionsLE_of,
+    pullbackHomogeneousSections_apply]
+  congr 1
+  -- both sides are the image of the pulled-back section to `V` under the identification
+  -- `(g^* A)ₙ = g^* Aₙ`, which commutes with restriction
+  refine (PresheafOfModules.naturality_apply (eqToHom (pullback_obj_obj_X g A n).symm).val
+    (homOfLE hV').op _).symm.trans (Eq.trans ?_ (PresheafOfModules.naturality_apply
+      (eqToHom (pullback_obj_obj_X g A n).symm).val (homOfLE hV).op _))
+  congr 1
+  exact (Scheme.Hom.pullbackSectionsLE_apply ..).symm.trans
+    ((Scheme.Hom.pullbackSectionsLE_map g _ U V hV j hV' x).trans
+      (Scheme.Hom.pullbackSectionsLE_apply ..))
+
 end Restriction
 
 /-- Over affine opens `U` of `X` and `V ⊆ g⁻¹ U` of `Y`, pulling back the sections of a
@@ -293,8 +328,9 @@ private theorem exists_pullbackSectionsLE_equiv (M : X.Modules) [M.IsQuasicohere
 variable {g U} in
 /-- Over affine opens `U` of `X` and `V ⊆ g⁻¹ U` of `Y`, the pulled-back graded sections over `V`
 are the base change of the graded sections of `A` over `U` along `g.appLE U V`, so `Proj` of them
-is the base change of `Proj` of the graded sections of `A`. Stated as an existence statement so
-that the irrelevant-ideal condition of `Proj.map` and the cartesian square share their proof. -/
+is the base change of `Proj` of the graded sections of `A`, and they are spanned by the pulled-back
+sections. Stated as an existence statement so that the irrelevant-ideal condition of `Proj.map`,
+the cartesian square and the spanning statement share their proof. -/
 private theorem exists_isPullback_proj_map (hU : IsAffineOpen U) {V : Y.Opens}
     (hV' : IsAffineOpen V) (hV : V ≤ g ⁻¹ᵁ U) :
     ∃ h : HomogeneousIdeal.irrelevant (((pullback g).obj A).obj.gradedSectionsGrading V) ≤
@@ -302,7 +338,8 @@ private theorem exists_isPullback_proj_map (hU : IsAffineOpen U) {V : Y.Opens}
           (pullbackGradedSectionsLEGradedHom A hV),
       IsPullback (Proj.map (pullbackGradedSectionsLEGradedHom A hV) h)
         (Proj.toSpecCoeff (((pullback g).obj A).obj.gradedSectionsGrading V))
-        (Proj.toSpecCoeff (A.obj.gradedSectionsGrading U)) (Spec.map (g.appLE U V hV)) := by
+        (Proj.toSpecCoeff (A.obj.gradedSectionsGrading U)) (Spec.map (g.appLE U V hV)) ∧
+      Submodule.span Γ(Y, V) (Set.range (pullbackGradedSectionsLE A hV)) = ⊤ := by
   let : Algebra Γ(X, U) Γ(Y, V) := (g.appLE U V hV).hom.toAlgebra
   let : Algebra Γ(X, U) (⨁ n, Γ(((pullback g).obj A).obj.X n, V)) :=
     ((algebraMap Γ(Y, V) (⨁ n, Γ(((pullback g).obj A).obj.X n, V))).comp
@@ -350,7 +387,11 @@ private theorem exists_isPullback_proj_map (hU : IsAffineOpen U) {V : Y.Opens}
         (homOfLE hV).op) (g.pullbackSections (A.obj.X n) U m))
     | add x y hx hy =>
       simp only [TensorProduct.tmul_add, LinearEquiv.map_add, LinearMap.map_add, hx, hy]
-  exact ⟨_, Proj.isPullback_map_of_isBaseChange _ _ hfR hf⟩
+  refine ⟨_, Proj.isPullback_map_of_isBaseChange _ _ hfR hf, Submodule.eq_top_iff'.mpr fun w ↦ ?_⟩
+  induction w using hf.inductionOn with
+  | tmul a => exact Submodule.subset_span ⟨a, (pullbackGradedSectionsLEGradedHom_apply A hV a).symm⟩
+  | smul r x hx => exact Submodule.smul_mem _ r hx
+  | add x y hx hy => exact add_mem hx hy
 
 variable {g U} {V : Y.Opens}
 
@@ -379,7 +420,96 @@ theorem isPullback_proj_map_pullbackGradedSectionsLEGradedHom (hU : IsAffineOpen
         (irrelevant_le_map_pullbackGradedSectionsLEGradedHom A hU hV' hV))
       (Proj.toSpecCoeff (((pullback g).obj A).obj.gradedSectionsGrading V))
       (Proj.toSpecCoeff (A.obj.gradedSectionsGrading U)) (Spec.map (g.appLE U V hV)) :=
-  (exists_isPullback_proj_map A hU hV' hV).2
+  (exists_isPullback_proj_map A hU hV' hV).2.1
+
+/-- Over affine opens `U` of `X` and `V ⊆ g⁻¹ U` of `Y`, the graded sections of `g^* A` over `V`
+are spanned over `Γ(Y, V)` by the pullbacks of the graded sections of `A` over `U`. -/
+theorem span_range_pullbackGradedSectionsLE (hU : IsAffineOpen U) (hV' : IsAffineOpen V)
+    (hV : V ≤ g ⁻¹ᵁ U) :
+    Submodule.span Γ(Y, V) (Set.range (pullbackGradedSectionsLE A hV)) = ⊤ :=
+  (exists_isPullback_proj_map A hU hV' hV).2.2
+
+/-- **Generation in degree one pulls back**: over affine opens `U` of `X` and `V ⊆ g⁻¹ U` of `Y`,
+if the graded sections of `A` over `U` are generated by the degree-one sections over the
+degree-zero sections, so are the graded sections of `g^* A` over `V`. -/
+theorem adjoin_gradedSectionsGrading_pullback_eq_top (hU : IsAffineOpen U)
+    (hV' : IsAffineOpen V) (hV : V ≤ g ⁻¹ᵁ U)
+    (h : Algebra.adjoin (A.obj.gradedSectionsGrading U 0)
+      (A.obj.gradedSectionsGrading U 1 : Set (⨁ n, Γ(A.obj.X n, U))) = ⊤) :
+    Algebra.adjoin (((pullback g).obj A).obj.gradedSectionsGrading V 0)
+      (((pullback g).obj A).obj.gradedSectionsGrading V 1 :
+        Set (⨁ n, Γ(((pullback g).obj A).obj.X n, V))) = ⊤ := by
+  rw [eq_top_iff]
+  rintro w -
+  have hw : w ∈ Submodule.span Γ(Y, V) (Set.range (pullbackGradedSectionsLE A hV)) :=
+    (span_range_pullbackGradedSectionsLE A hU hV' hV).symm ▸ Submodule.mem_top
+  induction hw using Submodule.span_induction with
+  | mem x hx =>
+    obtain ⟨a, rfl⟩ := hx
+    rw [← pullbackGradedSectionsLEGradedHom_apply]
+    have ha : a ∈ Algebra.adjoin (A.obj.gradedSectionsGrading U 0)
+        (A.obj.gradedSectionsGrading U 1 : Set (⨁ n, Γ(A.obj.X n, U))) := h ▸ Algebra.mem_top
+    induction ha using Algebra.adjoin_induction with
+    | mem x hx => exact Algebra.subset_adjoin ((pullbackGradedSectionsLEGradedHom A hV).map_mem hx)
+    | algebraMap r =>
+      exact Subalgebra.algebraMap_mem _ (⟨_, (pullbackGradedSectionsLEGradedHom A hV).map_mem r.2⟩ :
+        ((pullback g).obj A).obj.gradedSectionsGrading V 0)
+    | add x y _ _ hx hy =>
+      rw [map_add]
+      exact add_mem hx hy
+    | mul x y _ _ hx hy =>
+      rw [map_mul]
+      exact mul_mem hx hy
+  | zero => exact zero_mem _
+  | add x y _ _ hx hy => exact add_mem hx hy
+  | smul r x _ hx =>
+    have hr : algebraMap Γ(Y, V) (⨁ n, Γ(((pullback g).obj A).obj.X n, V)) r ∈
+        ((pullback g).obj A).obj.gradedSectionsGrading V 0 := by
+      rw [DirectSum.algebraMap_apply]
+      exact ((pullback g).obj A).obj.of_mem_gradedSectionsGrading 0 _
+    rw [Algebra.smul_def]
+    exact mul_mem (Subalgebra.algebraMap_mem _
+      (⟨_, hr⟩ : ((pullback g).obj A).obj.gradedSectionsGrading V 0)) hx
+
+/-- **Finite type pulls back**: over affine opens `U` of `X` and `V ⊆ g⁻¹ U` of `Y`, if the graded
+sections of `A` over `U` form a finitely generated `Γ(X, U)`-algebra, then the graded sections of
+`g^* A` over `V` form a finitely generated `Γ(Y, V)`-algebra, generated by the pullbacks of the
+generators. -/
+theorem finiteType_pullback_sections (hU : IsAffineOpen U) (hV' : IsAffineOpen V)
+    (hV : V ≤ g ⁻¹ᵁ U) [Algebra.FiniteType Γ(X, U) (⨁ n, Γ(A.obj.X n, U))] :
+    Algebra.FiniteType Γ(Y, V) (⨁ n, Γ(((pullback g).obj A).obj.X n, V)) := by
+  classical
+  obtain ⟨s, hs⟩ := Algebra.FiniteType.out (R := Γ(X, U)) (A := ⨁ n, Γ(A.obj.X n, U))
+  refine ⟨⟨s.image (pullbackGradedSectionsLE A hV), eq_top_iff.mpr fun w _ ↦ ?_⟩⟩
+  have hw : w ∈ Submodule.span Γ(Y, V) (Set.range (pullbackGradedSectionsLE A hV)) :=
+    (span_range_pullbackGradedSectionsLE A hU hV' hV).symm ▸ Submodule.mem_top
+  refine (Submodule.span_le (p := Subalgebra.toSubmodule (Algebra.adjoin Γ(Y, V)
+    (s.image (pullbackGradedSectionsLE A hV) : Set _)))).mpr ?_ hw
+  rintro _ ⟨a, rfl⟩
+  rw [SetLike.mem_coe, Subalgebra.mem_toSubmodule]
+  have ha : a ∈ Algebra.adjoin Γ(X, U) (s : Set (⨁ n, Γ(A.obj.X n, U))) := hs ▸ Algebra.mem_top
+  induction ha using Algebra.adjoin_induction with
+  | mem x hx => exact Algebra.subset_adjoin (by simpa using ⟨x, hx, rfl⟩)
+  | algebraMap r =>
+    rw [pullbackGradedSectionsLE_algebraMap]
+    exact Subalgebra.algebraMap_mem _ _
+  | add x y _ _ hx hy =>
+    rw [map_add]
+    exact add_mem hx hy
+  | mul x y _ _ hx hy =>
+    rw [map_mul]
+    exact mul_mem hx hy
+
+/-- **Finiteness of the degree-zero sections pulls back**: over affine opens `U` of `X` and
+`V ⊆ g⁻¹ U` of `Y`, if the degree-zero sections of `A` over `U` form a finite `Γ(X, U)`-module, then
+the degree-zero sections of `g^* A` over `V` form a finite `Γ(Y, V)`-module. -/
+theorem finite_pullback_sections_zero (hU : IsAffineOpen U) (hV' : IsAffineOpen V)
+    (hV : V ≤ g ⁻¹ᵁ U) [Module.Finite Γ(X, U) Γ(A.obj.X 0, U)] :
+    Module.Finite Γ(Y, V) Γ(((pullback g).obj A).obj.X 0, V) := by
+  let : Algebra Γ(X, U) Γ(Y, V) := (g.appLE U V hV).hom.toAlgebra
+  obtain ⟨e, -⟩ := exists_pullbackSectionsLE_equiv g (A.obj.X 0) hU hV' hV
+  rw [pullback_obj_obj_X]
+  exact Module.Finite.equiv e
 
 end GradedQuasicoherentAlgebra
 

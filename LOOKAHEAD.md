@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"67aa17161ba1908f8a85182bfdf2d4ccaf21171c","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[],"title":"feat(AlgebraicGeometry/Modules): the sheaf associated with a finite module is of finite type"},{"n":13,"after":[],"title":"feat(RingTheory/GradedAlgebra): finiteness and generation of the degree-one part of a graded algebra"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"},{"n":15,"after":[],"title":"feat(AlgebraicGeometry/RelativeGluing): recognise the glued scheme of a relative gluing datum"},{"n":16,"after":[],"title":"feat(AlgebraicGeometry/Modules): pull back graded sections, and Proj of them as a base change over affine opens"},{"n":17,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],"title":"feat(AlgebraicGeometry/Morphisms): projective schemes over a ring are the projective morphisms to its spectrum, and base change to affine opens"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[],"title":"feat(AlgebraicGeometry/Modules): the sheaf associated with a finite module is of finite type"},{"n":13,"after":[],"title":"feat(RingTheory/GradedAlgebra): finiteness and generation of the degree-one part of a graded algebra"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"},{"n":15,"after":[],"title":"feat(AlgebraicGeometry/RelativeGluing): recognise the glued scheme of a relative gluing datum"},{"n":16,"after":[],"title":"feat(AlgebraicGeometry/Modules): pull back graded sections, and Proj of them as a base change over affine opens"},{"n":17,"after":[16],"title":"feat(AlgebraicGeometry/RelativeProj): charts of the base change of a relative Proj over small affine opens"},{"n":18,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],"title":"feat(AlgebraicGeometry/Morphisms): projective schemes over a ring are the projective morphisms to its spectrum, and base change to affine opens"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
-Built on `main` at `67aa17161ba1908f8a85182bfdf2d4ccaf21171c`. Status: **partial**. Target text
+Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174`. Status: **partial**. Target text
 (StableReduction README, Layer 2): "Extend Tau Ceti's invertible-sheaf API with tensor powers,
 Cartier divisors, pullback, degree on components, global generation, and relative ampleness.
 Build projective morphisms and relative `Proj` of a finitely generated graded quasi-coherent
@@ -9,7 +9,7 @@ algebra." The target has no pinned forms in `StableReduction/Suggested.lean`.
 
 ## Stubbed declarations: none left
 
-Sixth session (2026-11-04, 00:05 UTC), still true in the twenty-third. The supplier `relative-proj-twisting-sheaf`
+Sixth session (2026-11-04, 00:05 UTC), still true in the twenty-fourth. The supplier `relative-proj-twisting-sheaf`
 (SchemeAndStackFoundations §0.3) has landed the part this target consumes, in
 `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf.lean` on `main`. The stub file
 `TauCeti/Lookahead/RelativeAmpleness/Stubs.lean` is deleted and the proof now uses the landed
@@ -39,6 +39,74 @@ The earlier stubs and what replaced them:
    `CommMon.IsGeneratedInDegreeOne A` with exactly that body, plus `isGeneratedInDegreeOne_iff`,
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
+
+## Changes in the twenty-fourth session (2026-11-05, 01:10 UTC)
+
+- `main` moved to `85f3eb5579df5ca44ba8cd0921d614b41ab72174` and is merged in with no conflicts.
+  Its new commits (exponential decay, a tooling bump) touch no file of this branch. The supplier
+  PR #27145 is still not consumed, so there are still no stubs.
+- **Step 1 of the general base change is finished** (new split 17,
+  `AlgebraicGeometry/RelativeProj/Pullback.lean`). For `g : Y ⟶ X`, a graded quasicoherent
+  algebra `A` on `X`, and affine opens `U` of `X` and `V ⊆ g⁻¹ U` of `Y`:
+  - `GradedQuasicoherentAlgebra.projPullbackToRelativeProj` is the morphism
+    `Proj (⨁ n, Γ((g^* A)ₙ, V)) ⟶ Proj (⨁ n, Γ(Aₙ, U)) ⟶ Proj_X(A)`, and
+    `isPullback_projPullbackToRelativeProj` shows it is cartesian over `Spec Γ(Y, V) ⟶ Y ⟶ X`,
+    by pasting split 16's square with the chart of `Proj_X(A)` over `U`;
+  - `projPullbackToPullbackRelativeProj` and `isPullback_projPullbackToPullbackRelativeProj`:
+    `Proj (⨁ n, Γ((g^* A)ₙ, V))` is the preimage of `V` in `Proj_X(A) ×_X Y ⟶ Y`;
+  - `proj_map_restrict_projPullbackToRelativeProj` (naturality in `V`) and
+    `projPullbackToRelativeProj_basicOpen` (independence of `U` along a basic open of `U`), the
+    compatibilities the gluing of step 2 needs.
+  The chart over `U` read over `Spec Γ(X, U)`, which `Morphisms/ProjectiveOver.lean` proved inline,
+  is now the lemma `CommMon.isPullback_relativeProjCover_fromSpec` in `main`'s
+  `RelativeProj/Basic.lean`, and `ProjectiveOver.lean` uses it.
+- **Step 3 over small affine opens** (split 16, `PullbackSections.lean`): the pulled-back graded
+  sections span the sections of `g^* A` over `V` (`span_range_pullbackGradedSectionsLE`, from the
+  base-change statement already proved there), so generation in degree one
+  (`adjoin_gradedSectionsGrading_pullback_eq_top`), finite type (`finiteType_pullback_sections`)
+  and finiteness in degree zero (`finite_pullback_sections_zero`) pass from `U` to `V`. Two
+  restriction lemmas for the pulled-back sections were added for the naturality above
+  (`restrictGradedSections_comp_pullbackGradedSectionsLE`,
+  `pullbackGradedSectionsLE_comp_restrictGradedSections`).
+- **Step 3 over arbitrary affine opens, for the two finiteness conditions** (split 17): finite type
+  of the graded sections is local on basic-open covers
+  (`CommMon.finiteType_gradedSections_of_span_eq_top` in `main`'s
+  `Modules/GradedAlgebra/Localization.lean`, from Mathlib's `RingHom.finiteType_ofLocalizationSpan`
+  and `main`'s `CommMon.isLocalization_gradedSections_basicOpen`), and the basic opens of an affine
+  `V ⊆ Y` lying over affine opens of `X` cover `V`. Hence
+  `GradedQuasicoherentAlgebra.finiteType_pullback_sections_of_isAffineOpen` and
+  `finite_pullback_sections_zero_of_isAffineOpen` (the latter by Mathlib's
+  `Module.Finite.of_localizationSpan'`, as in `main`'s `finite_sections_of_isAffineOpen`).
+- **Not finished: generation in degree one over arbitrary affine opens.** The mathematics is
+  written out (a section over `V` that is a polynomial in degree-one sections over each `D(h)` is,
+  after multiplication by a power of `h`, one over `V`, by `exists_pow_smul_eq_map` and
+  `IsLocalization.exists_of_eq`), but the Lean proof hit heartbeat timeouts and was removed. Pitfalls
+  for the next attempt: (1) never let `rw` unify two different powers `a ^ m₁`, `a ^ m₂` of an
+  element of `⨁ n, Γ(Aₙ, U)`: the unifier unfolds the direct-sum power; combine equations with
+  `congrArg₂` instead, and `generalize` the image of `f` to an opaque `a`; (2) state the homogeneous
+  step for a general degree `k` and membership in `gradedSectionsGrading _ k` (instantiating a
+  lemma at the literal `0` with a witness from `DirectSum.mem_summand` timed out); (3) prove
+  `h ▸ Algebra.mem_top` memberships as `Algebra.eq_top_iff.mp h _`; (4) passing an equation
+  produced by one private lemma (`ι a ^ m * ι x = ι y`) to another private lemma with the
+  syntactically same hypothesis still timed out in the main proof, so the localization step
+  (`IsLocalization.exists_of_eq` for `ι.toAlgebra`) should live in the same lemma as the
+  `Algebra.adjoin_induction`, or the equation should be stated at `U` level (`aᵏ (aᵐ x) = aᵏ y`)
+  before leaving that lemma.
+- The old final split 17 is now split 18, listed after the new split 17.
+- Verified: `lake build` green and `lookahead-check` ok. No `sorry` anywhere on the branch.
+- Rubric audit:
+  - reuse: the inline chart-over-`Spec` square of `ProjectiveOver.lean` was factored into the
+    lemma above rather than duplicated; the cartesian squares are pasted with Mathlib's
+    `IsPullback.paste_horiz` and `IsPullback.of_right`; the compatibility along basic opens is
+    `colimit.w` of the gluing diagram, and the restriction lemmas reuse `main`'s
+    `Scheme.Hom.pullbackSectionsLE_map` and `CommMon.restrictGradedSections_comp`;
+  - API: the spanning statement is public, since the three transfer theorems and the remaining
+    step 3 over arbitrary affine opens all go through it; the base-change existence statement
+    stays private;
+  - proof quality: the morphism equalities are stated by term-mode `trans` chains because the
+    chart index `⟨U, hU⟩ : X.AffineZariskiSite` is not reducibly the cover's index type, which
+    makes `rw` motives ill-typed; one `have key` restates a goal whose open is
+    `(toOpensFunctor X).obj U'` as `U`, which the comment explains.
 
 ## Changes in the twenty-third session (2026-11-05, 00:10 UTC)
 
@@ -984,15 +1052,41 @@ The earlier stubs and what replaced them:
       `_algebraMap`), `pullbackGradedSectionsGradedHom` (with `_apply`), `pullbackGradedSectionsLE`
       (with `_of`, `_algebraMap`), `pullbackGradedSectionsLEGradedHom` (with `_apply`),
       `irrelevant_le_map_pullbackGradedSectionsLEGradedHom` and
-      `isPullback_proj_map_pullbackGradedSectionsLEGradedHom`.
+      `isPullback_proj_map_pullbackGradedSectionsLEGradedHom`; then
+      `restrictGradedSections_comp_pullbackGradedSectionsLE`,
+      `pullbackGradedSectionsLE_comp_restrictGradedSections`,
+      `span_range_pullbackGradedSectionsLE`, `adjoin_gradedSectionsGrading_pullback_eq_top`,
+      `finiteType_pullback_sections` and `finite_pullback_sections_zero`. The file is now 520
+      lines, so the split is about 600 lines; if a reviewer asks, the last four declarations can
+      move to split 17.
     - Roadmap line: `Roadmap: StableReduction`.
     - Subject: `feat(AlgebraicGeometry/Modules): pull back graded sections, and Proj of them as a base change over affine opens`
 
-17. **Projective schemes over a ring are the projective morphisms to its spectrum; base change to
-    affine opens** (after: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16). It imports
-    splits 12, 13 and 14, and through them every other split but 15 and 16; it is listed after
-    them so that it is the last split to merge and the one that completes the branch's current
-    part of the target.
+17. **Charts of the base change of a relative `Proj` over small affine opens** (after: 16).
+    Step 1 of the general base change of projective morphisms, and the finiteness half of step 3.
+    - Files: `TauCeti/AlgebraicGeometry/RelativeProj/Pullback.lean` (233 lines, new;
+      imports split 16's `PullbackSections.lean` and `main`'s `RelativeProj/Basic.lean`); `main`'s
+      `RelativeProj/Basic.lean` (+14: the lemma below and a docstring line); `main`'s
+      `Modules/GradedAlgebra/Localization.lean` (+26, now importing
+      `Mathlib.RingTheory.RingHom.FiniteType`).
+    - Declarations: `CategoryTheory.CommMon.isPullback_relativeProjCover_fromSpec` (in
+      `Basic.lean`); in namespace `TauCeti.AlgebraicGeometry.GradedQuasicoherentAlgebra`:
+      `projPullbackToRelativeProj` (with `_relativeProjToBase`),
+      `isPullback_projPullbackToRelativeProj`, `projPullbackToPullbackRelativeProj` (with `_fst`,
+      `_snd`), `isPullback_projPullbackToPullbackRelativeProj`,
+      `proj_map_restrict_projPullbackToRelativeProj`, `projPullbackToRelativeProj_basicOpen`, the
+      private `span_setOf_basicOpen_le_preimage_eq_top`,
+      `finiteType_pullback_sections_of_isAffineOpen`, `finite_pullback_sections_zero_of_isAffineOpen`;
+      in `Localization.lean`, `CategoryTheory.CommMon.finiteType_gradedSections_of_span_eq_top`.
+    - Roadmap line: `Roadmap: StableReduction`.
+    - Subject: `feat(AlgebraicGeometry/RelativeProj): charts of the base change of a relative Proj over small affine opens`
+
+18. **Projective schemes over a ring are the projective morphisms to its spectrum; base change to
+    affine opens** (after: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17). It imports
+    splits 12, 13 and 14, and through them every other split but 15, 16 and 17; it uses split
+    17's `CommMon.isPullback_relativeProjCover_fromSpec`, and it is listed after all of them so
+    that it is the last split to merge and the one that completes the branch's current part of
+    the target.
     - Files: `TauCeti/AlgebraicGeometry/Morphisms/ProjectiveOver.lean` (401 lines, new; imports
       `Morphisms/Projective.lean`, `ProjectiveSpectrum/ProjectiveOver.lean`,
       `ProjectiveSpectrum/ClosedImmersion.lean`, `ProjectiveSpectrum/SymmetricBaseChange.lean` and
@@ -1105,17 +1199,31 @@ Remains for the target:
   `Proj_{S'}(g^* A)` once, for every affine open `U'` of `S'`, the preimage of `U'` in
   `Proj_S(A) ×_S S'` is identified with `Proj (⨁ n, Γ((g^* A)ₙ, U'))`, naturally in `U'`. The
   remaining steps of the plan:
-  1. (done, split 16) for affine `U' ⊆ g⁻¹ U` with `U` affine, `Proj (⨁ n, Γ((g^* A)ₙ, U'))` is
-     the base change of `Proj (⨁ n, Γ(Aₙ, U))` along `Spec Γ(S', U') ⟶ Spec Γ(S, U)`
-     (`GradedQuasicoherentAlgebra.isPullback_proj_map_pullbackGradedSectionsLEGradedHom`). What
-     is left of it is the identification of the preimage of `U'` in `Proj_S(A) ×_S S'` with this
-     `Proj`, by pasting with `main`'s `CommMon.isPullback_relativeProjCover` over `U`;
-  2. for an arbitrary affine `U'`, the same identification by applying
-     `RelativeGluingData.isoOfIsPullback` a second time, over the cover of `U'` by the affine opens
-     of step 1 (Proj of the sections over `U'` is glued from the Proj over smaller affine opens,
-     by `main`'s `CommMon.isPullback_relativeProjCover` for the restriction of `g^* A`);
+  1. (done, splits 16 and 17) for affine `U' ⊆ g⁻¹ U` with `U` affine, `Proj (⨁ n, Γ((g^* A)ₙ, U'))`
+     is the preimage of `U'` in `Proj_S(A) ×_S S'`
+     (`GradedQuasicoherentAlgebra.isPullback_projPullbackToPullbackRelativeProj`), naturally in
+     `U'` and independently of `U` along basic opens of `U`;
+  2. for an arbitrary affine `U'`, the same identification. `Proj (⨁ n, Γ((g^* A)ₙ, U'))` is
+     covered by the `Proj` of the sections over the small basic opens `D(h) ⊆ U'` (open immersions
+     by `main`'s `CommMon.isPullback_proj_restrictGradedSections`); glue the charts of step 1 on
+     this cover (`Scheme.Cover.glueMorphisms`) into a morphism to `Proj_S(A) ×_S S'`, and check
+     cartesianness locally. Compatibility on overlaps comes from
+     `proj_map_restrict_projPullbackToRelativeProj` (naturality in the open of `S'`) and
+     `projPullbackToRelativeProj_basicOpen` (two choices of `U` agree on a common basic open; two
+     arbitrary affine `U₁`, `U₂` are compared through basic opens of both, Mathlib's
+     `exists_basicOpen_le_affine_inter`). Then `RelativeGluingData.isoOfIsPullback` (split 15)
+     applies to `(g^* A).relativeProjGluingData`;
   3. the properties of `g^* A` that `IsProjective` asks for: generated in degree one and of finite
-     type with finite degree-zero part on every affine open, again checked on the cover of step 1;
+     type with finite degree-zero part on every affine open. Over the small affine opens of step 1
+     they are done (split 16: `adjoin_gradedSectionsGrading_pullback_eq_top`,
+     `finiteType_pullback_sections`, `finite_pullback_sections_zero`), and over arbitrary affine
+     opens so are finite type and finiteness in degree zero (split 17:
+     `finiteType_pullback_sections_of_isAffineOpen`, `finite_pullback_sections_zero_of_isAffineOpen`).
+     What is left is generation in degree one over an arbitrary affine `U'`, from the small basic
+     opens `D(h)` covering it: a locality lemma
+     `CommMon.adjoin_gradedSectionsGrading_one_eq_top_of_span_eq_top` next to
+     `finiteType_gradedSections_of_span_eq_top` (see the twenty-fourth session's notes for the
+     argument and the Lean pitfalls), then `IsGeneratedInDegreeOne ((pullback g).obj A).obj`;
   4. then a closed immersion `X ×_S S' ⟶ Proj_S(A) ×_S S' ≅ Proj_{S'}(g^* A)` over `S'`.
 Not needed from this target (checked in the fifteenth session):
 - Cartier divisors and degree on components. `main` already has the basic API: Cartier divisors,

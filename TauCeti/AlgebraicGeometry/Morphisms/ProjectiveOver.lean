@@ -346,12 +346,9 @@ theorem isProjective_pullback_snd_fromSpec {X S : Scheme.{u}} (f : X ⟶ S) [IsP
     infer_instance
   have := isProjective_toSpecCoeff (A.gradedSectionsGrading U)
     (CommMon.isGeneratedInDegreeOne_iff.mp hA U hU)
-  -- The chart of the relative `Proj` over `U`, with `U` replaced by `Spec Γ(S, U)`.
   have hP : IsPullback (A.relativeProjCover.f ⟨U, hU⟩)
       (Proj.toSpecCoeff (A.gradedSectionsGrading U)) A.relativeProjToBase hU.fromSpec :=
-    ((A.isPullback_relativeProjCover ⟨U, hU⟩).of_iso (Iso.refl _) hU.isoSpec (Iso.refl _)
-      (Iso.refl _) (by simp) ((Category.comp_id _).trans (Category.id_comp _).symm)
-      (by simp [← IsAffineOpen.isoSpec_inv_ι]) (by simp)).flip
+    A.isPullback_relativeProjCover_fromSpec ⟨U, hU⟩
   -- The target of `l` is stated as `Proj (⨁ n, Γ(Aₙ, U))` rather than as the chart, which instance
   -- search does not unfold.
   let l : pullback (i ≫ A.relativeProjToBase) hU.fromSpec ⟶ Proj (A.gradedSectionsGrading U) :=

@@ -9,6 +9,7 @@ public import Mathlib.AlgebraicGeometry.Sites.SmallAffineZariski
 public import TauCeti.Algebra.Module.LocalizedModule.DirectSum
 public import TauCeti.AlgebraicGeometry.Modules.GradedAlgebra.Sections
 public import TauCeti.AlgebraicGeometry.Modules.Localization
+public import Mathlib.RingTheory.RingHom.FiniteType
 
 /-!
 # Graded rings of sections over basic opens
@@ -34,6 +35,8 @@ constructions with graded algebras. It is the graded counterpart of
   `⨁ n, Γ(Aₙ, X.basicOpen f)` as the base change of `⨁ n, Γ(Aₙ, U)` along
   `Γ(X, U) → Γ(X, X.basicOpen f)`, for the algebra structure
   `CategoryTheory.CommMon.algebraGradedSectionsBasicOpen`.
+* `CategoryTheory.CommMon.finiteType_gradedSections_of_span_eq_top`: finite type of the graded
+  sections over an affine open can be checked on basic opens covering it.
 * `CategoryTheory.CommMon.coequifibered_toGradedSectionsPresheaf`: on the affine opens of `X`, the
   presheaf of graded rings of sections is coequifibered over the structure presheaf.
 -/
@@ -152,6 +155,29 @@ theorem _root_.CategoryTheory.CommMon.isBaseChange_restrictGradedSections
   exact LinearMap.ext fun x ↦ A.restrictGradedSectionsGradedHom_apply _ x
 
 end BaseChange
+
+/-- **Finite type of the graded sections is local on affine opens**: if `s` generates the unit
+ideal of `Γ(X, U)` for an affine open `U`, and over each basic open `D(f)`, `f ∈ s`, the graded
+sections form a finitely generated `Γ(X, D(f))`-algebra, then so do the graded sections over `U`.
+Both rings over `D(f)` are localizations away from `f` (`IsAffineOpen.isLocalization_basicOpen`,
+`CategoryTheory.CommMon.isLocalization_gradedSections_basicOpen`), so this is the locality of
+finite type, `RingHom.finiteType_ofLocalizationSpan`. -/
+theorem _root_.CategoryTheory.CommMon.finiteType_gradedSections_of_span_eq_top
+    [∀ n, (A.X n).IsQuasicoherent] {U : X.Opens} (hU : IsAffineOpen U) (s : Set Γ(X, U))
+    (hs : Ideal.span s = ⊤)
+    (h : ∀ f ∈ s, Algebra.FiniteType Γ(X, X.basicOpen f) (⨁ n, Γ(A.X n, X.basicOpen f))) :
+    Algebra.FiniteType Γ(X, U) (⨁ n, Γ(A.X n, U)) := by
+  rw [← RingHom.finiteType_algebraMap]
+  refine RingHom.finiteType_ofLocalizationSpan.ofIsLocalization RingHom.finiteType_respectsIso _ s
+    hs fun f ↦ ?_
+  let := (A.restrictGradedSections (homOfLE (X.basicOpen_le f.1))).toAlgebra
+  have := hU.isLocalization_basicOpen f.1
+  have := A.isLocalization_gradedSections_basicOpen hU f.1
+  refine ⟨Γ(X, X.basicOpen f.1), ⨁ n, Γ(A.X n, X.basicOpen f.1), inferInstance, inferInstance,
+    inferInstance, inferInstance, inferInstance, inferInstance, algebraMap _ _,
+    RingHom.ext fun r ↦ ?_, RingHom.finiteType_algebraMap.mpr (h f.1 f.2)⟩
+  -- the algebra map `⨁ n, Γ(Aₙ, U) → ⨁ n, Γ(Aₙ, D(f))` is restriction of sections
+  exact (A.restrictGradedSections_algebraMap (homOfLE (X.basicOpen_le f.1)) r).symm
 
 /-- On the affine opens of `X`, the presheaf of graded rings of sections of a graded algebra with
 quasicoherent homogeneous components is coequifibered over the structure presheaf: its graded rings
