@@ -22,10 +22,11 @@ functions with a pole of order at most `n` along the zero section.
 
 On cohomology, the filtration is a chain of injections
 `H⁰(𝒪(m[0])) ↪ H⁰(𝒪(n[0]))`. Over a field `K` the spaces `H⁰(𝒪(n[0]))` have dimension `n` for
-`n > 0` by Riemann–Roch, and `H⁰(𝒪(0[0])) = H⁰(𝒪) = K`. So the first step
-`H⁰(𝒪) ↪ H⁰(𝒪([0]))` is bijective (every section of `𝒪([0])` is constant), and each later step
+`n > 0` by Riemann–Roch, and `H⁰(𝒪(0[0])) = H⁰(𝒪) = K`. So each step
 `H⁰(𝒪(n[0])) ↪ H⁰(𝒪((n + 1)[0]))`, `n > 0`, has a one-dimensional cokernel: the successive
-quotients of the pole filtration are lines.
+quotients of the pole filtration are lines. Over an arbitrary ring, the quotients and the first
+step `H⁰(𝒪) ↪ H⁰(𝒪([0]))` are treated in
+`TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.FiltrationQuotient`.
 
 ## Main declarations
 
@@ -36,8 +37,6 @@ quotients of the pole filtration are lines.
   `H⁰`.
 * `WeierstrassCurve.finrank_cohomology_zero_poleSheaf_zero`: over a field,
   `dim H⁰(𝒪(0[0])) = 1`.
-* `WeierstrassCurve.bijective_cohomologyMapBaseLinear_poleSheafMap_zero_one`: over a field,
-  `H⁰(𝒪) ⟶ H⁰(𝒪([0]))` is bijective.
 * `WeierstrassCurve.finrank_quotient_range_cohomologyMapBaseLinear_poleSheafMap`: over a field,
   `H⁰(𝒪((n + 1)[0])) / H⁰(𝒪(n[0]))` is one-dimensional for `n > 0`.
 
@@ -143,21 +142,6 @@ theorem finrank_cohomology_zero_poleSheaf_zero :
     (by rw [mk_poleSheaf, pow_zero])
   rw [finrank_cohomology_congr K (e ≪≫ (InvertibleSheaf.trivialObjIsoUnit _).symm),
     finrank_cohomology_zero_trivial_projModel]
-
-/-- **Every section of `𝒪([0])` is constant**: over a field, the inclusion `𝒪 = 𝒪(0[0]) ⟶ 𝒪([0])`
-is bijective on `H⁰`. This is the first step `L(0) = L(O) = K` of the pole filtration. -/
-theorem bijective_cohomologyMapBaseLinear_poleSheafMap_zero_one :
-    Function.Bijective
-      (cohomologyMapBaseLinear K W.projModel (W.poleSheafMap zero_le_one).hom 0) := by
-  have h₀ := W.finrank_cohomology_zero_poleSheaf_zero
-  have h₁ := W.finrank_cohomology_zero_poleSheaf one_pos
-  have : FiniteDimensional K (Cohomology (W.poleSheaf 0).obj 0) :=
-    Module.finite_of_finrank_pos (by omega)
-  have : FiniteDimensional K (Cohomology (W.poleSheaf 1).obj 0) :=
-    Module.finite_of_finrank_pos (by omega)
-  have hinj := W.injective_cohomologyMapBaseLinear_poleSheafMap zero_le_one
-  exact ⟨hinj, (LinearMap.injective_iff_surjective_of_finrank_eq_finrank (h₀.trans h₁.symm)).mp
-    hinj⟩
 
 end Field
 

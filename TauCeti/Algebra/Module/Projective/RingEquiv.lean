@@ -24,6 +24,10 @@ of `M` at `σ⁻¹(q)`: `N` is the base change of `M` along `σ`.
   surjective semilinear map is finitely generated.
 * `LinearEquiv.rankAtStalk_eq`: the rank at the stalks is carried along a
   semilinear equivalence over a ring isomorphism.
+* `LinearEquiv.map_range_eq_range`, `LinearEquiv.projective_quotient_range` and
+  `LinearEquiv.rankAtStalk_quotient_range_eq`: semilinear equivalences intertwining two linear
+  maps carry the range of one onto the range of the other, hence projectivity and the ranks of
+  their cokernels.
 -/
 
 public section
@@ -70,3 +74,39 @@ theorem LinearEquiv.rankAtStalk_eq {σ : A →+* B} {σ' : B →+* A} [RingHomIn
     (by ext m; simp [g, f])
   rw [← Module.rankAtStalk_eq_of_equiv i, Module.rankAtStalk_baseChange,
     RingHom.algebraMap_toAlgebra]
+
+section QuotientRange
+
+variable {P Q P' Q' : Type*} [AddCommGroup P] [AddCommGroup Q] [AddCommGroup P'] [AddCommGroup Q']
+  [Module A P] [Module A Q] [Module B P'] [Module B Q'] {σ : A →+* B} {σ' : B →+* A}
+  [RingHomInvPair σ σ'] [RingHomInvPair σ' σ] {f : P →ₗ[A] Q} {f' : P' →ₗ[B] Q'}
+  (eP : P ≃ₛₗ[σ] P') (eQ : Q ≃ₛₗ[σ] Q')
+
+/-- Semilinear equivalences intertwining two linear maps carry the range of one onto the range of
+the other. -/
+theorem LinearEquiv.map_range_eq_range (h : ∀ x, eQ (f x) = f' (eP x)) :
+    (LinearMap.range f).map (eQ : Q →ₛₗ[σ] Q') = LinearMap.range f' := by
+  ext y
+  simp only [Submodule.mem_map, LinearMap.mem_range]
+  constructor
+  · rintro ⟨_, ⟨x, rfl⟩, rfl⟩
+    exact ⟨eP x, (h x).symm⟩
+  · rintro ⟨x, rfl⟩
+    exact ⟨f (eP.symm x), ⟨eP.symm x, rfl⟩, (h _).trans (by rw [LinearEquiv.apply_symm_apply])⟩
+
+/-- Semilinear equivalences intertwining two linear maps carry projectivity of the cokernel of one
+to the cokernel of the other. -/
+theorem LinearEquiv.projective_quotient_range (h : ∀ x, eQ (f x) = f' (eP x))
+    [Module.Projective A (Q ⧸ LinearMap.range f)] :
+    Module.Projective B (Q' ⧸ LinearMap.range f') :=
+  .of_equiv (Submodule.Quotient.equiv _ _ eQ (eP.map_range_eq_range eQ h))
+
+/-- Semilinear equivalences intertwining two linear maps carry the ranks of the cokernel of one to
+the cokernel of the other: the rank at `q` is the rank at `σ⁻¹(q)`. -/
+theorem LinearEquiv.rankAtStalk_quotient_range_eq (h : ∀ x, eQ (f x) = f' (eP x))
+    [Module.Finite A Q] [Module.Flat A (Q ⧸ LinearMap.range f)] (q : PrimeSpectrum B) :
+    Module.rankAtStalk (Q' ⧸ LinearMap.range f') q =
+      Module.rankAtStalk (Q ⧸ LinearMap.range f) (q.comap σ) :=
+  (Submodule.Quotient.equiv _ _ eQ (eP.map_range_eq_range eQ h)).rankAtStalk_eq q
+
+end QuotientRange

@@ -9,6 +9,7 @@ public import Mathlib.RingTheory.Flat.Equalizer
 public import Mathlib.RingTheory.Flat.Localization
 public import Mathlib.RingTheory.LocalRing.Module
 public import Mathlib.RingTheory.LocalRing.ResidueField.Ideal
+public import Mathlib.RingTheory.Spectrum.Prime.FreeLocus
 public import TauCeti.RingTheory.Flat.TensorProduct
 import TauCeti.LinearAlgebra.TensorProduct.ScalarExtension
 
@@ -37,10 +38,21 @@ The global statement localizes at the maximal ideals `q` of `B`. The localizatio
 is still flat over `R` (`Module.Flat.tensorProduct_of_flat`), and its fibre over the prime of `R`
 below `q` is a base change of the fibre of `M`.
 
+The same argument detects direct summands. Let `f : M → N` be a linear map from a finite module to
+a finite projective module whose base change to the residue field of every maximal ideal is
+injective. Over the localization at a maximal ideal, `N` is free and Nakayama's lemma
+(`Module.free_of_lTensor_residueField_injective`) makes the cokernel free; so the cokernel
+`N ⧸ f(M)` is flat and finitely presented, hence projective
+(`Module.Projective.quotient_range_of_injective_baseChange`). Its rank is the difference of the
+ranks (`Module.rankAtStalk_quotient_range_add`).
+
 ## Main results
 
 * `Module.Free.of_flat_fiber`: the criterion over a local ring, with freeness as conclusion.
 * `Module.Flat.of_flat_fiber`: the criterion over an arbitrary ring.
+* `Module.Projective.quotient_range_of_injective_baseChange`: a map to a finite projective module
+  which stays injective on every residue field has projective cokernel.
+* `Module.rankAtStalk_quotient_range_add`: the rank of that cokernel is the difference of ranks.
 
 ## References
 
@@ -136,5 +148,75 @@ theorem Flat.of_flat_fiber [Module.FinitePresentation B M] [Flat R M]
     ((AlgebraTensorModule.cancelBaseChange B Bq F' F' M).trans
       (AlgebraTensorModule.cancelBaseChange B F F' F' M).symm)
   exact Flat.trans B Bq _
+
+section Cokernel
+
+variable {R M N : Type*} [CommRing R] [AddCommGroup M] [Module R M] [AddCommGroup N]
+  [Module R N] (f : M →ₗ[R] N)
+
+/-- **The fibrewise criterion for a direct summand.** Let `f : M → N` be a linear map from a finite
+module to a finite projective module. If the base change of `f` to the residue field of every
+maximal ideal is injective, then the cokernel `N ⧸ f(M)` is projective. -/
+theorem Projective.quotient_range_of_injective_baseChange [Module.Finite R M] [Module.Finite R N]
+    [Projective R N]
+    (hf : ∀ (p : Ideal R) [p.IsMaximal], Function.Injective (f.baseChange p.ResidueField)) :
+    Projective R (N ⧸ LinearMap.range f) := by
+  have := Module.finitePresentation_of_projective R N
+  have : Module.FinitePresentation R (N ⧸ LinearMap.range f) :=
+    Module.finitePresentation_of_surjective _ (LinearMap.range f).mkQ_surjective
+      (by rw [Submodule.ker_mkQ, LinearMap.range_eq_map]; exact Module.Finite.fg_top.map f)
+  have hex := f.exact_map_mkQ_range
+  have hg := (LinearMap.range f).mkQ_surjective
+  have (q : Ideal R) [q.IsMaximal] : IsLocalizedModule.AtPrime q
+      (TensorProduct.mk R (Localization.AtPrime q) (N ⧸ LinearMap.range f) 1) :=
+    (isLocalizedModule_iff_isBaseChange q.primeCompl _ _).mpr (TensorProduct.isBaseChange R _ _)
+  have : Flat R (N ⧸ LinearMap.range f) := by
+    refine flat_of_isLocalized_maximal R _ (fun q _ ↦ Localization.AtPrime q ⊗[R] _)
+      (fun q _ ↦ TensorProduct.mk R (Localization.AtPrime q) _ 1) fun q _ ↦ ?_
+    set Rq := Localization.AtPrime q
+    have : Free Rq (Rq ⊗[R] N) := free_of_flat_of_isLocalRing
+    -- Over the local ring `Rq`, injectivity on the residue field makes the cokernel free.
+    have : Free Rq (Rq ⊗[R] (N ⧸ LinearMap.range f)) := by
+      refine free_of_lTensor_residueField_injective (f.baseChange Rq)
+        ((LinearMap.range f).mkQ.baseChange Rq) (LinearMap.lTensor_surjective Rq hg)
+        (lTensor_exact Rq hex hg) ?_
+      -- Through `κ(q) ⊗[Rq] (Rq ⊗[R] X) ≃ κ(q) ⊗[R] X`, this is the base change of `f` to `κ(q)`.
+      have key := LinearMap.congr_fun (AlgebraTensorModule.lTensor_comp_cancelBaseChange R Rq
+        q.ResidueField (M := q.ResidueField) f)
+      simp only [LinearMap.coe_comp, LinearEquiv.coe_coe, Function.comp_apply,
+        AlgebraTensorModule.coe_lTensor] at key
+      intro x y hxy
+      apply (AlgebraTensorModule.cancelBaseChange R Rq q.ResidueField q.ResidueField M).injective
+      apply hf q
+      rw [LinearMap.baseChange_eq_lTensor, key, key]
+      exact congrArg (AlgebraTensorModule.cancelBaseChange R Rq q.ResidueField q.ResidueField N)
+        hxy
+    exact Flat.trans R Rq _
+  exact Flat.projective_of_finitePresentation
+
+/-- In the fibrewise criterion for a direct summand, the ranks add up: if `M` and `N` are finite
+projective and the base change of `f : M → N` to every residue field is injective, the rank of
+`N ⧸ f(M)` at a prime is the rank of `N` minus the rank of `M`. -/
+theorem rankAtStalk_quotient_range_add [Module.Finite R M] [Projective R M] [Module.Finite R N]
+    [Projective R N]
+    (hf : ∀ (p : Ideal R) [p.IsPrime], Function.Injective (f.baseChange p.ResidueField))
+    (p : PrimeSpectrum R) :
+    rankAtStalk (N ⧸ LinearMap.range f) p + rankAtStalk M p = rankAtStalk N p := by
+  have := Projective.quotient_range_of_injective_baseChange f fun q _ ↦ hf q
+  have := Module.finitePresentation_of_projective R N
+  have : Module.Finite R (N ⧸ LinearMap.range f) := Module.Finite.quotient R _
+  rw [rankAtStalk_eq, rankAtStalk_eq, rankAtStalk_eq]
+  set k := p.asIdeal.ResidueField
+  -- `κ(p) ⊗ M → κ(p) ⊗ N → κ(p) ⊗ (N ⧸ f(M)) → 0` is exact, with injective first map.
+  have hex : Function.Exact (f.baseChange k) ((LinearMap.range f).mkQ.baseChange k) := by
+    rw [LinearMap.baseChange_eq_lTensor, LinearMap.baseChange_eq_lTensor]
+    exact lTensor_exact k f.exact_map_mkQ_range (LinearMap.range f).mkQ_surjective
+  have hs : Function.Surjective ((LinearMap.range f).mkQ.baseChange k) := by
+    rw [LinearMap.baseChange_eq_lTensor]
+    exact LinearMap.lTensor_surjective k (LinearMap.range f).mkQ_surjective
+  rw [← (hex.linearEquivOfSurjective hs).finrank_eq,
+    ← LinearMap.finrank_range_of_inj (hf p.asIdeal), Submodule.finrank_quotient_add_finrank]
+
+end Cokernel
 
 end Module

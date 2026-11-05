@@ -82,6 +82,11 @@ def dualMap (hI : I.IsEffectiveCartier) (hJ : J.IsEffectiveCartier) (h : J ≤ I
     InvertibleSheaf.dual hI.toInvertibleSheaf ⟶ InvertibleSheaf.dual hJ.toInvertibleSheaf :=
   InvertibleSheaf.dualMap (toInvertibleSheafMap hI hJ h)
 
+/-- The inclusion `𝒪(D') ⟶ 𝒪(D)` is the dual of the inclusion of ideal sheaves. -/
+lemma dualMap_def (hI : I.IsEffectiveCartier) (hJ : J.IsEffectiveCartier) (h : J ≤ I) :
+    dualMap hI hJ h = InvertibleSheaf.dualMap (toInvertibleSheafMap hI hJ h) :=
+  (rfl)
+
 /-- **The inclusion `𝒪(D') ⟶ 𝒪(D)` is a monomorphism of sheaves.** -/
 instance mono_dualMap_hom (hI : I.IsEffectiveCartier) (hJ : J.IsEffectiveCartier) (h : J ≤ I) :
     Mono (dualMap hI hJ h).hom :=
