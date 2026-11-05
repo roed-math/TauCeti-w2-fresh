@@ -8,7 +8,11 @@ module
 public import TauCeti.AlgebraicGeometry.EffectiveCartierDivisor.Invertible
 public import TauCeti.AlgebraicGeometry.IdealSheaf.TensorProduct
 public import TauCeti.AlgebraicGeometry.LineBundle.Class
+public import TauCeti.AlgebraicGeometry.Modules.Algebra.Pushforward
 public import TauCeti.AlgebraicGeometry.Modules.TensorProduct
+-- The comparison of `tensorProductSheafIso` with `sheafMul` unfolds the sheafification
+-- adjunction `TauCeti.SheafOfModules.sheafificationForgetAdjunction`, whose body is not exposed.
+import all TauCeti.Algebra.Category.ModuleCat.Sheaf.TensorProduct.Monoidal
 
 /-!
 # Ideal sheaves of sums of effective Cartier divisors
@@ -31,6 +35,9 @@ of `I_D`, inverting gives `[𝒪_X(D + E)] = [𝒪_X(D)] * [𝒪_X(E)]`, which i
 
 * `Scheme.IdealSheafData.tensorProductSheafIso`: `I ⊗ J ≅ I * J` when `J` is effective Cartier,
   with `Scheme.IdealSheafData.tensorProductSheafIso_hom_tmul` computing it on pure tensors;
+* `Scheme.IdealSheafData.isIso_sheafMul` and `Scheme.IdealSheafData.sheafMulIso`: the same
+  isomorphism in the monoidal category `X.Modules`: multiplication of local functions
+  `Scheme.IdealSheafData.sheafMul` is an isomorphism when `J` is effective Cartier;
 * `TauCeti.AlgebraicGeometry.LineBundleClass.mk_toInvertibleSheaf_mul`: the line-bundle class of
   the ideal sheaf of `D + E` is the product of the classes of the ideal sheaves of `D` and `E`;
 * `TauCeti.AlgebraicGeometry.LineBundleClass.mk_toInvertibleSheaf_pow`: the line-bundle class of
@@ -204,6 +211,81 @@ theorem tensorProductSheafIso_hom_tmul (U : X.Opens) (s : Γ(I.sheaf, U)) (t : �
   -- Evaluate both sides at `U` on the pure tensor `s ⊗ t`; the forgetful functor and the
   -- sheafification unit unfold to `Hom.app` on the sectionwise pure tensor.
   exact (congrArg (fun f ↦ f.app (op U) (s ⊗ₜ t)) h).trans (tensorPresheafHom_app_tmul I J U s t)
+
+section SheafMul
+
+open MonoidalCategory
+
+/-- Through the identification of the monoidal tensor product with the sheafified one,
+`tensorProductSheafIso` followed by the inclusion `I * J ⟶ 𝒪_X` is the tensor product of the
+inclusions followed by the multiplication `𝒪_X ⊗ 𝒪_X ≅ 𝒪_X`. -/
+private theorem tensorProductSheafIso_hom_sheafι :
+    ((_root_.SheafOfModules.tensorUnderlyingIso (R := X.sheaf) I.sheaf J.sheaf).hom ≫
+        (TauCeti.SheafOfModules.tensorProductIso X.sheaf I.sheaf J.sheaf).inv ≫
+        (tensorProductSheafIso I hJ).hom) ≫ (I * J).sheafι =
+      (I.sheafι ⊗ₘ J.sheafι) ≫ (λ_ (𝟙_ X.Modules)).hom := by
+  let F := _root_.SheafOfModules.forget (TauCeti.SheafOfModules.ringCatSheaf X.sheaf)
+  -- Through the tensor map of `forget`, the composite is the sheafified multiplication.
+  have h₁ : Functor.LaxMonoidal.μ F I.sheaf J.sheaf ≫
+      F.map ((_root_.SheafOfModules.tensorUnderlyingIso (R := X.sheaf) I.sheaf J.sheaf).hom ≫
+        (TauCeti.SheafOfModules.tensorProductIso X.sheaf I.sheaf J.sheaf).inv ≫
+        (tensorProductSheafIso I hJ).hom) =
+      (TauCeti.SheafOfModules.sheafificationForgetAdjunction X.sheaf).unit.app _ ≫
+        F.map ((TauCeti.SheafOfModules.tensorProductIso X.sheaf I.sheaf J.sheaf).inv ≫
+          (tensorProductSheafIso I hJ).hom) := by
+    refine (congrArg (· ≫ F.map _)
+      (TauCeti.SheafOfModules.forget_μ (R := X.sheaf) I.sheaf J.sheaf)).trans ?_
+    refine (Category.assoc _ _ _).trans (congrArg (_ ≫ ·) ((F.map_comp _ _).symm.trans ?_))
+    exact congrArg F.map (Iso.inv_hom_id_assoc _ _)
+  apply TauCeti.SheafOfModules.tensor_hom_ext
+  ext U : 1
+  apply ModuleCat.MonoidalCategory.tensor_ext
+  intro s t
+  let S := Scheme.Modules.sectionsFunctor (X := X) U.unop
+  have hμ : S.map ((_root_.SheafOfModules.tensorUnderlyingIso (R := X.sheaf) I.sheaf J.sheaf).hom ≫
+        (TauCeti.SheafOfModules.tensorProductIso X.sheaf I.sheaf J.sheaf).inv ≫
+        (tensorProductSheafIso I hJ).hom) (Functor.LaxMonoidal.μ S I.sheaf J.sheaf (s ⊗ₜ t)) =
+      sectionsMul I J U.unop s t :=
+    (congrArg (fun f ↦ (f.app U).hom (s ⊗ₜ t)) h₁).trans
+      (tensorProductSheafIso_hom_tmul I hJ U.unop s t)
+  have hnat := congrArg (fun f ↦ f.hom (s ⊗ₜ t))
+    (Functor.LaxMonoidal.μ_natural S I.sheafι J.sheafι)
+  -- The sections over `U` of the tensor map of `forget` are the tensor map of the lax monoidal
+  -- sections functor `S`, in which `Scheme.leftUnitor_hom_app_μ_tmul` is stated.
+  change S.map (_ ≫ (I * J).sheafι) (Functor.LaxMonoidal.μ S I.sheaf J.sheaf (s ⊗ₜ t)) =
+    S.map ((I.sheafι ⊗ₘ J.sheafι) ≫ (λ_ (𝟙_ X.Modules)).hom)
+      (Functor.LaxMonoidal.μ S I.sheaf J.sheaf (s ⊗ₜ t))
+  rw [ModuleCat.comp_apply, ModuleCat.comp_apply] at hnat
+  rw [S.map_comp, ModuleCat.comp_apply, ← hnat]
+  -- The composite is taken in `X.Modules` and in sheaves of modules over `ringCatSheaf X.sheaf`,
+  -- which agree only up to unfolding, so it is split with `erw`.
+  erw [S.map_comp, ModuleCat.comp_apply, hμ]
+  exact (sheafι_app_sectionsMul I J U.unop s t).trans
+    (Scheme.leftUnitor_hom_app_μ_tmul U.unop _ _).symm
+
+/-- **Multiplication by the ideal sheaf of an effective Cartier divisor is an isomorphism**: if
+`J` is effective Cartier, multiplication of local functions `I ⊗ J ⟶ I * J` is an isomorphism. -/
+theorem isIso_sheafMul : IsIso (sheafMul I J) := by
+  have h : sheafMul I J =
+      (_root_.SheafOfModules.tensorUnderlyingIso (R := X.sheaf) I.sheaf J.sheaf ≪≫
+        (TauCeti.SheafOfModules.tensorProductIso X.sheaf I.sheaf J.sheaf).symm ≪≫
+        tensorProductSheafIso I hJ).hom :=
+    (cancel_mono (I * J).sheafι).mp
+      ((sheafMul_sheafι I J).trans (tensorProductSheafIso_hom_sheafι I hJ).symm)
+  exact h ▸ Iso.isIso_hom _
+
+/-- **The ideal sheaf of a sum of divisors**, in the monoidal category of `𝒪_X`-modules: if `J` is
+the ideal sheaf of an effective Cartier divisor, multiplication of local functions is an
+isomorphism `I ⊗ J ≅ I * J`. -/
+def sheafMulIso : I.sheaf ⊗ J.sheaf ≅ (I * J).sheaf :=
+  have := isIso_sheafMul I hJ
+  asIso (sheafMul I J)
+
+@[simp]
+theorem sheafMulIso_hom : (sheafMulIso I hJ).hom = sheafMul I J :=
+  (rfl)
+
+end SheafMul
 
 end
 

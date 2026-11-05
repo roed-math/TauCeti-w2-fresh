@@ -19,7 +19,9 @@ inclusions into `𝒪_X`, and it is functorial in the inequality.
 
 * `Scheme.IdealSheafData.sections_mono`: the sections of ideal sheaves are monotone;
 * `Scheme.IdealSheafData.sheafOfLE`: the inclusion `J ⟶ I` of ideal sheaves for `J ≤ I`, with
-  `sheafOfLE_sheafι`, `sheafOfLE_refl` and `sheafOfLE_comp`.
+  `sheafOfLE_sheafι`, `sheafOfLE_refl` and `sheafOfLE_comp`;
+* `Scheme.IdealSheafData.eqToHom_sheafι`: transport along an equality of ideal sheaves commutes
+  with the inclusions into `𝒪_X`.
 -/
 
 public section
@@ -79,6 +81,13 @@ lemma sheafOfLE_comp (h₁ : K ≤ J) (h₂ : J ≤ I) :
   rw [← cancel_mono I.sheafι, sheafOfLE_sheafι]
   exact (Category.assoc (obj := X.Modules) _ _ _).trans (by
     rw [sheafOfLE_sheafι, sheafOfLE_sheafι])
+
+/-- Transport of an ideal sheaf along an equality commutes with the inclusions into `𝒪_X`. -/
+@[simp, reassoc]
+lemma eqToHom_sheafι {J₁ J₂ : X.IdealSheafData} (h : J₁ = J₂) :
+    eqToHom (congrArg sheaf h) ≫ J₂.sheafι = J₁.sheafι := by
+  subst h
+  exact Category.id_comp _
 
 end
 
