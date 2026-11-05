@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.IdealSheaf.Comap
+public import TauCeti.AlgebraicGeometry.IdealSheaf.Module
 public import TauCeti.AlgebraicGeometry.Morphisms.UniversalHomeomorphism
 
 /-!
@@ -50,6 +51,8 @@ module of homomorphisms into `I`.
   thickening of an affine scheme is surjective on global sections with square-zero kernel, so it is
   `Spec` of a square-zero extension; conversely `IsFirstOrderThickening.SpecMap_mk` gives the
   first-order thickening `Spec (B ⧸ I) ⟶ Spec B` of a square-zero ideal `I`.
+* `TauCeti.AlgebraicGeometry.IsFirstOrderThickening.mul_eq_zero_of_app_eq_zero`: over every open,
+  affine or not, sections of the ideal sheaf of a first-order thickening multiply to zero.
 
 ## References
 
@@ -228,6 +231,22 @@ theorem SpecMap_iff {R S : CommRingCat.{u}} (φ : R ⟶ S) (hφ : Function.Surje
 /-- The ideal sheaf of a first-order thickening is nilpotent. -/
 theorem isNilpotent_ker (i : Z ⟶ X) [IsFirstOrderThickening i] : IsNilpotent i.ker :=
   ⟨2, (pow_two _).trans ker_mul_self⟩
+
+/-- Along a first-order thickening `i`, the product of two sections of `𝒪_X` over any open whose
+pullbacks along `i` vanish is zero: the ideal sheaf of `i` has square zero on every open. -/
+theorem mul_eq_zero_of_app_eq_zero (i : Z ⟶ X) [IsFirstOrderThickening i] {U : X.Opens}
+    {s t : Γ(X, U)} (hs : i.app U s = 0) (ht : i.app U t = 0) : s * t = 0 := by
+  refine X.IsSheaf.section_ext fun x hx ↦ ?_
+  obtain ⟨_, ⟨W, hW, rfl⟩, hxW, hWU⟩ :=
+    X.isBasis_affineOpens.exists_subset_of_mem_open hx U.isOpen
+  refine ⟨W, hWU, hxW, ?_⟩
+  have hsW := i.ker.map_mem_sections (homOfLE hWU) ((i.mem_ker_sections_iff).2 hs)
+  have htW := i.ker.map_mem_sections (homOfLE hWU) ((i.mem_ker_sections_iff).2 ht)
+  rw [i.ker.sections_eq_ideal ⟨W, hW⟩] at hsW htW
+  have : _ ∈ (i.ker * i.ker).ideal ⟨W, hW⟩ := Ideal.mul_mem_mul hsW htW
+  rw [ker_mul_self] at this
+  rw [map_mul, map_zero]
+  exact Ideal.mem_bot.1 this
 
 /-- A first-order thickening of an affine scheme is surjective on global sections. -/
 theorem appTop_surjective (i : Z ⟶ X) [IsAffine X] [IsFirstOrderThickening i] :
