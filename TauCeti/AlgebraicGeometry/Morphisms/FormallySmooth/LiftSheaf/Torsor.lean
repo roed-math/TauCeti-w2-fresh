@@ -23,10 +23,13 @@ with `liftSheafSub (D • l) l = D`. The sheaf of lifts is locally nonempty beca
 * `TauCeti.AlgebraicGeometry.liftDerivationGrpSheaf f i a`: the sheaf of derivations as a sheaf of
   multiplicative groups.
 * `TauCeti.AlgebraicGeometry.liftTorsor w`: the sheaf of lifts as a torsor under it.
+* `TauCeti.AlgebraicGeometry.liftObstruction w`: its class in `NonabelianH1`.
 
 ## Main results
 
 * `TauCeti.AlgebraicGeometry.liftSheafSub_smul`: `liftSheafSub (D • l) l = D`.
+* `TauCeti.AlgebraicGeometry.liftObstruction_eq_one_iff`: the obstruction class vanishes if and
+  only if `a` lifts along `i` over `S`.
 
 ## References
 
@@ -125,5 +128,26 @@ noncomputable def liftTorsor [Smooth f] : Sheaf.Torsor (liftDerivationGrpSheaf f
     exact liftSMul_map w e D.toAdd l
   coversTop := liftSheaf_coversTop f i a h w
   bijective W := liftMulAction_bijective w W.unop
+
+/-- A presheaf of sets on the opens of `T'` has a compatible family of sections exactly when it has
+a section over `⊤`. -/
+private lemma sections_nonempty_iff (F : (Opens T')ᵒᵖ ⥤ Type u) :
+    F.sections.Nonempty ↔ Nonempty (F.obj (op ⊤)) := by
+  refine ⟨fun ⟨s, _⟩ ↦ ⟨s (op ⊤)⟩, fun ⟨x⟩ ↦
+    ⟨fun U ↦ F.map (homOfLE le_top).op x, fun {U V} e ↦ ?_⟩⟩
+  simp only
+  rw [← ConcreteCategory.comp_apply, ← F.map_comp]
+  exact congrArg (fun φ ↦ F.map φ x) (Subsingleton.elim _ _)
+
+/-- The obstruction to lifting `a` along `i` over a smooth `f`: the class of the torsor of lifts in
+`NonabelianH1 (liftDerivationGrpSheaf f i a)`. -/
+noncomputable def liftObstruction [Smooth f] : Sheaf.NonabelianH1 (liftDerivationGrpSheaf f i a) :=
+  Sheaf.NonabelianH1.mk (liftTorsor w)
+
+/-- The obstruction class vanishes if and only if `a` lifts along `i` over `S`. -/
+theorem liftObstruction_eq_one_iff [Smooth f] :
+    liftObstruction w = 1 ↔ ∃ l : T' ⟶ X, i ≫ l = a ∧ l ≫ f = h := by
+  rw [liftObstruction, Sheaf.NonabelianH1.mk_eq_one_iff, ← nonempty_liftSheaf_top_iff]
+  exact sections_nonempty_iff (liftSheaf f i a h).obj
 
 end TauCeti.AlgebraicGeometry
