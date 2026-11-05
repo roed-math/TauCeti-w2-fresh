@@ -7,6 +7,7 @@ module
 
 public import Mathlib.CategoryTheory.Abelian.RightDerived
 public import TauCeti.Algebra.Homology.SpectralSequence.Bicomplex.UpNat
+public import TauCeti.CategoryTheory.Abelian.RightDerived
 public import TauCeti.CategoryTheory.Abelian.Injective.CartanEilenberg
 
 /-!
@@ -48,6 +49,11 @@ The page numbered `3` is therefore the classical `E₂` page.
   complex `G(J(Hᵏ))`, up to the sign `(-1)ᵏ` of the differentials.
 * `CochainComplex.cartanEilenbergSpectralSequencePageThreeXIso`: its second page is
   `RˢG(Hᵏ(K))`.
+* `CochainComplex.cartanEilenbergSpectralSequence_page_d_eq_zero`,
+  `CochainComplex.cartanEilenbergSpectralSequenceEInftyIso`,
+  `CochainComplex.cartanEilenbergSpectralSequenceEInftyIsoAbutment`: when the cohomology of `K` is
+  concentrated in degree `0`, the spectral sequence degenerates at `E₂` and its abutment of
+  degree `s` is `RˢG(H⁰(K))`.
 * `CategoryTheory.InjectiveResolution.quasiIso_of_isZero_rightDerived`: a left exact functor
   applied to an injective resolution of an acyclic object gives a resolution.
 * `CochainComplex.quasiIso_totalCoaugmentation_mapCartanEilenberg`,
@@ -251,6 +257,169 @@ noncomputable def cartanEilenbergSpectralSequencePageThreeXIso (s k : ℕ) :
   ((K.cartanEilenbergSpectralSequence G).iso 2 3 _).symm ≪≫
     K.cartanEilenbergSpectralSequencePageTwoHomologyIso G s k ≪≫
     ((K.homologyResolution k).isoRightDerivedObj G s).symm
+
+/-! ### Degeneration when the cohomology is concentrated in degree `0` -/
+
+section Degeneration
+
+variable {K G}
+
+/-- If the cohomology of `K` is concentrated in degree `0`, then from page `3` on the
+Cartan–Eilenberg spectral sequence vanishes outside the row `E₂^{s,0} = RˢG(H⁰(K))`: its object at
+`(p, q)` is zero unless `p + 2q + 1 = 0`. -/
+lemma isZero_cartanEilenbergSpectralSequence_page_X
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (r : ℤ) (hr : 3 ≤ r) (pq : ℤ × ℤ)
+    (hpq : pq.1 + 2 * pq.2 + 1 ≠ 0) :
+    IsZero (((K.cartanEilenbergSpectralSequence G).page r).X pq) := by
+  obtain ⟨m, rfl⟩ : ∃ m : ℕ, r = 3 + m := ⟨(r - 3).toNat, by omega⟩
+  induction m with
+  | zero =>
+    obtain ⟨p, q⟩ := pq
+    dsimp only at hpq
+    have hzero (h : IsZero (((K.cartanEilenbergSpectralSequence G).page 2).X (p, q))) :
+        IsZero (((K.cartanEilenbergSpectralSequence G).page (3 + (0 : ℕ))).X (p, q)) :=
+      (ShortComplex.isZero_homology_of_isZero_X₂ _ h).of_iso
+        ((K.cartanEilenbergSpectralSequence G).iso 2 _ _ (by simp)).symm
+    obtain hq | hq := le_or_gt 0 q
+    · exact hzero (HomologicalComplex₂.isZero_rowFiltrationUpSpectralSequence_page_two_X_of_nonneg
+        _ _ _ hq)
+    obtain ⟨s, rfl⟩ : ∃ s : ℕ, q = -((s : ℤ) + 1) := ⟨(-q - 1).toNat, by omega⟩
+    obtain hk | hk := lt_or_gt_of_ne hpq
+    · exact hzero (HomologicalComplex₂.isZero_rowFiltrationUpSpectralSequence_page_two_X_of_lt
+        _ p s (by omega))
+    · obtain ⟨k, rfl⟩ : ∃ k : ℕ, p = ((k + 1 : ℕ) : ℤ) + 2 * s + 1 :=
+        ⟨(p - 2 * s - 2).toNat, by omega⟩
+      exact ((G.rightDerived s).map_isZero (hK k)).of_iso
+        ((K.cartanEilenbergSpectralSequence G).pageXIsoOfEq _ _ 3 (by simp) ≪≫
+          K.cartanEilenbergSpectralSequencePageThreeXIso G s (k + 1))
+  | succ m ih =>
+    exact (ShortComplex.isZero_homology_of_isZero_X₂ _ (ih (by omega))).of_iso
+      ((K.cartanEilenbergSpectralSequence G).iso (3 + m) _ pq (by push_cast; ring)).symm
+
+/-- **Degeneration of the Cartan–Eilenberg spectral sequence** when the cohomology of `K` is
+concentrated in degree `0`: all its differentials vanish from page `3` on, since every differential
+leaves or reaches an object outside the row `E₂^{s,0}`. -/
+lemma cartanEilenbergSpectralSequence_page_d_eq_zero
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (r : ℤ) (hr : 3 ≤ r)
+    (pq pq' : ℤ × ℤ) : ((K.cartanEilenbergSpectralSequence G).page r).d pq pq' = 0 := by
+  by_cases h : pq.1 + 2 * pq.2 + 1 = 0
+  · by_cases hrel : (ComplexShape.up' ((r, 1 - r) : ℤ × ℤ)).Rel pq pq'
+    · refine (isZero_cartanEilenbergSpectralSequence_page_X hK r hr pq' ?_).eq_of_tgt _ _
+      rw [← hrel, Prod.fst_add, Prod.snd_add]
+      omega
+    · exact ((K.cartanEilenbergSpectralSequence G).page r).shape _ _ hrel
+  · exact (isZero_cartanEilenbergSpectralSequence_page_X hK r hr pq h).eq_of_src _ _
+
+/-- When the cohomology of `K` is concentrated in degree `0`, consecutive pages of the
+Cartan–Eilenberg spectral sequence agree from page `3` on, since all differentials vanish. -/
+noncomputable def cartanEilenbergSpectralSequencePageSuccXIso
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (r : ℤ) (hr : 3 ≤ r) (pq : ℤ × ℤ) :
+    ((K.cartanEilenbergSpectralSequence G).page (r + 1)).X pq ≅
+      ((K.cartanEilenbergSpectralSequence G).page r).X pq :=
+  ((K.cartanEilenbergSpectralSequence G).iso r (r + 1) pq).symm ≪≫
+    (((K.cartanEilenbergSpectralSequence G).page r).isoHomologyπ _ pq rfl
+      (cartanEilenbergSpectralSequence_page_d_eq_zero hK r hr _ _)).symm ≪≫
+    ((K.cartanEilenbergSpectralSequence G).page r).iCyclesIso pq _ rfl
+      (cartanEilenbergSpectralSequence_page_d_eq_zero hK r hr _ _)
+
+/-- When the cohomology of `K` is concentrated in degree `0`, every page `3 + m` of the
+Cartan–Eilenberg spectral sequence is its page `3`. -/
+noncomputable def cartanEilenbergSpectralSequencePageXIsoPageThree
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) : (m : ℕ) → (pq : ℤ × ℤ) →
+    ((K.cartanEilenbergSpectralSequence G).page (3 + m)).X pq ≅
+      ((K.cartanEilenbergSpectralSequence G).page 3).X pq
+  | 0, pq => (K.cartanEilenbergSpectralSequence G).pageXIsoOfEq pq _ _
+  | m + 1, pq => (K.cartanEilenbergSpectralSequence G).pageXIsoOfEq pq _ (3 + m + 1) ≪≫
+      cartanEilenbergSpectralSequencePageSuccXIso hK (3 + m) (by omega) pq ≪≫
+      cartanEilenbergSpectralSequencePageXIsoPageThree hK m pq
+
+/-- **The Cartan–Eilenberg spectral sequence degenerates at `E₂`** when the cohomology of `K` is
+concentrated in degree `0`: its limit object of degree `s` at the filtration index `-(s + 1)` is
+`E₂^{s,0} = RˢG(H⁰(K))`. -/
+noncomputable def cartanEilenbergSpectralSequenceEInftyIso
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (s : ℕ) :
+    (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+      (K.mapCartanEilenberg G).rowFiltrationUp
+        (K.mapCartanEilenberg G).monotone_rowFiltrationUp)).EInfty
+        (-((s : ℤ) + 1)) s ≅
+      (G.rightDerived s).obj (K.homology 0) :=
+  (CochainComplex.filtrationSpectralSequencePageXIsoEInfty _ _ (3 + s) (by omega)
+      (((0 : ℕ) : ℤ) + 2 * s + 1, -((s : ℤ) + 1)) s (by push_cast; ring)
+      (by
+        rw [show -((s : ℤ) + 1) - (3 + s) + 2 = -((2 * s + 2 : ℕ) : ℤ) by push_cast; ring]
+        exact HomologicalComplex.ExactAt.isZero_homology (ShortComplex.exact_of_isZero_X₂ _
+          (HomologicalComplex₂.isZero_rowFiltrationUp_X _ (2 * s + 2) _ (by omega))))
+      ((HomologicalComplex₂.rowFiltrationUp _ _).isZero_homology_cokernel_of_eq_top
+        (HomologicalComplex₂.rowFiltrationUp_eq_top _ _ (by omega)) _)).symm ≪≫
+    cartanEilenbergSpectralSequencePageXIsoPageThree hK s _ ≪≫
+    K.cartanEilenbergSpectralSequencePageThreeXIso G s 0
+
+/-- When the cohomology of `K` is concentrated in degree `0`, the limit objects of the
+Cartan–Eilenberg spectral sequence vanish outside the row `E₂^{s,0}`: the object of degree `n` at
+the filtration index `q` is zero unless `n + q + 1 = 0`. -/
+lemma isZero_cartanEilenbergSpectralSequenceEInfty
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (q n : ℤ) (h : n + q + 1 ≠ 0) :
+    IsZero ((CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+      (K.mapCartanEilenberg G).rowFiltrationUp
+        (K.mapCartanEilenberg G).monotone_rowFiltrationUp)).EInfty
+        q n) := by
+  obtain ⟨m, hm⟩ : ∃ m : ℕ, (m : ℤ) = n.toNat + (-n).toNat + q.toNat + (-q).toNat + 3 :=
+    ⟨n.toNat + (-n).toNat + q.toNat + (-q).toNat + 3, by push_cast; rfl⟩
+  obtain ⟨s, hs⟩ : ∃ s : ℕ, q - (3 + m) + 2 = -(s : ℤ) := ⟨(-(q - (3 + m) + 2)).toNat, by omega⟩
+  refine (isZero_cartanEilenbergSpectralSequence_page_X hK (3 + m) (by omega) (n - q, q)
+    (by dsimp only; omega)).of_iso
+      (CochainComplex.filtrationSpectralSequencePageXIsoEInfty _ _ (3 + m) (by omega) (n - q, q) n
+        (by dsimp only; ring) ?_ ?_).symm
+  · rw [hs]
+    exact HomologicalComplex.ExactAt.isZero_homology (ShortComplex.exact_of_isZero_X₂ _
+      (HomologicalComplex₂.isZero_rowFiltrationUp_X _ s _ (by omega)))
+  · exact (HomologicalComplex₂.rowFiltrationUp _ _).isZero_homology_cokernel_of_eq_top
+      (HomologicalComplex₂.rowFiltrationUp_eq_top _ _ (by omega)) _
+
+/-- When the cohomology of `K` is concentrated in degree `0`, the filtration of the abutment of
+degree `n` of the Cartan–Eilenberg spectral sequence is everything from the index `-n` on: its piece
+at an index `q = -j` with `j ≤ n` is the whole abutment. -/
+lemma isIso_cartanEilenbergSpectralSequence_abutmentFiltrationι
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (n j : ℕ) (hj : j ≤ n) (q : ℤ)
+    (hq : q + j = 0) :
+    IsIso (Abelian.SpectralObject.abutmentFiltrationι
+      (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+        (K.mapCartanEilenberg G).rowFiltrationUp
+          (K.mapCartanEilenberg G).monotone_rowFiltrationUp)) q n) := by
+  induction j generalizing q with
+  | zero => exact HomologicalComplex₂.isIso_rowFiltrationUp_abutmentFiltrationι _ q n (by omega)
+  | succ j ih =>
+    have := ih (by omega) (q + 1) (by push_cast at hq; omega)
+    rw [← Abelian.SpectralObject.abutmentFiltrationMap_ι]
+    refine IsIso.comp_isIso' (@isIso_of_mono_of_epi _ _ _ _ _ _
+      (mono_of_mono_fac (Abelian.SpectralObject.abutmentFiltrationMap_ι _ q n)) ?_) this
+    exact Preadditive.epi_of_isZero_cokernel _
+      ((isZero_cartanEilenbergSpectralSequenceEInfty hK q n (by push_cast at hq; omega)).of_iso
+        (Abelian.SpectralObject.EInftyIsoCokernel _ q n).symm)
+
+/-- **Collapse of the Cartan–Eilenberg spectral sequence** when the cohomology of `K` is
+concentrated in degree `0`: its abutment of degree `n` is its limit object of degree `n` at the
+filtration index `-(n + 1)`, the only graded piece of the filtration that does not vanish. -/
+noncomputable def cartanEilenbergSpectralSequenceEInftyIsoAbutment
+    (hK : ∀ k : ℕ, IsZero (K.homology (k + 1))) (n : ℕ) :
+    (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+      (K.mapCartanEilenberg G).rowFiltrationUp
+        (K.mapCartanEilenberg G).monotone_rowFiltrationUp)).EInfty
+        (-((n : ℤ) + 1)) n ≅
+      (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+        (K.mapCartanEilenberg G).rowFiltrationUp
+          (K.mapCartanEilenberg G).monotone_rowFiltrationUp)).abutment
+        n :=
+  have h₀ := HomologicalComplex₂.isZero_rowFiltrationUp_abutmentFiltration
+    (K.mapCartanEilenberg G) (n + 1) n
+    (by omega)
+  have := isIso_cartanEilenbergSpectralSequence_abutmentFiltrationι hK n n le_rfl
+    (-((n : ℤ) + 1) + 1) (by ring)
+  Abelian.SpectralObject.EInftyIsoCokernel _ _ _ ≪≫
+    cokernelIsoOfEq (IsZero.eq_of_src (by push_cast at h₀; exact h₀) _ _) ≪≫
+    cokernelZeroIsoTarget ≪≫ @asIso _ _ _ _ _ this
+
+end Degeneration
 
 /-! ### The abutment -/
 

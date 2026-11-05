@@ -37,6 +37,10 @@ numbering `coreE₂Cohomological`, in which the first page is numbered `2`: the 
   `RˢG(RᵏF(X))`.
 * `CategoryTheory.Functor.grothendieckSpectralSequenceAbutmentIso`: it converges to
   `R•(F ⋙ G)(X)`.
+* `CategoryTheory.Functor.grothendieckSpectralSequence_page_d_eq_zero`,
+  `CategoryTheory.Functor.grothendieckSpectralSequenceEInftyIso`: at an `F`-acyclic object `X`
+  the spectral sequence degenerates at `E₂`, and its abutment of degree `s` is
+  `E₂^{s,0} = RˢG(R⁰F(X))`.
 
 ## References
 
@@ -86,5 +90,43 @@ noncomputable def grothendieckSpectralSequenceAbutmentIso [PreservesFiniteLimits
     HomologicalComplex.homologyMapIso
       ((Functor.mapHomologicalComplexCompIso (Iso.refl (F ⋙ G)) _).app I.cocomplex) n ≪≫
     (I.isoRightDerivedObj (F ⋙ G) n).symm
+
+/-! ### Degeneration at an `F`-acyclic object -/
+
+section Degeneration
+
+variable {F G I}
+
+omit [HasInjectiveResolutions D] in
+/-- At an `F`-acyclic object, the cohomology of `F(I)` is concentrated in degree `0`. -/
+lemma isZero_homology_mapHomologicalComplex_succ
+    (hX : ∀ k : ℕ, IsZero ((F.rightDerived (k + 1)).obj X)) (k : ℕ) :
+    IsZero (((F.mapHomologicalComplex _).obj I.cocomplex).homology (k + 1)) :=
+  (hX k).of_iso (I.isoRightDerivedObj F (k + 1)).symm
+
+/-- **Degeneration of the Grothendieck spectral sequence** at an `F`-acyclic object: all its
+differentials vanish from page `3` on. -/
+lemma grothendieckSpectralSequence_page_d_eq_zero
+    (hX : ∀ k : ℕ, IsZero ((F.rightDerived (k + 1)).obj X)) (r : ℤ) (hr : 3 ≤ r)
+    (pq pq' : ℤ × ℤ) : ((F.grothendieckSpectralSequence G I).page r).d pq pq' = 0 :=
+  CochainComplex.cartanEilenbergSpectralSequence_page_d_eq_zero
+    (isZero_homology_mapHomologicalComplex_succ hX) r hr pq pq'
+
+/-- **The Grothendieck spectral sequence of an `F`-acyclic object collapses**: its limit object
+of degree `s` at the filtration index `-(s + 1)` is `E₂^{s,0} = RˢG(R⁰F(X))`, and it is the whole
+abutment (`CochainComplex.cartanEilenbergSpectralSequenceEInftyIsoAbutment`). -/
+noncomputable def grothendieckSpectralSequenceEInftyIso
+    (hX : ∀ k : ℕ, IsZero ((F.rightDerived (k + 1)).obj X)) (s : ℕ) :
+    (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+      (CochainComplex.mapCartanEilenberg ((F.mapHomologicalComplex _).obj I.cocomplex)
+        G).rowFiltrationUp (CochainComplex.mapCartanEilenberg
+          ((F.mapHomologicalComplex _).obj I.cocomplex) G).monotone_rowFiltrationUp)).EInfty
+        (-((s : ℤ) + 1)) s ≅
+      (G.rightDerived s).obj ((F.rightDerived 0).obj X) :=
+  CochainComplex.cartanEilenbergSpectralSequenceEInftyIso
+      (isZero_homology_mapHomologicalComplex_succ hX) s ≪≫
+    (G.rightDerived s).mapIso (I.isoRightDerivedObj F 0).symm
+
+end Degeneration
 
 end CategoryTheory.Functor

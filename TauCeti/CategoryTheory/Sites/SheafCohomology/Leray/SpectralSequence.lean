@@ -51,6 +51,11 @@ numbered `2`, as `CategoryTheory.Functor.grothendieckSpectralSequence` does: the
   `CategoryTheory.Sheaf.H.relativeLeraySpectralSequencePageThreeXIso`,
   `CategoryTheory.Sheaf.H.relativeLeraySpectralSequenceAbutmentIso`: the relative form
   `Rᵖ g_* Rᵠ f_* F ⇒ Rᵖ⁺ᵠ(g ∘ f)_* F` for a composite (Stacks, Lemma 21.14.7 (0734)).
+* `CategoryTheory.Sheaf.H.leraySpectralSequence_page_d_eq_zero`,
+  `CategoryTheory.Sheaf.H.leraySpectralSequenceEInftyAddEquiv`,
+  `CategoryTheory.Sheaf.H.leraySpectralSequenceEInftyAddEquivH`: when the higher direct images
+  vanish, the spectral sequence degenerates at `E₂` and collapses onto its row `Hᵖ(C, f_* F)`;
+  `CategoryTheory.Sheaf.H.leraySpectralSequence_id_page_d_eq_zero`: in particular for `f = 𝟙`.
 
 ## References
 
@@ -153,6 +158,79 @@ noncomputable def leraySpectralSequenceAbutmentAddEquiv (n : ℕ) :
       Functor.isZero_rightDerived_obj_injective_succ _ n _) n).addCommGroupIsoToAddEquiv.trans
     (TauCeti.CategoryTheory.rightDerivedObjAddEquivExt _
       (pushforwardGlobalSectionsCorepresentableBy adj c) _ n)
+
+/-! ### Degeneration when the higher direct images vanish -/
+
+section Degeneration
+
+variable {I}
+
+omit [HasExt (Sheaf J AddCommGrpCat.{w})] [HasExt (Sheaf K AddCommGrpCat.{w})] in
+/-- If the higher direct images `Rᵠ f_* F` (`q > 0`) vanish, then from page `3` on the Leray
+spectral sequence vanishes outside the row `E₂^{p,0} = Hᵖ(C, R⁰ f_* F)`: its object at
+`(a, b)` is zero unless `a + 2b + 1 = 0`. -/
+lemma isZero_leraySpectralSequence_page_X
+    (hF : ∀ q : ℕ, IsZero ((pf.rightDerived (q + 1)).obj F)) (r : ℤ) (hr : 3 ≤ r)
+    (pq : ℤ × ℤ) (hpq : pq.1 + 2 * pq.2 + 1 ≠ 0) :
+    IsZero (((leraySpectralSequence pf I).page r).X pq) :=
+  CochainComplex.isZero_cartanEilenbergSpectralSequence_page_X
+    (Functor.isZero_homology_mapHomologicalComplex_succ hF) r hr pq hpq
+
+omit [HasExt (Sheaf J AddCommGrpCat.{w})] [HasExt (Sheaf K AddCommGrpCat.{w})] in
+/-- **Degeneration of the Leray spectral sequence**: if the higher direct images `Rᵠ f_* F`
+(`q > 0`) vanish, all differentials of the Leray spectral sequence vanish from page `3` on. -/
+lemma leraySpectralSequence_page_d_eq_zero
+    (hF : ∀ q : ℕ, IsZero ((pf.rightDerived (q + 1)).obj F)) (r : ℤ) (hr : 3 ≤ r)
+    (pq pq' : ℤ × ℤ) : ((leraySpectralSequence pf I).page r).d pq pq' = 0 :=
+  Functor.grothendieckSpectralSequence_page_d_eq_zero hF r hr pq pq'
+
+/-- If the higher direct images `Rᵠ f_* F` (`q > 0`) vanish, the limit object of degree `p` of
+the Leray spectral sequence, at the filtration index `-(p + 1)`, is `Hᵖ(C, f_* F)`. -/
+noncomputable def leraySpectralSequenceEInftyAddEquiv
+    (hF : ∀ q : ℕ, IsZero ((pf.rightDerived (q + 1)).obj F)) (p : ℕ) :
+    (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+      (CochainComplex.mapCartanEilenberg ((pf.mapHomologicalComplex _).obj I.cocomplex)
+        (preadditiveCoyoneda.obj
+          (op ((constantSheaf J AddCommGrpCat.{w}).obj (of (ULift ℤ)))))).rowFiltrationUp
+      (CochainComplex.mapCartanEilenberg ((pf.mapHomologicalComplex _).obj I.cocomplex)
+        (preadditiveCoyoneda.obj (op ((constantSheaf J AddCommGrpCat.{w}).obj
+          (of (ULift ℤ)))))).monotone_rowFiltrationUp)).EInfty (-((p : ℤ) + 1)) p ≃+
+      H (pf.obj F) p :=
+  have := adj.rightAdjoint_preservesLimits
+  (Functor.grothendieckSpectralSequenceEInftyIso hF p).addCommGroupIsoToAddEquiv.trans
+    ((TauCeti.CategoryTheory.rightDerivedObjAddEquivExt _ globalSectionsCorepresentableBy _
+      p).trans ((functorH J p).mapIso (pf.rightDerivedZeroIsoSelf.app F)).addCommGroupIsoToAddEquiv)
+
+/-- **Collapse of the Leray spectral sequence**: if the higher direct images `Rᵠ f_* F` (`q > 0`)
+vanish, the limit object of degree `n` at the filtration index `-(n + 1)` is the whole abutment
+`Hⁿ(D, F)`. Together with `CategoryTheory.Sheaf.H.leraySpectralSequenceEInftyAddEquiv`, the
+spectral sequence identifies `Hⁿ(C, f_* F)` with `Hⁿ(D, F)`. -/
+noncomputable def leraySpectralSequenceEInftyAddEquivH
+    (hF : ∀ q : ℕ, IsZero ((pf.rightDerived (q + 1)).obj F)) (n : ℕ) :
+    (CochainComplex.spectralObject (CochainComplex.filtrationFunctor
+      (CochainComplex.mapCartanEilenberg ((pf.mapHomologicalComplex _).obj I.cocomplex)
+        (preadditiveCoyoneda.obj
+          (op ((constantSheaf J AddCommGrpCat.{w}).obj (of (ULift ℤ)))))).rowFiltrationUp
+      (CochainComplex.mapCartanEilenberg ((pf.mapHomologicalComplex _).obj I.cocomplex)
+        (preadditiveCoyoneda.obj (op ((constantSheaf J AddCommGrpCat.{w}).obj
+          (of (ULift ℤ)))))).monotone_rowFiltrationUp)).EInfty (-((n : ℤ) + 1)) n ≃+ H F n :=
+  (CochainComplex.cartanEilenbergSpectralSequenceEInftyIsoAbutment
+      (Functor.isZero_homology_mapHomologicalComplex_succ hF) n).addCommGroupIsoToAddEquiv.trans
+    (leraySpectralSequenceAbutmentAddEquiv adj c I n)
+
+end Degeneration
+
+section Identity
+
+omit [HasExt (Sheaf J AddCommGrpCat.{w})] [HasExt (Sheaf K AddCommGrpCat.{w})] in
+/-- **The Leray spectral sequence of the identity degenerates** (the check `leray_test_identity`
+of the roadmap): for `f = 𝟙`, whose pushforward is exact, all differentials vanish from page `3`
+on. -/
+lemma leraySpectralSequence_id_page_d_eq_zero (r : ℤ) (hr : 3 ≤ r) (pq pq' : ℤ × ℤ) :
+    ((leraySpectralSequence (𝟭 (Sheaf K AddCommGrpCat.{w})) I).page r).d pq pq' = 0 :=
+  leraySpectralSequence_page_d_eq_zero (fun q ↦ Functor.isZero_rightDerived_succ _ F q) r hr pq pq'
+
+end Identity
 
 /-! ### The relative form -/
 
