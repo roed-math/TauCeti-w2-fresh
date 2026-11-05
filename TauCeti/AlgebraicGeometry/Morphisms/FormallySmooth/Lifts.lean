@@ -24,7 +24,7 @@ coordinates. This is the affine space case of the torsor of lifts of Stacks, Lem
 
 ## Main results
 
-* `TauCeti.AlgebraicGeometry.affineSpaceLift_addTorsor`: the lifts into `𝔸(n; S)` form a torsor
+* `TauCeti.AlgebraicGeometry.affineSpaceLiftAddTorsor`: the lifts into `𝔸(n; S)` form a torsor
   under `n → RingHom.ker i.appTop`, the `n`-tuples of global sections of the ideal sheaf of `i`.
 * `TauCeti.AlgebraicGeometry.FormallySmooth.hasLift`: along an affine first-order thickening, a
   square into a formally smooth morphism has a lift.
@@ -75,7 +75,7 @@ theorem affineSpaceLift_ext {l₁ l₂ : sq.LiftStruct}
 
 /-- Global sections of the ideal sheaf of `i` act on the lifts into `𝔸(n; S)` by translating
 their coordinates. -/
-noncomputable instance : VAdd (n → RingHom.ker i.appTop.hom) sq.LiftStruct where
+noncomputable instance affineSpaceLiftVAdd : VAdd (n → RingHom.ker i.appTop.hom) sq.LiftStruct where
   vadd v l :=
     { l := homOfVector h fun j ↦ v j + l.l.appTop (coord S j)
       fac_left := by
@@ -91,7 +91,7 @@ theorem affineSpaceLift_vadd_appTop_coord (v : n → RingHom.ker i.appTop.hom) (
 
 /-- The coordinates of two lifts into `𝔸(n; S)` differ by global sections of the ideal sheaf
 of `i`. -/
-noncomputable instance : VSub (n → RingHom.ker i.appTop.hom) sq.LiftStruct where
+noncomputable instance affineSpaceLiftVSub : VSub (n → RingHom.ker i.appTop.hom) sq.LiftStruct where
   vsub l₁ l₂ j := ⟨l₁.l.appTop (coord S j) - l₂.l.appTop (coord S j), by
     rw [RingHom.mem_ker, map_sub, affineSpaceLift_appTop_appTop_coord,
       affineSpaceLift_appTop_appTop_coord, sub_self]⟩
@@ -114,7 +114,7 @@ instance affineSpaceLift_hasLift [IsAffine T'] [IsClosedImmersion i] : sq.HasLif
 `𝔸(n; S) ⟶ S` form a torsor under `n`-tuples of global sections of the ideal sheaf of `i` (the
 kernel of `i.appTop`), acting by translation of the coordinates. This is the affine space case of
 Stacks, Lemma 37.9.5 (04FJ), where the torsor is under `Hom(g^* Ω_{𝔸(n; S)/S}, I) ≅ I^n`. -/
-noncomputable instance affineSpaceLift_addTorsor [IsAffine T'] [IsClosedImmersion i] :
+noncomputable instance affineSpaceLiftAddTorsor [IsAffine T'] [IsClosedImmersion i] :
     AddTorsor (n → RingHom.ker i.appTop.hom) sq.LiftStruct where
   zero_vadd l := affineSpaceLift_ext fun j ↦ by simp
   add_vadd v₁ v₂ l := affineSpaceLift_ext fun j ↦ by simp [add_assoc]

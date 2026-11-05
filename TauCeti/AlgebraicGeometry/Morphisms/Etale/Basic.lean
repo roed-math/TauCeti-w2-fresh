@@ -56,6 +56,8 @@ monoidal category `Over (Spec K)`, as for the points of group schemes over `Spec
   with at least `f.finrank s` points of `X` over `Spec K` is étale.
 * `AlgebraicGeometry.Scheme.Hom.natCard_eq_finrank_of_etale`: over a separably closed field `K`,
   a finite étale morphism `f : X ⟶ Spec K` has exactly `f.finrank s` points of `X` over `Spec K`.
+* `TauCeti.AlgebraicGeometry.formallyEtale_homOfLE_appTop`: for affine opens `U' ⊆ U` of a scheme,
+  the restriction `Γ(U, ⊤) ⟶ Γ(U', ⊤)` is formally étale.
 -/
 
 public section
@@ -156,5 +158,16 @@ instance etale_respectsIso :
     CategoryTheory.MorphismProperty.RespectsIso @AlgebraicGeometry.Etale :=
   CategoryTheory.MorphismProperty.respectsIso_of_isStableUnderComposition
     fun _ _ _ (_ : CategoryTheory.IsIso _) ↦ inferInstance
+
+open _root_.AlgebraicGeometry in
+/-- The restriction `Γ(U, ⊤) ⟶ Γ(U', ⊤)` along an inclusion of affine opens is formally
+étale. -/
+theorem formallyEtale_homOfLE_appTop {X : Scheme.{u}} {U U' : X.Opens} [IsAffine U.toScheme]
+    [IsAffine U'.toScheme] (e : U' ≤ U) :
+    letI := (X.homOfLE e).appTop.hom.toAlgebra
+    Algebra.FormallyEtale Γ(U.toScheme, ⊤) Γ(U'.toScheme, ⊤) :=
+  letI := (X.homOfLE e).appTop.hom.toAlgebra
+  (HasRingHomProperty.appTop @Etale (X.homOfLE e) inferInstance :
+    Algebra.Etale Γ(U.toScheme, ⊤) Γ(U'.toScheme, ⊤)).formallyEtale
 
 end TauCeti.AlgebraicGeometry

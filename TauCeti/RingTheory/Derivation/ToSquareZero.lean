@@ -89,6 +89,23 @@ theorem isScalarTower_of_sq_eq_bot (hI : I ^ 2 = ⊥) :
   rw [coe_smul_of_sq_eq_bot hI hb', Submodule.coe_smul_of_tower, coe_smul_of_sq_eq_bot hI hb,
     Algebra.smul_def, mul_assoc]
 
+/-- The module structures `moduleOfSqEqBot` on `I` are compatible along an `A`-algebra `A'` over
+`B ⧸ I`. -/
+theorem isScalarTower_moduleOfSqEqBot (A' : Type*) [CommRing A'] [Algebra A A']
+    [Algebra A' (B ⧸ I)] [IsScalarTower A A' (B ⧸ I)] (hI : I ^ 2 = ⊥) :
+    letI := moduleOfSqEqBot A hI
+    letI := moduleOfSqEqBot A' hI
+    IsScalarTower A A' I := by
+  let := moduleOfSqEqBot A hI
+  let := moduleOfSqEqBot A' hI
+  refine ⟨fun x y m ↦ Subtype.ext ?_⟩
+  obtain ⟨b, hb⟩ := Ideal.Quotient.mk_surjective (algebraMap A (B ⧸ I) x)
+  obtain ⟨b', hb'⟩ := Ideal.Quotient.mk_surjective (algebraMap A' (B ⧸ I) y)
+  have hbb' : Ideal.Quotient.mk I (b * b') = algebraMap A' (B ⧸ I) (x • y) := by
+    rw [map_mul, hb, hb', Algebra.smul_def, map_mul, ← IsScalarTower.algebraMap_apply]
+  rw [coe_smul_of_sq_eq_bot hI hbb', coe_smul_of_sq_eq_bot hI hb, coe_smul_of_sq_eq_bot hI hb',
+    mul_assoc]
+
 variable (R A I) in
 /-- The lifts `A →ₐ[R] B` of the structure map `A →ₐ[R] B ⧸ I`. -/
 abbrev LiftOfQuotient :=

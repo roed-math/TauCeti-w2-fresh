@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"is-thickening","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: formally smooth and formally étale morphisms of schemes"},{"n":2,"after":[1],"title":"feat: formal smoothness of Spec.map and of affine space"},{"n":3,"after":[],"title":"feat: thickenings of order n + 2 factor through first-order thickenings"},{"n":4,"after":[1,2],"title":"feat: étale iff formally étale"},{"n":5,"after":[1,2],"title":"feat: lifts into affine space along a closed immersion form a torsor"},{"n":6,"after":[1,2,4],"title":"feat: the sheaf of lifts along a first-order thickening"},{"n":7,"after":[2],"title":"feat: lifts along a first-order thickening of an affine scheme form a torsor under derivations"},{"n":8,"after":[1,2,4,6,7],"title":"feat: sections of the sheaf of lifts over affine opens"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: smooth iff formally smooth and the torsor of lifts"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"is-thickening","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: formally smooth and formally étale morphisms of schemes"},{"n":2,"after":[1],"title":"feat: formal smoothness of Spec.map and of affine space"},{"n":3,"after":[],"title":"feat: thickenings of order n + 2 factor through first-order thickenings"},{"n":4,"after":[1,2],"title":"feat: étale iff formally étale"},{"n":5,"after":[1,2],"title":"feat: lifts into affine space along a closed immersion form a torsor"},{"n":6,"after":[1,2,4],"title":"feat: the sheaf of lifts along a first-order thickening"},{"n":7,"after":[2],"title":"feat: lifts along a first-order thickening of an affine scheme form a torsor under derivations"},{"n":8,"after":[1,2,4,6,7],"title":"feat: sections of the sheaf of lifts over affine opens"},{"n":9,"after":[1,2,4,5,6,7,8],"title":"feat: the torsor of lifts does not depend on the affine chart"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: smooth iff formally smooth and the torsor of lifts"}]}-->
 
 # Lookahead: SchemeAndStackFoundations §4.1 `is-thickening` (partial)
 
@@ -26,7 +26,10 @@ Nothing proved on this branch consumes either listed supplier, so there is no
   and for the gluing step of smooth ⇒ formally smooth. Neither is on this branch (see
   *What remains*), so nothing is stubbed. The next session should stub what that step consumes:
   `NonabelianH1`'s torsor-class API and `equivSheafH`, in the forms of #27237 and its follow-ups.
-  (Rechecked 2026-11-05, twice, against `main` `85f3eb5579d`: both PRs still open, same scope; split 8 consumes neither. Earlier, rechecked 2026-11-04, three times: #22428 and #27237 are still open; #27237 is now *feat: connecting map of an extension of sheaves of
+  (Rechecked 2026-11-05 04:10 UTC against `main` `85f3eb5579d`: #22428 (*feat: universal
+  homeomorphisms of schemes and the integral criterion*) and #27237 (*feat: connecting map of an
+  extension of sheaves of groups*) are both still open; splits 8 and 9 consume neither.
+  Rechecked 2026-11-05, twice, against `main` `85f3eb5579d`: both PRs still open, same scope; split 8 consumes neither. Earlier, rechecked 2026-11-04, three times: #22428 and #27237 are still open; #27237 is now *feat: connecting map of an extension of sheaves of
   groups*, a single new file `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Connecting.lean`;
   the torsor carrier `TauCeti/CategoryTheory/Sites/NonabelianCohomology/Torsor.lean` is on
   `main`. Nothing on the branch consumes either. Split 6's `liftSheaf_coversTop` is stated in the
@@ -66,7 +69,7 @@ How this matches the roadmap API (README §4.1):
 | *FormallySmooth.iff_affineLocally* | ⇒ **proved** as `FormallySmooth.formallySmooth_appLE` (split 4); ⇐ remains (needs gluing, see below) |
 | *FormallySmooth.of_smooth*, `smooth_iff_formallySmooth` | ⇐ (formally smooth + LFP ⇒ smooth) **proved** as `AlgebraicGeometry.Smooth.of_formallySmooth` (split 4); ⇒ **proved for affine `X`, `S`** as `FormallySmooth.of_smooth_of_isAffine`, and **locally** as `exists_local_lift_of_smooth` (split 4); the general ⇒ remains |
 | `etale_iff_formallyEtale` | **proved** (split 4), together with the instance `FormallyEtale.of_etale` |
-| `smooth_lifting_torsor` | affine local model **proved** (split 7): `Ideal.derivationToSquareZeroAddTorsor` (lifts of `A → B ⧸ I` to `B`, for `I ^ 2 = ⊥`, are a torsor under `Der_R(A, I)`), `Ideal.nonempty_liftOfQuotient`/`subsingleton_liftOfQuotient`, `liftStructEquivLiftOfQuotient` (the lifts in a square of affine schemes along a closed immersion `i` are the algebra lifts `Γ(X, ⊤) →ₐ[Γ(S, ⊤)] Γ(T', ⊤)` of `Γ(X, ⊤) → Γ(T', ⊤) ⧸ ker i.appTop`) and `liftStructAddTorsor` (along a first-order thickening `i` of an affine scheme, the lifts in a square with `X`, `S` affine form a torsor under `Der_{Γ(S, ⊤)}(Γ(X, ⊤), ker i.appTop)`); affine space case **proved**: instance `affineSpaceLift_addTorsor` (split 5); étale uniqueness **proved** as instance `FormallyEtale.subsingleton_liftStruct` (split 5) and, sheaf-wise, as instance `subsingleton_liftSheaf` (split 6); the **sheaf of lifts** `liftSheaf` is **defined**, with `nonempty_liftSheaf_top_iff` (a lift exists iff the sheaf has a global section) and `liftSheaf_coversTop` (locally nonempty for smooth `f`) (split 6); its sections over an affine open `W` of `T'` are **read as lifts in affine squares** (`liftSheafObjEquivLiftStruct`), so that `liftStructAddTorsor` acts on them, compatibly with restriction to a smaller affine `W' ⊆ W` (`liftSheafObjEquivLiftStruct_map_vadd`/`_map_vsub`) and independently of the affine chart `U ⊆ X` (`liftSheafObjEquivLiftStruct_vsub_apply_homOfLE`) (split 8); the group sheaf `Hom(a^* Ω_{X/S}, I)`, its simply transitive action and the obstruction class remain |
+| `smooth_lifting_torsor` | affine local model **proved** (split 7): `Ideal.derivationToSquareZeroAddTorsor` (lifts of `A → B ⧸ I` to `B`, for `I ^ 2 = ⊥`, are a torsor under `Der_R(A, I)`), `Ideal.nonempty_liftOfQuotient`/`subsingleton_liftOfQuotient`, `liftStructEquivLiftOfQuotient` (the lifts in a square of affine schemes along a closed immersion `i` are the algebra lifts `Γ(X, ⊤) →ₐ[Γ(S, ⊤)] Γ(T', ⊤)` of `Γ(X, ⊤) → Γ(T', ⊤) ⧸ ker i.appTop`) and `liftStructAddTorsor` (along a first-order thickening `i` of an affine scheme, the lifts in a square with `X`, `S` affine form a torsor under `Der_{Γ(S, ⊤)}(Γ(X, ⊤), ker i.appTop)`); affine space case **proved**: instance `affineSpaceLiftAddTorsor` (split 5); étale uniqueness **proved** as instance `FormallyEtale.subsingleton_liftStruct` (split 5) and, sheaf-wise, as instance `subsingleton_liftSheaf` (split 6); the **sheaf of lifts** `liftSheaf` is **defined**, with `nonempty_liftSheaf_top_iff` (a lift exists iff the sheaf has a global section) and `liftSheaf_coversTop` (locally nonempty for smooth `f`) (split 6); its sections over an affine open `W` of `T'` are **read as lifts in affine squares** (`liftSheafObjEquivLiftStruct`), so that `liftStructAddTorsor` acts on them, compatibly with restriction to a smaller affine `W' ⊆ W` (`liftSheafObjEquivLiftStruct_map_vadd`/`_map_vsub`) and independently of the affine chart `U ⊆ X` (`liftSheafObjEquivLiftStruct_vsub_apply_homOfLE`) (split 8); the local torsors **do not depend on the affine chart** `U' ⊆ U` of `X`: derivations of `Γ(U)` and of `Γ(U')` into the ideal are identified by `Derivation.compAlgebraMapEquiv` (`Γ(U) → Γ(U')` is formally étale) and the two actions agree (`liftSheafObjEquivLiftStruct_vsub_homOfLE`, `_symm_vadd_homOfLE`, `_symm_vadd_eq_compAlgebraMapEquiv_symm`) (split 9); the group sheaf `Hom(a^* Ω_{X/S}, I)`, its simply transitive action and the obstruction class remain |
 | checks *isFirstOrderThickening_dualNumber*, *_id*, `not_isFirstOrderThickening_cube`, `not_isThickening_origin` | already on `main` |
 | checks *formallySmooth_affineSpace*, *formallyEtale_id*, `not_formallySmooth_closedPoint` | **proved**: instance `FormallySmooth.affineSpace`, an `example`, and `not_formallySmooth_origin` (split 2) |
 | check `formallyUnramified_iff_mathlib` | **proved** as `formallyUnramified_iff_hom_ext` (split 4) |
@@ -108,17 +111,21 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/Local.lean` (118 lines:
    `formallyUnramified_iff_hom_ext`, instance `FormallyEtale.formallyUnramified`,
    `formallyEtale_iff`, `FormallySmooth.formallySmooth_appLE`, `FormallyEtale.formallyEtale_appLE`)
-   and `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/Criterion.lean` (184 lines:
+   and `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/Criterion.lean` (204 lines:
    `AlgebraicGeometry.Smooth.of_formallySmooth`, `AlgebraicGeometry.Etale.of_formallyEtale`,
-   instance `FormallyEtale.of_etale`, `etale_iff_formallyEtale`). About 300 lines.
+   instance `FormallyEtale.of_etale`, `etale_iff_formallyEtale`, `exists_affine_chart` (along a
+   thickening `i : T ⟶ T'`, the affine opens `W ⊆ T'` with affine opens `U ⊆ X`, `V ⊆ S` such
+   that `a (i⁻¹ W) ⊆ U`, `h W ⊆ V`, `f U ⊆ V` form a basis; added this round, and
+   `exists_local_lift_of_smooth` now uses it instead of choosing the charts inline)). About 320
+   lines.
 5. **`feat: lifts into affine space along a closed immersion form a torsor`** — after: 1, 2.
    New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/Lifts.lean` (125 lines). Lifts are
    Mathlib's `CommSq.LiftStruct` (no new structure). Declarations: instances
    `FormallySmooth.hasLift` and `FormallyEtale.subsingleton_liftStruct` (existence and uniqueness
    of lifts in a square along an affine first-order thickening), `affineSpaceLift_appTop_appTop_coord`,
-   `affineSpaceLift_ext`, the `VAdd`/`VSub` instances of `n → RingHom.ker i.appTop` on lifts into
+   `affineSpaceLift_ext`, the `VAdd`/`VSub` instances `affineSpaceLiftVAdd`/`affineSpaceLiftVSub` of `n → RingHom.ker i.appTop` on lifts into
    `𝔸(n; S)` with simp lemmas `affineSpaceLift_vadd_appTop_coord`, `affineSpaceLift_coe_vsub_apply`,
-   instance `affineSpaceLift_hasLift`, and instance `affineSpaceLift_addTorsor` (along a closed
+   instance `affineSpaceLift_hasLift`, and instance `affineSpaceLiftAddTorsor` (along a closed
    immersion into an affine scheme, the lifts form a torsor under `n`-tuples of global sections
    of the ideal sheaf). Plus the check `lifting_torsor_test_affine_space` as an `example` (for
    `𝔸(PUnit; S)`, i.e. `𝔸¹_S`, along a first-order thickening) in
@@ -126,7 +133,7 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    is why this split needs split 2, as that file is split 2's. `Lifts.lean` itself needs only
    split 1.
 6. **`feat: the sheaf of lifts along a first-order thickening`** — after: 1, 2, 4.
-   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf.lean` (183 lines) and
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Basic.lean` (183 lines) and
    instance `IsFirstOrderThickening.morphismRestrict` (`i ∣_ U` is a first-order thickening; 7
    lines) in `TauCeti/AlgebraicGeometry/Morphisms/Thickening.lean`. Declarations: `liftPresheaf`
    (sections over `W`: the `l : W ⟶ X` with `i ∣_ W ≫ l = (i ⁻¹ᵁ W).ι ≫ a` and
@@ -142,7 +149,7 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    `liftSheafObjEquiv f i a h W` (the sections over `W` are the `l : W ⟶ X` with
    `i ∣_ W ≫ l = (i ⁻¹ᵁ W).ι ≫ a` and `l ≫ f = W.ι ≫ h`) and the simp lemma
    `coe_liftSheafObjEquiv_map` (restriction to `W' ⊆ W` is precomposition with `W' ⟶ W`).
-   `LiftSheaf.lean` is now 201 lines.
+   `LiftSheaf/Basic.lean` is now 201 lines.
 7. **`feat: lifts along a first-order thickening of an affine scheme form a torsor under
    derivations`** — after: 2.
    New file `TauCeti/RingTheory/Derivation/ToSquareZero.lean` (174 lines), pure algebra next
@@ -188,7 +195,7 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    equivalence for the literal square of spectra `Spec (B ⧸ I) ⟶ Spec B`, is removed: unused, and
    subsumed by `liftStructEquivLiftOfQuotient`.) About 390 lines.
 8. **`feat: sections of the sheaf of lifts over affine opens`** — after: 1, 2, 4, 6, 7.
-   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheafAffine.lean` (259 lines).
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Affine.lean` (259 lines).
    Declarations: `commSq_resLE` (the square `a ≫ f = i ≫ h` restricted over opens `W ⊆ T'`,
    `U ⊆ X`, `V ⊆ S` with `i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U`, `W ≤ h ⁻¹ᵁ V`, `U ≤ f ⁻¹ᵁ V`, via Mathlib's
    `Scheme.Hom.resLE`); `range_subset_of_liftSheaf` (for surjective `i`, every section over `W`
@@ -206,13 +213,43 @@ theorem IsThickening.factor_firstOrder (i : Z ⟶ X) [IsClosedImmersion i] (n : 
    which two sections differ, read through `U`, is the one read through `U' ⊆ U` composed with
    `Γ(U, ⊤) ⟶ Γ(U', ⊤)`). These are the local torsors of the sheaf of lifts and their
    compatibilities, the input of the gluing step.
-9. **`feat: smooth iff formally smooth and the torsor of lifts`** — after: 1, 2, 3, 4, 5, 6, 7, 8.
+9. **`feat: the torsor of lifts does not depend on the affine chart`** — after: 1, 2, 4, 5, 6, 7, 8.
+   New file `TauCeti/RingTheory/Derivation/FormallyEtale.lean` (78 lines), pure algebra:
+   `Derivation.compAlgebraMap_bijective` (for `T` formally étale over `S` and a `T`-module `M`,
+   restriction `Derivation R T M → Derivation R S M` along `S → T` is bijective, from Mathlib's
+   `KaehlerDifferential.isBaseChange_of_formallyEtale`), the `T`-linear equivalence
+   `Derivation.compAlgebraMapEquiv` with simp lemmas `_apply`, `compAlgebraMap_compAlgebraMapEquiv_symm`
+   and `compAlgebraMapEquiv_symm_apply_algebraMap`. In split 7's
+   `TauCeti/RingTheory/Derivation/ToSquareZero.lean` (17 lines): `Ideal.isScalarTower_moduleOfSqEqBot`
+   (the module structures `moduleOfSqEqBot` along `A → A'` over `B ⧸ I` form a scalar tower).
+   In main's `TauCeti/AlgebraicGeometry/Morphisms/Etale/Basic.lean` (12 lines):
+   `formallyEtale_homOfLE_appTop` (`Γ(U, ⊤) ⟶ Γ(U', ⊤)` is formally étale for affine opens
+   `U' ⊆ U`, from Mathlib's `HasRingHomProperty.appTop @Etale`).
+   New file `TauCeti/AlgebraicGeometry/Morphisms/FormallySmooth/LiftSheaf/Chart.lean` (227 lines):
+   `isScalarTower_resLE_homOfLE`, `isScalarTower_quotientKerAppTopAlgebra_homOfLE` (the algebra
+   structures `toAlgebra` of `resLE`/`homOfLE` and `quotientKerAppTopAlgebra` for `U` and `U'` are
+   compatible), instance `hasLift_commSq_resLE` (for `f` smooth the restricted squares over affine
+   `W`, `U`, `V` have lifts, via `FormallySmooth.of_smooth_of_isAffine` and split 5's
+   `FormallySmooth.hasLift`; this is why the split needs split 5), and, for affine `W`, `U' ⊆ U`,
+   `V`:
+   `liftSheafObjEquivLiftStruct_vsub_homOfLE` (the difference of two sections read through `U` is
+   the one read through `U'` restricted along `Γ(U) → Γ(U')`, as derivations),
+   `liftSheafObjEquivLiftStruct_symm_vadd_homOfLE` (acting by `d : Der(Γ(U'), I)` through `U'` is
+   acting by `d.compAlgebraMap Γ(U)` through `U`) and
+   `liftSheafObjEquivLiftStruct_symm_vadd_eq_compAlgebraMapEquiv_symm` (acting by
+   `d : Der(Γ(U), I)` through `U` is acting by its unique extension to `Γ(U')` through `U'`).
+   About 330 lines. The base chart `V` is already harmless: the pointwise
+   `liftSheafObjEquivLiftStruct_vsub_apply_homOfLE` (split 8) allows unrelated `V`, `V'`.
+10. **`feat: smooth iff formally smooth and the torsor of lifts`** — after: 1, 2, 3, 4, 5, 6, 7, 8, 9.
    **Not on this branch.** This is the only split that completes the target: the general
    `smooth_lifting_torsor`, `FormallySmooth.of_smooth`, `smooth_iff_formallySmooth`, and the ⇐ half
    of `FormallySmooth.iff_affineLocally`.
 
-Splits 1–8 depend on no unlanded supplier and could be opened against `main` as they stand
-(split 7 once split 2 has merged).
+Splits 1–9 depend on no unlanded supplier and could be opened against `main` as they stand,
+each once the splits it needs have merged. This round moved the sheaf-of-lifts files into the
+directory `FormallySmooth/LiftSheaf/` (`Basic.lean` for split 6, `Affine.lean` for split 8,
+`Chart.lean` for split 9), as the placement rubric asks of files sharing the leading component
+`LiftSheaf`; splits 6 and 8 are opened directly at those paths.
 
 ## What remains
 
@@ -228,11 +265,19 @@ Splits 1–8 depend on no unlanded supplier and could be opened against `main` a
   `Ideal.derivationToSquareZeroAddTorsor` of split 7, read on schemes as `liftStructAddTorsor`
   (split 7, any square of affine schemes); its compatibility with restriction to a smaller affine
   open `W' ⊆ W` of `T'` (any map of first-order thickenings into affine schemes) is now proved:
-  `liftStructAddTorsor_precomp_vsub`/`_vadd` with `kerAppTopLinearMap` (split 7). Split 8 (this round) reads the sections of `liftSheaf f i a h` over an affine open
+  `liftStructAddTorsor_precomp_vsub`/`_vadd` with `kerAppTopLinearMap` (split 7). Split 8 reads the sections of `liftSheaf f i a h` over an affine open
   `W` of `T'`, landing in an affine `U ⊆ X` over an affine `V ⊆ S`, as the lifts of the restricted
   square (`liftSheafObjEquivLiftStruct`), proves restriction to `W' ⊆ W` equivariant
   (`liftSheafObjEquivLiftStruct_map_vadd`/`_map_vsub`) and the difference derivation independent of
   the chart `U` up to restriction to `U' ⊆ U` (`liftSheafObjEquivLiftStruct_vsub_apply_homOfLE`).
+  Split 9 (this round) makes the chart change an identification of torsors: for affine `U' ⊆ U`
+  the groups `Der_{Γ(V)}(Γ(U), I(W))` and `Der_{Γ(V)}(Γ(U'), I(W))` are identified by restriction
+  (`Derivation.compAlgebraMapEquiv`, `Γ(U) → Γ(U')` being formally étale), and the actions on the
+  sections over `W` correspond (`liftSheafObjEquivLiftStruct_symm_vadd_eq_compAlgebraMapEquiv_symm`).
+  So on an affine `W` the group of the torsor can be taken as `Der_{Γ(V)}(Γ(U), I(W))` for any
+  affine chart `U ⊇ a(i⁻¹ W)`; what is still missing is the comparison of two charts `U₁`, `U₂`
+  whose intersection is not affine, which goes through affine `U' ⊆ U₁ ∩ U₂` on a cover of `W`
+  and uses the sheaf property of the group.
   The next bricks: (c) the group sheaf itself, on `T'` (equivalently on `T`): over `W` the
   `Γ(S)`-derivations `g^{-1} O_X → I`, i.e. compatible families of derivations
   `Γ(X, U) → I(W ∩ a⁻¹ U)` over the affine opens `U ⊆ X` lying over affine opens of `S`; on an

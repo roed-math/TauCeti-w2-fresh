@@ -29,6 +29,8 @@ so the local lifts agree on overlaps.
   finite presentation is smooth.
 * `TauCeti.AlgebraicGeometry.FormallySmooth.of_smooth_of_isAffine`: a smooth morphism of affine
   schemes is formally smooth.
+* `TauCeti.AlgebraicGeometry.exists_affine_chart`: along a thickening `i : T ⟶ T'`, the affine opens
+  `W ⊆ T'` with affine opens `U ⊆ X`, `V ⊆ S` containing the images of `i⁻¹ W` and `W` form a basis.
 * `TauCeti.AlgebraicGeometry.exists_local_lift_of_smooth`: for a smooth morphism, lifts along a
   first-order thickening exist locally on its target.
 
@@ -90,6 +92,29 @@ theorem FormallySmooth.of_smooth_of_isAffine [IsAffine X] [IsAffine S] (f : X �
   rw [hf]
   infer_instance
 
+/-- Affine charts along a thickening: in a commutative square `a ≫ f = i ≫ h` with `i : T ⟶ T'` a
+thickening, every point of an open `O ⊆ T'` has an affine open neighbourhood `W ⊆ O` with affine
+opens `U ⊆ X` and `V ⊆ S` such that `a (i⁻¹ W) ⊆ U`, `h W ⊆ V` and `f U ⊆ V`. -/
+theorem exists_affine_chart {T T' : Scheme.{u}} {f : X ⟶ S} {i : T ⟶ T'} [IsThickening i]
+    {a : T ⟶ X} {h : T' ⟶ S} (w : a ≫ f = i ≫ h) {O : T'.Opens} {x : T'} (hx : x ∈ O) :
+    ∃ (W : T'.Opens) (U : X.Opens) (V : S.Opens), IsAffineOpen W ∧ IsAffineOpen U ∧
+      IsAffineOpen V ∧ x ∈ W ∧ W ≤ O ∧ i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U ∧ W ≤ h ⁻¹ᵁ V ∧ U ≤ f ⁻¹ᵁ V := by
+  obtain ⟨t, rfl⟩ := i.surjective x
+  have hi := IsUniversalHomeomorphism.isHomeomorph i
+  -- Choose affine opens `h (i t) ∈ V`, `a t ∈ U ⊆ f⁻¹ V`, and `i t ∈ W` with `W` inside `O`, inside
+  -- `h⁻¹ V` and inside the image of `a⁻¹ U`, which is open as `i` is a homeomorphism.
+  obtain ⟨V, hV, hxV, -⟩ := Opens.isBasis_iff_nbhd.mp S.isBasis_affineOpens
+    (show h (i t) ∈ (⊤ : S.Opens) from trivial)
+  obtain ⟨U, hU, hxU, hUV⟩ := Opens.isBasis_iff_nbhd.mp X.isBasis_affineOpens
+    (show a t ∈ f ⁻¹ᵁ V by rwa [Scheme.Hom.mem_preimage, ← Scheme.Hom.comp_apply, w])
+  let O' : T'.Opens := ⟨i '' (a ⁻¹ᵁ U), hi.isOpenMap _ (a ⁻¹ᵁ U).2⟩
+  obtain ⟨W, hW, hxW, hWO⟩ := Opens.isBasis_iff_nbhd.mp T'.isBasis_affineOpens
+    (show i t ∈ O ⊓ h ⁻¹ᵁ V ⊓ O' from ⟨⟨hx, hxV⟩, t, hxU, rfl⟩)
+  refine ⟨W, U, V, hW, hU, hV, hxW, fun y hy ↦ (hWO hy).1.1, fun s hs ↦ ?_,
+    fun y hy ↦ (hWO hy).1.2, hUV⟩
+  obtain ⟨t', ht', he⟩ := (hWO (show i s ∈ W from hs)).2
+  exact hi.injective he ▸ ht'
+
 section Lift
 
 variable {T T' : Scheme.{u}} (f : X ⟶ S) (i : T ⟶ T') [IsFirstOrderThickening i]
@@ -101,17 +126,7 @@ morphism they need not glue; for an étale one they do (`FormallyEtale.of_etale`
 theorem exists_local_lift_of_smooth [Smooth f] (w : a ≫ f = i ≫ h) (x : T') :
     ∃ W : T'.Opens, IsAffineOpen W ∧ x ∈ W ∧ ∃ l : W.toScheme ⟶ X,
       pullback.snd i W.ι ≫ l = pullback.fst i W.ι ≫ a ∧ l ≫ f = W.ι ≫ h := by
-  obtain ⟨t, rfl⟩ := i.surjective x
-  have hi := IsUniversalHomeomorphism.isHomeomorph i
-  -- Choose affine opens `h (i t) ∈ V`, `a t ∈ U ⊆ f⁻¹ V`, and `i t ∈ W` with `W` inside `h⁻¹ V`
-  -- and inside the image of `a⁻¹ U`, which is open as `i` is a homeomorphism.
-  obtain ⟨V, hV, hxV, -⟩ := Opens.isBasis_iff_nbhd.mp S.isBasis_affineOpens
-    (show h (i t) ∈ (⊤ : S.Opens) from trivial)
-  obtain ⟨U, hU, hxU, hUV⟩ := Opens.isBasis_iff_nbhd.mp X.isBasis_affineOpens
-    (show a t ∈ f ⁻¹ᵁ V by rwa [Scheme.Hom.mem_preimage, ← Scheme.Hom.comp_apply, w])
-  let O : T'.Opens := ⟨i '' (a ⁻¹ᵁ U), hi.isOpenMap _ (a ⁻¹ᵁ U).2⟩
-  obtain ⟨W, hW, hxW, hWO⟩ := Opens.isBasis_iff_nbhd.mp T'.isBasis_affineOpens
-    (show i t ∈ h ⁻¹ᵁ V ⊓ O from ⟨hxV, t, hxU, rfl⟩)
+  obtain ⟨W, U, V, hW, hU, hV, hxW, -, hWU, hWV, hUV⟩ := exists_affine_chart w (O := ⊤) trivial
   have : IsAffine U := hU
   have : IsAffine V := hV
   have : IsAffine W := hW
@@ -120,16 +135,14 @@ theorem exists_local_lift_of_smooth [Smooth f] (w : a ≫ f = i ≫ h) (x : T') 
   have ha : Set.range (pullback.fst i (Scheme.Opens.ι W) ≫ a) ⊆
       Set.range (Scheme.Opens.ι U) := by
     rintro _ ⟨p, rfl⟩
-    obtain ⟨t', ht', ht'i⟩ := (hWO (pullback.snd i (Scheme.Opens.ι W) p).2).2
-    have : i t' = i (pullback.fst i (Scheme.Opens.ι W) p) := by
-      rw [ht'i, ← Scheme.Hom.comp_apply, pullback.condition, Scheme.Hom.comp_apply]
-      rfl
-    rw [Scheme.Hom.comp_apply, ← hi.injective this, Scheme.Opens.range_ι]
-    exact ht'
+    rw [Scheme.Hom.comp_apply, Scheme.Opens.range_ι]
+    refine hWU (show i (pullback.fst i (Scheme.Opens.ι W) p) ∈ W from ?_)
+    rw [← Scheme.Hom.comp_apply, pullback.condition, Scheme.Hom.comp_apply]
+    exact (pullback.snd i (Scheme.Opens.ι W) p).2
   have hh : Set.range (Scheme.Opens.ι W ≫ h) ⊆ Set.range (Scheme.Opens.ι V) := by
     rintro _ ⟨p, rfl⟩
     rw [Scheme.Opens.range_ι]
-    exact (hWO p.2).1
+    exact hWV p.2
   have : FormallySmooth (f.resLE V U hUV) := FormallySmooth.of_smooth_of_isAffine _
   obtain ⟨m, hm₁, hm₂⟩ := FormallySmooth.exists_lift (f := f.resLE V U hUV)
     (pullback.snd i (Scheme.Opens.ι W)) (IsOpenImmersion.lift (Scheme.Opens.ι U) _ ha)

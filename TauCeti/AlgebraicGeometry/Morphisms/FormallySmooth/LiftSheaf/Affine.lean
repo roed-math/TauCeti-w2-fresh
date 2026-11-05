@@ -6,7 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.AffineLifts
-public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.LiftSheaf
+public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.LiftSheaf.Basic
 
 /-!
 # Sections of the sheaf of lifts over affine opens
