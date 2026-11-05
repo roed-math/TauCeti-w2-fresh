@@ -9,7 +9,7 @@ public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.LiftSheaf.Deriv
 public import TauCeti.AlgebraicGeometry.Morphisms.FormallySmooth.LiftSheaf.Difference
 
 /-!
-# The difference of two lifts as a derivation
+# The difference of two lifts as a derivation, and the torsor of lifts
 
 Let `i : T ⟶ T'` be a first-order thickening and `l₁`, `l₂` two sections over an open `W` of `T'`
 of the sheaf of lifts `liftSheaf f i a h`. Their difference `x ↦ l₁^♯ x - l₂^♯ x`
@@ -17,6 +17,13 @@ of the sheaf of lifts `liftSheaf f i a h`. Their difference `x ↦ l₁^♯ x - 
 `W` of the sheaf of derivations `liftDerivationSheaf f i a` into the ideal of `i`. These
 differences add up, vanish exactly on the diagonal and are compatible with restriction: this is the
 difference map of the torsor of lifts of Stacks, Lemma 37.9.5 (04FJ).
+
+Conversely every derivation over `W` is the difference of a section with a given one, so the sheaf
+of derivations acts simply transitively on the sheaf of lifts. Over an affine `W` inside affine
+charts `U ⊆ X`, `V ⊆ S`, the component of the derivation on `(U, W)` is a derivation of the affine
+torsor `liftStructAddTorsor`, by which the given section is moved; that the difference of the new
+section with the given one is the derivation everywhere, not only on the chart `U`, is
+`liftDerivation_eq_zero_of_isAffineOpen`. In general the local solutions glue.
 
 ## Main definitions
 
@@ -34,6 +41,8 @@ difference map of the torsor of lifts of Stacks, Lemma 37.9.5 (04FJ).
 * `TauCeti.AlgebraicGeometry.liftSheafSub_map`: the difference is compatible with restriction.
 * `TauCeti.AlgebraicGeometry.liftDerivation_eq_zero_of_isAffineOpen`: when `a` lifts to `W`, a
   derivation over `W` vanishing on one affine chart `U ⊇ a (i ⁻¹ W)` vanishes.
+* `TauCeti.AlgebraicGeometry.exists_liftSheafSub_eq`: every derivation over `W` is the difference
+  of a section of the sheaf of lifts with a given one.
 * `TauCeti.AlgebraicGeometry.liftSheafSub_eq_zero_iff`: two sections are equal if and only if
   their difference vanishes.
 
@@ -503,7 +512,7 @@ private lemma map_homOfLE_injective {Z : Scheme.{u}} {A B : Z.Opens} (h₁ : B �
 `h W ⊆ V`, `f U ⊆ V`), every derivation `D` over `W` is the difference `liftSheafSub l l₀` of a
 section `l` of the sheaf of lifts with a given section `l₀`: the local half of the torsor
 structure of Stacks, Lemma 37.9.5 (04FJ). -/
-theorem exists_liftSheafSub_eq [IsAffine W.toScheme] [IsAffine U.toScheme]
+theorem exists_liftSheafSub_eq_of_isAffine [IsAffine W.toScheme] [IsAffine U.toScheme]
     [IsAffine V.toScheme] (w : a ≫ f = i ≫ h) (hU : i ⁻¹ᵁ W ≤ a ⁻¹ᵁ U)
     (hV : W ≤ h ⁻¹ᵁ V) (hUV : U ≤ f ⁻¹ᵁ V) (l₀ : (liftSheaf f i a h).obj.obj (op W))
     (D : liftDerivationSubgroup f i a W) : ∃ l, liftSheafSub l l₀ = D := by
@@ -533,6 +542,46 @@ theorem exists_liftSheafSub_eq [IsAffine W.toScheme] [IsAffine U.toScheme]
       (hrange l) (hrange l₀) x, Equiv.apply_symm_apply, vadd_vsub]
   change chartFun hU D (U.ι.appLE U ⊤ _ x) = _
   rw [chartFun, ι_appLE_top, Iso.inv_hom_id_apply]
+
+omit [IsFirstOrderThickening i] in
+/-- Restricting a section of the sheaf of lifts twice is restricting it once. -/
+private lemma liftSheaf_map_map {W' W'' : T'.Opens} (e : W' ≤ W) (e' : W'' ≤ W')
+    (l : (liftSheaf f i a h).obj.obj (op W)) :
+    (liftSheaf f i a h).obj.map (homOfLE e').op ((liftSheaf f i a h).obj.map (homOfLE e).op l) =
+      (liftSheaf f i a h).obj.map (homOfLE (e'.trans e)).op l :=
+  (liftSheafObjEquiv f i a h W'').injective <| Subtype.ext <| by
+    simp only [coe_liftSheafObjEquiv_map, Scheme.homOfLE_homOfLE_assoc]
+
+/-- Every derivation `D` over `W` is the difference `liftSheafSub l l₀` of a section `l` of the
+sheaf of lifts with a given section `l₀`: the sheaf of derivations acts simply transitively on the
+sheaf of lifts (Stacks, Lemma 37.9.5 (04FJ)). Locally on affine charts this is
+`exists_liftSheafSub_eq_of_isAffine`; the local solutions agree on overlaps by
+`liftSheafSub_left_injective` and glue. -/
+theorem exists_liftSheafSub_eq (w : a ≫ f = i ≫ h) (l₀ : (liftSheaf f i a h).obj.obj (op W))
+    (D : liftDerivationSubgroup f i a W) : ∃ l, liftSheafSub l l₀ = D := by
+  choose W' U V hW' hU' hV' hxW' hW'W hUW' hVW' hUV' using
+    fun x : W ↦ exists_affine_chart w (O := W) x.2
+  have hcover : W ≤ ⨆ x, W' x := fun t ht ↦ Opens.mem_iSup.2 ⟨⟨t, ht⟩, hxW' _⟩
+  let res (x : W) := (liftSheaf f i a h).obj.map (homOfLE (hW'W x)).op
+  have hloc (x : W) : ∃ l, liftSheafSub l (res x l₀) =
+      liftDerivationSubgroupRestrict f i a (hW'W x) D := by
+    have : IsAffine (W' x).toScheme := hW' x
+    have : IsAffine (U x).toScheme := hU' x
+    have : IsAffine (V x).toScheme := hV' x
+    exact exists_liftSheafSub_eq_of_isAffine w (hUW' x) (hVW' x) (hUV' x) _ _
+  choose L hL using hloc
+  -- On `W' x ⊓ W' y`, both local solutions differ from `l₀` by the restriction of `D`.
+  have hres (x y : W) {O : T'.Opens} (hO : O ≤ W' x) :
+      liftSheafSub ((liftSheaf f i a h).obj.map (homOfLE hO).op (L x))
+          ((liftSheaf f i a h).obj.map (homOfLE (hO.trans (hW'W x))).op l₀) =
+        liftDerivationSubgroupRestrict f i a (hO.trans (hW'W x)) D := by
+    rw [← liftSheaf_map_map (hW'W x) hO, ← liftSheafSub_map, hL,
+      liftDerivationSubgroupRestrict_restrict]
+  obtain ⟨l, hl, -⟩ := (liftSheaf f i a h).existsUnique_gluing' (U := W') W
+    (fun x ↦ homOfLE (hW'W x)) hcover L fun x y ↦
+      liftSheafSub_left_injective _ ((hres x y inf_le_left).trans (hres y x inf_le_right).symm)
+  refine ⟨l, liftDerivationSubgroup.ext_of_le_iSup W' hW'W hcover fun x ↦ ?_⟩
+  rw [liftSheafSub_map, hl x, hL]
 
 end Action
 

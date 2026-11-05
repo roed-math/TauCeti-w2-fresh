@@ -154,6 +154,28 @@ theorem liftDerivationSubgroupRestrict_apply {W W' : T'.Opens} (e : W' ≤ W)
     (liftDerivationSubgroupRestrict f i a e D).1 q = D.1 ⟨q.1, q.2.1.trans e, q.2.2⟩ :=
   (rfl)
 
+/-- Restricting a derivation twice is restricting it once. -/
+@[simp]
+theorem liftDerivationSubgroupRestrict_restrict {W W' W'' : T'.Opens} (e : W' ≤ W) (e' : W'' ≤ W')
+    (D : liftDerivationSubgroup f i a W) :
+    liftDerivationSubgroupRestrict f i a e' (liftDerivationSubgroupRestrict f i a e D) =
+      liftDerivationSubgroupRestrict f i a (e'.trans e) D :=
+  (rfl)
+
+variable {f i a} in
+/-- Derivations over `W` that agree on the members of an open cover of `W` are equal. -/
+theorem liftDerivationSubgroup.ext_of_le_iSup {W : T'.Opens} {ι : Type*} (O : ι → T'.Opens)
+    (hO : ∀ j, O j ≤ W) (hW : W ≤ ⨆ j, O j) {D E : liftDerivationSubgroup f i a W}
+    (h : ∀ j, liftDerivationSubgroupRestrict f i a (hO j) D =
+      liftDerivationSubgroupRestrict f i a (hO j) E) : D = E := by
+  refine liftDerivationSubgroup.ext fun p x ↦ T'.IsSheaf.section_ext fun t ht ↦ ?_
+  obtain ⟨j, hj⟩ := Opens.mem_iSup.1 (hW (p.2.1 ht))
+  refine ⟨p.1.2 ⊓ O j, inf_le_left, ⟨ht, hj⟩, ?_⟩
+  rw [(isLiftDerivation_coe D).map_apply, (isLiftDerivation_coe E).map_apply]
+  have := congrArg (fun F : liftDerivationSubgroup f i a (O j) ↦
+    F.1 ⟨(p.1.1, p.1.2 ⊓ O j), inf_le_right, (i.preimage_mono inf_le_left).trans p.2.2⟩ x) (h j)
+  simpa only [liftDerivationSubgroupRestrict_apply] using this
+
 /-- The presheaf of derivations of `a⁻¹ 𝒪_X` over `𝒪_S` into the ideal of `i`, on `T'`. -/
 @[expose] noncomputable def liftDerivationPresheaf : TopCat.Presheaf AddCommGrpCat.{u} T' where
   obj W := AddCommGrpCat.of (liftDerivationSubgroup f i a W.unop)
