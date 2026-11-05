@@ -9,6 +9,8 @@ public import Mathlib.AlgebraicGeometry.Morphisms.Finite
 public import Mathlib.AlgebraicGeometry.Normalization
 public import TauCeti.AlgebraicGeometry.Scheme.GenericPoint
 public import TauCeti.RingTheory.Japanese
+import Mathlib.AlgebraicGeometry.Morphisms.FiniteType
+import TauCeti.RingTheory.UniversallyJapanese
 
 /-!
 # Finiteness of the relative normalization
@@ -36,6 +38,8 @@ Japanese rings.
 * `TauCeti.AlgebraicGeometry.isFinite_fromNormalization_fromSpecStalk_genericPoint_iff`: the
   normalization of an integral scheme in its function field is finite if and only if the ring of
   sections of every nonempty affine open is N-1.
+* `TauCeti.AlgebraicGeometry.isFinite_fromNormalization_fromSpecStalk_genericPoint_of_field`: so
+  it is for an integral scheme locally of finite type over a field.
 * `TauCeti.AlgebraicGeometry.isFinite_fromNormalization_of_isJapanese`: if the ring of sections of
   every nonempty affine open of an integral scheme `Y` is Japanese, the normalization of `Y` in a
   finite extension of its function field is finite over `Y` (Stacks, Lemma 29.54.14 (0AVK), with
@@ -108,6 +112,25 @@ theorem isFinite_fromNormalization_fromSpecStalk_genericPoint_iff :
     refine ⟨fun _ hU ↦ (hη ?_).elim, fun _ ↦ inferInstance⟩
     obtain ⟨⟨y, hy⟩⟩ := hU
     exact (genericPoint_specializes y).mem_open U.isOpen hy
+
+/-- **Normalization of a scheme locally of finite type over a field.** The normalization of an
+integral scheme `Y`, locally of finite type over a field `k`, in its function field is finite over
+`Y`: the ring of sections of a nonempty affine open is a finitely generated `k`-algebra, hence
+Japanese, hence N-1. -/
+theorem isFinite_fromNormalization_fromSpecStalk_genericPoint_of_field (k : Type u) [Field k]
+    [Y.Over (Spec (.of k))] [LocallyOfFiniteType (Y ↘ Spec (.of k))] :
+    IsFinite (Y.fromSpecStalk (genericPoint Y)).fromNormalization := by
+  refine isFinite_fromNormalization_fromSpecStalk_genericPoint_iff.mpr fun U hU _ ↦ ?_
+  let _ : Algebra k Γ(Y, U) :=
+    (((Y ↘ Spec (.of k)).appLE ⊤ U le_top).hom.comp (Scheme.ΓSpecIso (.of k)).inv.hom).toAlgebra
+  have : Algebra.FiniteType k Γ(Y, U) := by
+    refine RingHom.FiniteType.comp
+      (HasRingHomProperty.appLE @LocallyOfFiniteType (Y ↘ Spec (.of k)) inferInstance
+        ⟨⊤, isAffineOpen_top _⟩ ⟨U, hU⟩ le_top) ?_
+    exact RingHom.FiniteType.of_surjective _
+      (Scheme.ΓSpecIso (.of k)).symm.commRingCatIsoToRingEquiv.surjective
+  have := Ring.IsUniversallyJapanese.isJapanese k Γ(Y, U)
+  infer_instance
 
 variable (L : Type u) [Field L] [Algebra Y.functionField L]
 

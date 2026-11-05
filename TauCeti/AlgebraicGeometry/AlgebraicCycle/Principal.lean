@@ -20,7 +20,7 @@ This file defines the principal cycle `div(r) = Σ_x ord_x(r) [x]` of a nonzero 
   function have locally finite support. The function is a unit on a nonempty open `U`, and on a
   Noetherian open only finitely many codimension-one points lie outside `U`.
 * `AlgebraicCycle.div r`: the principal cycle of `r`, with `div(r s) = div r + div s`,
-  `div(r⁻¹) = -div r` and `div 1 = 0`.
+  `div(rⁿ) = n • div r`, `div(r⁻¹) = -div r` and `div 1 = 0`.
 -/
 
 public section
@@ -95,6 +95,13 @@ lemma div_inv (r : W.functionFieldˣ) : div r⁻¹ = -div r := by
 lemma div_one : div (1 : W.functionFieldˣ) = 0 := by
   ext x
   simp
+
+/-- `div(rⁿ) = n • div r`. -/
+@[simp]
+lemma div_pow (r : W.functionFieldˣ) (n : ℕ) : div (r ^ n) = n • div r := by
+  induction n with
+  | zero => simp
+  | succ n ih => rw [pow_succ, div_mul, ih, succ_nsmul]
 
 end AlgebraicCycle
 
