@@ -150,6 +150,10 @@ the isomorphism `dualPowMulIso`. -/
 def poleMul (a b : ℕ) : I.poleComponent a ⊗ I.poleComponent b ⟶ I.poleComponent (a + b) :=
   (dualPowMulIso hI a b).hom
 
+/-- The multiplication `poleMul` is the isomorphism `dualPowMulIso`. -/
+theorem poleMul_def (a b : ℕ) : hI.poleMul a b = (dualPowMulIso hI a b).hom :=
+  (rfl)
+
 /-- `TauCeti.whiskerLeft_whiskerLeft_comp_evaluate`, under a further whiskering. -/
 @[reassoc]
 private lemma whiskerLeft_whiskerLeft_comp_evaluate {V A B C D : X.Modules} (f : A ⊗ B ⟶ 𝟙_ _)

@@ -167,6 +167,12 @@ def dualPowMulIsoOfEq (a b : ℕ) : L a ⊗ L b ≅ L (a + b) :=
   eqToIso (congrArg₂ (· ⊗ ·) (hL a) (hL b)) ≪≫ dualPowMulIso hI a b ≪≫
     eqToIso (hL (a + b)).symm
 
+/-- The transported multiplication is `dualPowMulIso` between the identifications `hL`. -/
+theorem dualPowMulIsoOfEq_hom (a b : ℕ) :
+    (dualPowMulIsoOfEq hI hL a b).hom = eqToHom (congrArg₂ (· ⊗ ·) (hL a) (hL b)) ≫
+      (dualPowMulIso hI a b).hom ≫ eqToHom (hL (a + b)).symm := by
+  simp [dualPowMulIsoOfEq]
+
 /-- The transported multiplication `L a ⊗ L b ≅ L (a + b)` is compatible with the transported
 inclusions `L a ⟶ L a'` for `a ≤ a'`. -/
 @[reassoc]

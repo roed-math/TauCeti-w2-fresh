@@ -80,6 +80,14 @@ noncomputable def poleSheafMulIso (a b : ℕ) :
     (E.poleSheaf a).obj ⊗ (E.poleSheaf b).obj ≅ (E.poleSheaf (a + b)).obj :=
   E.isRelativeEffectiveCartier_zeroDivisor.isEffectiveCartier.dualPowMulIsoOfEq E.poleSheaf_obj a b
 
+/-- The multiplication of pole sheaves is the multiplication of the line bundles of multiples
+of `[0]`, transported along `poleSheaf_obj`. -/
+theorem poleSheafMulIso_def (a b : ℕ) :
+    E.poleSheafMulIso a b =
+      E.isRelativeEffectiveCartier_zeroDivisor.isEffectiveCartier.dualPowMulIsoOfEq
+        E.poleSheaf_obj a b :=
+  (rfl)
+
 /-- **The multiplication of pole sheaves is compatible with the pole filtration**: for `a ≤ a'`,
 including `ℒ_a` into `ℒ_a'` and multiplying by `ℒ_b` is multiplying and then including
 `ℒ_(a + b)` into `ℒ_(a' + b)`. -/
