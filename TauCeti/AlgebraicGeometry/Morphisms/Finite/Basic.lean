@@ -26,6 +26,10 @@ If `g : Y ⟶ S` is moreover flat and locally of finite presentation (finite loc
 sections `Γ(Y, g⁻¹ U)` over an affine open `U` of `S` form a projective `Γ(S, U)`-module
 (`AlgebraicGeometry.Scheme.Hom.projective_app`).
 
+A morphism whose restriction over an open `V` is finite has, around every point of `V`, an affine
+open `U` with affine preimage and `Γ(Y, U) → Γ(X, f⁻¹ U)` finite
+(`AlgebraicGeometry.Scheme.Hom.exists_isAffineOpen_finite_app_of_isFinite_morphismRestrict`).
+
 Finite, flat and locally finitely presented morphisms each respect isomorphisms
 (`TauCeti.isFinite_respectsIso`, `TauCeti.flat_respectsIso` and
 `TauCeti.locallyOfFinitePresentation_respectsIso`).
@@ -64,6 +68,25 @@ theorem Scheme.Hom.projective_app {Y S : Scheme.{u}} (g : Y ⟶ S) [IsFinite g] 
   have := Module.FinitePresentation.of_finite_of_finitePresentation (R := Γ(S, U))
     (S := Γ(Y, g ⁻¹ᵁ U))
   exact Module.Flat.projective_of_finitePresentation
+
+/-- **A finite restriction is finite over an affine neighbourhood.** If `f ∣_ V` is finite and
+`y ∈ V`, then `y` has an affine open neighbourhood `U ⊆ V` whose preimage is affine, with
+`Γ(Y, U) → Γ(X, f⁻¹ U)` finite. -/
+theorem Scheme.Hom.exists_isAffineOpen_finite_app_of_isFinite_morphismRestrict {X Y : Scheme.{u}}
+    (f : X ⟶ Y) {V : Y.Opens} [IsFinite (f ∣_ V)] {y : Y} (hy : y ∈ V) :
+    ∃ U : Y.Opens, U ≤ V ∧ IsAffineOpen U ∧ IsAffineOpen (f ⁻¹ᵁ U) ∧ (f.app U).hom.Finite ∧
+      y ∈ U := by
+  obtain ⟨_, ⟨W, hW, rfl⟩, hyW, -⟩ :=
+    (V : Scheme).isBasis_affineOpens.exists_subset_of_mem_open (Set.mem_univ ⟨y, hy⟩) isOpen_univ
+  have hW' := (IsAffineHom.isAffine_preimage (f := f ∣_ V) W hW).image_of_isOpenImmersion
+    (f ⁻¹ᵁ V).ι
+  rw [image_morphismRestrict_preimage] at hW'
+  have hfin := (f ∣_ V).finite_app W hW
+  rw [morphismRestrict_app'] at hfin
+  refine ⟨V.ι ''ᵁ W, V.ι_image_le W, hW.image_of_isOpenImmersion _, hW', ?_,
+    V.ι.apply_mem_image_iff.mpr hyW⟩
+  rw [← f.appLE_eq_app]
+  exact (f.appLE_congr _ rfl (image_morphismRestrict_preimage f V W) fun φ ↦ φ.hom.Finite).mp hfin
 
 end AlgebraicGeometry
 

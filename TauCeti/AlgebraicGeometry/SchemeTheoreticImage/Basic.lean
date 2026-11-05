@@ -7,13 +7,16 @@ module
 
 public import Mathlib.AlgebraicGeometry.AffineScheme
 public import Mathlib.AlgebraicGeometry.Morphisms.SchemeTheoreticallyDominant
+public import Mathlib.AlgebraicGeometry.Noetherian
 
 /-!
 # Scheme-theoretic images
 
 This file contains general results about Mathlib's scheme-theoretic image construction.
 For a quasi-compact morphism the map onto its scheme-theoretic image is
-scheme-theoretically dominant. In particular, a reduced source gives a reduced image.
+scheme-theoretically dominant. In particular, a reduced source gives a reduced image, and an
+integral source an integral image; the image in a locally Noetherian scheme is locally
+Noetherian.
 When the topological image is closed, the factorization is surjective on points.
 
 ## Main declarations
@@ -77,6 +80,21 @@ instance isSchemeTheoreticallyDominant_toImage : IsSchemeTheoreticallyDominant f
 /-- The scheme-theoretic image of a quasi-compact morphism from a reduced scheme is reduced. -/
 instance isReduced_image [IsReduced X] : IsReduced f.image :=
   IsSchemeTheoreticallyDominant.isReduced f.toImage
+
+/-- The scheme-theoretic image of a quasi-compact morphism from an integral scheme is integral: it
+is reduced, and irreducible as the closure of the image of an irreducible space. -/
+instance isIntegral_image [IsIntegral X] : IsIntegral f.image := by
+  have h := ((IrreducibleSpace.isIrreducible_univ X).image f.toImage
+    f.toImage.continuous.continuousOn).closure
+  rw [Set.image_univ, f.toImage.denseRange.closure_range] at h
+  have : IrreducibleSpace f.image := (irreducibleSpace_def _).mpr h
+  exact isIntegral_of_irreducibleSpace_of_isReduced _
+
+omit [QuasiCompact f] in
+/-- The scheme-theoretic image of a morphism to a locally Noetherian scheme is locally Noetherian,
+as a closed subscheme. -/
+instance isLocallyNoetherian_image [IsLocallyNoetherian Y] : IsLocallyNoetherian f.image :=
+  LocallyOfFiniteType.isLocallyNoetherian f.imageι
 
 /-- If a quasi-compact morphism has closed topological image, its map to the
 scheme-theoretic image is surjective. -/

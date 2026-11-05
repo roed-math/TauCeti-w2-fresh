@@ -6,7 +6,6 @@ Authors: The Tau Ceti contributors
 module
 
 public import Mathlib.RingTheory.OrderOfVanishing.Noetherian
-import TauCeti.RingTheory.Length
 
 /-!
 # Vanishing of the order of vanishing
@@ -21,7 +20,6 @@ ideal. Mathlib has the forward direction, `Ring.ordFrac_of_isUnit`; the converse
 ## Main results
 
 * `TauCeti.Ring.ord_eq_zero_iff`: `Ring.ord R x = 0` exactly when `x` is a unit;
-* `TauCeti.Ring.ord_ringEquiv`: the order of vanishing is invariant under ring isomorphisms;
 * `TauCeti.Ring.isUnit_iff_ordFrac_one`: `x` is a unit exactly when `Ring.ordFrac R x = 1`; this
   extends Mathlib's `Ring.isUnit_iff_ordFrac_one_of_isDiscreteValuationRing` to Noetherian domains
   of dimension at most one.
@@ -40,23 +38,6 @@ quotient `R ⧸ (x)` is trivial exactly when `(x)` is the unit ideal. -/
 theorem ord_eq_zero_iff (x : R) : Ring.ord R x = 0 ↔ IsUnit x := by
   rw [Ring.ord, Module.length_eq_zero_iff, Submodule.Quotient.subsingleton_iff,
     Ideal.span_singleton_eq_top]
-
-/-- The order of vanishing is invariant under ring isomorphisms: `e` induces a bijection
-`R ⧸ (x) → S ⧸ (e x)`, semilinear along `e`, so the two quotients have the same length. -/
-theorem ord_ringEquiv {S : Type*} [CommRing S] (e : R ≃+* S) (x : R) :
-    Ring.ord S (e x) = Ring.ord R x := by
-  have : RingHomSurjective (e : R →+* S) := ⟨e.surjective⟩
-  let φ := Ideal.quotientEquiv (Ideal.span {x}) (Ideal.span {e x}) e
-    (by rw [Ideal.map_span, Set.image_singleton]; rfl)
-  let f : R ⧸ Ideal.span {x} →ₛₗ[(e : R →+* S)] S ⧸ Ideal.span {e x} :=
-    { toFun := φ
-      map_add' := map_add φ
-      map_smul' := fun r q ↦ by
-        obtain ⟨q, rfl⟩ := Ideal.Quotient.mk_surjective q
-        change φ (Ideal.Quotient.mk _ (r * q)) =
-          Ideal.Quotient.mk _ (e r) * φ (Ideal.Quotient.mk _ q)
-        simp [φ] }
-  exact (LinearMap.length_eq_of_bijective f φ.bijective).symm
 
 variable [IsDomain R] [IsNoetherianRing R] [Ring.KrullDimLE 1 R]
   {K : Type*} [Field K] [Algebra R K] [IsFractionRing R K]

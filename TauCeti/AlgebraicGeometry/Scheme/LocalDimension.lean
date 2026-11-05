@@ -56,9 +56,11 @@ All in the namespace `TauCeti.AlgebraicGeometry`:
   supremum of the dimensions of the irreducible components through `x`.
 * `topologicalKrullDimAt_eq_iSup_toNat_trdeg_residueField`: `dim_x X` is the supremum of
   `trdeg_k κ(ξ)` over the generic points `ξ` of the irreducible components through `x`.
+* `topologicalKrullDim_eq_height_genericPoint`: an integral scheme has the dimension of the
+  height of its generic point.
 * `height_eq_toNat_trdeg_residueField`: the height of `x` is `trdeg_k κ(x)`.
-* `coheight_add_height_eq_topologicalKrullDim`: on an irreducible `X`, the codimension and the
-  height of a point add up to `dim X`.
+* `coheight_apply_eq_coheight`: for a morphism of irreducible schemes of the same dimension, a
+  point with the height of its image also has the codimension of its image.
 * `height_apply_eq_height_of_residueDegree_ne_zero`: a morphism over `k` preserves the height of
   a point with finite residue field extension.
 * `residueDegree_ne_zero_of_height_apply_eq`: conversely, a point with the height of its image has
@@ -88,6 +90,13 @@ namespace TauCeti
 namespace AlgebraicGeometry
 
 universe u
+
+/-- The dimension of an integral scheme is the height of its generic point, whose closure is the
+whole scheme. -/
+theorem topologicalKrullDim_eq_height_genericPoint (X : Scheme.{u}) [IsIntegral X] :
+    topologicalKrullDim X = Order.height (genericPoint X) := by
+  rw [height_eq_topologicalKrullDim_closure_singleton, isGenericPoint_def.1 (genericPoint_spec X),
+    (Homeomorph.Set.univ X).isHomeomorph.topologicalKrullDim_eq]
 
 variable (k : Type u) [Field k] {X : Scheme.{u}} [X.Over (Spec (.of k))]
 
@@ -214,17 +223,20 @@ theorem height_eq_toNat_trdeg_residueField (x : X) :
   exact_mod_cast h
 
 include k in
-/-- **The dimension formula.** On an irreducible scheme `X` locally of finite type over a field
-`k`, the codimension of a point `x` and the dimension of its closure add up to the dimension of
-`X`. -/
-theorem coheight_add_height_eq_topologicalKrullDim [IrreducibleSpace X] (x : X) :
-    (Order.coheight x : WithBot ℕ∞) + Order.height x = topologicalKrullDim X := by
-  have h := topologicalKrullDimAt_eq_ringKrullDim_stalk_add_topologicalKrullDim_closure k x
-  rw [topologicalKrullDimAt_eq_iSup_topologicalKrullDim_irreducibleComponents k,
-    irreducibleComponents_eq_singleton, iSup_singleton, iSup_pos (Set.mem_univ x),
-    (Homeomorph.Set.univ X).isHomeomorph.topologicalKrullDim_eq, ringKrullDim_stalk_eq_coheight,
-    ← height_eq_topologicalKrullDim_closure_singleton] at h
-  exact h.symm
+/-- **Points of the same dimension have the same codimension.** Let `f : X ⟶ Y` be a morphism of
+irreducible schemes locally of finite type over a field `k`, of the same dimension. If the
+closures of `x` and `f x` have the same dimension, then `x` and `f x` have the same codimension:
+both are the dimension of the scheme minus the dimension of the closure. -/
+theorem coheight_apply_eq_coheight {Y : Scheme.{u}} [Y.Over (Spec (.of k))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of k))] [IrreducibleSpace X] [IrreducibleSpace Y] (f : X ⟶ Y)
+    (h : topologicalKrullDim X = topologicalKrullDim Y) {x : X}
+    (hx : Order.height (f x) = Order.height x) : Order.coheight (f x) = Order.coheight x := by
+  have hX := coheight_add_height_eq_topologicalKrullDim k x
+  have hY := coheight_add_height_eq_topologicalKrullDim k (f x)
+  rw [hx, height_eq_toNat_trdeg_residueField k] at hY
+  rw [height_eq_toNat_trdeg_residueField k, h, ← hY] at hX
+  have := WithBot.coe_injective (α := ℕ∞) (by exact_mod_cast hX)
+  exact (WithTop.add_right_cancel (ENat.natCast_ne_top _) this).symm
 
 /-- **Points with finite residue extension have the same dimension.** Let `f : X ⟶ Y` be a
 morphism of schemes locally of finite type over a field `k`, and let `x ∈ X` be a point whose
@@ -305,14 +317,9 @@ theorem functionFieldMap_finite_of_topologicalKrullDim_eq {Y : Scheme.{u}}
     f.functionFieldMap.hom.Finite := by
   have hx : f (genericPoint X) = genericPoint Y := f.genericPoint_eq_of_isDominant
   have hheight : Order.height (f (genericPoint X)) = Order.height (genericPoint X) := by
-    have hX := height_eq_topologicalKrullDim_closure_singleton (genericPoint X)
-    have hY := height_eq_topologicalKrullDim_closure_singleton (f (genericPoint X))
-    rw [isGenericPoint_def.1 (genericPoint_spec X),
-      (Homeomorph.Set.univ X).isHomeomorph.topologicalKrullDim_eq] at hX
-    rw [hx, isGenericPoint_def.1 (genericPoint_spec Y),
-      (Homeomorph.Set.univ Y).isHomeomorph.topologicalKrullDim_eq] at hY
-    rw [hx]
-    exact_mod_cast hY.trans (h.symm.trans hX.symm)
+    rw [topologicalKrullDim_eq_height_genericPoint, topologicalKrullDim_eq_height_genericPoint,
+      ← hx] at h
+    exact_mod_cast h.symm
   have hfin :=
     (residueDegree_ne_zero_iff f _).1 (residueDegree_ne_zero_of_height_apply_eq k f hheight)
   -- Identify `K(Y) ⟶ K(X)` with `κ(f η) ⟶ κ(η)` at the generic point `η` of `X`.
@@ -415,10 +422,8 @@ theorem exists_isFinite_morphismRestrict_of_height_add_one {Y : Scheme.{u}}
     ∃ V : Y.Opens, y ∈ V ∧ IsFinite (f ∣_ V) := by
   have hgen : ∀ (Z : Scheme.{u}) [IsIntegral Z], topologicalKrullDim Z = n + 1 →
       Order.height (genericPoint Z) = n + 1 := fun Z _ hZ ↦ by
-    have h := height_eq_topologicalKrullDim_closure_singleton (genericPoint Z)
-    rw [isGenericPoint_def.1 (genericPoint_spec Z),
-      (Homeomorph.Set.univ Z).isHomeomorph.topologicalKrullDim_eq, hZ] at h
-    exact_mod_cast h
+    rw [topologicalKrullDim_eq_height_genericPoint] at hZ
+    exact_mod_cast hZ
   refine exists_isFinite_morphismRestrict_of_height_eq k f y fun x hx ↦ ?_
   subst hx
   refine le_antisymm ?_ (height_apply_le_height k f x)

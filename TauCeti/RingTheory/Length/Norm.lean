@@ -10,6 +10,7 @@ public import TauCeti.RingTheory.Length.Determinant
 import Mathlib.Data.ENat.BigOperators
 import Mathlib.RingTheory.Algebraic.Integral
 import Mathlib.RingTheory.LocalRing.Length
+import TauCeti.Lookahead.ChowProperPushforward.Stubs
 import TauCeti.RingTheory.OrderOfVanishing
 
 /-!

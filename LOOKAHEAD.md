@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-proper-pushforward","main":"cff6ca87d5bf623e72c29ac1dae8dd4638427ebd","status":"partial","suppliers":["chow-group"],"splits":[{"n":1,"after":[],"title":"feat: pushforward of cycles over a field and degree of zero-cycles"},{"n":2,"after":[],"title":"feat: cokernel length of injective endomorphisms"},{"n":3,"after":[2],"title":"feat: cokernel length is the order of the determinant over one-dimensional domains"},{"n":4,"after":[3],"title":"feat: the order of a norm is a sum of local orders (Fulton A.3)"},{"n":5,"after":[4],"title":"feat: the order of a norm over the primes above a prime"},{"n":6,"after":[1],"title":"feat: generically finite proper morphisms are finite in codimension one"},{"n":7,"after":[5],"title":"feat: the order of a norm at a point of codimension one"},{"n":8,"after":[1,6,7],"title":"feat: proper pushforward of a principal divisor is the divisor of the norm"},{"n":9,"after":[1,8],"title":"feat: principal divisors push forward to zero along dimension-dropping proper maps"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: proper pushforward of Chow groups and the degree of zero-cycles"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-proper-pushforward","main":"85f3eb5579df5ca44ba8cd0921d614b41ab72174","status":"partial","suppliers":["chow-group"],"splits":[{"n":1,"after":[],"title":"feat: pushforward of cycles over a field and degree of zero-cycles"},{"n":2,"after":[],"title":"feat: cokernel length of injective endomorphisms"},{"n":3,"after":[2],"title":"feat: cokernel length is the order of the determinant over one-dimensional domains"},{"n":4,"after":[3],"title":"feat: the order of a norm is a sum of local orders (Fulton A.3)"},{"n":5,"after":[4],"title":"feat: the order of a norm over the primes above a prime"},{"n":6,"after":[1],"title":"feat: generically finite proper morphisms are finite in codimension one"},{"n":7,"after":[5],"title":"feat: the order of a norm at a point of codimension one"},{"n":8,"after":[1,6,7],"title":"feat: proper pushforward of a principal divisor is the divisor of the norm"},{"n":9,"after":[1,8],"title":"feat: principal divisors push forward to zero along dimension-dropping proper maps"},{"n":10,"after":[1,2,3,4,5,6,7,8,9],"title":"feat: proper pushforward of Chow groups and the degree of zero-cycles"}]}-->
 
 # Lookahead: `chow-proper-pushforward` (SchemeAndStackFoundations §5.2)
 
@@ -10,12 +10,12 @@ Sections 42.12, 42.20, 42.41). The target has no pinned form in `Suggested.lean`
 below follow the README's *Chow.properPushforward* and the neighbouring code on `main`
 (`TauCeti/AlgebraicGeometry/Chow/{Basic,ClosedImmersion}.lean`).
 
-Built on `main` at `cff6ca87d5bf623e72c29ac1dae8dd4638427ebd`.
+Built on `main` at `85f3eb5579df5ca44ba8cd0921d614b41ab72174`.
 
-**Status: partial.** The cycle level is proved without stubs beyond the one below: the
+**Status: partial.** The cycle level is proved without stubs beyond the three below: the
 pushforward of `n`-cycles over a field, its functoriality, the degree of zero-cycles, and
 `deg f_* = deg` (split 1). The commutative algebra behind Fulton, Proposition 1.4(b) is proved
-in full (splits 2–5, no stubs): the determinant lemma of Fulton's Appendix A.2 (the order of a
+in full (splits 2–5; splits 4 and 5 use one stubbed helper, `Ring.ord_ringEquiv`): the determinant lemma of Fulton's Appendix A.2 (the order of a
 determinant is a cokernel length, over any Noetherian domain of dimension at most one), the
 order of a norm of Appendix A.3 in its local form, `ord_A N_{L/K}(r)
 = Σ_m [B ⧸ m : κ(A)] ord_{R_m}(r)` for `B` finite over a local `A` (split 4), and in its global
@@ -29,11 +29,15 @@ type over `k`, makes `K(X)` finite over `K(Y)`; and such a morphism, if proper, 
 neighbourhood of every point of codimension one. Split 7 proves the scheme-level form of
 Fulton A.3: for a dominant morphism `f : X ⟶ Y` of locally Noetherian integral schemes, a point
 `y` of codimension one and an affine open `V ∋ y` with `f⁻¹ V` affine and finite over `V`,
-`ord_y N_{K(X)/K(Y)}(r) = Σ_{f x = y} [κ(x) : κ(y)] ord_x(r)` with Mathlib's `Scheme.ord`. Still
-to do: the global identity `f_* div r = div N(r)` (split 8), Proposition 1.4(a) (split 9) and the
+`ord_y N_{K(X)/K(Y)}(r) = Σ_{f x = y} [κ(x) : κ(y)] ord_x(r)` with Mathlib's `Scheme.ord`.
+Split 8 proves Fulton, Proposition 1.4(b) globally: for `f : X ⟶ Y` proper and dominant over `k`
+between integral schemes of the same dimension, `f_* div r = div N(r)`, and, through the
+scheme-theoretic image, `f_* div r = (f.imageι)_* div N(r)` whenever `f(X)` has the dimension of
+`X`. Split 9 has its easy case (a drop of dimension by two or more), and split 10 has the image
+family of a rational equivalence. Still to do: the core of Proposition 1.4(a) (split 9) and the
 descent to Chow groups (split 10).
 
-## The supplier `chow-group` and its stub
+## The supplier `chow-group` and its stubs
 
 Everything in `Suggested.lean` §5.1 that this target consumes (`Chow.cyclesOfDimension`,
 `Chow.RatEquiv`, `Chow.ChowGroup`, `Chow.cycleClass`) is already on `main` (merged by #22663,
@@ -41,8 +45,11 @@ Everything in `Suggested.lean` §5.1 that this target consumes (`Chow.cyclesOfDi
 `Suggested.lean`, these take no field `κ` (they need only `IsLocallyNoetherian X`) and
 `RatEquiv` is defined through the structure `Chow.RatEquivFamily`. The target uses `main`'s
 forms. The rest of `chow-group` is in flight as PR #27340 (the divisor class comparison).
-That PR also adds one general lemma that this target needs, and that lemma is the only stub
-(`TauCeti/Lookahead/ChowProperPushforward/Stubs.lean`).
+That PR also adds four lemmas that this target needs, and they are the only stubs
+(`TauCeti/Lookahead/ChowProperPushforward/Stubs.lean`). The second and third were added to PR
+#27340 after the earlier sessions of this branch had proved them here under the same names
+(`Ring.ord_ringEquiv` in split 4, `coheight_add_height_eq_topologicalKrullDim` in split 8); this
+session replaced those proofs by stubs, so the branch no longer duplicates the supplier.
 
 ### `TauCeti.height_eq_topologicalKrullDim_closure_singleton`
 
@@ -61,9 +68,8 @@ That PR also adds one general lemma that this target needs, and that lemma is th
 - Source: PR #27340's diff. Differences: none in the statement. The stub lives in
   `TauCeti/Lookahead/ChowProperPushforward/Stubs.lean` (namespace `TauCeti`), not in
   `TauCeti/Topology/KrullDimension/Basic.lean`. Only `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean`
-  imports it (used by `height_eq_toNat_trdeg_residueField` in split 1 and by
-  `functionFieldMap_finite_of_topologicalKrullDim_eq` in split 6 and by
-  `coheight_add_height_eq_topologicalKrullDim` in split 8). Splits 2–5 and 7 do not import it.
+  imports the stub module for it (used by `height_eq_toNat_trdeg_residueField` in split 1, by
+  `topologicalKrullDim_eq_height_genericPoint` in split 6, and through them by splits 6 and 8).
   When the port runs, it
   deletes the stub file and replaces that
   `public import TauCeti.Lookahead.ChowProperPushforward.Stubs` with the landed module
@@ -71,10 +77,70 @@ That PR also adds one general lemma that this target needs, and that lemma is th
 - Why it is a stub and not proved here: it is PR #27340's declaration. Proving it on this
   branch would duplicate the supplier.
 
-PR #27340 also adds `Chow.RatEquivFamily.component_def` (on `main` the body of
-`RatEquivFamily.component` is not exposed outside `Chow/Basic.lean`). The final split does not need
-it: `RatEquivFamily.component_apply` and `component_apply_eq_zero_of_notMem_range`, already on
-`main`, determine every summand. So it is not stubbed.
+### `TauCeti.Ring.ord_ringEquiv`
+
+- `Suggested.lean` signature: none. `Suggested.lean` does not pin this lemma; it is a helper
+  that PR #27340 adds to `TauCeti/RingTheory/OrderOfVanishing.lean` (namespace `TauCeti.Ring`).
+- Stub, copied from PR #27340's diff:
+
+  ```lean
+  variable {R R' : Type*} [CommRing R] [CommRing R']
+
+  @[simp]
+  theorem ord_ringEquiv (σ : R ≃+* R') (x : R) : Ring.ord R' (σ x) = Ring.ord R x := by
+    sorry
+  ```
+
+- Source: PR #27340's diff. Differences: none in the statement or attributes; the docstring is
+  shortened. The stub is in namespace `TauCeti.Ring` of the stub file. Only
+  `TauCeti/RingTheory/Length/Norm.lean` (split 4) imports the stub module for it, by a private
+  `import`; on the port that import is deleted (the file already imports
+  `TauCeti.RingTheory.OrderOfVanishing`, where the supplier puts it).
+- An earlier session proved the same statement under the same name in
+  `TauCeti/RingTheory/OrderOfVanishing.lean` (split 4). PR #27340 now supplies it, so that proof
+  was removed and the file is back to `main`'s.
+
+### `TauCeti.AlgebraicGeometry.coheight_add_height_eq_topologicalKrullDim`
+
+- `Suggested.lean` signature: none. `Suggested.lean` does not pin this lemma; it is a helper
+  that PR #27340 adds to `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean`.
+- Stub, copied from PR #27340's diff (the variables are those of `LocalDimension.lean`):
+
+  ```lean
+  variable (k : Type u) [Field k] {X : Scheme.{u}} [X.Over (Spec (.of k))]
+    [LocallyOfFiniteType (X ↘ Spec (.of k))]
+
+  include k in
+  theorem coheight_add_height_eq_topologicalKrullDim [IrreducibleSpace X] (x : X) :
+      (Order.coheight x : WithBot ℕ∞) + Order.height x = topologicalKrullDim X := by
+    sorry
+  ```
+
+- Source: PR #27340's diff. Differences: none in the statement. The stub is in namespace
+  `TauCeti.AlgebraicGeometry` of the stub file, which `LocalDimension.lean` imports. It is used
+  by `coheight_apply_eq_coheight` (split 8) and by `Chow.map_height_div` (split 8). An earlier
+  session proved it, under the same name and statement, in `LocalDimension.lean`; that proof was
+  removed when PR #27340 added it.
+
+### `TauCeti.AlgebraicGeometry.Chow.RatEquivFamily.component_def`
+
+- `Suggested.lean` signature: none. `Suggested.lean` does not pin this lemma; PR #27340 adds it
+  to `TauCeti/AlgebraicGeometry/Chow/Basic.lean`, because on `main` the body of
+  `RatEquivFamily.component` is not exposed outside that file.
+- Stub, copied from PR #27340's diff (the variables are those of `Chow/Basic.lean`):
+
+  ```lean
+  variable {X : Scheme.{u}} {n : ℤ} [IsLocallyNoetherian X] (F : RatEquivFamily X n)
+
+  lemma component_def (j : F.ι) :
+      F.component j = AlgebraicCycle.map (F.i j) height height (AlgebraicCycle.div (F.r j)) := by
+    sorry
+  ```
+
+- Source: PR #27340's diff. Differences: none in the statement; the PR's proof is
+  `by rw [component]`. Only `TauCeti/AlgebraicGeometry/Chow/ProperPushforward.lean` (split 10)
+  uses it. Earlier sessions planned to avoid it; the image family of split 10 reads its summands
+  off directly, so this session stubs it rather than re-deriving it from `component_apply`.
 
 ## Split plan
 
@@ -128,8 +194,9 @@ namespace `TauCeti`), the invariant `e_A(φ, M) = length (M ⧸ φ M)` of Fulton
 - `length_quotient_lsmul_eq_finrank_mul_ord`: `length (M ⧸ aM) = rank M * ord_A a` for `M`
   finitely generated torsion-free over a Noetherian domain of dimension at most one.
 
-Splits 2–5 do not use the stub and do not depend on split 1, so split 2 can open together with
-split 1 as soon as the port starts.
+Splits 2 and 3 use no stub and do not depend on split 1, so split 2 can open together with
+split 1 as soon as the port starts. Splits 4 and 5 use the stubbed `Ring.ord_ringEquiv`, so like
+split 1 they wait for PR #27340.
 
 ### Split 3: `feat: cokernel length is the order of the determinant over one-dimensional domains` (after: 2)
 
@@ -156,13 +223,11 @@ argument (naming rubric), the rest in `TauCeti`:
   generated `A`-lattice `M` spanning a `K`-vector space `V` and a nonsingular `K`-linear `φ` with
   `φ M ⊆ M`, `ordFrac_A (det φ) = length (M ⧸ φ M)`.
 
-### Split 4: `feat: the order of a norm is a sum of local orders (Fulton A.3)` (after: 3)
+### Split 4: `feat: the order of a norm is a sum of local orders (Fulton A.3)` (after: 3; needs PR #27340 on `main`)
 
-Proved on this branch. Files `TauCeti/RingTheory/Length/Norm.lean` (new, 450 lines) and
-`TauCeti/RingTheory/OrderOfVanishing.lean` (existing, +19 lines):
+Proved on this branch. File `TauCeti/RingTheory/Length/Norm.lean` (new, 450 lines). It uses
+PR #27340's `TauCeti.Ring.ord_ringEquiv` (stubbed):
 
-- `TauCeti.Ring.ord_ringEquiv` (in `OrderOfVanishing.lean`): `Ring.ord` is invariant under ring
-  isomorphisms (a semilinear bijection of the quotients, `LinearMap.length_eq_of_bijective`);
 - `TauCeti.span_range_algebraMap_eq_top`: for `B` integral over `A`, `Frac B` is the `K`-span
   of `B`;
 - `TauCeti.ordFrac_norm_eq_coe_of_length_eq`: for `B` a domain finite over `A` (Noetherian domain
@@ -191,7 +256,7 @@ Proved on this branch. Files `TauCeti/RingTheory/Length/Norm.lean` (new, 450 lin
 
 ### Split 5: `feat: the order of a norm over the primes above a prime` (after: 4)
 
-Proved on this branch, about 240 lines, no stubs.
+Proved on this branch, about 240 lines, no stubs of its own (it builds on split 4).
 
 - `TauCeti/RingTheory/Localization/AtPrime/Extension.lean` (new, 77 lines, namespace
   `IsLocalization.AtPrime`, beside Mathlib's `Mathlib/RingTheory/Localization/AtPrime/Extension.lean`;
@@ -228,6 +293,9 @@ through it, PR #27340 on `main`.
   definition is not exposed, so downstream proofs need this unfolding lemma).
 - `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (namespace
   `TauCeti.AlgebraicGeometry`):
+  - `topologicalKrullDim_eq_height_genericPoint`: an integral scheme has the dimension of the
+    height of its generic point (from the stubbed `height_eq_topologicalKrullDim_closure_singleton`;
+    used by the next two items and by split 8);
   - `essFiniteType_residueField` (instance): `κ(x)` is essentially of finite type over `k`;
   - `residueDegree_ne_zero_of_height_apply_eq`: for `f` over `k` between schemes locally of finite
     type, `height (f x) = height x` implies `f.residueDegree x ≠ 0` (the converse of split 1's
@@ -281,56 +349,83 @@ Proved on this branch, about 315 lines, no stubs. It needs only split 5 (and `ma
 
 ### Split 8: `feat: proper pushforward of a principal divisor is the divisor of the norm` (after: 1, 6, 7)
 
-Started (one lemma, below). Let `f : W → W'` be a proper surjective morphism of integral schemes
-of the same dimension `n + 1`, locally of finite type over `k`. Then `K(W)/K(W')` is finite (split 6's
-`functionFieldMap_finite_of_topologicalKrullDim_eq`) and `cyclesMap k f (div r) = div N(r)`
-(Fulton, Proposition 1.4(b)), coefficientwise with split 1's `map_height_apply`:
+Proved on this branch, about 230 lines, no new stubs (it uses the supplier stub through
+`LocalDimension.lean`, like splits 1 and 6).
 
-- at `y` with `coheight y = 1`: `f` is finite over an affine neighbourhood `V` of `y`
-  (split 6's `exists_isFinite_morphismRestrict_of_height_add_one`; shrink `V` to an affine open,
-  whose preimage is affine as `f` is affine over `V`), and split 7's
-  `ord_norm_eq_finsum_of_isAffineOpen` is the identity;
-- at `y` with `coheight y ≠ 1`: the right side is `0`, and every `x` over `y` with
-  `f.residueDegree x ≠ 0` has `height x = height y` (split 1), hence `coheight x ≠ 1`, so
-  `ord_x r = 0`.
-
-Both steps translate between `coheight` (Mathlib's codimension, used by `Scheme.ord`) and
-`height` (dimension of the closure, used by `Chow.cyclesOfDimension`) through
-`height x + coheight x = dim` for an integral scheme locally of finite type over a field. The
-ring-theoretic input `Ideal.height_add_ringKrullDim_quotient_of_finiteType` is on `main`
-(`TauCeti/RingTheory/KrullDimension/FiniteType.lean`); the scheme form (through an affine
-neighbourhood and the supplier lemma) is already proved on this branch, as the first piece of
-this split: `TauCeti.AlgebraicGeometry.coheight_add_height_eq_topologicalKrullDim` in
-`TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (for `X` irreducible and locally of finite
-type over `k`, `coheight x + height x = dim X`; from `main`'s
-`topologicalKrullDimAt_eq_ringKrullDim_stalk_add_topologicalKrullDim_closure` and
-`topologicalKrullDimAt_eq_iSup_topologicalKrullDim_irreducibleComponents`, Mathlib's
-`ringKrullDim_stalk_eq_coheight`, and the stubbed
-`height_eq_topologicalKrullDim_closure_singleton`). It goes in this split, not in split 1 or 6,
-because only this split uses it.
+- `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (namespace `TauCeti.AlgebraicGeometry`):
+  `coheight_apply_eq_coheight`: for `f : X ⟶ Y` between irreducible schemes of the same
+  dimension, locally of finite type over `k`, `height (f x) = height x` implies
+  `coheight (f x) = coheight x` (from PR #27340's dimension formula
+  `coheight_add_height_eq_topologicalKrullDim`, stubbed).
+- `TauCeti/AlgebraicGeometry/Morphisms/Finite/Basic.lean` (namespace `AlgebraicGeometry`):
+  `Scheme.Hom.exists_isAffineOpen_finite_app_of_isFinite_morphismRestrict`: if `f ∣_ V` is
+  finite and `y ∈ V`, there is an affine open `U ⊆ V` containing `y` with `f⁻¹ U` affine and
+  `f.app U` finite (through Mathlib's `morphismRestrict_app'` and
+  `image_morphismRestrict_preimage`).
+- `TauCeti/AlgebraicGeometry/SchemeTheoreticImage/Basic.lean` (namespace
+  `AlgebraicGeometry.Scheme.Hom`): instances `isIntegral_image` (the scheme-theoretic image of a
+  quasi-compact morphism from an integral scheme is integral) and `isLocallyNoetherian_image`.
+- `TauCeti/AlgebraicGeometry/Chow/PrincipalPushforward.lean` (new, 140 lines, namespace
+  `TauCeti.AlgebraicGeometry.Chow`):
+  - `map_height_div` (Fulton, Proposition 1.4(b)): for `f : X ⟶ Y` proper and dominant over `k`
+    between integral schemes locally of finite type over `k` with `dim X = dim Y`, and
+    `r : K(X)ˣ`, `AlgebraicCycle.map f height height (div r) = div (Units.map (Algebra.norm K(Y)) r)`
+    (with `K(Y) → K(X)` the algebra of `f.functionFieldMap`). Coefficientwise with split 1's
+    `map_height_apply`: at `y` of codimension one, `f` is finite over a neighbourhood
+    (split 6's `exists_isFinite_morphismRestrict_of_height_add_one`), shrunk to an affine one by
+    the lemma above, and split 7's `ord_norm_eq_finsum_of_isAffineOpen` is the identity; at any
+    other `y` both sides vanish, since a point over `y` with finite residue extension has the
+    height (split 1), hence the codimension (`coheight_apply_eq_coheight`), of `y`.
+  - `map_height_div_eq_map_imageι`: for `f : X ⟶ Y` proper over `k` from an integral `X`, with
+    `height (f η_X) = height η_X`, `f_* div r = (f.imageι)_* div N_{K(X)/K(f(X))}(r)`: split 8's
+    main theorem applied to `f.toImage`, which is proper and dominant onto the integral image of
+    the same dimension. This is the form split 10 uses on each summand `(i_j ≫ f)_* div r_j`.
 
 ### Split 9: `feat: principal divisors push forward to zero along dimension-dropping proper maps` (after: 1, 8)
 
-Not started. If `dim f(W) < dim W`, then `f_* div r = 0` (Fulton, Proposition 1.4(a)). On
-`k`-cycles this is automatic for `dim f(W) < k` by the grading of `Chow.cyclesMap`. The case
-`dim f(W) = k` reduces to the fact that a principal divisor on a proper curve over the function
-field of `f(W)` (the generic fibre) has degree zero, which is split 8 applied to the finite map
-from the curve to `ℙ¹` given by `r` (Fulton's proof of Proposition 1.4(a)).
+Started. If `dim f(W) < dim W`, then `f_* div r = 0` (Fulton, Proposition 1.4(a)). Proved on
+this branch, in `TauCeti/AlgebraicGeometry/Chow/PrincipalPushforward.lean` (split 8's file, about
+30 lines):
+
+- `Chow.map_height_div_eq_zero_of_height_add_one_lt`: for `f : X ⟶ Y` quasi-compact over `k`
+  from an integral `X` with `height (f η_X) + 1 < height η_X`, `f_* div r = 0`. The points of
+  `div r` have codimension one, hence height `dim X - 1` (the stubbed dimension formula), and a
+  point with finite residue extension keeps its height, which is at most `height (f η_X)`.
+
+Remaining: the case `height (f η_W) + 1 = height η_W`. Then `f_* div r` is concentrated at
+`f η_W`, with coefficient `Σ_{f x = f η_W} [κ(x) : κ(f η_W)] ord_x(r)`, the degree of the principal
+divisor of `r` on the generic fibre, a proper curve over `κ(f η_W)`. That this degree is zero needs
+the generic fibre with its local rings (`𝒪_{W_η, x} = 𝒪_{W, x}`), and either a finite morphism
+of the curve to `ℙ¹` given by `r` (to which split 8 applies, the norm of `r` being `t^d` with
+degree-zero divisor) or Fulton's closure of the graph of `r`; none of this is on `main`.
 
 ### Split 10 (final): `feat: proper pushforward of Chow groups and the degree of zero-cycles` (after: 1, 2, 3, 4, 5, 6, 7, 8, 9)
 
-Not started; this is the only split that completes the target. File: a new
-`TauCeti/AlgebraicGeometry/Chow/ProperPushforward.lean`.
+Started; this is the only split that completes the target. File
+`TauCeti/AlgebraicGeometry/Chow/ProperPushforward.lean` (new, about 175 lines so far, namespace
+`TauCeti.AlgebraicGeometry.Chow.RatEquivFamily`). Proved on this branch:
 
-- `Chow.cyclesMap_mem_ratEquiv`: for `f` proper over `k`, `cyclesMap k f` maps
-  `RatEquiv X n` into `RatEquiv Y n`. Proof sketch: write the cycle of a `RatEquivFamily` as a
-  locally finite sum (its summands are determined by `RatEquivFamily.component_apply` and
-  `component_apply_eq_zero_of_notMem_range`, so `component_def` is not needed), push it forward
-  with `map_locallyFiniteSum`, and rewrite each summand as `(i_j ≫ f)_* div r_j` with
-  `map_height_comp_of_isClosedImmersion`. Splits 8 and 9 turn each summand into `0` or
-  `(i_V)_* div (N r_j)` on `V = f(W_j)`. Group the nonzero summands by `V`: only finitely many
-  `W_j` meet the quasi-compact `f⁻¹(V)`, so the products of the norms over each `V` give a family
-  of reduced images that is locally finite, as in `locallyFinite_support_map`.
+- `map_component`, `locallyFinite_support_map_comp`, `map_cycle_apply`: the pushforward of the
+  cycle of a family `F` along a quasi-compact `f` is, coefficientwise, `Σ_j (i_j ≫ f)_* div(r_j)`
+  (uses the stubbed `component_def` and `map_height_comp_of_isClosedImmersion`);
+- `mapIndex F f`: the members `j` with `height (f (i_j η_j)) = height η_j`;
+- `map F f : RatEquivFamily Y n` (`@[expose]`, so that its members can be read off) with
+  `map_r`: the image family, whose members are the integral scheme-theoretic images
+  `(i_j ≫ f).image` for `j ∈ mapIndex F f`, with the norms `N_{K(W_j)/K(f(W_j))}(r_j)`; its
+  supports are locally finite because `range (i_j ≫ f).imageι = closure (f '' W_j)` and only
+  finitely many `W_j` meet the quasi-compact preimage of an affine open (only `f`
+  quasi-compact is needed);
+- `map_comp_div_eq_component_map` (split 8's `map_height_div_eq_map_imageι` on each member) and
+  `map_cycle_eq_cycle_map_add_finsum`: for `f` proper over `k`, `f_* (cycle F) = cycle (map F f)
+  + Σ_{j ∉ mapIndex F f} (i_j ≫ f)_* div(r_j)`;
+- `cycle_map_eq_map_cycle`: hence `f_* (cycle F) = cycle (map F f)` once the members outside
+  `mapIndex F f` push forward to zero.
+
+Still to add, once split 9 supplies that vanishing (Fulton, Proposition 1.4(a)):
+
+- `Chow.cyclesMap_mem_ratEquiv`: for `f` proper over `k`, `cyclesMap k f` maps `RatEquiv X n` into
+  `RatEquiv Y n` (`cycle_map_eq_map_cycle` with `Chow.mem_ratEquiv_iff`; the members outside
+  `mapIndex F f` vanish by split 9, since their images have smaller dimension).
 - `Chow.ChowGroup.properPushforward k f : ChowGroup X n →+ ChowGroup Y n`, with
   `properPushforward_cycleClass`, `properPushforward_id` and `properPushforward_comp`.
 - `Chow.ChowGroup.degree k X : ChowGroup X 0 →+ ℤ` for `X` proper over `k`, with
@@ -339,12 +434,19 @@ Not started; this is the only split that completes the target. File: a new
 
 ## What remains (status `partial`)
 
-Proved: splits 1–7: the cycle level, the whole commutative algebra of Fulton's Appendix A (A.2
+Proved: splits 1–8: the cycle level, the whole commutative algebra of Fulton's Appendix A (A.2
 and both forms of A.3), the finiteness of a proper generically finite morphism over a
-neighbourhood of each codimension-one point, and the scheme-level coefficient identity
-`ord_y N(r) = Σ_{f x = y} [κ(x) : κ(y)] ord_x(r)` over an affine neighbourhood on which `f` is
-finite. Remaining: split 8 (the global `f_* div r = div N(r)`; its dimension formula
-`coheight + height = dim` is already proved), split 9 (Proposition 1.4(a)) and split 10 (descent to
-Chow groups, `f_*`, `deg`, functoriality and `deg f_* = deg`). In particular, the statement that
+neighbourhood of each codimension-one point, the scheme-level coefficient identity
+`ord_y N(r) = Σ_{f x = y} [κ(x) : κ(y)] ord_x(r)`, and Fulton's Proposition 1.4(b) globally
+(`Chow.map_height_div`, `Chow.map_height_div_eq_map_imageι`). Split 10 is started: the image
+family of a rational equivalence under a proper map and
+`f_* (cycle F) = cycle (map F f) + Σ_{dimension-dropping j} (i_j ≫ f)_* div(r_j)`. Split 9 is started (the
+case `dim f(W) < dim W - 1`). Remaining: the core of split 9 (Proposition
+1.4(a): for `f : W ⟶ Y` proper from an integral `W` with `dim f(W) = dim W - 1`, the
+coefficient `Σ_{f x = f η_W} [κ(x) : κ(f η_W)] ord_x(r)` vanishes, that is, a principal divisor
+on the proper generic fibre curve has degree zero; it needs that curve and its comparison of
+local rings, and a finite map to `ℙ¹` or Fulton's graph closure, none of which is on `main`) and
+the rest of split 10 (with split 9, `cyclesMap_mem_ratEquiv`; then the descent to Chow groups,
+`f_*`, `deg`, functoriality and `deg f_* = deg`). In particular, the statement that
 proper pushforward preserves rational equivalence (Fulton, Theorem 1.4) is not proved, so `f_*`
 and `deg` are not yet defined on Chow groups.
