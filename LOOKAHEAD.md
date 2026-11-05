@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[],"title":"feat(AlgebraicGeometry/Modules): the sheaf associated with a finite module is of finite type"},{"n":13,"after":[],"title":"feat(RingTheory/GradedAlgebra): finiteness and generation of the degree-one part of a graded algebra"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"},{"n":15,"after":[],"title":"feat(AlgebraicGeometry/RelativeGluing): recognise the glued scheme of a relative gluing datum"},{"n":16,"after":[],"title":"feat(AlgebraicGeometry/Modules): pull back graded sections, and Proj of them as a base change over affine opens"},{"n":17,"after":[1,16],"title":"feat(AlgebraicGeometry/RelativeProj): charts of the base change of a relative Proj over small affine opens, and the pulled-back algebra stays of finite type and generated in degree one"},{"n":18,"after":[1,15,16,17],"title":"feat(AlgebraicGeometry/RelativeProj): the relative Proj commutes with base change"},{"n":19,"after":[],"title":"feat(AlgebraicGeometry/RelativeProj): functoriality of the relative Proj"},{"n":20,"after":[1,7,13,19],"title":"feat(AlgebraicGeometry/RelativeProj): closed immersions of relative Proj from maps surjective in degree one"},{"n":21,"after":[],"title":"feat(AlgebraicGeometry/Modules): pullback of the graded symmetric algebra"},{"n":22,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],"title":"feat(AlgebraicGeometry/Morphisms): projective schemes over a ring are the projective morphisms to its spectrum, and projective morphisms are stable under base change"}]}-->
+<!--tauceti-lookahead:v1 {"area":"StableReduction","slug":"relative-ampleness","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"refactor(AlgebraicGeometry/RelativeProj): name the generated-in-degree-one condition"},{"n":2,"after":[],"title":"feat(AlgebraicGeometry/LineBundle): tensor powers of line bundles"},{"n":3,"after":[2],"title":"feat(AlgebraicGeometry/LineBundle): global generation of trivial bundles, pullbacks, tensor products and tensor powers"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/LineBundle): nonvanishing loci pull back; ampleness under affine pullback, powers and globally generated twists"},{"n":5,"after":[4],"title":"feat(AlgebraicGeometry/LineBundle): schemes with an ample line bundle are separated; ampleness on basic-open covers and of exterior products"},{"n":6,"after":[4],"title":"feat(AlgebraicGeometry/ProjectiveSpectrum): O(1) pulls back to an ample line bundle along immersions from quasi-compact schemes"},{"n":7,"after":[1],"title":"feat(AlgebraicGeometry/RelativeProj): the symmetric algebra is generated in degree one and its relative Proj is proper"},{"n":8,"after":[2,4,5],"title":"feat(AlgebraicGeometry/LineBundle): sections over nonvanishing loci extend; ampleness pulls back along immersions"},{"n":9,"after":[2,3,4,5,8],"title":"feat(AlgebraicGeometry/LineBundle): relatively ample line bundles"},{"n":10,"after":[2,3,4,5,8,9],"title":"feat(AlgebraicGeometry/LineBundle): relative ampleness composes after twisting by a large power"},{"n":11,"after":[],"title":"feat(AlgebraicGeometry/IntersectionNumber): intersection numbers of powers"},{"n":12,"after":[],"title":"feat(AlgebraicGeometry/Modules): the sheaf associated with a finite module is of finite type"},{"n":13,"after":[],"title":"feat(RingTheory/GradedAlgebra): finiteness and generation of the degree-one part of a graded algebra"},{"n":14,"after":[1,2,3,4,5,6,7,8,9,10,11,12],"title":"feat(AlgebraicGeometry/Morphisms): relatively very ample line bundles, projective morphisms, projective bundles and blowups"},{"n":15,"after":[],"title":"feat(AlgebraicGeometry/RelativeGluing): recognise the glued scheme of a relative gluing datum"},{"n":16,"after":[],"title":"feat(AlgebraicGeometry/Modules): pull back graded sections, and Proj of them as a base change over affine opens"},{"n":17,"after":[1,16],"title":"feat(AlgebraicGeometry/RelativeProj): charts of the base change of a relative Proj over small affine opens, and the pulled-back algebra stays of finite type and generated in degree one"},{"n":18,"after":[1,15,16,17],"title":"feat(AlgebraicGeometry/RelativeProj): the relative Proj commutes with base change"},{"n":19,"after":[],"title":"feat(AlgebraicGeometry/RelativeProj): functoriality of the relative Proj"},{"n":20,"after":[1,7,13,19],"title":"feat(AlgebraicGeometry/RelativeProj): closed immersions of relative Proj from maps surjective in degree one"},{"n":21,"after":[],"title":"feat(AlgebraicGeometry/Modules): pullback of the graded symmetric algebra"},{"n":22,"after":[1,7,13,15,16,17,18,19,20,21],"title":"feat(AlgebraicGeometry/RelativeProj): base change of projective bundles"},{"n":23,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"title":"feat(AlgebraicGeometry/Morphisms): projective schemes over a ring are the projective morphisms to its spectrum, and projective morphisms are stable under base change"}]}-->
 # Lookahead: `relative-ampleness` (StableReduction, Layer 2)
 
 Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f`. Status: **partial**. Target text
@@ -9,7 +9,7 @@ algebra." The target has no pinned forms in `StableReduction/Suggested.lean`.
 
 ## Stubbed declarations: none left
 
-Sixth session (2026-11-04, 00:05 UTC), still true in the twenty-seventh. The supplier `relative-proj-twisting-sheaf`
+Sixth session (2026-11-04, 00:05 UTC), still true in the twenty-ninth. The supplier `relative-proj-twisting-sheaf`
 (SchemeAndStackFoundations §0.3) has landed the part this target consumes, in
 `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf.lean` on `main`. The stub file
 `TauCeti/Lookahead/RelativeAmpleness/Stubs.lean` is deleted and the proof now uses the landed
@@ -39,6 +39,48 @@ The earlier stubs and what replaced them:
    `CommMon.IsGeneratedInDegreeOne A` with exactly that body, plus `isGeneratedInDegreeOne_iff`,
    and restates `isInvertible_relativeProjTwistingSheaf` with `(h : A.IsGeneratedInDegreeOne)`.
    That theorem has no other users on `main`.
+
+## Changes in the twenty-ninth session (2026-11-05, 07:55 UTC)
+
+- `main` is still `e8758b7b2f82b9b1c3f33b992ab8f499b510240f` (`git merge origin/main`: already up
+  to date). The supplier PR #27145 is still not consumed, so there are still no stubs.
+- **Item 3 of the composition plan is done: the projective bundle commutes with base change.**
+  - In split 19's `TauCeti/AlgebraicGeometry/RelativeProj/Functor.lean` (+40 lines, counted in the
+    new split 22): `CategoryTheory.CommMon.irrelevantLeMap_of_isIso` (an isomorphism of graded
+    algebras satisfies the irrelevant-ideal condition) and
+    `CategoryTheory.CommMon.relativeProjIso e : Proj_X(A) ≅ Proj_X(B)` for `e : A ≅ B`, with the
+    simp lemmas `relativeProjIso_hom` and `relativeProjIso_inv` (it is built from split 19's
+    `relativeProjMap`, `relativeProjMap_comp` and `relativeProjMap_id`).
+  - New file `TauCeti/AlgebraicGeometry/RelativeProj/SymmetricAlgebra/Pullback.lean` (143 lines,
+    new split 22): `relativeProjGradedSymmetricAlgebraPullbackIso g F : ℙ_Y(g^* F) ≅ ℙ_X(F) ×_X Y`
+    (split 21's `pullbackGradedSymmetricAlgebraIso` through `relativeProjIso`, then split 18's
+    `relativeProjPullbackIso`), lying over `Y` (`relativeProjGradedSymmetricAlgebraPullbackIso_hom_snd`),
+    the cartesian square `isPullback_relativeProjGradedSymmetricAlgebraPullback`, and the two
+    closed-immersion statements the composition argument consumes:
+    `exists_isClosedImmersion_relativeProjPullback_of_epi` (an epimorphism `g^* F ⟶ E` gives a
+    closed immersion `ℙ_Y(E) ⟶ ℙ_X(F) ×_X Y` over `Y`, through split 20's
+    `isClosedImmersion_relativeProjMap_gradedSymmetricAlgebra_map`) and
+    `GradedQuasicoherentAlgebra.exists_isClosedImmersion_relativeProjPullback_of_epi` (for `B` on
+    `Y` generated in degree one and an epimorphism `g^* F ⟶ B₁`, a closed immersion
+    `Proj_Y(B) ⟶ ℙ_X(F) ×_X Y` over `Y`, through split 20's
+    `isClosedImmersion_relativeProjMap_counit`).
+- Splits renumbered: the new work is split 22; the old split 22 (`Morphisms/ProjectiveOver.lean`)
+  is now split 23, still the last one, listed after every other split.
+- Verified: `lake build` green and `lookahead-check` ok. No `sorry` anywhere on the branch.
+  `#lint` (`docBlame`, `unusedArguments`, `simpNF`, `checkType`, `synTaut`,
+  `unusedHavesSuffices`) passes on the import closure of the new module.
+- Rubric audit:
+  - API: `relativeProjIso` is stated for any isomorphism of graded algebras, so that it can be reused
+    for the twist-invariance step (item 1) as well; its `hom`/`inv` lemmas are the interface, and
+    two lemmas restating `relativeProjMap_relativeProjToBase` for it were dropped as duplicates;
+  - reuse: the isomorphism is assembled from split 18's base change of the relative `Proj` and
+    split 21's algebra isomorphism, with no new gluing argument;
+  - proof quality: where the counit's source is `(degreeOne ⋙ gradedSymmetricAlgebra Y).obj B`
+    rather than `(gradedSymmetricAlgebra Y).obj (degreeOne.obj B)`, `rw` fails, so the over-`Y`
+    equation is a term-mode `Eq.trans` chain;
+  - performance: `Functor.lean` takes about 4–5 minutes to build, almost all of it kernel type
+    checking of the declarations already on the branch before this session (a copy truncated
+    before `relativeProjIso` takes as long). The new declarations add no measurable time.
 
 ## Changes in the twenty-eighth session (2026-11-05, 08:10 UTC)
 
@@ -1362,12 +1404,32 @@ The earlier stubs and what replaced them:
       composition, Layer 2).
     - Subject: `feat(AlgebraicGeometry/Modules): pullback of the graded symmetric algebra`
 
-22. **Projective schemes over a ring are the projective morphisms to its spectrum; projective
+22. **Base change of projective bundles** (after: 1, 7, 13, 15, 16, 17, 18, 19, 20, 21). It edits
+    split 19's `Functor.lean` and imports split 18's `RelativeProj/BaseChange.lean` (which needs 1,
+    15, 16, 17), split 20's `RelativeProj/ClosedImmersion.lean` (which needs 1, 7, 13, 19) and
+    split 21's `GradedPullback.lean`.
+    - Files: `TauCeti/AlgebraicGeometry/RelativeProj/SymmetricAlgebra/Pullback.lean` (143 lines,
+      new) and `TauCeti/AlgebraicGeometry/RelativeProj/Functor.lean` (+40: the declarations below
+      and one line of its module docstring; if split 19 has not merged when this is opened, wait
+      for it).
+    - Declarations: in `Functor.lean`, `CategoryTheory.CommMon.irrelevantLeMap_of_isIso`,
+      `CommMon.relativeProjIso`, `CommMon.relativeProjIso_hom`, `CommMon.relativeProjIso_inv`; in
+      `TauCeti.AlgebraicGeometry`: `relativeProjGradedSymmetricAlgebraPullbackIso`,
+      `relativeProjGradedSymmetricAlgebraPullbackIso_hom_snd` (with `_assoc`),
+      `isPullback_relativeProjGradedSymmetricAlgebraPullback`,
+      `exists_isClosedImmersion_relativeProjPullback_of_epi` and
+      `GradedQuasicoherentAlgebra.exists_isClosedImmersion_relativeProjPullback_of_epi`.
+    - Roadmap line: `Roadmap: StableReduction` (Layer 2, projective morphisms: input to their
+      stability under composition).
+    - Subject: `feat(AlgebraicGeometry/RelativeProj): base change of projective bundles`
+
+23. **Projective schemes over a ring are the projective morphisms to its spectrum; projective
     morphisms are stable under base change** (after: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
-    15, 16, 17, 18, 19, 20, 21). It imports splits 12, 13, 14 and 18, and through them every split
-    up to 18; it is listed after all of them, including 19, 20 and 21, so that it is the last split
+    15, 16, 17, 18, 19, 20, 21, 22). It imports splits 12, 13, 14 and 18, and through them every
+    split up to 18; it is listed after all of them, including 19 to 22, so that it is the last split
     to merge and the one that completes the branch's current part of the target. (It was split 19
-    before the twenty-seventh session and split 21 before the twenty-eighth.)
+    before the twenty-seventh session, split 21 before the twenty-eighth and split 22 before the
+    twenty-ninth.)
     - Files: `TauCeti/AlgebraicGeometry/Morphisms/ProjectiveOver.lean` (362 lines, new; imports
       split 18's `RelativeProj/BaseChange.lean`, `Morphisms/Projective.lean`,
       `ProjectiveSpectrum/ProjectiveOver.lean`, `ProjectiveSpectrum/ClosedImmersion.lean` and
@@ -1458,7 +1520,7 @@ Proved, with no stubs:
   `Proj_{S'}(g^* A) ⟶ S'` is projective.
 - The relative `Proj` commutes with base change: `Proj_{S'}(g^* A) ≅ Proj_S(A) ×_S S'` over `S'`
   for every graded quasicoherent algebra `A` on `S` and every `g : S' ⟶ S` (split 18). Hence
-  **projective morphisms are stable under arbitrary base change** (split 22,
+  **projective morphisms are stable under arbitrary base change** (split 23,
   `isProjective_pullback_snd`, `isProjective_pullback_fst`, and the `MorphismProperty` instances
   `respectsIso_isProjective` and `isStableUnderBaseChange_isProjective`).
 - The relative `Proj` is functorial in morphisms of graded algebras satisfying the irrelevant-ideal
@@ -1469,10 +1531,14 @@ Proved, with no stubs:
   gives a closed immersion `ℙ(E) ⟶ ℙ(F)` (split 20).
 - The graded symmetric algebra commutes with pullback: `f^* (Sym F) ≅ Sym (f^* F)` as graded
   quasicoherent algebras, and the direct-sum algebra commutes with pullback (split 21).
+- Isomorphisms of graded algebras induce isomorphisms of relative `Proj`s over the base, and the
+  projective bundle commutes with base change: `ℙ_Y(g^* F) ≅ ℙ_X(F) ×_X Y` over `Y`. An
+  epimorphism `g^* F ⟶ E`, or `g^* F ⟶ B₁` for `B` generated in degree one, gives a closed
+  immersion of `ℙ_Y(E)`, resp. `Proj_Y(B)`, into `ℙ_X(F) ×_X Y` over `Y` (split 22).
 
 Remains for the target:
 - Stability of projectivity under composition (Stacks 01WD-type, over a quasi-compact base). Base
-  change is done (split 22), and so is the ampleness input (Stacks 0C4K, split 10:
+  change is done (split 23), and so is the ampleness input (Stacks 0C4K, split 10:
   `IsProjective.exists_isRelativelyAmple_comp`). The planned route to a closed immersion of `X`
   into a relative `Proj` over `Z`, for projective `f : X ⟶ Y` (through `Proj_Y(B)`) and
   `g : Y ⟶ Z` (through `Proj_Z(A)`), each step a closed immersion over `Z`:
@@ -1483,13 +1549,12 @@ Remains for the target:
   2. relative global generation: for `E` of finite type on `Y` and `n` large, a quasicoherent `G`
      of finite type on `Z` with an epimorphism `g^* G ⟶ E ⊗ 𝒪(n)` (needs `g_*` of quasicoherent
      sheaves and finite-type approximation on the quasi-compact `Z`);
-  3. `g^* (Sym G) ≅ Sym (g^* G)`, so that split 18's `relativeProjPullbackIso` identifies
-     `ℙ_Y(g^* G)` with `ℙ_Z(G) ×_Z Y`. **The algebra isomorphism is done** (split 21,
-     `pullbackGradedSymmetricAlgebraIso`); what remains is the short step that an isomorphism of
-     graded algebras induces an isomorphism of relative `Proj`s over the base (split 19's
-     `relativeProjMap` with `relativeProjMap_comp`/`relativeProjMap_id`, the irrelevant-ideal
-     condition coming from `irrelevantLeMap_of_surjective`), then composing with
-     `relativeProjPullbackIso`;
+  3. ~~`ℙ_Y(g^* G) ≅ ℙ_Z(G) ×_Z Y`~~ **done** (split 22,
+     `relativeProjGradedSymmetricAlgebraPullbackIso`; with
+     `GradedQuasicoherentAlgebra.exists_isClosedImmersion_relativeProjPullback_of_epi`, an
+     epimorphism `g^* G ⟶ B₁` already gives the closed immersion `Proj_Y(B) ↪ ℙ_Z(G) ×_Z Y` over
+     `Y` for `B` generated in degree one, so once items 1 and 2 supply such an epimorphism for a
+     twist of `B`, only the Segre step 4 is left);
   4. the Segre embedding `ℙ_Z(G) ×_Z ℙ_Z(H) ↪ ℙ_Z(G ⊗ H)`.
   The alternative route through Stacks 01VU/01VS (the relative `Proj` of the section algebra
   `⊕ₙ f_* Lⁿ`) needs `f_*` and a relative Veronese step and is not easier.

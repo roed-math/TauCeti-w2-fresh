@@ -29,6 +29,8 @@ degrees, it is a closed immersion.
 
 * `CategoryTheory.CommMon.relativeProjMap φ hφ`: the morphism `Proj_X(B) ⟶ Proj_X(A)` induced by
   `φ : A ⟶ B`.
+* `CategoryTheory.CommMon.relativeProjIso e`: the isomorphism `Proj_X(A) ≅ Proj_X(B)` induced by
+  an isomorphism `e : A ≅ B` of graded algebras.
 
 ## Main results
 
@@ -119,6 +121,16 @@ theorem _root_.CategoryTheory.CommMon.irrelevantLeMap_of_surjective
   HomogeneousIdeal.irrelevant_le_map_of_grade_subset_range _
     (CommMon.gradedSectionsGrading_subset_range_gradedSectionsGradedHom φ (h U.toOpens U.2))
 
+/-- An isomorphism of graded algebras satisfies the irrelevant-ideal condition, being bijective on
+sections in every degree. -/
+theorem _root_.CategoryTheory.CommMon.irrelevantLeMap_of_isIso [IsIso φ] :
+    CommMon.IrrelevantLeMap φ :=
+  CommMon.irrelevantLeMap_of_surjective fun U _ n _ ↦
+    have : IsIso (φ.hom.hom n) :=
+      inferInstanceAs (IsIso ((CommMon.forget _ ⋙ GradedObject.eval n).map φ))
+    (ConcreteCategory.bijective_of_isIso ((Scheme.Modules.sectionsFunctor U).map
+      (φ.hom.hom n))).2
+
 variable [∀ n, (A.X n).IsQuasicoherent] [∀ n, (B.X n).IsQuasicoherent]
 
 /-- The morphisms of projective spectra `Proj (⨁ n, Γ(Bₙ, U)) ⟶ Proj (⨁ n, Γ(Aₙ, U))` induced by
@@ -205,6 +217,34 @@ theorem _root_.CategoryTheory.CommMon.relativeProjMap_comp
       (congrArg (Proj.map _ (hψ U) ≫ ·)
         (CommMon.relativeProjCover_f_relativeProjMap φ hφ U).symm).trans
         (CommMon.relativeProjCover_f_relativeProjMap_assoc ψ hψ U _).symm
+
+/-- The **isomorphism of relative `Proj`s** `Proj_X(A) ≅ Proj_X(B)` induced by an isomorphism of
+graded algebras `e : A ≅ B`. Its forward morphism is induced by `e.inv`, since the relative `Proj`
+is contravariant. -/
+def _root_.CategoryTheory.CommMon.relativeProjIso (e : A ≅ B) :
+    A.relativeProj ≅ B.relativeProj where
+  hom := CommMon.relativeProjMap e.inv (CommMon.irrelevantLeMap_of_isIso e.inv)
+  inv := CommMon.relativeProjMap e.hom (CommMon.irrelevantLeMap_of_isIso e.hom)
+  hom_inv_id := by
+    rw [← CommMon.relativeProjMap_comp _ _ _ _ (CommMon.irrelevantLeMap_of_isIso _)]
+    simp only [Iso.hom_inv_id, CommMon.relativeProjMap_id]
+  inv_hom_id := by
+    rw [← CommMon.relativeProjMap_comp _ _ _ _ (CommMon.irrelevantLeMap_of_isIso _)]
+    simp only [Iso.inv_hom_id, CommMon.relativeProjMap_id]
+
+/-- The forward morphism of `CategoryTheory.CommMon.relativeProjIso e` is induced by `e.inv`. -/
+@[simp]
+theorem _root_.CategoryTheory.CommMon.relativeProjIso_hom (e : A ≅ B) :
+    (CommMon.relativeProjIso e).hom =
+      CommMon.relativeProjMap e.inv (CommMon.irrelevantLeMap_of_isIso e.inv) := by
+  rfl
+
+/-- The inverse of `CategoryTheory.CommMon.relativeProjIso e` is induced by `e.hom`. -/
+@[simp]
+theorem _root_.CategoryTheory.CommMon.relativeProjIso_inv (e : A ≅ B) :
+    (CommMon.relativeProjIso e).inv =
+      CommMon.relativeProjMap e.hom (CommMon.irrelevantLeMap_of_isIso e.hom) := by
+  rfl
 
 /-- **Over an affine open `U`, the morphism of relative `Proj`s is the morphism of projective
 spectra** `Proj (⨁ n, Γ(Bₙ, U)) ⟶ Proj (⨁ n, Γ(Aₙ, U))`: the square it forms with the charts
