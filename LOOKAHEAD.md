@@ -1,9 +1,9 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change of Noetherian local cohomology"},{"n":11,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":12,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":13,"after":[12],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":14,"after":[6,11,13],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":15,"after":[12],"title":"feat: cohomology with supports of the sheaf associated to a module"},{"n":16,"after":[7,8,15],"title":"feat: comparison map from local cohomology to cohomology with supports"},{"n":17,"after":[16],"title":"feat: local cohomology is cohomology with supports on the spectrum of a Noetherian ring"},{"n":18,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],"title":"feat: the section 2.7 checks for cohomology with supports and local cohomology"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"d0b6fe9d754d0f7ecd76905a71d276bdf47efe00","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change of Noetherian local cohomology"},{"n":11,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":12,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":13,"after":[12],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":14,"after":[6,11,13],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":15,"after":[12],"title":"feat: cohomology with supports of the sheaf associated to a module"},{"n":16,"after":[7,8,15],"title":"feat: comparison map from local cohomology to cohomology with supports"},{"n":17,"after":[16],"title":"feat: local cohomology is cohomology with supports on the spectrum of a Noetherian ring"},{"n":18,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],"title":"feat: the section 2.7 checks for cohomology with supports and local cohomology"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
-Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f` (session 14 merged `main` again,
-without conflicts).
+Built on `main` at `d0b6fe9d754d0f7ecd76905a71d276bdf47efe00` (session 17 merged `main` again,
+without conflicts; `main` changed nothing under `TauCeti/` since `e8758b7b2f8`).
 Status: **partial** (session 15: the README checks are proved; session 16: the long exact sequence
 of cohomology with supports of sheaves of modules and its compatibility with pullback; the scheme
 wrapper `localCohomologySheaf`, `rHZ_adjunction`, `localToGlobal` and the flat base change
@@ -878,6 +878,14 @@ with `Eq.trans`/`congrArg`. In the same way, give `hS.map_of_exact F` an explici
 its topologies. Otherwise elaboration postpones it and fails with a universe or type mismatch.
 `cohomologyWithSupportδ` is not exposed, so other modules rewrite with `cohomologyWithSupportδ_eq`
 before applying a lemma stated through `Ext.postcomp`.
+
+### Session 17: refresh on `main`
+
+Session 17 merged `main` at `d0b6fe9d754` (infrastructure commits only, nothing under `TauCeti/`),
+rebuilt the whole branch and reran `lookahead-check`. No declaration changed. Each item left under
+"What remains" needs more than one session: the `𝒪_X`-module structure on `localCohomologySheaf`
+needs the action of `𝒪_X(W)` on `H_Z^q(W, M|_W)` compatibly with restriction, and
+`rHZ_adjunction`/`localToGlobal` need a derived-category `RΓ_Z`, which `main` does not have.
 
 ## What remains
 
