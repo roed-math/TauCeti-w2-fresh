@@ -28,7 +28,8 @@ closed immersion `Spec k ⟶ X`, whose ring of functions is `k ≠ 0`.
 
 * `AffineLineExample.coordinate k`: the coordinate `t` as a global function on `Spec k[t]`;
 * `AffineLineExample.subsingleton_cohomologyWithSupport_origin_zero`: `H_Z^0(X, 𝒪) = 0`;
-* `AffineLineExample.cohomologyWithSupportOriginOneEquiv`: `H_Z^1(X, 𝒪) ≃+ k[t, t⁻¹] / k[t]`;
+* `AffineLineExample.cohomologyWithSupportOriginOneLinearEquiv`: `H_Z^1(X, 𝒪) ≅ k[t, t⁻¹] / k[t]`
+  as `k[t]`-modules;
 * `AffineLineExample.subsingleton_cohomologyWithSupport_origin_add_two`: `H_Z^{n+2}(X, 𝒪) = 0`;
 * `AffineLineExample.origin k`: the closed immersion `Spec k ⟶ Spec k[t]` with image `Z`
   (`AffineLineExample.range_origin`);
@@ -77,13 +78,16 @@ theorem subsingleton_cohomologyWithSupport_origin_zero :
   subsingleton_cohomologyWithSupport_basicOpen_zero _ (coordinate_mem_nonZeroDivisors k)
 
 /-- Degree-one cohomology of the structure sheaf of the affine line with supports at the origin
-is the group of Laurent polynomials modulo polynomials:
-`H¹_{V(t)}(𝔸¹, 𝒪) ≅ k[t, t⁻¹] / k[t]`. -/
-def cohomologyWithSupportOriginOneEquiv :
-    cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen (coordinate k)).compl
-        (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf) 1 ≃+
-      k[T;T⁻¹] ⧸ (toLaurent : k[X] →+* k[T;T⁻¹]).range.toAddSubgroup :=
-  cohomologyWithSupportSpecOneEquiv X k[T;T⁻¹]
+is the `k[t]`-module of Laurent polynomials modulo polynomials:
+`H¹_{V(t)}(𝔸¹, 𝒪) ≅ k[t, t⁻¹] / k[t]`, where `k[t]` acts through `k[t] ≅ Γ(𝔸¹, ⊤)`. -/
+def cohomologyWithSupportOriginOneLinearEquiv :
+    let 𝒪 : (Spec (CommRingCat.of k[X])).Modules := SheafOfModules.unit _
+    (ModuleCat.restrictScalars (Scheme.ΓSpecIso (CommRingCat.of k[X])).inv.hom).obj
+        (ModuleCat.of Γ(Spec (CommRingCat.of k[X]), ⊤)
+          (cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen (coordinate k)).compl
+            𝒪 1)) ≃ₗ[k[X]]
+      k[T;T⁻¹] ⧸ LinearMap.range (Algebra.linearMap k[X] k[T;T⁻¹]) :=
+  cohomologyWithSupportSpecOneLinearEquiv X k[T;T⁻¹]
 
 /-- The structure sheaf of the affine line has no cohomology with supports at the origin in
 degrees at least two. -/

@@ -60,14 +60,18 @@ open AffineLineExample
 variable (k : Type u) [Field k]
 
 /-- On the affine line `𝔸¹_k = Spec k[t]` with supports at the origin `V(t)`, the structure sheaf
-has `H⁰ = 0` and `H¹ ≅ k[t, t⁻¹] / k[t]`. -/
+has `H⁰ = 0` and `H¹ ≅ k[t, t⁻¹] / k[t]` as `k[t]`-modules. -/
 theorem test_support_affine_line_origin :
     Subsingleton (cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen
         (coordinate k)).compl (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf) 0) ∧
-      Nonempty (cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen
-          (coordinate k)).compl (SheafOfModules.unit (Spec (CommRingCat.of k[X])).ringCatSheaf) 1 ≃+
-        k[T;T⁻¹] ⧸ (toLaurent : k[X] →+* k[T;T⁻¹]).range.toAddSubgroup) :=
-  ⟨subsingleton_cohomologyWithSupport_origin_zero k, ⟨cohomologyWithSupportOriginOneEquiv k⟩⟩
+      let 𝒪 : (Spec (CommRingCat.of k[X])).Modules := SheafOfModules.unit _
+      Nonempty ((ModuleCat.restrictScalars (Scheme.ΓSpecIso (CommRingCat.of k[X])).inv.hom).obj
+          (ModuleCat.of Γ(Spec (CommRingCat.of k[X]), ⊤)
+            (cohomologyWithSupport ((Spec (CommRingCat.of k[X])).basicOpen (coordinate k)).compl
+              𝒪 1)) ≃ₗ[k[X]]
+        k[T;T⁻¹] ⧸ LinearMap.range (Algebra.linearMap k[X] k[T;T⁻¹])) :=
+  ⟨subsingleton_cohomologyWithSupport_origin_zero k,
+    ⟨cohomologyWithSupportOriginOneLinearEquiv k⟩⟩
 
 /-- `H⁰_Z(X, 𝒪)` is not the ring of functions on `Z`: the origin `Z` of the affine line is the
 image of the closed immersion `Spec k ⟶ 𝔸¹_k`, whose ring of functions `k` is nonzero, while

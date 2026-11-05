@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"d0b6fe9d754d0f7ecd76905a71d276bdf47efe00","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change of Noetherian local cohomology"},{"n":11,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":12,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":13,"after":[12],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":14,"after":[6,11,13],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":15,"after":[12],"title":"feat: cohomology with supports of the sheaf associated to a module"},{"n":16,"after":[7,8,15],"title":"feat: comparison map from local cohomology to cohomology with supports"},{"n":17,"after":[16],"title":"feat: local cohomology is cohomology with supports on the spectrum of a Noetherian ring"},{"n":18,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],"title":"feat: the section 2.7 checks for cohomology with supports and local cohomology"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"b3b0334ab9203d9faee4b2f34cd75161463ecdd0","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is the power torsion"},{"n":2,"after":[],"title":"feat: cohomology with supports in the whole space is ordinary cohomology"},{"n":3,"after":[],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology vanishes below the depth and not in degree the depth"},{"n":5,"after":[4],"title":"feat: compare the derived-functor and derived-category Ext in positive degrees"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: long exact sequence of local cohomology"},{"n":8,"after":[1,5,7],"title":"feat: local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change of Noetherian local cohomology"},{"n":11,"after":[1],"title":"feat: degree-zero local cohomology of a DVR and of a non-Noetherian nil ideal"},{"n":12,"after":[2,3],"title":"feat: cohomology with supports of a sheaf of modules on a scheme"},{"n":13,"after":[12],"title":"feat: cohomology with supports on affine schemes and at the origin of the affine line"},{"n":14,"after":[6,11,13],"title":"feat: local cohomology and cohomology with supports of a DVR and a nil ideal"},{"n":15,"after":[12],"title":"feat: cohomology with supports of the sheaf associated to a module"},{"n":16,"after":[7,8,15],"title":"feat: comparison map from local cohomology to cohomology with supports"},{"n":17,"after":[16],"title":"feat: local cohomology is cohomology with supports on the spectrum of a Noetherian ring"},{"n":18,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],"title":"feat: the section 2.7 checks for cohomology with supports and local cohomology"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
-Built on `main` at `d0b6fe9d754d0f7ecd76905a71d276bdf47efe00` (session 17 merged `main` again,
+Built on `main` at `b3b0334ab9203d9faee4b2f34cd75161463ecdd0` (session 18 merged `main` again,
 without conflicts; `main` changed nothing under `TauCeti/` since `e8758b7b2f8`).
 Status: **partial** (session 15: the README checks are proved; session 16: the long exact sequence
 of cohomology with supports of sheaves of modules and its compatibility with pullback; the scheme
@@ -887,6 +887,17 @@ rebuilt the whole branch and reran `lookahead-check`. No declaration changed. Ea
 needs the action of `𝒪_X(W)` on `H_Z^q(W, M|_W)` compatibly with restriction, and
 `rHZ_adjunction`/`localToGlobal` need a derived-category `RΓ_Z`, which `main` does not have.
 
+### Session 18: the affine-line check is linear
+
+Session 18 merged `main` at `b3b0334ab92` (infrastructure commits only, nothing under `TauCeti/`).
+
+`TauCeti/Examples/AlgebraicGeometry/Cohomology/Support.lean` (split 13): the additive
+`AffineLineExample.cohomologyWithSupportOriginOneEquiv` is replaced by
+**`cohomologyWithSupportOriginOneLinearEquiv`**, `H¹_{V(t)}(𝔸¹_k, 𝒪) ≃ₗ[k[t]] k[t, t⁻¹] ⧸ k[t]`
+(with `k[t]` acting through `ΓSpecIso`), a direct instance of session 15's
+`cohomologyWithSupportSpecOneLinearEquiv`. The check `test_support_affine_line_origin`
+(`Checks.lean`, split 18) now states the `k[t]`-linear isomorphism instead of an `AddEquiv`.
+
 ## What remains
 
 - `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 12), including its
@@ -912,7 +923,8 @@ needs the action of `𝒪_X(W)` on `H_Z^q(W, M|_W)` compatibly with restriction,
   (`cohomologyWithSupportBasicOpenOneLinearEquiv`) and, as a compatibility lemma, for any
   quasi-coherent `M` (`cohomologyWithSupportOneEquiv_globalSectionsSmul`). Session 15 added the
   `A`-linear `cohomologyWithSupportSpecOneLinearEquiv` on `Spec A`, so the DVR comparison check
-  is `R`-linear. The affine-line identification and session 9's DVR `AddEquiv` are still additive.
+  is `R`-linear. Session 18 made the affine-line identification `k[t]`-linear; session 9's DVR `AddEquiv` is
+  still additive (its `R`-linear form is `test_depth_dvr`).
 - Split 18 (final). Done in session 15: every README check (`Checks.lean`, see session 15),
   including `localCohomology_module_comparison_dvr` through the general comparison. Remaining:
   - (optional) check that the comparison isomorphism itself matches the two degree-one
