@@ -60,7 +60,8 @@ The remaining declarations are in the namespace `TauCeti.AlgebraicGeometry.Chow`
   of finite type over `K` have finite transcendence degree, in a tower `K → κ(f x) → κ(x)`.
 * `height_eq_height_add`: for `f` of pure relative dimension `n` over a field, a generic point `x`
   of its fibre has dimension `dim (f x) + n`; `height_le_height_add`: every point `x` has
-  dimension at most `dim (f x) + n`.
+  dimension at most `dim (f x) + n`; `maximal_mem_preimage_singleton_of_height_eq`: the points
+  where equality holds are the generic points of their fibres.
 * `cycleFlatPullback`: the flat pullback `AlgebraicCycle Y ℤ → AlgebraicCycle X ℤ`, additive;
   `cyclesFlatPullback`: for `f` flat of pure relative dimension `n`, `Z_k(Y) →+ Z_{k+n}(X)`.
 * `cycleFlatPullback_comp`, `cyclesFlatPullback_comp`: functoriality `(f ≫ g)^* = f^* ∘ g^*`.
@@ -187,18 +188,41 @@ theorem height_asFiber_eq {n : ℕ} [PureRelativeDimension n f] {x : X}
     (asFiber_mem_genericPoints f hx)] at h
   exact_mod_cast h
 
-/-- If `f` has pure relative dimension `n`, every point of the fibre `f.fiber (f x)` has height at
-most `n`: its closure lies in an irreducible component of the fibre, of dimension `n`. -/
-theorem height_asFiber_le {n : ℕ} [PureRelativeDimension n f] (x : X) :
-    Order.height (f.asFiber x) ≤ n := by
-  have hsub : closure {f.asFiber x} ⊆ irreducibleComponent (f.asFiber x) :=
+/-- If `f` has pure relative dimension `n`, every point of a fibre `f.fiber y` has height at most
+`n`: its closure lies in an irreducible component of the fibre, of dimension `n`. -/
+theorem height_fiber_le {n : ℕ} [PureRelativeDimension n f] (y : Y) (q : f.fiber y) :
+    Order.height q ≤ n := by
+  have hsub : closure {q} ⊆ irreducibleComponent q :=
     isClosed_irreducibleComponent.closure_subset_iff.mpr
       (Set.singleton_subset_iff.mpr mem_irreducibleComponent)
   have hle := (Topology.IsEmbedding.inclusion hsub).isInducing.topologicalKrullDim_le
-  rw [isPureDimensional_iff.mp (PureRelativeDimension.isPureDimensional_fiber (d := n) f (f x)) _
+  rw [isPureDimensional_iff.mp (PureRelativeDimension.isPureDimensional_fiber (d := n) f y) _
     (irreducibleComponent_mem_irreducibleComponents _),
     ← height_eq_topologicalKrullDim_closure_singleton] at hle
   exact_mod_cast hle
+
+/-- If `f` has pure relative dimension `n`, every point of the fibre `f.fiber (f x)` has height at
+most `n`. -/
+theorem height_asFiber_le {n : ℕ} [PureRelativeDimension n f] (x : X) :
+    Order.height (f.asFiber x) ≤ n :=
+  height_fiber_le f (f x) (f.asFiber x)
+
+/-- The converse of `height_asFiber_eq`: if `f` has pure relative dimension `n` and `x` has height
+`n` in its fibre `f.fiber (f x)`, then `x` is a generic point of its fibre. A proper generization
+inside the fibre would have height `> n` (`Order.height_strictMono`), against `height_fiber_le`. -/
+theorem maximal_mem_preimage_singleton_of_height_asFiber_eq {n : ℕ} [PureRelativeDimension n f]
+    {x : X} (hx : Order.height (f.asFiber x) = n) : Maximal (· ∈ f ⁻¹' {f x}) x := by
+  refine ⟨rfl, fun x' hx' hx'x ↦ ?_⟩
+  obtain ⟨q, rfl⟩ : x' ∈ Set.range (f.fiberι (f x)) := by rwa [f.range_fiberι]
+  have hq : q ⤳ f.asFiber x :=
+    (f.fiberι _).isEmbedding.isInducing.specializes_iff.mp (by rwa [f.fiberι_asFiber])
+  have hq' : f.asFiber x ⤳ q := by
+    by_contra h
+    have hlt : f.asFiber x < q := lt_of_le_not_ge hq h
+    have := Order.height_strictMono hlt (by rw [hx]; exact ENat.natCast_lt_top n)
+    exact (height_fiber_le (n := n) f (f x) q).not_gt (hx ▸ this)
+  change x ⤳ _
+  simpa [f.fiberι_asFiber] using hq'.map (f.fiberι _).continuous
 
 /-- For `f` locally of finite type, the height of a point of the fibre `f.fiber (f x)`, a scheme
 locally of finite type over `κ(f x)`, is the transcendence degree of its residue field over
@@ -338,6 +362,18 @@ theorem height_le_height_add {n : ℕ} [PureRelativeDimension n f]
   rw [height_eq_height_add_height_asFiber f K x]
   gcongr
   exact height_asFiber_le (n := n) f x
+
+/-- **Points of maximal dimension are generic in their fibres.** Let `f : X ⟶ Y` be a morphism of
+schemes locally of finite type over a field `K`, of pure relative dimension `n`. A point `x` with
+`dim x = dim (f x) + n` (and `f x` of finite dimension) is a generic point of its fibre: it has
+height `n` in the fibre (`height_eq_height_add_height_asFiber`). This is the converse of
+`height_eq_height_add`. -/
+theorem maximal_mem_preimage_singleton_of_height_eq {n : ℕ} [PureRelativeDimension n f]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))] {x : X}
+    (hfin : Order.height (f x) ≠ ⊤) (hx : Order.height x = Order.height (f x) + n) :
+    Maximal (· ∈ f ⁻¹' {f x}) x := by
+  rw [height_eq_height_add_height_asFiber f K x] at hx
+  exact maximal_mem_preimage_singleton_of_height_asFiber_eq f ((WithTop.add_left_inj hfin).mp hx)
 
 end
 

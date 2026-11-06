@@ -58,6 +58,9 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
   relative dimension `n` over an integral scheme `Y`, every irreducible component of `X` has
   dimension `dim Y + n`; `height_eq_height_genericPoint_add_of_pullback`: the components of
   `X ×_Y W`, for an integral closed subscheme `W` of `Y`, have dimension `dim W + n`;
+  `height_snd_eq_and_maximal_of_height_eq`: for `W` of dimension `k + 1`, a point of `X ×_Y W` of
+  dimension `k + n` off the generic fibre lies over a point of `W` of dimension `k` and is generic
+  in its fibre under `f`;
 * `TauCeti.AlgebraicGeometry.Chow.ringKrullDim_stalk_pullback_le_one`: for `f` of pure relative
   dimension `n` and a closed subscheme `W` of dimension at most `k + 1`, the local rings of
   `X ×_Y W` at points of dimension `k + n` have dimension at most one
@@ -287,9 +290,9 @@ theorem ker_stalkMap_le_map_ideal_ker {Z : Scheme.{u}} (p : Z ⟶ X) [IsClosedIm
   rw [IsUnit.unit_spec, key]
   exact Ideal.mem_map_of_mem _ hmem
 
-/-- A section in the kernel of `i.app U` for a closed immersion `i` has germs in the maximal
-ideal at every point of `U` in the image of `i`. -/
-theorem germ_mem_maximalIdeal_of_mem_ker_app {W Y : Scheme.{u}} (i : W ⟶ Y) [IsClosedImmersion i]
+/-- A section in the kernel of `i.app U` has germs in the maximal ideal at every point of `U` in
+the image of `i`. -/
+theorem germ_mem_maximalIdeal_of_mem_ker_app {W Y : Scheme.{u}} (i : W ⟶ Y)
     (U : Y.affineOpens) {s : Γ(Y, U)} (hs : s ∈ RingHom.ker (i.app U).hom) {y : Y} (hyU : y ∈ U.1)
     (hy : y ∈ Set.range i) :
     Y.presheaf.germ U y hyU s ∈ IsLocalRing.maximalIdeal (Y.presheaf.stalk y) := by
@@ -501,6 +504,48 @@ theorem height_eq_height_genericPoint_add_of_pullback (K : Type u) [Field K]
     exact (hx y' h).map (pullback.fst f i).continuous
   rw [← Scheme.Hom.height_apply_eq_height (pullback.fst f i),
     height_eq_height_add f K (n := n) hmax, hfx, Scheme.Hom.height_apply_eq_height]
+
+open Limits in
+/-- **Points of dimension `k + n` on `X ×_Y W`.** Let `f : X ⟶ Y` be a morphism of pure relative
+dimension `n` between schemes locally of finite type over a field `K`, and `i : W ⟶ Y` a closed
+immersion of an integral scheme of dimension `k + 1`. A point `x` of `X ×_Y W` of dimension
+`k + n` that does not lie over the generic point of `W` lies over a point of `W` of dimension `k`
+(a codimension-one point, where `div r` may be supported), and its image in `X` is a generic point
+of its fibre under `f` (`maximal_mem_preimage_singleton_of_height_asFiber_eq`): this is where
+`cycleFlatPullback f` is supported. -/
+theorem height_snd_eq_and_maximal_of_height_eq (K : Type u) [Field K]
+    [X.Over (Spec (.of K))] [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))]
+    {n k : ℕ} [PureRelativeDimension n f] {W : Scheme.{u}} [IsIntegral W] (i : W ⟶ Y)
+    [IsClosedImmersion i] (hW : Order.height (genericPoint W) = k + 1) {x : ↥(pullback f i)}
+    (hx : Order.height x = (k + n : ℕ)) (hgen : pullback.snd f i x ≠ genericPoint W) :
+    Order.height (pullback.snd f i x) = k ∧
+      Maximal (· ∈ f ⁻¹' {f (pullback.fst f i x)}) (pullback.fst f i x) := by
+  have hz : f (pullback.fst f i x) = i (pullback.snd f i x) := by
+    rw [← Scheme.Hom.comp_apply, pullback.condition, Scheme.Hom.comp_apply]
+  have hle : pullback.snd f i x ≤ genericPoint W := (genericPoint_spec W).specializes trivial
+  have htop : Order.height (genericPoint W) < ⊤ := by
+    rw [hW]
+    exact_mod_cast ENat.natCast_lt_top (k + 1)
+  have hw : Order.height (pullback.snd f i x) ≤ k := by
+    have hlt : pullback.snd f i x < genericPoint W := lt_of_le_not_ge hle fun h ↦
+      hgen (Specializes.antisymm (h : pullback.snd f i x ⤳ genericPoint W) hle).eq
+    have := Order.height_strictMono hlt ((Order.height_mono hle).trans_lt htop)
+    rw [hW] at this
+    exact (ENat.lt_add_one_iff (ENat.natCast_ne_top k)).mp this
+  have hfib := height_asFiber_le (n := n) f (pullback.fst f i x)
+  have hsum := height_eq_height_add_height_asFiber f K (pullback.fst f i x)
+  have himg : Order.height (f (pullback.fst f i x)) = Order.height (pullback.snd f i x) := by
+    rw [hz, Scheme.Hom.height_apply_eq_height]
+  rw [Scheme.Hom.height_apply_eq_height, hx, himg] at hsum
+  obtain ⟨a, ha⟩ := ENat.ne_top_iff_exists.mp (ne_top_of_le_ne_top (ENat.natCast_ne_top k) hw)
+  obtain ⟨b, hb⟩ := ENat.ne_top_iff_exists.mp (ne_top_of_le_ne_top (ENat.natCast_ne_top n) hfib)
+  rw [← ha] at hw hsum ⊢
+  rw [← hb] at hfib hsum
+  norm_cast at hw hfib hsum
+  have hab : a = k ∧ b = n := by omega
+  refine ⟨by rw [hab.1], maximal_mem_preimage_singleton_of_height_asFiber_eq (n := n) f ?_⟩
+  rw [← hb, hab.2]
 
 open Limits in
 /-- Let `f : X ⟶ Y` be a morphism of pure relative dimension `n` between schemes locally of finite
