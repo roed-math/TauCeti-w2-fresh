@@ -7,6 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Divisor.PoleSheaf.Multiplication
 public import TauCeti.CategoryTheory.Monoidal.Closed.Cokernels
+public import TauCeti.CategoryTheory.Monoidal.TensorPow
 
 /-!
 # Multiplication on the graded pieces of the pole filtration
@@ -22,7 +23,9 @@ isomorphism
 sections to the class of their product
 (`WeierstrassCurve.tensorHom_π_poleSheafGradedMulIso_hom`). In other words, the leading term of a
 product of functions with poles of orders at most `a + 1` and `b + 1` along `[0]` is the product
-of their leading terms. This is how the leading terms of `x², xy, x³, y²` are computed.
+of their leading terms. This is how the leading terms of `x², xy, x³, y²` are computed. Iterating
+it, the `n`-th graded piece is the `(n + 1)`-th tensor power of the first one, the normal sheaf of
+`[0]` (`WeierstrassCurve.poleSheafGradedPowIso`).
 
 The proof is formal. Tensoring with any module sheaf preserves cokernels, since `X.Modules` is
 braided closed. Multiplying `𝒪((a + 1)[0])` by the inclusion `𝒪(b[0]) ⟶ 𝒪((b + 1)[0])` factors
@@ -35,7 +38,9 @@ inclusion `𝒪((a + b + 1)[0]) ⟶ 𝒪((a + b + 2)[0])` after multiplication, 
 * `WeierstrassCurve.poleSheafGradedMulIso`: the multiplication on the graded pieces of the pole
   filtration;
 * `WeierstrassCurve.tensorHom_π_poleSheafGradedMulIso_hom`: it is induced by the multiplication of
-  pole sheaves.
+  pole sheaves;
+* `WeierstrassCurve.poleSheafGradedPowIso`: the `n`-th graded piece is the `(n + 1)`-th tensor
+  power of the first one.
 
 ## References
 
@@ -118,5 +123,26 @@ theorem tensorHom_π_poleSheafGradedMulIso_hom (a b : ℕ) :
         cokernel.π (W.poleSheafMap (Nat.le_succ (a + b + 1))).hom := by
   delta poleSheafGradedMulIso
   simp [cokernel.mapIso]
+
+/-- **The graded pieces of the pole filtration are tensor powers of the first one**:
+`(𝒪([0]) / 𝒪)^⊗(n + 1) ≅ 𝒪((n + 1)[0]) / 𝒪(n[0])`, built from the multiplication on the
+graded pieces. The first graded piece is the normal sheaf of `[0]`, so the `n`-th one is its
+`(n + 1)`-th tensor power. -/
+noncomputable def poleSheafGradedPowIso :
+    (n : ℕ) → tensorPow (cokernel (W.poleSheafMap (Nat.le_succ 0)).hom) (n + 1) ≅
+      cokernel (W.poleSheafMap (Nat.le_succ n)).hom
+  | 0 => ρ_ _
+  | n + 1 => (tensorPowSuccIso _ (n + 1)).symm ≪≫
+      whiskerRightIso (poleSheafGradedPowIso n) _ ≪≫ W.poleSheafGradedMulIso n 0
+
+/-- The first graded piece is its own first tensor power. -/
+theorem poleSheafGradedPowIso_zero : W.poleSheafGradedPowIso 0 = ρ_ _ :=
+  (rfl)
+
+/-- Each further factor of the tensor power is multiplied in on the right. -/
+theorem poleSheafGradedPowIso_succ (n : ℕ) :
+    W.poleSheafGradedPowIso (n + 1) = (tensorPowSuccIso _ (n + 1)).symm ≪≫
+      whiskerRightIso (W.poleSheafGradedPowIso n) _ ≪≫ W.poleSheafGradedMulIso n 0 :=
+  (rfl)
 
 end WeierstrassCurve

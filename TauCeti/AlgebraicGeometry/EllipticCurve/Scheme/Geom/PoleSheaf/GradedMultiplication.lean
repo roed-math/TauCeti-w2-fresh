@@ -7,6 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.EllipticCurve.Scheme.Geom.PoleSheaf.Multiplication
 public import TauCeti.CategoryTheory.Monoidal.Closed.Cokernels
+public import TauCeti.CategoryTheory.Monoidal.TensorPow
 
 /-!
 # Multiplication on the graded pieces of the pole filtration of an elliptic curve
@@ -22,14 +23,17 @@ classes of two local sections to the class of their product
 (`TauCeti.AlgebraicGeometry.EllipticCurveGeom.tensorHom_π_poleSheafGradedMulIso_hom`). The proof
 is the one for a Weierstrass model (`WeierstrassCurve.poleSheafGradedMulIso`): the multiplication
 is compatible with the pole filtration in each factor, and `TauCeti.cokernelTensorCokernelIso`
-applies.
+applies. Iterating it, the `n`-th graded piece is the `(n + 1)`-th tensor power of the first one,
+the normal sheaf of `[0]` (`TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafGradedPowIso`).
 
 ## Main declarations
 
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafGradedMulIso`: the multiplication on the
   graded pieces of the pole filtration;
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.tensorHom_π_poleSheafGradedMulIso_hom`: it is
-  induced by the multiplication of pole sheaves.
+  induced by the multiplication of pole sheaves;
+* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafGradedPowIso`: the `n`-th graded piece is
+  the `(n + 1)`-th tensor power of the first one.
 
 ## References
 
@@ -113,6 +117,27 @@ theorem tensorHom_π_poleSheafGradedMulIso_hom (a b : ℕ) :
         cokernel.π (E.poleSheafMap (Nat.le_succ (a + b + 1))).hom := by
   delta poleSheafGradedMulIso
   simp [cokernel.mapIso]
+
+/-- **The graded pieces of the pole filtration are tensor powers of the first one**:
+`(ℒ_1 / ℒ_0)^⊗(n + 1) ≅ ℒ_(n + 1) / ℒ_n`, built from the multiplication on the
+graded pieces. The first graded piece is the normal sheaf of `[0]`, so the `n`-th one is its
+`(n + 1)`-th tensor power. -/
+noncomputable def poleSheafGradedPowIso :
+    (n : ℕ) → tensorPow (cokernel (E.poleSheafMap (Nat.le_succ 0)).hom) (n + 1) ≅
+      cokernel (E.poleSheafMap (Nat.le_succ n)).hom
+  | 0 => ρ_ _
+  | n + 1 => (tensorPowSuccIso _ (n + 1)).symm ≪≫
+      whiskerRightIso (poleSheafGradedPowIso n) _ ≪≫ E.poleSheafGradedMulIso n 0
+
+/-- The first graded piece is its own first tensor power. -/
+theorem poleSheafGradedPowIso_zero : E.poleSheafGradedPowIso 0 = ρ_ _ :=
+  (rfl)
+
+/-- Each further factor of the tensor power is multiplied in on the right. -/
+theorem poleSheafGradedPowIso_succ (n : ℕ) :
+    E.poleSheafGradedPowIso (n + 1) = (tensorPowSuccIso _ (n + 1)).symm ≪≫
+      whiskerRightIso (E.poleSheafGradedPowIso n) _ ≪≫ E.poleSheafGradedMulIso n 0 :=
+  (rfl)
 
 end EllipticCurveGeom
 

@@ -186,6 +186,15 @@ errors in 10105 declarations. It first found a `checkType` timeout on the equati
 `simp [poleSheafGradedMulIso]` generated; the proof now uses `delta`, and the square of the
 definition is a named lemma.
 
+The twenty-third round left tip `082a8999c4ab`. The twenty-fourth round (this one) again found
+`main` unchanged (`afa08a3ed16f`), so the merge was a no-op, and both suppliers' successor PRs
+(#28759, #28995) still open; there are still no stubs. It extended split 24 by iterating the
+graded multiplication: the `n`-th graded piece of the pole filtration is the `(n + 1)`-th tensor
+power of the first one, the normal sheaf of `[0]`, on `W` and on `E`
+(`poleSheafGradedPowIso`, built from `main`'s `TauCeti.tensorPow`). `#lint in TauCeti` (15 linters) passes on the import closure of both graded-multiplication modules, with 0 errors in 10111 declarations. This identifies the pieces
+of pole orders two, three and six, where the leading terms of `x`, `y`, `x³` and `y²` live, with
+the second, third and sixth powers of one line bundle on `[0]`. No split is renumbered.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -953,7 +962,7 @@ that owns its definition, so it ships with that split: `IsEffectiveCartier.dualP
 
 PR subject: `feat: multiplication on the graded pieces of the pole filtrations of a Weierstrass model and of an elliptic curve`
 
-Neither supplier is used. About 320 lines.
+Neither supplier is used. About 350 lines.
 
 - `TauCeti/CategoryTheory/Monoidal/Closed/Cokernels.lean` (new, 76 lines), namespace `TauCeti`,
   for a preadditive braided closed category with cokernels (tensoring on the right is a left
@@ -963,7 +972,7 @@ Neither supplier is used. About 320 lines.
     `tensorHom_π_cokernelTensorCokernelIso_hom` (`@[reassoc (attr := simp)]`): it is induced by
     the projections.
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Divisor/PoleSheaf/GradedMultiplication.lean`
-  (new, 122 lines), namespace `WeierstrassCurve`:
+  (new, 148 lines), namespace `WeierstrassCurve`:
   - `eqToHom_poleSheafMap_hom` and `poleSheafMap_hom_eqToHom` (`@[reassoc]`): transport of the
     pole filtration maps along equalities of indices;
   - `whiskerLeft_poleSheafMap_hom_succ`: the factorisation `𝒪((a + 1)[0]) ◁ (𝒪(b[0]) ⟶
@@ -973,9 +982,12 @@ Neither supplier is used. About 320 lines.
   - **`poleSheafGradedMulIso a b`**:
     `𝒪((a + 1)[0]) / 𝒪(a[0]) ⊗ 𝒪((b + 1)[0]) / 𝒪(b[0]) ≅ 𝒪((a + b + 2)[0]) / 𝒪((a + b + 1)[0])`;
   - `tensorHom_π_poleSheafGradedMulIso_hom` (`@[reassoc (attr := simp)]`): it is induced by
-    `poleSheafMulIso (a + 1) (b + 1)`, so the class of a product is the product of the classes.
+    `poleSheafMulIso (a + 1) (b + 1)`, so the class of a product is the product of the classes;
+  - **`poleSheafGradedPowIso n`**: `(𝒪([0]) / 𝒪)^⊗(n + 1) ≅ 𝒪((n + 1)[0]) / 𝒪(n[0])`, by recursion
+    on `n` through `poleSheafGradedMulIso n 0` and `TauCeti.tensorPowSuccIso`, with
+    `poleSheafGradedPowIso_zero` and `poleSheafGradedPowIso_succ`.
 - `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/GradedMultiplication.lean` (new,
-  120 lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`: the same six declarations
+  144 lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`: the same nine declarations
   for `ℒ_n = 𝒪_E(n[0])` on an elliptic curve `E` over any scheme, from the `E`-side compatibilities
   of split 20.
 
@@ -1023,7 +1035,8 @@ Neither supplier is used. About 320 lines.
     - (Done in split 24: the multiplication on the graded pieces,
       `ℒ_(a+1)/ℒ_a ⊗ ℒ_(b+1)/ℒ_b ≅ ℒ_(a+b+2)/ℒ_(a+b+1)`, on `W` and on `E`.) It remains to read
       off the leading terms of `x², xy, x³, y²` from it, once `x` and `y` are chosen (third
-      bullet).
+      bullet). (Also done in split 24: the `n`-th graded piece is the `(n + 1)`-th tensor power of
+      the first, `poleSheafGradedPowIso`.)
     - A sheaf-level form of split 18, if wanted: the cokernel of `π_*ℒ_m ⟶ π_*ℒ_n` (quasicoherent
       by `isQuasicoherent_cokernel` on `main`) is finite locally free of rank `n - m`. This needs the
       sections of a cokernel of quasicoherent sheaves over an affine open to be the quotient of
@@ -1049,7 +1062,7 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 
 ## Verification
 
-`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-third rounds on `afa08a3ed16f`) and
+`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`) and
 `/opt/round/lookahead-check` all pass. In the eighteenth round, the new proofs build with
 warnings as errors; `#lint` was not rerun for lack of time. In the fifteenth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 1588 declarations, on the import closure of the two new modules of
