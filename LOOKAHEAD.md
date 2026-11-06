@@ -22,9 +22,14 @@ mathematics. The round resuming at `73c0d46518e` (13:20 UTC) found `main` still 
 the multiplicative rank of the `α_j` enters the subgroup obstruction:
 `LinearMap.ncard_setOf_apply_eq_zero_abs_le_le` in the new general file
 `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean`. `main` and pinned Mathlib still have
-no zero or multiplicity estimate, Philippon-type or otherwise, that split 4 could reuse. What
-remains is the multiplicity estimate of split 4, which does not fit in one round, and the
-assembly in split 5.
+no zero or multiplicity estimate, Philippon-type or otherwise, that split 4 could reuse. The
+round resuming at `40ddadd0cfe` (13:37 UTC) found `main` still at `385ec2ddd8d` and PR #28644
+still open at head `583a153b95f`. It added two more inputs of split 5:
+`LinearMap.ncard_le_mul_ncard_image_of_ker_le` in `BoxPoints.lean` (the box count fed through
+the fibre count of split 3), and the Liouville bridge
+`intCast_mul_waldschmidtLinearForm_eq_neg_sum` / `exp_neg_intCast_mul_waldschmidtLinearForm` in
+`Data.lean`. What remains is the multiplicity estimate of split 4, which does not fit in one
+round, and the assembly in split 5.
 
 ## Stubs
 
@@ -157,12 +162,18 @@ In the new file `Interpolation/Residual.lean`:
      - the subgroup obstruction from the multiplicative rank of the `α_j`, whose kernel
        `s ↦ α^s` has rank `≤ 1`. View `s ↦ α^s` as a `ℤ`-linear map into `Additive ℂˣ`.
        This branch now proves (`BoxPoints.lean`, below) that its kernel has rank `≤ 1` and
-       meets the box `‖s‖∞ ≤ R` in at most `2R + 1` points. What remains is to feed this count,
-       through `AddMonoidHom.ncard_image_le_mul_ncard_image_sub_inter_ker` (split 3), into the
-       degree inequality of an obstruction with trivial torus part;
+       meets the box `‖s‖∞ ≤ R` in at most `2R + 1` points, and, through
+       `AddMonoidHom.ncard_image_le_mul_ncard_image_sub_inter_ker` (split 3), that a finite `S`
+       whose differences lie in that box has `#S ≤ (2R + 1)·#g(S)` for every `g` whose kernel
+       lies in that of `s ↦ α^s` (for instance `s ↦ (π_{W'}(s·y), α^s)`, the quotient map of an
+       obstruction with trivial torus part). What remains is to put this count into the degree
+       inequality that split 4 will produce;
      - the reduction of a short rational coefficient relation by Liouville. Its first step,
        reading the rational `β_k` off the relation, is `eq_neg_div_of_intCast_mem_span_snoc`;
-       the Liouville inequality applied to `α^s` remains.
+       the second, `exp_neg_intCast_mul_waldschmidtLinearForm`, turns the relation into
+       `exp(-s_m Λ) = α^s`, so that `Λ ≠ 0` when `α^s ≠ 1`. The Liouville inequality for
+       `α^s - 1` itself remains: `main` has no height-based Liouville bound for algebraic
+       numbers in this form, and its exact shape is fixed by the measure's parameters.
 
 ## Splits
 
@@ -210,17 +221,22 @@ In the new file `Interpolation/Residual.lean`:
    its inputs:
    - `eq_neg_div_of_intCast_mem_span_snoc` (`Data.lean`, +25), the Liouville reduction's
      rational coefficients;
-   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 97 lines), the subgroup
-     obstruction's count:
+   - `intCast_mul_waldschmidtLinearForm_eq_neg_sum` and
+     `exp_neg_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +27): with `β₀ = 0` and
+     `β_k = -s_k/s_m`, `s_m Λ = -Σ s_j λ_j` and `exp(-s_m Λ) = ∏ α_j^{s_j}`;
+   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 130 lines; imports `ImageCard.lean`
+     of split 3), the subgroup obstruction's count:
      - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
        `≤ 1` has at most `2R + 1` points with `‖s‖∞ ≤ R`;
      - `LinearMap.finrank_ker_le_one`: rank-nullity over `ℤ`, a map out of `ℤ^m` with image of
        rank `≥ m − 1` has kernel of rank `≤ 1`;
      - `LinearMap.ncard_setOf_apply_eq_zero_abs_le_le`: such a map vanishes at `≤ 2R + 1`
-       points of the box.
+       points of the box;
+     - `LinearMap.ncard_le_mul_ncard_image_of_ker_le`: a finite `S` whose differences lie in
+       the box has `#S ≤ #g(S)·(2R + 1)` for every additive `g` with `ker g ≤ ker φ`.
 
    The rest is not on this branch. If split 5 grows past 600 lines, `BoxPoints.lean` can be
-   opened on its own first, since it needs no other split.
+   opened on its own first, once split 3 (which supplies `ImageCard.lean`) has merged.
 
 ## Self-audit notes (rubrics)
 
@@ -263,3 +279,9 @@ In the new file `Interpolation/Residual.lean`:
     count of lattice points or a rank-one kernel bound; neither has one. Its declarations follow
     the neighbouring `FreeModule/*.lean` files, which use Mathlib namespaces (`Submodule`,
     `LinearMap`) rather than `TauCeti`.
+  - 2026-11-06, about 13:45 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `BoxPoints` and `Interpolation.Data`. Before writing the new lemmas,
+    `main` and pinned Mathlib were grepped for a fibre-count/box bound and for an integral form
+    of the normalized linear form; neither exists. The bridge reuses Mathlib's
+    `Complex.exp_sum` and `Complex.exp_int_mul`; the count reuses split 3's
+    `ncard_image_le_mul_ncard_image_sub_inter_ker` with `f = id` rather than recounting fibres.

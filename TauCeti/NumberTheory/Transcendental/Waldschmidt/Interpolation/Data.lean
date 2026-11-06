@@ -389,6 +389,33 @@ theorem eq_neg_div_of_intCast_mem_span_snoc [CharZero K] (b : Fin (n + 1) → K)
 
 end FinrankPointMap
 
+/-- A short rational coefficient relation turns the linear form into an integral one: if `β₀ = 0`
+and `β_k = -s_k / s_m` for `1 ≤ k < m` (as `TauCeti.eq_neg_div_of_intCast_mem_span_snoc` provides),
+then `s_m Λ = -(s₁ λ₁ + ⋯ + sₘ λₘ)`. -/
+theorem intCast_mul_waldschmidtLinearForm_eq_neg_sum (l b : Fin (n + 1) → ℂ)
+    {s : Fin (n + 1) → ℤ} (hlast : s (Fin.last n) ≠ 0) (hb₀ : b 0 = 0)
+    (hb : ∀ k : Fin n, b k.succ = -(s k.castSucc : ℂ) / s (Fin.last n)) :
+    (s (Fin.last n) : ℂ) * waldschmidtLinearForm l b = -∑ j, (s j : ℂ) * l j := by
+  have hs : (s (Fin.last n) : ℂ) ≠ 0 := Int.cast_ne_zero.2 hlast
+  simp only [waldschmidtLinearForm_def, hb₀, hb, Fin.sum_univ_castSucc, mul_sub, mul_sum,
+    zero_add]
+  have hsum : ∑ k : Fin n, (s (Fin.last n) : ℂ) * (-(s k.castSucc : ℂ) / s (Fin.last n) *
+      l k.castSucc) = -∑ k : Fin n, (s k.castSucc : ℂ) * l k.castSucc := by
+    rw [← sum_neg_distrib]
+    exact sum_congr rfl fun k _ ↦ by field_simp
+  rw [hsum]
+  ring
+
+/-- The exponential form of `TauCeti.intCast_mul_waldschmidtLinearForm_eq_neg_sum`: for a short
+rational coefficient relation, `exp(-s_m Λ) = α₁ ^ s₁ ⋯ αₘ ^ sₘ` with `α_j = exp λ_j`. So
+`Λ ≠ 0` as soon as `α^s ≠ 1`, and Liouville's inequality for `α^s - 1` bounds `|Λ|` from below. -/
+theorem exp_neg_intCast_mul_waldschmidtLinearForm (l b : Fin (n + 1) → ℂ)
+    {s : Fin (n + 1) → ℤ} (hlast : s (Fin.last n) ≠ 0) (hb₀ : b 0 = 0)
+    (hb : ∀ k : Fin n, b k.succ = -(s k.castSucc : ℂ) / s (Fin.last n)) :
+    cexp (-((s (Fin.last n) : ℂ) * waldschmidtLinearForm l b)) = ∏ j, cexp (l j) ^ s j := by
+  rw [intCast_mul_waldschmidtLinearForm_eq_neg_sum l b hlast hb₀ hb, neg_neg, Complex.exp_sum]
+  exact prod_congr rfl fun j _ ↦ Complex.exp_int_mul (l j) (s j)
+
 /-- Waldschmidt's auxiliary function `z ↦ F(z) exp(t (z₀ + λ₁ z₁ + ⋯ + λ_{m-1} z_{m-1}))` on
 `ℂᵐ`, for a polynomial `F` and an integer `t`; here `l = (λ₁, …, λₘ)`, of which `λₘ` does not
 occur. -/
