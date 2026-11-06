@@ -124,6 +124,22 @@ and the instance `Scheme.IdealSheafData.isLocallyNoetherian_subscheme` (port: ne
 `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquivFamily.lean`), and the port may move the
 `Ring` and `Scheme` sections of `RatEquiv.lean` (pure local algebra and stalk lemmas) into their
 own prerequisite file.
+An eighteenth round on 2026-11-06 (main still `3a0189695d6`, #29425 still open at `6ce093654c`,
+#30523 open at `1e385b9560`, so still no supplier declaration on `main`) did (γ) and started (δ)
+in the new file `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquivFamily.lean` (179 lines):
+`locallyFinite_closure_pullback_fst` (the closures in `X` of the generic points of the components
+of the `X ×_Y W_j` are locally finite, by `finite_maximal_mem_inter` over the finitely many `W_j`
+meeting the image of a Noetherian affine open), `range_subschemeι_comp_pullback_fst_subset` (via
+`main`'s `Scheme.Hom.range_subschemeι_comp`), the pulled-back family itself,
+`RatEquivFamily.flatPullback : RatEquivFamily Y k → RatEquivFamily X (k + n)` (index
+`Σ j, {η : X ×_Y W_j // η generic}`, member the reduced closure of `η` embedded through
+`pullback.fst`, dimension from `height_eq_height_genericPoint_add_of_pullback`, function
+`φ(r_j) ^ (fiberLength f (pullback.fst η)).toNat` along the dominant
+`isDominant_subschemeι_pullback_snd`), its summands
+`RatEquivFamily.component_flatPullback_apply` (`m · ord_w(φ r_j)`) and
+`RatEquivFamily.component_flatPullback_apply_eq_zero` (zero off the closure of `pullback.fst η`),
+and the general `Scheme.ord_pow` (port: next to `Scheme.ord_one` in
+`TauCeti/AlgebraicGeometry/WeilDivisor/Scheme/Order.lean`).
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -451,7 +467,19 @@ dominant).
    hypotheses there: `fiberLength ≠ ⊤` from `fiberLength_ne_top` at a point generic in its fibre,
    the heights from `height_eq_height_genericPoint_add_of_pullback` and
    `height_snd_eq_and_maximal_of_height_eq`, the points `z_x` from
-   `IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq`). Next: (γ), (δ). Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
+   `IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq`). Next: (δ) (the family and (γ) are **done by the eighteenth round**:
+   `RatEquivFamily.flatPullback`, `locallyFinite_closure_pullback_fst`, with the summand formulas
+   `RatEquivFamily.component_flatPullback_apply` and `component_flatPullback_apply_eq_zero`). What
+   is left of (δ): (δ1) a `finsum` over a sigma type with finite support splits as an iterated
+   `finsum` (Mathlib has `finprod_curry` for products only), so that
+   `(F.flatPullback f K n).cycle x = Σᶠ j, Σᶠ η, component ⟨j, η⟩ x`; (δ2) for fixed `j` and
+   `x = pullback.fst x''` of dimension `k + n`, reindex `Σᶠ η` by the components of `X ×_Y W_j`
+   through `x''` (the summand for `η` is `m_η · ord_{w_η}(φ r_j)` at the unique `w_η` over `x''`,
+   zero when `x''` is not in the closure of `η`) and apply `ord_mul_fiberLength_eq_finsum_ord` to
+   `pullback.snd f (F.i j)` at `x''`, with `fiberLength_pullback_snd`; (δ3) the vanishing cases:
+   `x` not over `W_j` (`component_flatPullback_apply_eq_zero`), `x''` over the generic point of
+   `W_j` (both sides zero: `r_j` is a unit in the stalk there, and the generic point is not of
+   codimension one), `x` not of dimension `k + n` (both sides zero by dimension). Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
    `X` is indexed by `Σ j, {η' : X ×_Y W_j // η' generic in a component}`, with member
    `W' = (IdealSheafData.vanishingIdeal ⟨closure {pullback.fst η'}, _⟩).subscheme` and function
    `(φ r_j) ^ fiberLength f (pullback.fst η')`, where `φ` is the function-field map of the dominant
@@ -592,8 +620,15 @@ dominant).
    `TauCeti/AlgebraicGeometry/IdealSheaf/VanishingIdeal.lean`),
    `Scheme.coheight_eq_one_of_height_apply_genericPoint_eq`,
    `Scheme.IdealSheafData.isLocallyNoetherian_subscheme`, `ord_mul_fiberLength_eq_finsum_ord`
-   (seventeenth round), and
-   (remaining) `cyclesFlatPullback_mem_ratEquiv`.
+   (seventeenth round); and `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquivFamily.lean`
+   (new, 179 lines, started): `Scheme.ord_pow`, `locallyFinite_closure_pullback_fst`,
+   `range_subschemeι_comp_pullback_fst_subset`, `RatEquivFamily.flatPullback`,
+   `RatEquivFamily.component_flatPullback_apply`,
+   `RatEquivFamily.component_flatPullback_apply_eq_zero` (eighteenth round), and
+   (remaining) the cycle identity `(F.flatPullback f K n).cycle = cycleFlatPullback f F.cycle` and
+   `cyclesFlatPullback_mem_ratEquiv`. Since `RatEquiv.lean` is already 872 lines, the port should
+   open split 4 as two PRs: the local formula (`RatEquiv.lean`, after its stalk lemmas move to a
+   prerequisite) and the family (`RatEquivFamily.lean`, after it).
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.
 5. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/BaseChange.lean` (stubs of the supplier in
