@@ -95,7 +95,7 @@ def cohomologyWithSupportOneEquiv (K : Type*) [Field K] [Algebra R K] [IsFractio
     cohomologyWithSupport (uniformizerLocus ϖ)
         (SheafOfModules.unit (Spec (CommRingCat.of R)).ringCatSheaf) 1 ≃+
       K ⧸ (algebraMap R K).range.toAddSubgroup :=
-  have := isLocalizationAway_fractionRing (K := K) hϖ
+  have := hϖ.isLocalizationAway_fractionRing (K := K)
   cohomologyWithSupportSpecOneEquiv ϖ K
 
 /-- Degree-one native local cohomology of a discrete valuation ring at its maximal ideal is the
@@ -105,7 +105,7 @@ def localCohomologyOneMaximalIdealLinearEquiv (K : Type u) [Field K] [Algebra R 
     [IsFractionRing R K] (hϖ : Irreducible ϖ) :
     (localCohomology (IsLocalRing.maximalIdeal R) 1).obj (ModuleCat.of R R) ≃ₗ[R]
       K ⧸ LinearMap.range (Algebra.linearMap R K) :=
-  have := isLocalizationAway_fractionRing (K := K) hϖ
+  have := hϖ.isLocalizationAway_fractionRing (K := K)
   (eqToIso (congrArg (fun I => (localCohomology I 1).obj (ModuleCat.of R R))
       hϖ.maximalIdeal_eq)).toLinearEquiv ≪≫ₗ
     localCohomologyOneLinearEquiv (mem_nonZeroDivisors_of_ne_zero hϖ.ne_zero) K

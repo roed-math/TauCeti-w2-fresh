@@ -136,7 +136,7 @@ theorem localCohomology_module_comparison_dvr (K : Type*) [Field K] [Algebra R K
   obtain ⟨ϖ, hϖ⟩ := IsDiscreteValuationRing.exists_irreducible R
   obtain ⟨e₀⟩ := nonempty_localCohomology_iso_cohomologyWithSupport R hϖ 0
   obtain ⟨e₁⟩ := nonempty_localCohomology_iso_cohomologyWithSupport R hϖ 1
-  have := isLocalizationAway_fractionRing (K := K) hϖ
+  have := hϖ.isLocalizationAway_fractionRing (K := K)
   have : Subsingleton ((localCohomology (IsLocalRing.maximalIdeal R) 0).obj (ModuleCat.of R R)) :=
     e₀.toLinearEquiv.toEquiv.subsingleton_congr.2
       (subsingleton_cohomologyWithSupport_zero hϖ.ne_zero)
