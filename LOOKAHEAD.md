@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
 
 # Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
 
-Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. Status: **partial**. Splits 1 and
+Built on `main` at `385ec2ddd8ddf8cc779b78c176308cb9c6b55499` (merged in by the seventh round). Status: **partial**. Splits 1 and
 2 (the localisation sequence `localization_exact`) are done. The round of 2026-11-06 found `main`
 unchanged and started split 3: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` now defines the
 cycle-level flat pullback `cycleFlatPullback` with generic-length multiplicities and proves its
@@ -25,7 +25,12 @@ restriction to opens (`fiberLength_of_isOpenImmersion`, `cycleFlatPullback_of_is
 A sixth round on 2026-11-06 (main still `afa08a3ed16`, #29425 still open at `d327f903b0`, #29451
 still open at `ed4b4ac70d`) re-verified the branch and added no Lean. The next step, Stacks'
 additivity lemma for `e(M, b)` and the minimal-prime order formula, did not fit in the time left. The
-round refined the plan for that step (see *What remains*, item 2).
+round refined the plan for that step (see *What remains*, item 2). A seventh round on 2026-11-06 merged
+`main` at `385ec2ddd8d` (nothing on the Chow, cycle or order-of-vanishing files changed; #29425
+still open at `d327f903b0`, #29451 still open at `ed4b4ac70d`, so still no supplier declaration on
+`main`) and did step 2(a) of that plan: four general length lemmas in
+`TauCeti/RingTheory/Length.lean`, ending with the snake-lemma additivity of
+`length (coker φ) - length (ker φ)` in short exact sequences.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -174,6 +179,20 @@ no `sorry`:
 - `cycleFlatPullback_of_isOpenImmersion`: `cycleFlatPullback j = cycleRestrict j` for an open
   immersion `j` (so restriction is the relative-dimension-`0` flat pullback, as the README says).
 
+`TauCeti/RingTheory/Length.lean` (`main`'s file, extended by the seventh round for split 4's order
+formula; namespace `TauCeti`), no `sorry`:
+
+- `length_add_length_eq_of_exact`: for an exact `0 → N → M → P → Q → 0`,
+  `length M + length Q = length N + length P` (in `ℕ∞`, no finiteness needed);
+- `length_add_length_add_length_eq_of_exact`: the same for a six-term exact sequence (even terms
+  against odd terms), split at the middle image;
+- `length_ker_eq_length_quotient_range`: an endomorphism of a module of finite length has kernel
+  and cokernel of the same length (so `e(M, b) = 0` for `M` of finite length);
+- `length_ker_add_length_quotient_range_eq_of_exact`: for `0 → N → M → P → 0` exact with
+  compatible endomorphisms `φN`, `φM`, `φP`, `ℓ(ker φM) + ℓ(coker φN) + ℓ(coker φP) =
+  ℓ(ker φN) + ℓ(ker φP) + ℓ(coker φM)`, from Mathlib's `SnakeLemma.exact_δ'_right`/`_left` (the
+  additivity of `e(M, b)` of Stacks Section 42.2, stated without subtraction in `ℕ∞`).
+
 ## What remains
 
 1. (Optional, general dimension theory) an instance `PureRelativeDimension (m + n) (f ≫ g)` for
@@ -193,7 +212,9 @@ no `sorry`:
    avoidable with the Stacks route.
    Concrete plan for the order formula (sixth round), as a general commutative-algebra file
    (port target `TauCeti/RingTheory/OrderOfVanishing/Minimal.lean` or similar):
-   (a) for a Noetherian ring `B`, `b : B` and a finite `B`-module `M` on which `b` has kernel and
+   (a) (**done by the seventh round**, as the `ℕ∞` identities in `TauCeti/RingTheory/Length.lean`
+   listed under *What is proved*; what is left of (a) is only packaging them as an integer `e`)
+   for a Noetherian ring `B`, `b : B` and a finite `B`-module `M` on which `b` has kernel and
    cokernel of finite length, set `e_B(M, b) := ℓ(M ⧸ bM) - ℓ(ker (b • ·))` in `ℤ` (Stacks
    Section 42.2). Prove it is additive in short exact sequences `0 → N → M → P → 0` from Mathlib's
    six-term `SnakeLemma.δ'` (`exact_δ'_left`, `exact_δ'_right` in
@@ -261,7 +282,10 @@ no `sorry`:
    in two: dimension shift
    (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
    flat pullback of cycles with generic-length multiplicities*.
-4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 102
+4. Files: `TauCeti/RingTheory/Length.lean` (four general length lemmas, +133 lines, done; the
+   port may open them as a small prerequisite PR *feat(RingTheory/Length): lengths in four- and
+   six-term exact sequences*, which needs no other split) and
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 102
    lines); adds `Ring.ord_algebraMap_of_flat`, `ord_stalkMap`, `fiberLength_of_isOpenImmersion`,
    `cycleFlatPullback_of_isOpenImmersion`, and (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves

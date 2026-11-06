@@ -13,6 +13,7 @@ public import Mathlib.RingTheory.OrderOfVanishing.Basic
 -- Proof-only: `QuotSMulTop` supplies the transport used to prove `length_quotient_lsmul_congr`;
 -- no statement in this file mentions it.
 import Mathlib.Algebra.Module.LocalizedModule.Submodule
+import Mathlib.Algebra.Module.SnakeLemma
 import Mathlib.RingTheory.Ideal.Quotient.Noetherian
 import Mathlib.RingTheory.Localization.Ideal
 import Mathlib.RingTheory.QuotSMulTop
@@ -53,10 +54,18 @@ applies to the quotients appearing here without any further appeal to defeq.
   acting compatibly.
 * `TauCeti.surjective_of_injective_of_length_eq`: an injective map between modules of the same
   finite length is surjective.
+* `TauCeti.length_add_length_eq_of_exact`: in an exact sequence `0 → N → M → P → Q → 0`,
+  `length M + length Q = length N + length P`.
+* `TauCeti.length_add_length_add_length_eq_of_exact`: in an exact sequence
+  `0 → M₁ → ⋯ → M₆ → 0`, the even and the odd terms have the same total length.
+* `TauCeti.length_ker_eq_length_quotient_range`: the kernel and the cokernel of an endomorphism
+  of a module of finite length have the same length.
 * `TauCeti.map_lsmul_eq_smul` and `TauCeti.range_lsmul_eq_smul_top`: `aN` and `aM` as Mathlib's
   pointwise `a • N` and `a • ⊤`.
 * `TauCeti.comap_subtype_map_lsmul`: `aN` computed inside `N` agrees with `aN` computed in the
   ambient module.
+* `TauCeti.length_ker_add_length_quotient_range_eq_of_exact`: additivity of
+  `length (M ⧸ range φ) - length (ker φ)` in short exact sequences, from the snake lemma.
 * `TauCeti.length_quotient_lsmul_congr`: the length of `M ⧸ aM` is a linear-equivalence invariant.
 * `TauCeti.length_quotient_lsmul_le_of_forall_fg`: the finite-generation reduction for `M ⧸ aM`.
 * `TauCeti.isFiniteLength_quotient_of_nonZeroDivisor_mem`: `A ⧸ I` has finite length when `I`
@@ -178,6 +187,49 @@ theorem surjective_of_injective_of_length_eq {N : Type*} [AddCommGroup N] [Modul
   rw [← LinearMap.range_eq_top, ← Submodule.Quotient.subsingleton_iff,
     ← Module.length_eq_zero_iff (R := A)]
   exact WithTop.add_left_cancel hM (hlen.symm.trans (add_zero _).symm)
+
+/-- **Length in a four-term exact sequence.** For an exact sequence `0 → N → M → P → Q → 0`,
+`length M + length Q = length N + length P`: both sides are `length N + length (range g) +
+length Q`. -/
+theorem length_add_length_eq_of_exact {N P Q : Type*} [AddCommGroup N] [Module A N]
+    [AddCommGroup P] [Module A P] [AddCommGroup Q] [Module A Q] {f : N →ₗ[A] M} {g : M →ₗ[A] P}
+    {h : P →ₗ[A] Q} (hf : Function.Injective f) (hfg : Function.Exact f g)
+    (hgh : Function.Exact g h) (hh : Function.Surjective h) :
+    Module.length A M + Module.length A Q = Module.length A N + Module.length A P := by
+  rw [Module.length_eq_add_of_exact f g.rangeRestrict hf g.surjective_rangeRestrict
+      (LinearMap.exact_iff.mpr (by rw [LinearMap.ker_rangeRestrict, LinearMap.exact_iff.mp hfg])),
+    Module.length_eq_add_of_exact (LinearMap.range g).subtype h (Submodule.subtype_injective _) hh
+      (LinearMap.exact_iff.mpr (by rw [Submodule.range_subtype, LinearMap.exact_iff.mp hgh])),
+    add_assoc]
+
+/-- **Length in a six-term exact sequence**, such as the one of the snake lemma. For an exact
+sequence `0 → M₁ → M₂ → M₃ → M₄ → M₅ → M₆ → 0`, the even and the odd terms have the same total
+length: split it at the image of `M₃ → M₄` into two four-term sequences. -/
+theorem length_add_length_add_length_eq_of_exact {M₁ M₂ M₃ M₄ M₅ M₆ : Type*}
+    [AddCommGroup M₁] [Module A M₁] [AddCommGroup M₂] [Module A M₂] [AddCommGroup M₃] [Module A M₃]
+    [AddCommGroup M₄] [Module A M₄] [AddCommGroup M₅] [Module A M₅] [AddCommGroup M₆] [Module A M₆]
+    {f₁ : M₁ →ₗ[A] M₂} {f₂ : M₂ →ₗ[A] M₃} {f₃ : M₃ →ₗ[A] M₄} {f₄ : M₄ →ₗ[A] M₅}
+    {f₅ : M₅ →ₗ[A] M₆} (h₁ : Function.Injective f₁) (h₁₂ : Function.Exact f₁ f₂)
+    (h₂₃ : Function.Exact f₂ f₃) (h₃₄ : Function.Exact f₃ f₄) (h₄₅ : Function.Exact f₄ f₅)
+    (h₅ : Function.Surjective f₅) :
+    Module.length A M₂ + Module.length A M₄ + Module.length A M₆ =
+      Module.length A M₁ + Module.length A M₃ + Module.length A M₅ := by
+  have hleft := length_add_length_eq_of_exact h₁ h₁₂
+    (LinearMap.exact_iff.mpr (by rw [LinearMap.ker_rangeRestrict, LinearMap.exact_iff.mp h₂₃]))
+    f₃.surjective_rangeRestrict
+  have hright := length_add_length_eq_of_exact (Submodule.subtype_injective _)
+    (LinearMap.exact_iff.mpr (by rw [Submodule.range_subtype, LinearMap.exact_iff.mp h₃₄])) h₄₅ h₅
+  rw [add_assoc, hright, ← add_assoc, hleft]
+
+/-- The kernel and the cokernel of an endomorphism of a module of finite length have the same
+length, by `length_add_length_eq_of_exact` for `0 → ker f → M → M → M ⧸ range f → 0`. -/
+theorem length_ker_eq_length_quotient_range (f : M →ₗ[A] M) (hM : Module.length A M ≠ ⊤) :
+    Module.length A (LinearMap.ker f) = Module.length A (M ⧸ LinearMap.range f) := by
+  have h := length_add_length_eq_of_exact (Submodule.subtype_injective _)
+    (LinearMap.exact_subtype_ker_map f) (LinearMap.exact_map_mkQ_range f)
+    (Submodule.mkQ_surjective _)
+  rw [add_comm (Module.length A (LinearMap.ker f))] at h
+  exact (WithTop.add_left_cancel hM h).symm
 
 end Ring
 
@@ -319,6 +371,87 @@ theorem length_quotient_lsmul_ideal_eq_ord (I : Ideal A) (hI : IsFiniteLength A 
   rw [hleI, length_map_mkQ, comap_subtype_map_lsmul, hexact] at hfilt
   rw [hord]
   exact (WithTop.add_left_cancel hfin (hfilt.trans (add_comm _ _))).symm
+
+/-- **Additivity of the length index of an endomorphism** (Stacks, Section 42.2, for the
+endomorphisms induced by one ring element). Let `0 → N → M → P → 0` be exact, with endomorphisms
+`φN`, `φM`, `φP` commuting with it. The snake lemma's six-term exact sequence
+`0 → ker φN → ker φM → ker φP → N ⧸ range φN → M ⧸ range φM → P ⧸ range φP → 0` gives
+`length (ker φM) + length (coker φN) + length (coker φP) =
+length (ker φN) + length (ker φP) + length (coker φM)`. -/
+theorem length_ker_add_length_quotient_range_eq_of_exact {N P : Type*} [AddCommGroup N]
+    [Module A N] [AddCommGroup P] [Module A P] {f : N →ₗ[A] M} {g : M →ₗ[A] P}
+    (hf : Function.Injective f) (hfg : Function.Exact f g) (hg : Function.Surjective g)
+    {φN : N →ₗ[A] N} {φM : M →ₗ[A] M} {φP : P →ₗ[A] P}
+    (hφf : f ∘ₗ φN = φM ∘ₗ f) (hφg : g ∘ₗ φM = φP ∘ₗ g) :
+    Module.length A (LinearMap.ker φM) + Module.length A (N ⧸ LinearMap.range φN) +
+        Module.length A (P ⧸ LinearMap.range φP) =
+      Module.length A (LinearMap.ker φN) + Module.length A (LinearMap.ker φP) +
+        Module.length A (M ⧸ LinearMap.range φM) := by
+  have hkf : ∀ x ∈ LinearMap.ker φN, f x ∈ LinearMap.ker φM := fun x hx => by
+    simp only [LinearMap.mem_ker] at hx ⊢
+    rw [← LinearMap.comp_apply, ← hφf, LinearMap.comp_apply, hx, map_zero]
+  have hkg : ∀ x ∈ LinearMap.ker φM, g x ∈ LinearMap.ker φP := fun x hx => by
+    simp only [LinearMap.mem_ker] at hx ⊢
+    rw [← LinearMap.comp_apply, ← hφg, LinearMap.comp_apply, hx, map_zero]
+  have hcf : LinearMap.range φN ≤ (LinearMap.range φM).comap f := by
+    rintro _ ⟨x, rfl⟩
+    exact ⟨f x, by rw [← LinearMap.comp_apply, ← hφf, LinearMap.comp_apply]⟩
+  have hcg : LinearMap.range φM ≤ (LinearMap.range φP).comap g := by
+    rintro _ ⟨x, rfl⟩
+    exact ⟨g x, by rw [← LinearMap.comp_apply, ← hφg, LinearMap.comp_apply]⟩
+  set δ := SnakeLemma.δ' φN φM φP f g hfg f g hfg hφf hφg
+    (LinearMap.ker φP).subtype (LinearMap.exact_subtype_ker_map φP)
+    (LinearMap.range φN).mkQ (LinearMap.exact_map_mkQ_range φN) hg hf
+  have h₃ : Function.Exact (g.restrict hkg) δ :=
+    SnakeLemma.exact_δ'_right φN φM φP f g hfg f g hfg hφf hφg
+      (LinearMap.ker φM).subtype (LinearMap.exact_subtype_ker_map φM)
+      (LinearMap.ker φP).subtype (LinearMap.exact_subtype_ker_map φP)
+      (LinearMap.range φN).mkQ (LinearMap.exact_map_mkQ_range φN) hg hf _ rfl
+      (Submodule.subtype_injective _)
+  have h₄ : Function.Exact δ ((LinearMap.range φN).mapQ (LinearMap.range φM) f hcf) :=
+    SnakeLemma.exact_δ'_left φN φM φP f g hfg f g hfg hφf hφg
+      (LinearMap.ker φP).subtype (LinearMap.exact_subtype_ker_map φP)
+      (LinearMap.range φN).mkQ (LinearMap.exact_map_mkQ_range φN)
+      (LinearMap.range φM).mkQ (LinearMap.exact_map_mkQ_range φM) hg hf _ rfl
+      (Submodule.mkQ_surjective _)
+  have h₁ : Function.Injective (f.restrict hkf) := fun x y h =>
+    Subtype.ext (hf (congrArg Subtype.val h))
+  have h₂ : Function.Exact (f.restrict hkf) (g.restrict hkg) := by
+    rintro ⟨x, hx⟩
+    constructor
+    · intro h
+      obtain ⟨n, rfl⟩ := (hfg x).mp (congrArg Subtype.val h)
+      refine ⟨⟨n, hf ?_⟩, rfl⟩
+      rw [map_zero, ← LinearMap.comp_apply, hφf, LinearMap.comp_apply, LinearMap.mem_ker.mp hx]
+    · rintro ⟨⟨n, hn⟩, h⟩
+      obtain rfl := congrArg Subtype.val h
+      exact Subtype.ext (hfg.apply_apply_eq_zero n)
+  have h₅ : Function.Exact ((LinearMap.range φN).mapQ (LinearMap.range φM) f hcf)
+      ((LinearMap.range φM).mapQ (LinearMap.range φP) g hcg) := by
+    intro y
+    induction y using Submodule.Quotient.induction_on with | _ y => ?_
+    constructor
+    · intro h
+      rw [Submodule.mapQ_apply, Submodule.Quotient.mk_eq_zero] at h
+      obtain ⟨p, hp⟩ := h
+      obtain ⟨m, rfl⟩ := hg p
+      have : g (y - φM m) = 0 := by
+        rw [map_sub, ← LinearMap.comp_apply g φM, hφg, LinearMap.comp_apply, hp, sub_self]
+      obtain ⟨n, hn⟩ := (hfg _).mp this
+      refine ⟨Submodule.Quotient.mk n, ?_⟩
+      rw [Submodule.mapQ_apply, hn, Submodule.Quotient.eq]
+      exact ⟨-m, by simp⟩
+    · rintro ⟨n, hn⟩
+      rw [← hn]
+      induction n using Submodule.Quotient.induction_on with | _ n => ?_
+      rw [Submodule.mapQ_apply, Submodule.mapQ_apply, hfg.apply_apply_eq_zero,
+        Submodule.Quotient.mk_zero]
+  have h₆ : Function.Surjective ((LinearMap.range φM).mapQ (LinearMap.range φP) g hcg) := by
+    intro p
+    induction p using Submodule.Quotient.induction_on with | _ p => ?_
+    obtain ⟨m, rfl⟩ := hg p
+    exact ⟨Submodule.Quotient.mk m, rfl⟩
+  exact length_add_length_add_length_eq_of_exact h₁ h₂ h₃ h₄ h₅ h₆
 
 end CommRing
 
