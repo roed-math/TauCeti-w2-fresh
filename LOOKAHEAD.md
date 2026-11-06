@@ -58,6 +58,12 @@ inequality: `NumberField.exp_neg_le_norm_prod_zpow_sub_one_of_le`, in
 `R = T₀/2`, this is the `δ` that split 5 hands to
 `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero`.
 
+The round resuming at `71fc3c5ae5a` (15:35 UTC) found `main` still at `385ec2ddd8d` and PR
+#28644 still open at head `583a153b95f`. It stated the Liouville reduction in the form the
+excluded case presents it, as span membership rather than as the coefficient identities:
+`min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_mem_span` in `Data.lean`. A nonzero
+integral `s ∈ ℂ c` with `β₀ = 0` and `Λ ≠ 0` has `s_m ≠ 0` and `min 1 (δ/2) ≤ |s_m| |Λ|`.
+
 What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
 
@@ -216,6 +222,10 @@ In the new file `Interpolation/Residual.lean`:
        - `NumberField.exp_neg_le_norm_prod_zpow_sub_one_of_le` feeds the measure's height
          bounds `h(α_j) ≤ log A_j` and `|s_j| ≤ T₀/2` into the exponent.
 
+       - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_mem_span` chains the
+         first and the last of these, so that the excluded case `(S−S)[2] ∩ ℂc ∋ s ≠ 0` gives
+         `min 1 (δ/2) ≤ |s_m| |Λ|` directly.
+
        Split 5 only has to instantiate these with the measure's parameters.
 
 ## Splits
@@ -275,6 +285,8 @@ In the new file `Interpolation/Residual.lean`:
      height bounds `h(α_j) ≤ a_j` and exponent bounds `|s_j| ≤ R`;
    - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +19):
      `δ ≤ |α^s - 1|` gives `min 1 (δ/2) ≤ |s_m Λ|`;
+   - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_mem_span` (`Data.lean`, +20):
+     the reduction from span membership in the line `ℂ c`, giving `min 1 (δ/2) ≤ |s_m| |Λ|`;
    - `two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm` and
      `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero` (`Data.lean`, +37,
      with a public import of `Trigonometric.Basic` for `π` and a private import of
@@ -367,3 +379,6 @@ In the new file `Interpolation/Residual.lean`:
   - 2026-11-06, about 15:10 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
     `runLinter` passed on `Height.FundamentalInequality`. The new corollary reuses Mathlib's
     `zero_le_logHeight₁`. `main` and pinned Mathlib have no Liouville bound in this form.
+  - 2026-11-06, about 15:45 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `Interpolation.Data`. The new lemma only chains two lemmas already on
+    the branch; `main` and pinned Mathlib have no such statement.

@@ -472,6 +472,24 @@ theorem min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero
     linarith [Real.two_le_pi]
   · exact min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm l b hlast hb₀ hb (hδ hα)
 
+/-- The Liouville reduction in the form the excluded case `β₀ = 0`, `(S - S)[2] ∩ ℂ c ≠ {0}`
+presents it: a nonzero integral `s` on the line through `c = (β₁, …, β_{m-1}, -1)` has `s_m ≠ 0`,
+and if `Λ ≠ 0` and `δ ≤ |α^s - 1|` whenever `α^s ≠ 1`, then `min 1 (δ / 2) ≤ |s_m| |Λ|`. This
+combines `TauCeti.eq_neg_div_of_intCast_mem_span_snoc` with
+`TauCeti.min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero`. -/
+theorem min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_mem_span
+    (l b : Fin (n + 1) → ℂ) {s : Fin (n + 1) → ℤ} (hs : s ≠ 0)
+    (hmem : (fun i ↦ (s i : ℂ)) ∈ ℂ ∙ Fin.snoc (fun k : Fin n ↦ b k.succ) (-1)) (hb₀ : b 0 = 0)
+    (hΛ : waldschmidtLinearForm l b ≠ 0) {δ : ℝ}
+    (hδ : ∏ j, cexp (l j) ^ s j ≠ 1 → δ ≤ ‖∏ j, cexp (l j) ^ s j - 1‖) :
+    s (Fin.last n) ≠ 0 ∧
+      min 1 (δ / 2) ≤ |(s (Fin.last n) : ℝ)| * ‖waldschmidtLinearForm l b‖ := by
+  obtain ⟨hlast, hb⟩ := eq_neg_div_of_intCast_mem_span_snoc b hs hmem
+  refine ⟨hlast, ?_⟩
+  have h := min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero l b hlast hb₀
+    hb hΛ hδ
+  rwa [norm_mul, Complex.norm_intCast] at h
+
 /-- Waldschmidt's auxiliary function `z ↦ F(z) exp(t (z₀ + λ₁ z₁ + ⋯ + λ_{m-1} z_{m-1}))` on
 `ℂᵐ`, for a polynomial `F` and an integer `t`; here `l = (λ₁, …, λₘ)`, of which `λₘ` does not
 occur. -/
