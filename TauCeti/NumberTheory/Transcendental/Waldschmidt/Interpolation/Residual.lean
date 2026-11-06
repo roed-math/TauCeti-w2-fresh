@@ -10,6 +10,7 @@ public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.LinearAlgebra.Quotient.Defs
 public import TauCeti.NumberTheory.Transcendental.Waldschmidt.Interpolation.Data
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
+import TauCeti.Algebra.Group.Pointwise.Set.Finite
 import TauCeti.Combinatorics.Additive.ImageCard
 import TauCeti.Data.Set.Card
 
@@ -171,16 +172,12 @@ theorem mul_pow_lt_mul_ncard_image_mkQ_nsmul (b : Fin (n + 1) → K)
         (k • ((S - S) ∩ {s | (fun i ↦ (s i : K)) ∈ V}))).ncard := by
   set A := (S - S) ∩ {s | (fun i ↦ (s i : K)) ∈ V}
   have hA : A.Finite := (hS.sub hS).inter_of_left _
-  have hfin (j : ℕ) : (j • A).Finite := by
-    induction j with
-    | zero => simp
-    | succ j ih => simpa [succ_nsmul] using ih.add hA
   have h0 : (0 : Fin (n + 1) → ℤ) ∈ A := ⟨hSne.zero_mem_sub, by
     simp only [Set.mem_ofPred_eq, Pi.zero_apply, Int.cast_zero]
     exact V.zero_mem⟩
   refine (mul_pow_lt_mul_ncard_image_mkQ_sub_inter b hS hT₀ hV hmin hcV' hlt).trans_le
     (Nat.mul_le_mul_left _ (Set.ncard_le_ncard (Set.image_mono (Set.subset_nsmul h0 hk))
-      ((hfin k).image _)))
+      ((hA.nsmul k).image _)))
 
 /-- **Counting grid points modulo `V' · y + K e₀`.** For a subspace `V'` containing the
 coefficient vector `c = (β₁, …, β_{m-1}, -1)`, the grid points `s · y` of a set `A` of indices

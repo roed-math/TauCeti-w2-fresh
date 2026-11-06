@@ -17,6 +17,7 @@ public import Mathlib.LinearAlgebra.FreeModule.PID
 public import Mathlib.LinearAlgebra.Isomorphisms
 public import Mathlib.RingTheory.PrincipalIdealDomain
 public import TauCeti.Combinatorics.Additive.ImageCard
+import TauCeti.Algebra.Group.Pointwise.Set.Finite
 
 /-!
 # Points of a rank-one subgroup of `ℤ^m` in a box
@@ -202,11 +203,7 @@ theorem ncard_nsmul_le_mul_ncard_image_of_prod_zpow_eq_one {C : Type*} [AddGroup
     (g : (Fin m → ℤ) →+ C) (hg : ∀ s, g s = 0 → ∏ j, α j ^ s j = 1)
     {A : Set (Fin m → ℤ)} (hA : A.Finite) {R : ℕ} (hR : ∀ a ∈ A, ∀ i, |a i| ≤ R) (k : ℕ) :
     (k • A).ncard ≤ (g '' (k • A)).ncard * (2 * (2 * k * R) + 1) := by
-  have hfin : (k • A).Finite := by
-    induction k with
-    | zero => simp
-    | succ k ih => simpa [succ_nsmul] using ih.add hA
-  refine ncard_le_mul_ncard_image_of_prod_zpow_eq_one α hα g hg hfin fun s hs t ht i ↦ ?_
+  refine ncard_le_mul_ncard_image_of_prod_zpow_eq_one α hα g hg (hA.nsmul k) fun s hs t ht i ↦ ?_
   calc |s i - t i| ≤ |s i| + |t i| := abs_sub _ _
     _ ≤ k * R + k * R :=
         add_le_add (abs_apply_le_of_mem_nsmul hR k hs i) (abs_apply_le_of_mem_nsmul hR k ht i)

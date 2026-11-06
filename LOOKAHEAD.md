@@ -71,6 +71,14 @@ obstruction's count in the form split 5 applies it, to the columns `((S−S) ∩
 the box `‖s‖∞ ≤ kR`) and `TauCeti.ncard_nsmul_le_mul_ncard_image_of_prod_zpow_eq_one`
 (`#(k • A) ≤ (4kR + 1)·#g(k • A)` under the multiplicative-rank hypothesis), in `BoxPoints.lean`.
 
+The round resuming at `d2d7dcd11cd` (16:31 UTC) found `main` still at `3a0189695d6` and PR
+#28644 still open at head `583a153b95f`. It factored the finiteness of iterated sumsets, proved
+inline by the same induction in `Residual.lean` and `BoxPoints.lean`, into the general
+`Set.Finite.pow` / `Set.Finite.nsmul` (`@[to_additive]`), in the new file
+`TauCeti/Algebra/Group/Pointwise/Set/Finite.lean` mirroring Mathlib's
+`Algebra/Group/Pointwise/Set/Finite.lean`, which has `Set.Finite.mul` and `Set.Finite.add` but
+not the iterated forms. Both former call sites now use `hA.nsmul k`.
+
 What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
 
@@ -263,9 +271,11 @@ In the new file `Interpolation/Residual.lean`:
    About 265 lines.
 3. **feat: the residual subspace of Waldschmidt's rank argument.** Needs 1.
    - Files:
+     - `TauCeti/Algebra/Group/Pointwise/Set/Finite.lean` (new, 33 lines);
      - `TauCeti/Combinatorics/Additive/ImageCard.lean` (new, 60 lines);
-     - `…/Interpolation/Residual.lean` (new, 228 lines).
+     - `…/Interpolation/Residual.lean` (new, 225 lines).
    - Declarations:
+     - `Set.Finite.pow` and its additive form `Set.Finite.nsmul`;
      - `AddMonoidHom.ncard_image_le_mul_ncard_image_sub_inter_ker`;
      - `exists_waldschmidtResidualSubspace`;
      - `mul_pow_lt_mul_ncard_image_mkQ_sub_inter`;
@@ -273,7 +283,7 @@ In the new file `Interpolation/Residual.lean`:
      - `ncard_image_mkQ_waldschmidtPoint`;
      - `mul_pow_lt_mul_ncard_image_mkQ_waldschmidtPoint`.
 
-   About 290 lines. Splits 2 and 3 do not import each other and can be opened together.
+   About 320 lines. Splits 2 and 3 do not import each other and can be opened together.
 4. **feat: a multiplicity estimate on the additive group times the torus.** Needs none. Not on
    this branch.
 5. **feat: the rank of Waldschmidt's interpolation matrix.** Needs 1, 2, 3 and 4. Carries
@@ -299,8 +309,8 @@ In the new file `Interpolation/Residual.lean`:
      with a public import of `Trigonometric.Basic` for `π` and a private import of
      `SpecialFunctions.Complex.Log` for `Complex.exp_eq_one_iff`): the case `α^s = 1` and the
      two cases together, under `Λ ≠ 0`;
-   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 215 lines; imports `ImageCard.lean`
-     of split 3), the subgroup obstruction's count:
+   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 212 lines; imports `ImageCard.lean`
+     and `Pointwise/Set/Finite.lean` of split 3), the subgroup obstruction's count:
      - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
        `≤ 1` has at most `2R + 1` points with `‖s‖∞ ≤ R`;
      - `LinearMap.finrank_ker_le_one`: rank-nullity over `ℤ`, a map out of `ℤ^m` with image of
@@ -397,3 +407,7 @@ In the new file `Interpolation/Residual.lean`:
     `lookahead-check` ok, and `runLinter` passed on `BoxPoints`. `main` and pinned Mathlib were
     grepped for a coordinate bound on iterated sumsets and for a finiteness lemma for `k • A`;
     neither exists (`Residual.lean` proves the finiteness inline by the same induction).
+  - 2026-11-06, about 16:40 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `Algebra.Group.Pointwise.Set.Finite`. `main` and pinned Mathlib were
+    grepped for `Finite.pow` / `Finite.nsmul`; neither exists. The duplicated inline inductions
+    were replaced by the new lemma rather than kept.
