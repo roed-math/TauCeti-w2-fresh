@@ -147,6 +147,13 @@ need more than the round's time, so it pushed the merged branch rather than leav
 proof. The next piece to attempt is the first bullet of split 26, the multiplication on the graded
 pieces of the pole filtration.
 
+The nineteenth round left tip `cc4fbb17db50`. The twentieth round (this one) found `main` unchanged
+(`afa08a3ed16f`), so the merge was a no-op. Both suppliers' successor PRs (#28759, #28995) are
+still open, and the branch still consumes neither, so there are still no stubs. The round rebuilt
+the whole branch (green, warnings as errors) and reran `lookahead-check` (ok). Most of the round's
+hour went to the full rebuild. The time left was too short to prove and rebuild a new piece
+safely, so it added no declarations. The next piece is still the first bullet of split 26.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -978,7 +985,7 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 
 ## Verification
 
-`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth round on `afa08a3ed16f`) and
+`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth and twentieth rounds on `afa08a3ed16f`) and
 `/opt/round/lookahead-check` all pass. In the eighteenth round, the new proofs build with
 warnings as errors; `#lint` was not rerun for lack of time. In the fifteenth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 1588 declarations, on the import closure of the two new modules of
