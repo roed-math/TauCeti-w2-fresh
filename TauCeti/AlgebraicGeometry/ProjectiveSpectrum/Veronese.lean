@@ -34,6 +34,8 @@ glue to mutually inverse morphisms.
   `g ∈ A^{(d)}` of positive degree cover `Proj A`.
 * `AlgebraicGeometry.Proj.awayι_fromVeronese`, `AlgebraicGeometry.Proj.awayι_toVeronese`:
   on the charts, `veroneseIso` is `Spec` of `awayVeroneseEquiv`.
+* `AlgebraicGeometry.Proj.toVeronese_preimage_basicOpen`: the inverse of `veroneseIso` pulls the
+  basic open `D₊(a)` of `Proj A^{(d)}` back to the basic open `D₊(a)` of `Proj A`.
 * `AlgebraicGeometry.Proj.veroneseIso_hom_toSpecZero`,
   `AlgebraicGeometry.Proj.veroneseIso_hom_toSpecCoeff`: `veroneseIso` lies over `Spec 𝒜 0`, hence
   over `Spec R`.
@@ -213,6 +215,40 @@ theorem awayι_toVeronese (hg : g ∈ veroneseGrading 𝒜 d k) (hk : 0 < k) :
 theorem awayι_fromVeronese (hg : g ∈ veroneseGrading 𝒜 d k) (hk : 0 < k) :
     awayι (veroneseGrading 𝒜 d) g hg hk ≫ fromVeronese 𝒜 d = veroneseChartInv hg hk :=
   (affineOpenCover (veroneseGrading 𝒜 d)).openCover.ι_glueMorphisms _ _ ⟨⟨k, hk⟩, ⟨g, hg⟩⟩
+
+/-- The preimage under `AlgebraicGeometry.Proj.toVeronese` of the basic open `D₊(a)` of
+`Proj A^{(d)}`, for `a ∈ A^{(d)}` homogeneous of positive degree, is the basic open `D₊(a)` of
+`Proj A`. On the chart of `g`, both are cut out by `aᵏ / gᵏ'` (up to a `d`-th power). -/
+theorem toVeronese_preimage_basicOpen {a : veronese 𝒜 d} {k' : ℕ}
+    (ha : a ∈ veroneseGrading 𝒜 d k') (hk' : 0 < k') :
+    toVeronese 𝒜 d ⁻¹ᵁ basicOpen (veroneseGrading 𝒜 d) a = basicOpen 𝒜 (a : A) := by
+  ext x
+  have hx := (veroneseAffineOpenCover 𝒜 d).covers x
+  generalize (veroneseAffineOpenCover 𝒜 d).idx x = i at hx
+  obtain ⟨k, g, hg⟩ := i
+  obtain ⟨y, rfl⟩ := hx
+  change y ∈ awayι 𝒜 (g : A) (mem_veroneseGrading.1 hg) (Nat.mul_pos (NeZero.pos d) k.pos) ⁻¹ᵁ
+      (toVeronese 𝒜 d ⁻¹ᵁ basicOpen (veroneseGrading 𝒜 d) a) ↔
+    y ∈ awayι 𝒜 (g : A) (mem_veroneseGrading.1 hg) (Nat.mul_pos (NeZero.pos d) k.pos) ⁻¹ᵁ
+      basicOpen 𝒜 (a : A)
+  rw [← Scheme.Hom.comp_preimage, awayι_toVeronese hg k.pos]
+  unfold veroneseChart
+  rw [Scheme.Hom.comp_preimage, awayι_preimage_basicOpen (hm' := hk') (g_deg := ha),
+    awayι_preimage_basicOpen (hm' := Nat.mul_pos (NeZero.pos d) hk')
+      (g_deg := mem_veroneseGrading.1 ha)]
+  -- the element `aᵈᵏ / gᵈᵏ'` of `A_{(g)}` is the `d`-th power of the image of `aᵏ / gᵏ'`
+  have e : Away.isLocalizationElem (mem_veroneseGrading.1 hg) (mem_veroneseGrading.1 ha) =
+      awayVeroneseEquiv hg (Away.isLocalizationElem hg ha) ^ d := by
+    apply val_injective
+    simp only [awayVeroneseEquiv_mk, HomogeneousLocalization.val_pow, Away.val_mk,
+      Localization.mk_pow]
+    congr 1
+    · simp [← pow_mul, mul_comm]
+    · ext; simp [← pow_mul, mul_comm]
+  change awayVeroneseEquiv hg (Away.isLocalizationElem hg ha) ∉ y.asIdeal ↔
+    Away.isLocalizationElem (mem_veroneseGrading.1 hg) (mem_veroneseGrading.1 ha) ∉ y.asIdeal
+  rw [e]
+  exact not_congr (y.isPrime.pow_mem_iff_mem d (NeZero.pos d)).symm
 
 variable (𝒜 d)
 
