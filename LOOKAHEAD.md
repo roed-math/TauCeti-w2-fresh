@@ -4,17 +4,16 @@
 
 Target: DiophantineApproximationAndTranscendence §3.6, "Rank and multiplicity for the
 interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 9.16, Lemma 9.17;
-§9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`. The round of 2026-11-06 resumed the
-branch at `107089e3b11`, and a later round of the same day resumed it at `a38b52feaed`. In both,
-`main` had not moved, so the merge was empty, and the branch still builds and passes
-`lookahead-check`. Both rechecked supplier PR #28644 at head `583a153b95f`. That PR is still open
-and still adds only the delta rows, their denominators and the separated-row entry, none of which
-the rank argument consumes. Neither round adds new mathematics. It recorded that
-`main` and pinned Mathlib still have no zero or multiplicity estimate, Philippon-type or
-otherwise, that split 4 could reuse. Earlier rounds added the material of splits 1–3: the counting
-half of the induction on proper subspaces, and the translation between index subspaces and
-grid-point subspaces. What remains is the multiplicity estimate of split 4, which does not fit in
-one round, and the assembly in split 5.
+§9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`.
+
+Earlier rounds added the material of splits 1–3: the counting half of the induction on proper
+subspaces, and the translation between index subspaces and grid-point subspaces. Three later
+rounds on 2026-11-06 (resuming at `107089e3b11`, `a38b52feaed` and `4d992c71939`) found `main`
+unmoved, so each merge was empty, and supplier PR #28644 still open at head `583a153b95f` with
+nothing the rank argument consumes. They added no mathematics; the branch still builds and passes
+`lookahead-check`. `main` and pinned Mathlib still have no zero or multiplicity estimate,
+Philippon-type or otherwise, that split 4 could reuse. What remains is the multiplicity estimate
+of split 4, which does not fit in one round, and the assembly in split 5.
 
 ## Stubs
 
