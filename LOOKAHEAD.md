@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-veronese","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the Veronese subalgebra of a graded algebra"},{"n":2,"after":[1],"title":"feat: homogeneous localizations of a Veronese subalgebra"},{"n":3,"after":[2],"title":"feat: Proj of a Veronese subalgebra"},{"n":4,"after":[],"title":"feat: Veronese subalgebras of graded monoid objects"},{"n":5,"after":[1,4],"title":"feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra"},{"n":6,"after":[3],"title":"feat: twisting sheaves of Proj of a Veronese subalgebra"},{"n":7,"after":[1,2,3,4,5],"title":"feat: relative Proj of a Veronese subalgebra"},{"n":8,"after":[1,2,3,4,5,6,7],"title":"feat: twisting sheaves of the relative Proj of a Veronese subalgebra"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-veronese","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the Veronese subalgebra of a graded algebra"},{"n":2,"after":[1],"title":"feat: homogeneous localizations of a Veronese subalgebra"},{"n":3,"after":[2],"title":"feat: Proj of a Veronese subalgebra"},{"n":4,"after":[],"title":"feat: Veronese subalgebras of graded monoid objects"},{"n":5,"after":[1,4],"title":"feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra"},{"n":6,"after":[1],"title":"feat: pulling back twisting sheaf sections along the Veronese contraction"},{"n":7,"after":[3,6],"title":"feat: twisting sheaves of Proj of a Veronese subalgebra"},{"n":8,"after":[1,2,3,4,5],"title":"feat: relative Proj of a Veronese subalgebra"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: twisting sheaves of the relative Proj of a Veronese subalgebra"}]}-->
 
 # Lookahead: `relative-proj-veronese` (SchemeAndStackFoundations, Layer 0, §0.3)
 
@@ -8,16 +8,18 @@ Target (README §0.3): prove `relativeProj_veronese`: for `d ≥ 1` the Veronese
 (Stacks, Lemma 27.11.8 (0B5J), on affine charts).
 
 Built on `main` at `385ec2ddd8d` (merged into the branch on 2026-11-06; `main` was unchanged at
-the second and third sessions of 2026-11-06).
+the second, third and fourth sessions of 2026-11-06).
 
-**Status: partial.** Splits 1 to 5 and 7 are proved on this branch, with no `sorry`: the
+**Status: partial.** Splits 1 to 6 and 8 are proved on this branch, with no `sorry`: the
 Veronese subalgebra and its functoriality in graded ring maps, its affine charts,
 `Proj A^{(d)} ≅ Proj A` over `Spec 𝒜 0` and over `Spec R`, natural in graded ring maps, the
 sheaf-level Veronese subalgebra `A^{(d)}` of a graded (commutative) monoid object, the
 identification of its graded sections over an open with the Veronese subalgebra of the graded
 sections of `A`, and **the isomorphism of relative `Proj`s
-`CommMon.relativeProjVeroneseIso : Proj_X(A^{(d)}) ≅ Proj_X(A)` over `X`**. The `O(n)`/`O(dn)`
-comparison remains: split 6 on `Proj`, and split 8 on the relative `Proj`.
+`CommMon.relativeProjVeroneseIso : Proj_X(A^{(d)}) ≅ Proj_X(A)` over `X`**, and (split 6) the
+pullback of sections `Γ(U, O_{Proj A^{(d)}}(n)) → Γ(V, O_{Proj A}(dn))` along the contraction
+`q ↦ q ∩ A^{(d)}`, bijective over every standard open `D₊(g)`. The `O(n)`/`O(dn)` isomorphism
+itself remains: split 7 on `Proj`, and split 9 on the relative `Proj`.
 
 ## Stubbed declarations
 
@@ -31,9 +33,9 @@ supplier. Its invertibility in degree one is there too. PR #29201 adds the grade
 `A → ⊕ (relativeProj.toBase)_* O(n)` (`relativeProjToTwistingSheaf`) and the instance
 `isQuasicoherent_relativeProjTwistingSheaf`. Neither appears in the README's statement of the
 target ("`O(n)` corresponding to `O(dn)`" is an isomorphism of the `O(n)` that are already on
-`main`), and nothing proved so far uses them, so nothing is stubbed. If split 8 states the
+`main`), and nothing proved so far uses them, so nothing is stubbed. If split 9 states the
 `O(n)` comparison in `QCoh` and so needs `isQuasicoherent_relativeProjTwistingSheaf`, then
-split 8 has to wait for #29201 to land and should use the landed instance, which PR #29201's diff
+split 9 has to wait for #29201 to land and should use the landed instance, which PR #29201's diff
 states as:
 
 ```lean
@@ -87,7 +89,7 @@ specified in the README only.
      lies over `Spec 𝒜 0` under `veroneseGradingZeroEquiv`), `veroneseIso_hom_toSpecCoeff` (it lies
      over `Spec R`), and `map_veroneseMap_veroneseIso_hom` (naturality: for a graded ring map
      `f : 𝒜 →+*ᵍ ℬ`, `Proj.map (veroneseMap d f) ≫ (veroneseIso 𝒜 d).hom =
-     (veroneseIso ℬ d).hom ≫ Proj.map f`). The last is what lets split 7 glue the chart
+     (veroneseIso ℬ d).hom ≫ Proj.map f`). The last is what lets split 8 glue the chart
      isomorphisms along the restriction maps of the relative `Proj`.
    - The earlier plan built the morphism with `Proj.fromOfGlobalSections`. That does not apply,
      because elements of positive degree are not global sections of `Proj A`. Mathlib's
@@ -121,17 +123,45 @@ specified in the README only.
      `map_veroneseSectionsEquiv_gradedSectionsGrading` (it carries
      `(A.veronese d).gradedSectionsGrading U k` onto `veroneseGrading _ d k`), and
      `veroneseSectionsAlgHom_restrictGradedSections` (naturality in restriction).
-6. **`feat: twisting sheaves of Proj of a Veronese subalgebra`**. After: 3. *Remains.*
-   - File: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/Veronese.lean`.
-   - Adds, in `AlgebraicGeometry.Proj`: `twistingSheafVeroneseIso 𝒜 d n :
-     twistingSheaf (veroneseGrading 𝒜 d) n ≅ (Proj.veroneseIso 𝒜 d).hom^* twistingSheaf 𝒜 (d * n)`
-     (`Scheme.Modules.pullback`), and its compatibility with `Proj.twistingSheafMap` of
-     `veroneseMap d f` versus `f` (needed by split 8 to glue). This uses main's
-     `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/*` on the charts of split 3. It
-     is the module analogue of `awayVeroneseEquiv`: on `D₊(g)`, `g ∈ A^{(d)}` homogeneous, the
-     sections of `O(n)` over `A^{(d)}` are the fractions `a / g^k` with `a ∈ 𝒜 (d(k deg g + n))`,
-     which are the sections of `O(dn)` over `A`.
-7. **`feat: relative Proj of a Veronese subalgebra`**. After: 1, 2, 3, 4, 5. *Done on this branch.*
+6. **`feat: pulling back twisting sheaf sections along the Veronese contraction`**. After: 1.
+   *Done on this branch.*
+   - File: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/Veronese.lean` (263 lines).
+     It imports only split 1 and main's `TwistingSheaf/BasicOpen`, so it can open alongside
+     splits 2 to 5.
+   - Adds, in `AlgebraicGeometry.ProjectiveSpectrum`: `veroneseComapFun` and the continuous map
+     `veroneseComap 𝒜 d : C(ProjectiveSpectrum 𝒜, ProjectiveSpectrum (veroneseGrading 𝒜 d))`,
+     `q ↦ q ∩ A^{(d)}` (relevance: if `a ∈ 𝒜 i`, `i > 0`, then `a ^ d` lies in degree `i` of
+     `A^{(d)}`), with `veroneseComap_asHomogeneousIdeal_toIdeal`. In `…TwistingSheaf`:
+     `veroneseLocalizationsMap q : A^{(d)}_{q ∩ A^{(d)}} →+* A_q` with
+     `veroneseLocalizationsMap_mk`, `comapVeroneseFun` and `isLocallyFraction_comapVeroneseFun`
+     (a local fraction of degree `n` over `A^{(d)}` is one of degree `d n` over `A`). In
+     `AlgebraicGeometry.Proj.twistingSheaf`: `comapVeronese hUV : Γ(U, 𝒪_{Proj A^{(d)}}(n)) →+
+     Γ(V, 𝒪_{Proj A}(d n))` for `V ⊆ veroneseComap ⁻¹' U`, with `comapVeronese_apply`,
+     `res_comapVeronese`, `comapVeronese_res`, `comapVeronese_const`, `comapVeronese_mul_apply`,
+     `basicOpen_subset_preimage_veroneseComap`, and `bijective_comapVeronese_basicOpen` (for
+     `g ∈ A^{(d)}` homogeneous of positive degree, the pullback over `D₊(g)` is bijective; proved
+     from main's `exists_eq_const_basicOpen` and `const_eq_zero_iff` on both sides).
+7. **`feat: twisting sheaves of Proj of a Veronese subalgebra`**. After: 3, 6. *Remains.*
+   - File: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/VeroneseIso.lean`.
+   - Adds, in `AlgebraicGeometry.Proj`:
+     1. `toVeronese_base_apply` (equivalently on `(veroneseIso 𝒜 d).inv`): the underlying map of
+        `toVeronese 𝒜 d` is `ProjectiveSpectrum.veroneseComap 𝒜 d`. Check it on the charts
+        `awayι 𝒜 g` using `awayι_toVeronese`, `veroneseChart`, Mathlib's
+        `Proj.toSpec_base_apply_eq` / `ProjIsoSpecTopComponent.ToSpec.mk_mem_carrier`, and
+        `awayVeroneseEquiv_mk` (split 2): both points of `Proj A^{(d)}` have the same image in
+        `Spec A^{(d)}_{(g)}`, which is injective on `D₊(g)`.
+     2. `val_toVeronese_appLE_apply`: the analogue of main's `val_map_appLE_apply` (in
+        `TwistingSheaf/Functor.lean`), describing `(toVeronese 𝒜 d).appLE U V _ a` pointwise
+        through `veroneseLocalizationsMap` (again on charts, via `awayToSection` and
+        `awayVeroneseEquiv`); then `comapVeronese_smul`.
+     3. `twistingSheafVeroneseMap 𝒜 d n : twistingSheaf (veroneseGrading 𝒜 d) n ⟶
+        (Scheme.Modules.pushforward (veroneseIso 𝒜 d).inv).obj (twistingSheaf 𝒜 (d * n))`, given
+        on sections by `comapVeronese` (built like main's `twistingSheafMap`), and
+        `isIso_twistingSheafVeroneseMap` from `bijective_comapVeronese_basicOpen` on the cover
+        `iSup_basicOpen_veronese_eq_top` (split 3); hence `twistingSheafVeroneseIso`.
+     4. Its compatibility with `Proj.twistingSheafMap` of `veroneseMap d f` versus `f`, using
+        `map_veroneseMap_veroneseIso_hom` (split 3); split 9 needs it to glue.
+8. **`feat: relative Proj of a Veronese subalgebra`**. After: 1, 2, 3, 4, 5. *Done on this branch.*
    - File: `TauCeti/AlgebraicGeometry/RelativeProj/Veronese.lean` (229 lines).
    - Adds, in `CategoryTheory.CommMon`: `veroneseSectionsGradedHom` and
      `veroneseSectionsGradedHomInv` (split 5's `veroneseSectionsEquiv` and its inverse as graded
@@ -147,15 +177,15 @@ specified in the README only.
      A.relativeProj`** (`@[stacks 0B5J]`, `HasColimit.isoOfNatIso`),
      `relativeProjCover_f_relativeProjVeroneseIso_hom` (on charts it is `projVeroneseSectionsIso`)
      and `relativeProjVeroneseIso_hom_relativeProjToBase` (it lies over `X`).
-8. **`feat: twisting sheaves of the relative Proj of a Veronese subalgebra`**. After: 1, 2, 3, 4,
-   5, 6, 7. *Remains.* Completes the target.
+9. **`feat: twisting sheaves of the relative Proj of a Veronese subalgebra`**. After: 1, 2, 3, 4,
+   5, 6, 7, 8. *Remains.* Completes the target.
    - File: `TauCeti/AlgebraicGeometry/RelativeProj/TwistingSheaf/Veronese.lean`.
    - Adds, in `CategoryTheory.CommMon`: `relativeProjTwistingSheafVeroneseIso d n :
      (A.veronese d).relativeProjTwistingSheaf n ≅
        (A.relativeProjVeroneseIso d).hom^* (A.relativeProjTwistingSheaf (d * n))`, glued from
-     split 6 over the charts. `relativeProjTwistingSheaf` is the glued module of
+     split 7 over the charts. `relativeProjTwistingSheaf` is the glued module of
      `relativeProjTwistingSheafGlueData` (on `main`), so the isomorphism is a morphism of
-     `ModulesGlueData` along `relativeProjFunctorVeroneseIso`, whose naturality is split 6's
+     `ModulesGlueData` along `relativeProjFunctorVeroneseIso`, whose naturality is split 7's
      compatibility with `twistingSheafMap` plus `restrict_comp_veroneseSectionsGradedHomInv`.
      If stated in `QCoh`, it consumes `isQuasicoherent_relativeProjTwistingSheaf` from PR #29201
      (still open on 2026-11-06; see above).
@@ -172,11 +202,24 @@ over every open are the Veronese subalgebra of the graded sections of `A` (compa
 restriction), and `CommMon.relativeProjVeroneseIso : Proj_X(A^{(d)}) ≅ Proj_X(A)` holds over `X`
 (`relativeProjVeroneseIso_hom_relativeProjToBase`).
 
-Remaining: the twisting sheaves, "with `O(n)` corresponding to `O(dn)`": split 6 on `Proj` and
-split 8 on the relative `Proj`, as listed above.
+Also proved (split 6): the contraction `q ↦ q ∩ A^{(d)}` is a continuous map
+`Proj A → Proj A^{(d)}`, and pulling back local fractions along it gives maps
+`Γ(U, O_{Proj A^{(d)}}(n)) → Γ(V, O_{Proj A}(dn))`, compatible with restriction, fractions and
+products, and bijective over every standard open `D₊(g)`, `g ∈ A^{(d)}` homogeneous of positive
+degree.
+
+Remaining: the twisting sheaves, "with `O(n)` corresponding to `O(dn)`": split 7 on `Proj`
+(first the identification of `Proj.toVeronese` on points with `veroneseComap` and on sections
+with `veroneseLocalizationsMap`, then the sheaf morphism and its invertibility from split 6) and
+split 9 on the relative `Proj`, as listed above.
 
 Lessons for the next session: `rw` and `dsimp` on goals involving `Proj.map` of the section maps
 time out (heartbeats) at `whnf`, as do `▸` and `rw … at` on the irrelevant-ideal hypotheses.
 Term-mode chains of `Eq.trans`, `congrArg` and `Category.assoc` (as in
 `map_restrict_projVeroneseSectionsIso_hom`) elaborate in seconds, and lemmas stated over
 `X.Opens` specialise to `AffineZariskiSite` by `(toOpensFunctor X).map i` without unfolding.
+In `TwistingSheaf/Veronese.lean`, `rw [comapVeronese_const]` fails ("motive is not type correct at
+implicit transparency") on sections produced by `exists_eq_const_basicOpen`, whose `hU` proofs
+mention `x.asHomogeneousIdeal` for points of `Proj`; use `(comapVeronese_const ..).trans` instead,
+and state preimage inclusions as named lemmas (`basicOpen_subset_preimage_veroneseComap`) rather
+than `fun _ hq ↦ hq`.
