@@ -1,11 +1,21 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"finite-dimensional-h1-structure-sheaf","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":["riemann-surface-structure-sheaf-h1"],"splits":[{"n":1,"after":[],"title":"feat: Schwartz's theorem on compact perturbations of surjections"},{"n":2,"after":[],"title":"feat: bounded holomorphic maps on a complex manifold and Montel's theorem"},{"n":3,"after":[1,2],"title":"feat: bounded holomorphic Čech cochains and finiteness of bounded H¹"},{"n":4,"after":[],"title":"feat: holomorphic Čech cocycles extend to larger chart discs up to a coboundary"},{"n":5,"after":[3,4],"title":"feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf"},{"n":6,"after":[1,2,3,4,5],"title":"feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"finite-dimensional-h1-structure-sheaf","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":["riemann-surface-structure-sheaf-h1"],"splits":[{"n":1,"after":[],"title":"feat: Schwartz's theorem on compact perturbations of surjections"},{"n":2,"after":[],"title":"feat: bounded holomorphic maps on a complex manifold and Montel's theorem"},{"n":3,"after":[1,2],"title":"feat: bounded holomorphic Čech cochains and finiteness of bounded H¹"},{"n":4,"after":[],"title":"feat: holomorphic Čech cocycles extend to larger chart discs up to a coboundary"},{"n":5,"after":[3,4],"title":"feat: bounded holomorphic H¹ of a compact Riemann surface is finite dimensional"},{"n":6,"after":[5],"title":"feat: H¹ of the structure sheaf is computed by bounded cocycles on a chart-disc cover"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional"}]}-->
 
 # Lookahead: `finite-dimensional-h1-structure-sheaf` (ModularForms, Layer 10B (ii))
 
 Target: `dim H¹(X, 𝒪_D) < ∞` for a compact Riemann surface `X` and a divisor `D`
 (Forster, *Lectures on Riemann Surfaces*, §14). Built on `main` at
-`afa08a3ed16fb167e35de371afb1eb03fbc5913a` (re-merged this round, no new commits on `main`;
+`afa08a3ed16fb167e35de371afb1eb03fbc5913a` (re-merged on 2026-11-06, no new commits on `main`;
 `lake build` and `lookahead-check` green). Status: **partial**.
+
+**This round (2026-11-06, second session):** the supplier-independent half of Forster 14.9 is
+now closed. Split 4 gained the bounds Forster's argument needs (the partition-of-unity
+splitting is bounded by the cocycle; the coboundary `η` is bounded on relatively compact
+`V i`), and the new split 5 proves that bounded holomorphic cocycles on nested chart-disc covers
+`V ⋐ U ⋐ U'` lift (`exists_restrictCocycles_add_d₀Cocycles_eq`), so that **bounded holomorphic
+`H¹` of a compact Riemann surface is finite dimensional on an explicit finite chart-disc cover**
+(`exists_chart_ball_cover_finiteDimensional_isCompl_range_d₀Cocycles`). What remains is only the
+comparison of this bounded `H¹` with the sheaf-theoretic `Ȟ¹` (needs the supplier) and the
+induction over divisors.
 
 ## Stubs: none
 
@@ -120,8 +130,11 @@ a real model `I`, `IsManifold I ∞ M`, `M` Hausdorff and σ-compact, `E` finite
   `∑ᶠ k, ρ k • ξ k i` is `C^n` on `U i`.
 * `TauCeti.SmoothPartitionOfUnity.eq_finsum_smul_sub_finsum_smul_of_isSubordinate`: under the
   cocycle relation `ξ i j + ξ j k = ξ i k`, `ξ i j = gⱼ - gᵢ` for these sums.
+* `TauCeti.SmoothPartitionOfUnity.norm_finsum_smul_le_of_isSubordinate` (this round): the sum
+  `∑ᶠ k, ρ k • ξ k i` is bounded by any common bound of the `ξ k i` (a convex combination).
 * `TauCeti.exists_contMDiffOn_eq_sub_of_cocycle`: **smooth Čech `1`-cocycles split** —
-  `∃ g, (∀ i, ContMDiffOn I 𝓘(ℝ, F) n (g i) (U i)) ∧ ∀ i j, ∀ x ∈ U i ∩ U j, ξ i j x = g j x - g i x`.
+  `∃ g, (∀ i, ContMDiffOn I 𝓘(ℝ, F) n (g i) (U i)) ∧ (∀ i j, ∀ x ∈ U i ∩ U j, ξ i j x = g j x - g i x) ∧
+  ∀ i C, (∀ k, ∀ x ∈ U k ∩ U i, ‖ξ k i x‖ ≤ C) → ∀ x ∈ U i, ‖g i x‖ ≤ C` (the bound is new).
 
 A Riemann surface `X` (`ChartedSpace ℂ X`, `IsManifold 𝓘(ℂ) n X`) is fed in with the real model
 `𝓘(ℝ, ℂ)` via `main`'s `IsManifold.restrictScalars` and `ContMDiffOn.restrictScalars`
@@ -161,7 +174,40 @@ model `𝓘(ℝ, ℂ)` via `main`'s `IsManifold.restrictScalars_of_ne_zero`, hol
   `X`, `ξ` a holomorphic `1`-cocycle on the `V i`. Then there are a holomorphic `1`-cocycle `ζ` on
   the `U i` and holomorphic `η i` on `V i` with `ζ i j = ξ i j + η j - η i` on `V i ∩ V j`.
   Proof: smooth splitting `ξ i j = g j - g i` (`CechSplitting.lean`), the chart-disc gluing on each
-  `U i` gives `f i`, and `ζ i j = f j - f i`, `η i = f i - g i`.
+  `U i` gives `f i`, and `ζ i j = f j - f i`, `η i = f i - g i`. New this round: a further
+  conclusion that `η i` is bounded on `V i` when `closure (V i)` is compact in `U i` and all
+  `ξ k i` share a bound (`f i` is continuous on `U i`, `g i` is bounded by the cocycle).
+
+### `TauCeti/Geometry/Manifold/ExtChartAt.lean` (existing file, +45 lines, new this round)
+
+The module docstring gains one sentence for the two lemmas below; in its existing sentence on
+precompact chart covers, the word *admit* became *have* (the lookahead check rejects that token
+in changed files outside `TauCeti/Lookahead/`; the port may restore it).
+
+* `TauCeti.closure_extChartAt_source_inter_preimage_ball_subset` (`[ProperSpace E] [T2Space M]`):
+  the closure of the chart ball of radius `r` lies in the chart ball of radius `r' > r` when
+  `ball (extChartAt I x x) r' ⊆ (extChartAt I x).target` (it lies in the compact
+  `e.symm '' closedBall`).
+* `TauCeti.exists_finset_iUnion_extChartAt_preimage_ball_eq_univ` (`[I.Boundaryless]
+  [CompactSpace M]`): radii `R x > 0` with chart balls inside the chart targets, and for any
+  `c > 0` a finite set of points whose chart balls of radii `c * R x` cover `M`.
+
+### `TauCeti/Geometry/Manifold/Complex/BoundedCechLifting.lean` (new this round, 166 lines)
+
+For a compact Hausdorff Riemann surface `X` (`ChartedSpace ℂ X`, `IsManifold 𝓘(ℂ) 1 X`), in
+namespace `TauCeti.BoundedCech`:
+
+* `exists_restrictCocycles_add_d₀Cocycles_eq` (**Forster 14.7, bounded form**): finite `ι`,
+  `U' i` chart discs, `V U : ι → Opens X` with `closure (V i) ⊆ U i`, `closure (U i) ⊆ U' i`,
+  `⋃ V = univ`. Every `ξ : cocycles 𝓘(ℂ) V` is `restrictCocycles _ ζ + d₀Cocycles 𝓘(ℂ) V η` with
+  `ζ : cocycles 𝓘(ℂ) U`, `η : cochains₀ 𝓘(ℂ) V`. (Zero-extend `ξ`, apply split 4 on the `U'`
+  discs, bound `ζ` on `U i ∩ U j` by compact closure, `η` by split 4's new bound.)
+* `exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball`: hence (split 3) the bounded
+  coboundaries on `V` have a finite-dimensional complement in the bounded cocycles.
+* `exists_chart_ball_cover_finiteDimensional_isCompl_range_d₀Cocycles` (**Forster 14.9 for
+  bounded cochains**): a finite set `t`, radii `R`, and chart discs `V i` of radius `4⁻¹ * R i`
+  covering `X`, with a finite-dimensional complement of the bounded coboundaries in the bounded
+  cocycles on `V` (discs of radii `2⁻¹ * R`, `R` as `U`, `U'`).
 
 This is split 4(a) of the previous plan, now done: it needed no supplier.
 
@@ -182,40 +228,45 @@ This is split 4(a) of the previous plan, now done: it needed no supplier.
    `IsCompactOperator.piMap` and the `BoundedCech` namespace listed above. Needs: 1, 2.
    **On the branch.**
 4. **feat: holomorphic Čech cocycles extend to larger chart discs up to a coboundary** —
-   `Geometry/Manifold/PartitionOfUnity/CechSplitting.lean` (95),
+   `Geometry/Manifold/PartitionOfUnity/CechSplitting.lean` (107),
    `Analysis/Complex/Wirtinger/DolbeaultLemma.lean` (+70),
-   `Geometry/Manifold/Complex/DolbeaultGluing.lean` (158). Adds the three `CechSplitting`
+   `Geometry/Manifold/Complex/DolbeaultGluing.lean` (167). Adds the four `CechSplitting`
    theorems, `ContDiffOn.conjWirtingerDeriv_apply_one`,
    `exists_contDiffOn_differentiableOn_sub_of_ball`,
    `exists_contMDiffOn_mdifferentiableOn_sub_of_chart_ball`,
-   `exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball`. Needs: none. **On the branch.**
-5. **feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf** —
-   new file, *needs the supplier* for part (b). For finite covers `𝔚 ⋐ 𝔙 ⋐ 𝔘 ⋐ 𝔘*` of compact
-   `X` by chart discs: (a) every `ξ ∈ BoundedCech.cocycles I 𝔙` is
-   `restrictCocycles ζ + d₀Cocycles η` with `ζ ∈ cocycles I 𝔘` — apply split 4 to the `𝔘*` discs
-   (with `V i := 𝔙 i`) and bound `ζ`, `η` on `𝔘 ⋐ 𝔘*`, `𝔙` with
-   `MDifferentiableOn.exists_forall_norm_le_of_isCompact_closure` (split 2); this is exactly the
-   hypothesis of `exists_finiteDimensional_isCompl_range_d₀Cocycles` (split 3); (b) the
-   cover-colimit `Ȟ¹(X, 𝒪)` on `main` is a quotient of the bounded cocycles on `𝔚` modulo bounded
-   coboundaries (Leray for disc covers + boundedness on `𝔚 ⋐ 𝔙`). Needs: 3, 4 and the supplier's
-   Leray comparison for disc covers (#28963 + #28407 + #29154 + the passage to coordinate discs and
-   `ModuleCat ℂ` coefficients).
-6. **feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional** —
+   `exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball` (with the bounds). Needs: none.
+   **On the branch.**
+5. **feat: bounded holomorphic H¹ of a compact Riemann surface is finite dimensional** —
+   `Geometry/Manifold/ExtChartAt.lean` (+45), `Geometry/Manifold/Complex/BoundedCechLifting.lean`
+   (166). Adds `closure_extChartAt_source_inter_preimage_ball_subset`,
+   `exists_finset_iUnion_extChartAt_preimage_ball_eq_univ`,
+   `BoundedCech.exists_restrictCocycles_add_d₀Cocycles_eq`,
+   `BoundedCech.exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball`,
+   `BoundedCech.exists_chart_ball_cover_finiteDimensional_isCompl_range_d₀Cocycles`.
+   Needs: 3, 4. **On the branch.** (The two `ExtChartAt` lemmas could also go first as their own
+   small PR; they are general manifold topology.)
+6. **feat: H¹ of the structure sheaf is computed by bounded cocycles on a chart-disc cover** —
+   new file, *needs the supplier*. For the cover `V` of split 5 and a smaller concentric cover
+   `W ⋐ V` (radii `8⁻¹ * R`): `Ȟ¹(X, 𝒪)` (cover-colimit, `ModuleCat ℂ`) is a quotient of
+   `cocycles 𝓘(ℂ) W` modulo the coboundaries — by the supplier's Leray comparison for covers by
+   `𝒪`-acyclic discs, and boundedness of holomorphic cochains on `W ⋐ V` (restrict with
+   `MDifferentiableOn.exists_forall_norm_le_of_isCompact_closure`, split 2). Combined with
+   split 5 (applied to `W ⋐ V ⋐ U` instead), `dim Ȟ¹(X, 𝒪) < ∞`. Needs: 5 and the supplier.
+7. **feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional** —
    the exported theorem, `FiniteDimensional ℂ` of
    `(TauCeti.Topology.cechCohomology (TopCat.of X) (ModuleCat ℂ) 1).obj (divisorSheaf D).obj`
    (statement checked above; name to follow the supplier's final `H¹` naming).
-   `D = 0` from splits 3 and 5; general `D` by induction along `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`
+   `D = 0` from split 6; general `D` by induction along `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`
    (`divisorSheafMapOfLE` on `main`) and the long exact Čech sequence
    (`Topology/Sheaves/Cech/Sheafification.lean`, `CategoryTheory/.../Cech/LongExactSequence.lean`).
-   Needs: 1, 2, 3, 4, 5.
+   Needs: 1–6.
 
 ## What remains
 
-Splits 5–6. Split 5(a) needs no supplier any more: Forster 14.7 is proved (split 4) for
-unbounded holomorphic cochains; what remains is the bookkeeping into `BoundedCech` cochains
-(choose `𝔘 ⋐ 𝔘*` chart discs of smaller radius, bound by compact closure, build the elements of
-`cocycles I 𝔘` and `cochains₀ I 𝔙`). Split 5(b) waits for the supplier
-`riemann-surface-structure-sheaf-h1` to land the degree-one Leray comparison for finite covers by
-coordinate discs of a Riemann surface (its parts #28963, #28407, #29154 are open, and none pins
-that statement, so there is still nothing to stub). Split 6's statement is already expressible on
-`main`.
+Splits 6–7. Everything not involving sheaf cohomology is proved: finiteness of bounded
+holomorphic `H¹` on an explicit finite chart-disc cover of a compact Riemann surface (split 5).
+Split 6 waits for the supplier `riemann-surface-structure-sheaf-h1` to land the degree-one
+Leray comparison for finite covers by coordinate discs of a Riemann surface with `ModuleCat ℂ`
+coefficients (its parts #28963, #28407, #29154 are open as of 2026-11-06; #29154 states only
+`subsingleton_H'_one_of_isZero_cechCohomology`, and nothing pins the disc-cover comparison, so
+there is still nothing to stub). Split 7's statement is already expressible on `main`.

@@ -20,9 +20,12 @@ form used to transport measures between a manifold and coordinates.
 
 Before choosing a measurable structure on the manifold, chart measurability expresses
 measurability in each preferred chart. When the chart space `H` is locally compact, compact sets
-admit finite open chart covers whose coordinate images lie in compact subsets of the chart targets,
+have finite open chart covers whose coordinate images lie in compact subsets of the chart targets,
 even without Hausdorffness. On a sigma-compact Hausdorff manifold these compact coordinate sets
-can instead be chosen to give a locally finite cover of the whole manifold.
+can instead be chosen to give a locally finite cover of the whole manifold. For a Hausdorff
+manifold modelled on a proper space, the closure of a chart ball lies in every larger chart ball
+contained in the chart target, and a compact boundaryless manifold is covered by finitely many
+chart balls of any prescribed fraction of admissible radii.
 
 The extended chart of a product manifold has the product of the targets of the factor charts as
 its target (`TauCeti.extChartAt_prod_target`).
@@ -365,6 +368,47 @@ theorem exists_finite_precompact_chart_cover [LocallyCompactSpace H] {s : Set M}
   · intro x hx
     obtain ⟨y, hy, hxy⟩ := Set.mem_iUnion₂.mp (ht hx)
     exact Set.mem_iUnion.mpr ⟨t.equivFin ⟨y, hy⟩, by simpa [α] using hxy⟩
+
+/-- On a Hausdorff manifold modelled on a proper space, the closure of the chart ball of radius
+`r` about `x` lies in the chart ball of any radius `r' > r` whose coordinate ball is contained in
+the chart target. -/
+theorem closure_extChartAt_source_inter_preimage_ball_subset [ProperSpace E] [T2Space M] (x : M)
+    {r r' : ℝ} (hrr' : r < r')
+    (hr' : Metric.ball (extChartAt I x x) r' ⊆ (extChartAt I x).target) :
+    closure ((extChartAt I x).source ∩ extChartAt I x ⁻¹' Metric.ball (extChartAt I x x) r) ⊆
+      (extChartAt I x).source ∩ extChartAt I x ⁻¹' Metric.ball (extChartAt I x x) r' := by
+  set e := extChartAt I x
+  have hK : Metric.closedBall (e x) r ⊆ e.target :=
+    (Metric.closedBall_subset_ball hrr').trans hr'
+  -- The chart ball lies in the compact image `e.symm '' closedBall (e x) r`.
+  have hc : IsCompact (e.symm '' Metric.closedBall (e x) r) :=
+    (isCompact_closedBall _ _).image_of_continuousOn ((continuousOn_extChartAt_symm x).mono hK)
+  have hsub : e.source ∩ e ⁻¹' Metric.ball (e x) r ⊆ e.symm '' Metric.closedBall (e x) r :=
+    fun y hy ↦ ⟨e y, Metric.ball_subset_closedBall hy.2, e.left_inv hy.1⟩
+  refine (closure_minimal hsub hc.isClosed).trans ?_
+  rintro _ ⟨z, hz, rfl⟩
+  refine ⟨e.map_target (hK hz), ?_⟩
+  change e (e.symm z) ∈ Metric.ball (e x) r'
+  rw [e.right_inv (hK hz)]
+  exact Metric.closedBall_subset_ball hrr' hz
+
+/-- A compact manifold with a boundaryless model is covered by finitely many chart balls: there
+are radii `R x > 0` with the coordinate ball of radius `R x` inside the chart target at `x`, and
+for any `c > 0` finitely many chart balls of radii `c * R x` cover the manifold. -/
+theorem exists_finset_iUnion_extChartAt_preimage_ball_eq_univ [I.Boundaryless] [CompactSpace M]
+    {c : ℝ} (hc : 0 < c) :
+    ∃ t : Finset M, ∃ R : M → ℝ, (∀ x, 0 < R x) ∧
+      (∀ x, Metric.ball (extChartAt I x x) (R x) ⊆ (extChartAt I x).target) ∧
+      ⋃ x ∈ t, (extChartAt I x).source ∩
+        extChartAt I x ⁻¹' Metric.ball (extChartAt I x x) (c * R x) = Set.univ := by
+  have h (x : M) : ∃ R > 0, Metric.ball (extChartAt I x x) R ⊆ (extChartAt I x).target :=
+    Metric.isOpen_iff.1 (isOpen_extChartAt_target x) _ (mem_extChartAt_target x)
+  choose R hR hRt using h
+  obtain ⟨t, -, ht⟩ := isCompact_univ.elim_nhds_subcover (fun x ↦ (extChartAt I x).source ∩
+      extChartAt I x ⁻¹' Metric.ball (extChartAt I x x) (c * R x))
+    (fun x _ ↦ (isOpen_extChartAt_preimage' x Metric.isOpen_ball).mem_nhds
+      ⟨mem_extChartAt_source x, Metric.mem_ball_self (mul_pos hc (hR x))⟩)
+  exact ⟨t, R, hR, hRt, Set.univ_subset_iff.1 ht⟩
 
 /-- A locally compact, sigma-compact Hausdorff manifold has a locally finite cover by compact
 coordinate sets in preferred extended charts. Their inverse images cover the manifold, including

@@ -112,7 +112,9 @@ theorem exists_contMDiffOn_mdifferentiableOn_sub_of_chart_ball {ι : Type*} {V :
 `X` be a Hausdorff σ-compact Riemann surface, `U i` the disc of radius `R i` about `x i` in the
 chart at `x i` (lying in the chart target), and `V i ⊆ U i` open sets covering `X`. Every
 holomorphic Čech `1`-cocycle `ξ` on the `V i` is `ζ + δ(-η)` there, for a holomorphic
-`1`-cocycle `ζ` on the `U i` and holomorphic `η i` on `V i`. -/
+`1`-cocycle `ζ` on the `U i` and holomorphic `η i` on `V i`. Moreover `η i` is bounded on `V i`
+when `closure (V i)` is compact and contained in `U i` and all `ξ k i` are bounded on
+`V k ∩ V i` by one constant. -/
 theorem exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball [T2Space X]
     [SigmaCompactSpace X] {ι : Type*} {x : ι → X} {R : ι → ℝ} {U V : ι → Set X}
     (hR : ∀ i, ball (extChartAt 𝓘(ℂ) (x i) (x i)) (R i) ⊆ (extChartAt 𝓘(ℂ) (x i)).target)
@@ -125,23 +127,26 @@ theorem exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball [T2Space X]
       (∀ i j, MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ, W) (ζ i j) (U i ∩ U j)) ∧
       (∀ i j k, ∀ y ∈ U i ∩ U j ∩ U k, ζ i j y + ζ j k y = ζ i k y) ∧
       (∀ i, MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ, W) (η i) (V i)) ∧
-      ∀ i j, ∀ y ∈ V i ∩ V j, ζ i j y = ξ i j y + η j y - η i y := by
+      (∀ i j, ∀ y ∈ V i ∩ V j, ζ i j y = ξ i j y + η j y - η i y) ∧
+      ∀ i (C : ℝ), (∀ k, ∀ y ∈ V k ∩ V i, ‖ξ k i y‖ ≤ C) → IsCompact (closure (V i)) →
+        closure (V i) ⊆ U i → ∃ C', ∀ y ∈ V i, ‖η i y‖ ≤ C' := by
   have : IsManifold 𝓘(ℝ, ℂ) ∞ X := IsManifold.restrictScalars_of_ne_zero ∞ one_ne_zero ‹_›
   -- A smooth splitting `ξ i j = g j - g i` of the cocycle.
   have hξs (i j : ι) : ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, W) (⊤ : ℕ∞) (ξ i j) (V i ∩ V j) := by
     simpa only [modelWithCornersSelf_restrictScalars] using
       ((hξ i j).contMDiffOn ((hV i).inter (hV j)) (n := ∞)).restrictScalars ℝ
-  obtain ⟨g, hg, hξg⟩ := exists_contMDiffOn_eq_sub_of_cocycle hV hVcov hξs hcocycle
+  obtain ⟨g, hg, hξg, hgC⟩ := exists_contMDiffOn_eq_sub_of_cocycle hV hVcov hξs hcocycle
   have hgg (k l : ι) : MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ, W) (g k - g l) (V k ∩ V l) :=
     ((hξ l k).mono (inter_comm _ _).le).congr fun y hy ↦ by
       simp [hξg l k y ⟨hy.2, hy.1⟩]
   -- On each disc `U i`, one smooth `f i` with every `f i - g k` holomorphic.
   have hf (i : ι) := exists_contMDiffOn_mdifferentiableOn_sub_of_chart_ball hV hg hgg (hR i)
     (by simp [hVcov])
-  choose f _ hfg using hf
-  simp only [← hU] at hfg
+  choose f hfs hfg using hf
+  simp only [← hU] at hfs hfg
   refine ⟨fun i j ↦ f j - f i, fun i ↦ f i - g i, fun i j y hy ↦ ?_, fun i j k y _ ↦ ?_,
-    fun i ↦ (hfg i i).mono fun y hy ↦ ⟨hVU i hy, hy⟩, fun i j y hy ↦ ?_⟩
+    fun i ↦ (hfg i i).mono fun y hy ↦ ⟨hVU i hy, hy⟩, fun i j y hy ↦ ?_,
+    fun i C hC hVc hVU' ↦ ?_⟩
   · -- Near `y ∈ V k`, `f j - f i = (f j - g k) - (f i - g k)`.
     obtain ⟨k, hk⟩ := mem_iUnion.1 (hVcov.ge (mem_univ y))
     have hUo (l : ι) : IsOpen (U l) := by
@@ -154,5 +159,9 @@ theorem exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball [T2Space X]
     exact ((hd.congr fun z _ ↦ by simp).mdifferentiableAt hs).mdifferentiableWithinAt
   · simp
   · simp [hξg i j y hy]
+  · -- `η i = f i - g i`, with `f i` continuous on `U i ⊇ closure (V i)` and `‖g i‖ ≤ C`.
+    obtain ⟨C', hC'⟩ := hVc.exists_bound_of_continuousOn ((hfs i).continuousOn.mono hVU')
+    exact ⟨C' + C, fun y hy ↦ (norm_sub_le (f i y) (g i y)).trans
+      (add_le_add (hC' y (subset_closure hy)) (hgC i C hC y hy))⟩
 
 end TauCeti
