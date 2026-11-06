@@ -50,6 +50,14 @@ The round resuming at `aaa5ce06170` (14:38 UTC) found `main` still at `385ec2ddd
 is then a nonzero multiple of `2πi`) and the combined
 `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero`, in `Data.lean`.
 
+The round resuming at `78047c48599` (15:00 UTC) found `main` still at `385ec2ddd8d` and PR
+#28644 still open at head `583a153b95f`. It fed the measure's height bounds into Liouville's
+inequality: `NumberField.exp_neg_le_norm_prod_zpow_sub_one_of_le`, in
+`FundamentalInequality.lean`. From `h(α_j) ≤ a_j` and `|s_j| ≤ R`, it gives
+`‖α^s - 1‖ ≥ exp(-([K:ℚ] log 2 + R Σ a_j))` when `α^s ≠ 1`. With `a_j = log A_j` and
+`R = T₀/2`, this is the `δ` that split 5 hands to
+`min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero`.
+
 What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
 
@@ -205,8 +213,10 @@ In the new file `Interpolation/Residual.lean`:
          `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero` combines both
          cases under `Λ ≠ 0`.
 
-       Split 5 only has to feed the measure's height bounds `h(α_j) ≤ log A_j`, `|s_j| < T₀/2`
-       into the exponent.
+       - `NumberField.exp_neg_le_norm_prod_zpow_sub_one_of_le` feeds the measure's height
+         bounds `h(α_j) ≤ log A_j` and `|s_j| ≤ T₀/2` into the exponent.
+
+       Split 5 only has to instantiate these with the measure's parameters.
 
 ## Splits
 
@@ -261,6 +271,8 @@ In the new file `Interpolation/Residual.lean`:
      `NumberField.exp_neg_le_norm_prod_zpow_sub_one`
      (`TauCeti/NumberTheory/Height/FundamentalInequality.lean`, +37), Liouville's inequality for
      `α^s - 1` at an infinite place and under a complex embedding;
+   - `NumberField.exp_neg_le_norm_prod_zpow_sub_one_of_le` (same file, +15): the same under
+     height bounds `h(α_j) ≤ a_j` and exponent bounds `|s_j| ≤ R`;
    - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +19):
      `δ ≤ |α^s - 1|` gives `min 1 (δ/2) ≤ |s_m Λ|`;
    - `two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm` and
@@ -352,3 +364,6 @@ In the new file `Interpolation/Residual.lean`:
     `runLinter` passed on `Interpolation.Data`. `main` and pinned Mathlib have no lower bound for
     a linear form in logarithms whose exponential is `1`; the new lemma reuses Mathlib's
     `Complex.exp_eq_one_iff`, `Int.one_le_abs` and `Real.two_le_pi`.
+  - 2026-11-06, about 15:10 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `Height.FundamentalInequality`. The new corollary reuses Mathlib's
+    `zero_le_logHeight₁`. `main` and pinned Mathlib have no Liouville bound in this form.

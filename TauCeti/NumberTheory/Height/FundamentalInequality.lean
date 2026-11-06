@@ -52,6 +52,8 @@ can only increase it. At a single place the two bounds read
 * `NumberField.InfinitePlace.exp_neg_le_apply_prod_zpow_sub_one` and
   `NumberField.exp_neg_le_norm_prod_zpow_sub_one`: Liouville's inequality for `∏ j, α j ^ s j - 1`
   at an infinite place and under a complex embedding.
+* `NumberField.exp_neg_le_norm_prod_zpow_sub_one_of_le`: the same under a complex embedding, with
+  bounds on the heights of the `α j` and on the exponents `|s j|`.
 
 The logarithmic form of the single-place bounds, for the normalized absolute value at a place, is
 `TauCeti.GlobalNumberFields.abs_log_normalizedAbsValue_le_logHeight₁`.
@@ -220,6 +222,19 @@ theorem exp_neg_le_norm_prod_zpow_sub_one (φ : K →+* ℂ) {ι : Type*} [Finty
     Real.exp (-(Module.finrank ℚ K * Real.log 2 + ∑ j, |(s j : ℝ)| * logHeight₁ (α j))) ≤
       ‖∏ j, φ (α j) ^ s j - 1‖ := by
   simpa [InfinitePlace.apply] using (InfinitePlace.mk φ).exp_neg_le_apply_prod_zpow_sub_one α s h
+
+/-- Liouville's inequality under a complex embedding, with bounds `h(α j) ≤ a j` on the heights
+and `|s j| ≤ R` on the exponents: if `∏ j, α j ^ s j ≠ 1`, then
+`‖∏ j, φ (α j) ^ s j - 1‖ ≥ exp (-([K : ℚ] log 2 + R ∑ j, a j))`. -/
+theorem exp_neg_le_norm_prod_zpow_sub_one_of_le (φ : K →+* ℂ) {ι : Type*} [Fintype ι]
+    (α : ι → K) (s : ι → ℤ) (h : ∏ j, α j ^ s j ≠ 1) {a : ι → ℝ} {R : ℝ}
+    (ha : ∀ j, logHeight₁ (α j) ≤ a j) (hs : ∀ j, |(s j : ℝ)| ≤ R) :
+    Real.exp (-(Module.finrank ℚ K * Real.log 2 + R * ∑ j, a j)) ≤
+      ‖∏ j, φ (α j) ^ s j - 1‖ := by
+  refine le_trans ?_ (exp_neg_le_norm_prod_zpow_sub_one φ α s h)
+  rw [Real.exp_le_exp, neg_le_neg_iff, add_le_add_iff_left, Finset.mul_sum]
+  exact Finset.sum_le_sum fun j _ ↦
+    mul_le_mul (hs j) (ha j) (zero_le_logHeight₁ _) ((abs_nonneg _).trans (hs j))
 
 /-! ### Examples -/
 
