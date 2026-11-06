@@ -27,7 +27,8 @@ the pullback along `ε` that along the unit of `ε⁻¹ ⊣ ε_*` (`equiv₀_eps
 pullback along `a_X` is that along the unit of `a_X⁻¹ ⊣ a_{X,*}` (`equiv₀_aXH`). Hence in degree
 zero the pullback along `π_X` is bijective, since `π_X⁻¹` is fully faithful
 (`piXH_zero_bijective`), and the pullbacks along `ε` and `a_X` are bijective on sheaves that are
-already fppf sheaves (`epsilonFppfEtaleH_zero_bijective`, `aXH_zero_bijective`).
+already fppf sheaves (`epsilonFppfEtaleH_zero_bijective`, `aXH_zero_bijective`), in particular
+along `ε` on fpqc sheaves such as `𝔾_a` and `𝔾_m` (`epsilonFppfEtaleH_zero_bijective_of_fpqc`).
 
 The coefficient universe `w` is arbitrary: the categories of abelian sheaves are assumed to have
 `Ext` groups, and `π_X⁻¹` to be exact, which is an instance for `w = u + 1`.
@@ -43,6 +44,8 @@ The coefficient universe `w` is arbitrary: the categories of abelian sheaves are
 * `AlgebraicGeometry.Scheme.piXH_zero_bijective`, `epsilonFppfEtaleH_zero_bijective`,
   `aXH_zero_bijective`: in degree zero, the pullbacks are bijective (along `ε` and `a_X`, on
   sheaves that are already fppf sheaves).
+* `AlgebraicGeometry.Scheme.epsilonFppfEtaleH_zero_bijective_of_fpqc`: in degree zero, the
+  pullback along `ε` is bijective on fpqc sheaves.
 
 ## References
 
@@ -104,6 +107,17 @@ theorem epsilonFppfEtaleH_zero_bijective (F : Sheaf (etaleTopology.over X) AddCo
     inferInstanceAs (PreservesFiniteColimits (epsilonFppfEtale X _))
   Sheaf.H.pullback_sheafInverseImage_zero_bijective (etaleTopology_over_le_fppfTopology_over X)
     (Over.mkIdTerminal (X := X)) F hF
+
+/-- **`ε` induces a bijection on global sections of fpqc sheaves**: in degree zero, the pullback of
+cohomology along `ε` is bijective on an fpqc sheaf regarded as an étale sheaf. This applies to the
+big-site sheaves `𝔾_a` and `𝔾_m`, and is the degree-zero case of the comparison of their étale and
+fppf cohomology. -/
+theorem epsilonFppfEtaleH_zero_bijective_of_fpqc
+    (F : Sheaf (fpqcTopology.over X) AddCommGrpCat.{w}) :
+    Function.Bijective (epsilonFppfEtaleH X
+      ((sheafDirectImageOfLE AddCommGrpCat.{w} ((etaleTopology_over_le_fppfTopology_over X).trans
+        (fppfTopology_over_le_fpqcTopology_over X))).obj F) 0) :=
+  epsilonFppfEtaleH_zero_bijective X _ (F.property.of_le (fppfTopology_over_le_fpqcTopology_over X))
 
 end Fppf
 

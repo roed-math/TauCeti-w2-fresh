@@ -62,6 +62,10 @@ section Fppf
 theorem etaleTopology_over_le_fppfTopology_over : etaleTopology.over X ≤ fppfTopology.over X :=
   fun _ _ hS ↦ etaleTopology_le_fppfTopology _ hS
 
+/-- The fppf topology on schemes over `X` is coarser than the fpqc topology. -/
+theorem fppfTopology_over_le_fpqcTopology_over : fppfTopology.over X ≤ fpqcTopology.over X :=
+  fun _ _ hS ↦ fppfTopology_le_fpqcTopology _ hS
+
 variable [HasWeakSheafify (fppfTopology.over X) A]
 
 /-- The inverse image `ε⁻¹` of the morphism of topoi `ε` from the big fppf site to the big étale

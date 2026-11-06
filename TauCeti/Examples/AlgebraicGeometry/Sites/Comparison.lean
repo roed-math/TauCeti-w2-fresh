@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 import Mathlib.AlgebraicGeometry.Sites.AffineEtale
+import TauCeti.AlgebraicGeometry.Sites.Big.StructureSheaf
 import TauCeti.AlgebraicGeometry.Sites.CohomologyComparison
 import TauCeti.AlgebraicGeometry.Sites.Comparison
 import TauCeti.AlgebraicGeometry.Sites.Nisnevich.Cohomology
@@ -20,8 +21,9 @@ The comparison of the small étale topology with itself is the identity, the inv
 and commutes with base change, the inverse image from Nisnevich to étale abelian sheaves is exact
 and commutes with base change, and the inverse image `a_X⁻¹` from small étale to big fppf
 abelian sheaves is exact and preserves the constant sheaf `ℤ/2`. On cohomology, the pullback along
-`a_X` is the pullback along `π_X` followed by the pullback along `ε`, and the pullbacks from the
-Zariski site to the small Nisnevich and étale sites compose.
+`a_X` is the pullback along `π_X` followed by the pullback along `ε`, the pullback along `ε` is
+bijective in degree zero on `𝔾_a` and `𝔾_m`, and the pullbacks from the Zariski site to the small
+Nisnevich and étale sites compose.
 -/
 
 open CategoryTheory Limits AlgebraicGeometry GrothendieckTopology Scheme
@@ -109,6 +111,20 @@ example (X : Scheme.{u}) [HasExt.{u + 1} (Sheaf X.smallEtaleTopology AddCommGrpC
     (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{u + 1}) :
     Function.Bijective (piXH X F 0) :=
   piXH_zero_bijective X F
+
+-- In degree zero, the pullback of cohomology along `ε` is bijective on `𝔾_a` and on `𝔾_m`.
+example (X : Scheme.{u}) [HasSheafify (etaleTopology.over X) AddCommGrpCat.{u}]
+    [HasSheafify (fppfTopology.over X) AddCommGrpCat.{u}]
+    [HasExt.{u + 1} (Sheaf (etaleTopology.over X) AddCommGrpCat.{u})]
+    [HasExt.{u + 1} (Sheaf (fppfTopology.over X) AddCommGrpCat.{u})] :
+    Function.Bijective (epsilonFppfEtaleH X ((sheafDirectImageOfLE AddCommGrpCat.{u}
+        ((etaleTopology_over_le_fppfTopology_over X).trans
+          (fppfTopology_over_le_fpqcTopology_over X))).obj (Ga X)) 0) ∧
+      Function.Bijective (epsilonFppfEtaleH X ((sheafDirectImageOfLE AddCommGrpCat.{u}
+        ((etaleTopology_over_le_fppfTopology_over X).trans
+          (fppfTopology_over_le_fpqcTopology_over X))).obj (Gm X)) 0) :=
+  ⟨epsilonFppfEtaleH_zero_bijective_of_fpqc X (Ga X),
+    epsilonFppfEtaleH_zero_bijective_of_fpqc X (Gm X)⟩
 
 -- The pullback of cohomology from the Zariski site to the small Nisnevich site, followed by the
 -- pullback to the small étale site, is the pullback from the Zariski site to the small étale site.

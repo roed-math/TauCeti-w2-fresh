@@ -43,7 +43,12 @@ degree zero along `J ≤ K` is bijective on `J`-sheaves that are `K`-sheaves
 (`Sheaf.H.pullback_sheafInverseImage_zero_bijective`), hence `epsilonFppfEtaleH_zero_bijective`,
 `etaleToNisnevichH_zero_bijective` and `aXH_zero_bijective` (on sheaves that are already sheaves
 for the finer topology), and `piXH_zero_bijective` unconditionally, since `π_X⁻¹` is fully
-faithful. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
+faithful. Tenth session (2026-11-06): `main` (`afa08a3ed16f`) and the three supplier PR heads are
+unchanged, so the stubs are unchanged. Added the degree-zero comparison along `ε` for fpqc sheaves,
+`epsilonFppfEtaleH_zero_bijective_of_fpqc` (with `fppfTopology_over_le_fpqcTopology_over`), which
+applies to `main`'s big-site sheaves `Ga` and `Gm` (checked in the examples file): the degree-zero
+case of the étale/fppf half of `quasiCoherent_topology_comparison` for `O` and of
+`smoothGroup_fppf_etale_comparison` for `𝔾_m`. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
 
@@ -185,10 +190,10 @@ Files:
     `sheafInverseImageCompSheafPullbackIso` (pullback along a functor continuous for both pairs
     of topologies, the general form of `comparison_baseChange` for small sites, as the conjugate
     of the equality of the direct images).
-- `TauCeti/AlgebraicGeometry/Sites/Comparison.lean` (118 lines, new), namespace
+- `TauCeti/AlgebraicGeometry/Sites/Comparison.lean` (122 lines, new), namespace
   `AlgebraicGeometry.Scheme`:
-  - `etalePrecoverage_le_fppfPrecoverage`, `etaleTopology_le_fppfTopology` and
-    `etaleTopology_over_le_fppfTopology_over`;
+  - `etalePrecoverage_le_fppfPrecoverage`, `etaleTopology_le_fppfTopology`,
+    `etaleTopology_over_le_fppfTopology_over` and `fppfTopology_over_le_fpqcTopology_over`;
   - `epsilonFppfEtale X A` (the inverse image `ε⁻¹`) with `epsilonFppfEtale_obj`,
     `epsilonFppfEtaleObjIsoOfIsSheaf`, `epsilonFppfEtaleAdjunction`, the `IsLeftAdjoint` and `PreservesFiniteLimits` instances,
     `constantSheafCompEpsilonFppfEtaleIso`, and `epsilonFppfEtaleBaseChangeIso` (base change
@@ -196,7 +201,7 @@ Files:
     `constantSheafCompEpsilonFppfEtaleIso` carry `@[expose]`: the cohomology file of split 5
     unfolds them to the general `sheafInverseImage` statements.
 
-About 345 lines in total.
+About 350 lines in total.
 
 ### Split 2: `feat: left Kan extension along a flat functor is exact without smallness assumptions`
 
@@ -298,7 +303,7 @@ Files:
   `equiv₀_pullback_sheafPullback`) and `Sheaf.H.pullback_sheafInverseImage_zero_bijective` (that
   pullback is bijective in degree zero on a `J`-sheaf that is a `K`-sheaf, the unit being an
   isomorphism there).
-- `TauCeti/AlgebraicGeometry/Sites/CohomologyComparison.lean` (219 lines, new), namespace
+- `TauCeti/AlgebraicGeometry/Sites/CohomologyComparison.lean` (233 lines, new), namespace
   `AlgebraicGeometry.Scheme`: the `Additive` instances for `epsilonFppfEtale`, `piX` and `aX` on
   abelian sheaves; `epsilonFppfEtaleH X F n : Hⁿ((Sch/X)_ét, F) →+ Hⁿ((Sch/X)_fppf, ε⁻¹ F)`,
   `piXH X F n : Hⁿ(X_ét, F) →+ Hⁿ((Sch/X)_ét, π_X⁻¹ F)` and
@@ -312,11 +317,12 @@ Files:
   restriction of global sections along the unit of `a_X⁻¹ ⊣ a_{X,*}`); `piXH_zero_bijective`
   (`π_X⁻¹` is fully faithful), `epsilonFppfEtaleH_zero_bijective` (on étale sheaves that are fppf
   sheaves) and `aXH_zero_bijective` (when `π_X⁻¹ F` is an fppf sheaf): the degree-zero case of the
-  comparison theorems. The coefficient universe
+  comparison theorems; and `epsilonFppfEtaleH_zero_bijective_of_fpqc` (bijective on fpqc sheaves,
+  such as `main`'s `Ga` and `Gm`, regarded as étale sheaves through `sheafDirectImageOfLE`). The coefficient universe
   is arbitrary, with `HasExt` and the exactness of `π_X⁻¹` as instance hypotheses (the latter an
   instance for `w = u + 1`).
 
-About 310 lines.
+About 325 lines.
 
 ### Split 6: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
 
@@ -383,12 +389,13 @@ Files:
   `nisnevichToZariskiH` and `etaleToNisnevichH`, transported along
   `nisnevichToZariskiCompEtaleToNisnevichIso`, is `Sheaf.H.pullback` along the morphism of sites
   from the étale to the Zariski site with its canonical constant-sheaf comparison).
-- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (127 lines, new): the roadmap checks
+- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (143 lines, new): the roadmap checks
   `test_comparison_id` and `test_aX_constant` (`a_X⁻¹` of the constant sheaf `ℤ/2` is the constant
   fppf sheaf `ℤ/2`), the same for `ε⁻¹`, exactness of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on
   abelian sheaves, base change of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on abelian sheaves, and
   `piXObjIso` on abelian sheaves; on cohomology, `aXH_apply` for `AddCommGrpCat.{u + 1}` (all
-  hypotheses but `HasExt` discharged), `piXH_zero_bijective` for `AddCommGrpCat.{u + 1}`, and `map_etaleToNisnevichH_nisnevichToZariskiH` for
+  hypotheses but `HasExt` discharged), `piXH_zero_bijective` for `AddCommGrpCat.{u + 1}`, `epsilonFppfEtaleH_zero_bijective_of_fpqc` for
+  `main`'s `Ga X` and `Gm X` (importing `TauCeti.AlgebraicGeometry.Sites.Big.StructureSheaf`), and `map_etaleToNisnevichH_nisnevichToZariskiH` for
   `AddCommGrpCat.{u}`.
 
 About 310 lines.
@@ -414,7 +421,8 @@ Still unproved from §2.10:
    and the cohomology maps of splits 5 and 7. It is the statement that `nisnevichToZariskiH`,
    `etaleToNisnevichH`, `piXH` and `epsilonFppfEtaleH` are bijective on `F^a`. In degree zero this
    is the sheaf property of `F^a` for the finer topologies (fpqc descent of quasi-coherent
-   modules), through the `*_zero_bijective` lemmas, which reduce it to the sheaf property; in higher degrees it needs the vanishing of Čech
+   modules), through the `*_zero_bijective` lemmas, which reduce it to the sheaf property (done for
+   `ε` on fpqc sheaves, hence on `F = O` through `main`'s `Ga`, in the tenth session); in higher degrees it needs the vanishing of Čech
    cohomology of `F^a` on affine fpqc coverings (Stacks 35.9.2) and the comparison of Čech and
    derived cohomology. A practical obstacle: `HasExt`
    for `Sheaf X.smallEtaleTopology AddCommGrpCat.{u}` and for the big fppf site currently times
