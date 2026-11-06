@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Chow.FlatPullback.RatEquiv
+import TauCeti.Algebra.BigOperators.Finprod
 import TauCeti.AlgebraicGeometry.Morphisms.ClosedImmersion.Basic
 import TauCeti.AlgebraicGeometry.Scheme.ConstantOnClosed
 
@@ -29,7 +30,10 @@ pulled-back family on `X` has one member for each irreducible component of each 
   `X ×_Y W_j` form a locally finite family;
 * `TauCeti.AlgebraicGeometry.Chow.RatEquivFamily.component_flatPullback_apply`: the summand of a
   member `W'` at a point of `W'` is its multiplicity times the order of the pullback of `r_j`
-  (`TauCeti.AlgebraicGeometry.Scheme.ord_pow`).
+  (`TauCeti.AlgebraicGeometry.Scheme.ord_pow`);
+* `TauCeti.AlgebraicGeometry.Chow.RatEquivFamily.cycle_flatPullback_apply`: the cycle of the
+  pulled-back family is the iterated sum over the members `W_j` and then over the components of
+  `X ×_Y W_j` (`TauCeti.finsum_fiberwise` along `Sigma.fst`).
 -/
 
 @[expose] public section
@@ -173,6 +177,33 @@ theorem RatEquivFamily.component_flatPullback_apply_eq_zero (F : RatEquivFamily 
     (F.flatPullback f K n).component η x = 0 :=
   RatEquivFamily.component_apply_eq_zero_of_notMem_range _ _ fun h ↦
     hx (range_subschemeι_comp_pullback_fst_subset f (F.i η.1) η.2.1 h)
+
+open Limits in
+/-- The summand of the pulled-back family for a component of `X ×_Y W_j` vanishes at the points of
+`X` not over `W_j`. -/
+theorem RatEquivFamily.component_flatPullback_apply_eq_zero_of_notMem_range
+    (F : RatEquivFamily Y k) (η : (F.flatPullback f K n).ι) {x : X}
+    (hx : f x ∉ Set.range (F.i η.1)) : (F.flatPullback f K n).component η x = 0 := by
+  refine RatEquivFamily.component_flatPullback_apply_eq_zero f K n F η fun h ↦ hx ?_
+  have hη : pullback.fst f (F.i η.1) η.2.1 ∈ f ⁻¹' Set.range (F.i η.1) :=
+    ⟨pullback.snd f (F.i η.1) η.2.1, by
+      rw [← Scheme.Hom.comp_apply, ← pullback.condition, Scheme.Hom.comp_apply]⟩
+  exact closure_minimal (Set.singleton_subset_iff.mpr hη)
+    ((F.i η.1).isClosedEmbedding.isClosed_range.preimage f.continuous) h
+
+open Limits in
+/-- The cycle of the pulled-back family, at a point `x` of `X`, is the iterated sum over the members
+`W_j` of `F` and then over the irreducible components of `X ×_Y W_j` of the summands at `x`. -/
+theorem RatEquivFamily.cycle_flatPullback_apply (F : RatEquivFamily Y k) (x : X) :
+    (F.flatPullback f K n).cycle x =
+      ∑ᶠ (j : F.ι) (η : {η : ↥(pullback f (F.i j)) //
+        ∀ η' : ↥(pullback f (F.i j)), η' ⤳ η → η ⤳ η'}),
+          (F.flatPullback f K n).component ⟨j, η⟩ x := by
+  rw [RatEquivFamily.cycle_apply]
+  refine (finsum_fiberwise (α := (F.flatPullback f K n).ι) Sigma.fst _
+    ((F.flatPullback f K n).locallyFinite_support_component.point_finite x)).symm.trans
+      (finsum_congr fun j ↦ ?_)
+  exact (finsum_comp_equiv (Equiv.sigmaSubtype j).symm).symm
 
 end Family
 

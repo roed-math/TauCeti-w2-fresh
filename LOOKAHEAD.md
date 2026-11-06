@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"3a0189695d62134a412200ef4237d0bbb2e95d75","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"7ac4960977499bb4976656e7658c457204e14c04","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
 
 # Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
 
-Built on `main` at `3a0189695d62134a412200ef4237d0bbb2e95d75` (merged in by the sixteenth round). Status: **partial**. Splits 1 and
+Built on `main` at `7ac4960977499bb4976656e7658c457204e14c04` (merged in by the nineteenth round). Status: **partial**. Splits 1 and
 2 (the localisation sequence `localization_exact`) are done. The round of 2026-11-06 found `main`
 unchanged and started split 3: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` now defines the
 cycle-level flat pullback `cycleFlatPullback` with generic-length multiplicities and proves its
@@ -140,6 +140,16 @@ meeting the image of a Noetherian affine open), `range_subschemeι_comp_pullback
 `RatEquivFamily.component_flatPullback_apply_eq_zero` (zero off the closure of `pullback.fst η`),
 and the general `Scheme.ord_pow` (port: next to `Scheme.ord_one` in
 `TauCeti/AlgebraicGeometry/WeilDivisor/Scheme/Order.lean`).
+A nineteenth round on 2026-11-06 merged `main` at `7ac49609774` (on the files this branch uses,
+only `main`'s Weil-divisor files changed, renaming `coheight_eq_one_of_mem_support_toAlgebraicCycle`,
+which the branch does not use; the branch builds unchanged), found #29425 still open at
+`6ce093654c` and #30523 open at `5bb8c7b3d3`, so still no supplier declaration on `main`, and did
+(δ1) in `RatEquivFamily.lean` (now 210 lines): `RatEquivFamily.cycle_flatPullback_apply`
+(the cycle of the pulled-back family at `x` is `Σᶠ j, Σᶠ η, component ⟨j, η⟩ x`, by `main`'s
+`TauCeti.finsum_fiberwise` along `Sigma.fst` and Mathlib's `Equiv.sigmaSubtype`, so no new
+`finsum`-over-sigma lemma was needed), and the first vanishing case of (δ3),
+`RatEquivFamily.component_flatPullback_apply_eq_zero_of_notMem_range` (the summand for a component
+of `X ×_Y W_j` is zero at points `x` with `f x ∉ W_j`).
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -470,14 +480,14 @@ dominant).
    `IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq`). Next: (δ) (the family and (γ) are **done by the eighteenth round**:
    `RatEquivFamily.flatPullback`, `locallyFinite_closure_pullback_fst`, with the summand formulas
    `RatEquivFamily.component_flatPullback_apply` and `component_flatPullback_apply_eq_zero`). What
-   is left of (δ): (δ1) a `finsum` over a sigma type with finite support splits as an iterated
+   is left of (δ): ~~(δ1)~~ (**done by the nineteenth round**, `RatEquivFamily.cycle_flatPullback_apply`) (δ1) a `finsum` over a sigma type with finite support splits as an iterated
    `finsum` (Mathlib has `finprod_curry` for products only), so that
    `(F.flatPullback f K n).cycle x = Σᶠ j, Σᶠ η, component ⟨j, η⟩ x`; (δ2) for fixed `j` and
    `x = pullback.fst x''` of dimension `k + n`, reindex `Σᶠ η` by the components of `X ×_Y W_j`
    through `x''` (the summand for `η` is `m_η · ord_{w_η}(φ r_j)` at the unique `w_η` over `x''`,
    zero when `x''` is not in the closure of `η`) and apply `ord_mul_fiberLength_eq_finsum_ord` to
    `pullback.snd f (F.i j)` at `x''`, with `fiberLength_pullback_snd`; (δ3) the vanishing cases:
-   `x` not over `W_j` (`component_flatPullback_apply_eq_zero`), `x''` over the generic point of
+   `x` not over `W_j` (`component_flatPullback_apply_eq_zero_of_notMem_range`, done by the nineteenth round), `x''` over the generic point of
    `W_j` (both sides zero: `r_j` is a unit in the stalk there, and the generic point is not of
    codimension one), `x` not of dimension `k + n` (both sides zero by dimension). Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
    `X` is indexed by `Σ j, {η' : X ×_Y W_j // η' generic in a component}`, with member
@@ -621,10 +631,12 @@ dominant).
    `Scheme.coheight_eq_one_of_height_apply_genericPoint_eq`,
    `Scheme.IdealSheafData.isLocallyNoetherian_subscheme`, `ord_mul_fiberLength_eq_finsum_ord`
    (seventeenth round); and `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquivFamily.lean`
-   (new, 179 lines, started): `Scheme.ord_pow`, `locallyFinite_closure_pullback_fst`,
+   (new, 210 lines, started): `Scheme.ord_pow`, `locallyFinite_closure_pullback_fst`,
    `range_subschemeι_comp_pullback_fst_subset`, `RatEquivFamily.flatPullback`,
    `RatEquivFamily.component_flatPullback_apply`,
-   `RatEquivFamily.component_flatPullback_apply_eq_zero` (eighteenth round), and
+   `RatEquivFamily.component_flatPullback_apply_eq_zero` (eighteenth round),
+   `RatEquivFamily.cycle_flatPullback_apply`,
+   `RatEquivFamily.component_flatPullback_apply_eq_zero_of_notMem_range` (nineteenth round), and
    (remaining) the cycle identity `(F.flatPullback f K n).cycle = cycleFlatPullback f F.cycle` and
    `cyclesFlatPullback_mem_ratEquiv`. Since `RatEquiv.lean` is already 872 lines, the port should
    open split 4 as two PRs: the local formula (`RatEquiv.lean`, after its stalk lemmas move to a
