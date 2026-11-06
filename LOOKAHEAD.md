@@ -4,15 +4,16 @@
 
 Target: DiophantineApproximationAndTranscendence §3.6, "Rank and multiplicity for the
 interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 9.16, Lemma 9.17;
-§9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`. This round resumed the branch at
-`b285d3cd200` and merged `main` into it. The only conflict was in
-`RingTheory/MvPolynomial/DirectionalOrder.lean`, where `main` had added
-`MvPolynomial.isHomogeneous_iff_forall_eval_smul` next to this branch's
-`MvPolynomial.eval_pderiv_eq_zero_of_forall_eval_add_smul_single`. Both are kept, and the module
-docstring describes both. The earlier round added the counting half of the induction on proper
-subspaces and the translation between index subspaces and grid-point subspaces. This round adds
-no new mathematics: what remains is the multiplicity estimate of split 4, which does not fit in one
-round.
+§9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`. The round of 2026-11-06 resumed the
+branch at `107089e3b11`. `main` had not moved, so the merge was empty, and the branch still builds
+and passes `lookahead-check`. It rechecked supplier PR #28644 at head `583a153b95f`. That PR is
+still open and still adds only the delta rows, their denominators and the separated-row entry,
+none of which the rank argument consumes. That round adds no new mathematics. It recorded that
+`main` and pinned Mathlib still have no zero or multiplicity estimate, Philippon-type or
+otherwise, that split 4 could reuse. Earlier rounds added the material of splits 1–3: the counting
+half of the induction on proper subspaces, and the translation between index subspaces and
+grid-point subspaces. What remains is the multiplicity estimate of split 4, which does not fit in
+one round, and the assembly in split 5.
 
 ## Stubs
 
@@ -206,12 +207,12 @@ In the new file `Interpolation/Residual.lean`:
   and `exists_restrictTotalDegree_linearMap`. A reviewer may ask to make the second public in
   `RingTheory/MvPolynomial/Finrank.lean`.
 - **Checks run.**
-  - `lake build` is green and `lookahead-check` is ok. Both were rerun after this round's merge of
-    `main`.
-  - This round grepped `main` and pinned Mathlib for every helper on the branch. None has
-    landed in the meantime.
-  - Last round, the Batteries environment linters (simpNF, unusedArguments, docBlame, …) passed
-    on all five touched modules. This round's merge changed no declaration, so they were not
+  - `lake build` is green and `lookahead-check` is ok. Both were rerun on 2026-11-06 against
+    `main` at `afa08a3ed16`.
+  - An earlier round grepped `main` and pinned Mathlib for every helper on the branch. None
+    has landed in the meantime.
+  - In an earlier round, the Batteries environment linters (simpNF, unusedArguments, docBlame, …) passed
+    on all five touched modules. Later rounds changed no declaration, so they were not
     rerun. Those runs used the `LintEnvDriver.lean` stand-in, not `scripts/lint-env.sh`, which
     needs `uvx`.
   - Lines are ≤ 100 characters.
