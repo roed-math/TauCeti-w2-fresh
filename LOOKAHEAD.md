@@ -35,7 +35,12 @@ still open at `d327f903b0`, #29451 still open at `ed4b4ac70d`, so still no suppl
 `length_quotient_lsmul_submodule_eq` to the same file: the finite-colength invariance of
 `ℓ(M ⧸ aM)` that step 2(b) uses to discard the `B ⧸ 𝔪` pieces of a prime filtration. A ninth round on 2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`,
 #29451 still open at `ed4b4ac70d`) added `length_quotient_lsmul_quotient_eq_ord` to the same file:
-the contribution `e(B ⧸ 𝔮, b)` of a prime-filtration piece is `ord_{B/𝔮}(b)`.
+the contribution `e(B ⧸ 𝔮, b)` of a prime-filtration piece is `ord_{B/𝔮}(b)`. A tenth round on
+2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`, #29451 still open at
+`ed4b4ac70d`) finished step 2(b): the new file `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean`
+proves the order formula over minimal primes (`Ring.ord_eq_finsum_minimalPrimes`) by the
+prime-filtration induction, and `RatEquiv.lean` gained its flat-local form
+`Ring.ord_mul_length_eq_finsum_minimalPrimes`, the algebraic core of Stacks Lemma 42.20.1.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -173,7 +178,7 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 102 lines), no
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 128 lines), no
 `sorry`:
 
 - `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
@@ -206,6 +211,31 @@ formula; namespace `TauCeti`), no `sorry`:
   `A ↠ A ⧸ I` preserves length, by `Module.length_eq_of_surjective`). This is the
   `e(B ⧸ 𝔮, b) = ord_{B/𝔮}(b)` step of 2(b) below; for a prime `𝔮 ∌ b` the kernel vanishes.
 
+`TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (tenth round, new, 215 lines; namespace
+`TauCeti`), no `sorry`:
+
+- `subsingleton_localizedModule_quotient`: `(A ⧸ 𝔭)_𝔮 = 0` unless `𝔭 ≤ 𝔮` (Mathlib's
+  `Module.mem_support_iff_of_finite` and `Ideal.annihilator_quotient`);
+- `length_ker_lsmul_ne_top`: over a Noetherian ring of dimension `≤ 1`, a non-zero-divisor has a
+  kernel of finite length on a finite module (`main`'s
+  `isFiniteLength_of_nonZeroDivisor_mem_annihilator`);
+- `length_ker_lsmul_add_finsum_eq`: for `A` Noetherian of dimension `≤ 1`, `a ∈ A⁰` and `M` finite,
+  `ℓ(ker a) + ∑ᶠ 𝔮 min, ℓ_{A_𝔮}(M_𝔮) · ord_{A/𝔮}(a) = ℓ(M ⧸ aM)` (Stacks, Section 42.3), by
+  Mathlib's `IsNoetherianRing.induction_on_isQuotientEquivQuotientPrime`: the exact case is
+  `length_ker_add_length_quotient_range_eq_of_exact` with exactness of localization; for `A ⧸ 𝔭`,
+  a minimal `𝔭` gives `ord_{A/𝔭}(a)` (`length_quotient_lsmul_quotient_eq_ord`,
+  `Ideal.length_localizedModule_quotient_eq_one`) and any other `𝔭` is maximal
+  (`Ring.krullDimLE_one_iff`) so contributes `0` (`length_ker_eq_length_quotient_range`). The
+  minimal primes are indexed as `{𝔮 : PrimeSpectrum A // 𝔮.asIdeal ∈ minimalPrimes A}` so that
+  `Localization.AtPrime 𝔮.1.asIdeal` finds its `IsPrime` instance;
+- `Ring.ord_eq_finsum_minimalPrimes`: `ord_A(a) = ∑ᶠ 𝔮 min, ℓ_{A_𝔮}(A_𝔮) · ord_{A/𝔮}(a)` for
+  `a ∈ A⁰` (the case `M = A`).
+
+`RatEquiv.lean` (tenth round) also has `TauCeti.Ring.ord_mul_length_eq_finsum_minimalPrimes`: for a
+flat local `A → B` with `B` Noetherian of dimension `≤ 1` and `a ∈ A⁰`,
+`ord_A(a) · ℓ_B(B ⧸ 𝔪_A B) = ∑ᶠ 𝔮 min B, ℓ_{B_𝔮}(B_𝔮) · ord_{B/𝔮}(a)` (the image of `a` is a
+non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
+
 ## What remains
 
 1. (Optional, general dimension theory) an instance `PureRelativeDimension (m + n) (f ≫ g)` for
@@ -219,7 +249,12 @@ formula; namespace `TauCeti`), no `sorry`:
    `f^*[div r] = Σ m_i [div (r|W'_i)]` (Stacks Lemma 42.20.1). The missing algebra is the order
    formula over minimal primes (Fulton, Appendix A.3, *Order functions*; Stacks Section 42.3):
    for a one-dimensional Noetherian local ring `B` and a nonzerodivisor `b`, `ℓ_B(B ⧸ bB) = Σ_{𝔮 minimal} ℓ_{B_𝔮}(B_𝔮) · ord_{B/𝔮}(b)`, applied to
-   `B = 𝒪_{f⁻¹(W),x}` together with `ord_stalkMap`. Then `cyclesFlatPullback_mem_ratEquiv` follows
+   `B = 𝒪_{f⁻¹(W),x}` together with `ord_stalkMap`. (**The order formula is done by the tenth
+   round**, as `Ring.ord_eq_finsum_minimalPrimes` and its flat-local form
+   `Ring.ord_mul_length_eq_finsum_minimalPrimes`; what remains of item 2 is geometric: identify,
+   at a codimension-one point `x` of `f⁻¹(W)`, the minimal primes of `𝒪_{f⁻¹(W),x}` with the
+   components `W'_i` through `x`, `ℓ(B_𝔮)` with `fiberLength` at their generic points, and
+   `B ⧸ 𝔮` with `𝒪_{W'_i,x}`, then assemble the `RatEquivFamily`.) Then `cyclesFlatPullback_mem_ratEquiv` follows
    by summing over a `RatEquivFamily` (members `W'_i`, functions `r|W'_i`, local finiteness as in
    `cycleFlatPullback`). This step needs no supplier: Fulton's proof via the norm formula is
    avoidable with the Stacks route.
@@ -300,9 +335,13 @@ formula; namespace `TauCeti`), no `sorry`:
    flat pullback of cycles with generic-length multiplicities*.
 4. Files: `TauCeti/RingTheory/Length.lean` (six general length lemmas, +179 lines, done; the
    port may open them as a small prerequisite PR *feat(RingTheory/Length): lengths in four- and
-   six-term exact sequences*, which needs no other split) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 102
-   lines); adds `Ring.ord_algebraMap_of_flat`, `ord_stalkMap`, `fiberLength_of_isOpenImmersion`,
+   six-term exact sequences*, which needs no other split),
+   `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
+   commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
+   PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 128
+   lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
+   `ord_stalkMap`, `fiberLength_of_isOpenImmersion`,
    `cycleFlatPullback_of_isOpenImmersion`, and (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.

@@ -8,6 +8,8 @@ module
 public import Mathlib.RingTheory.OrderOfVanishing.Basic
 public import TauCeti.AlgebraicGeometry.Chow.FlatPullback
 public import TauCeti.AlgebraicGeometry.Chow.OpenRestriction
+public import TauCeti.RingTheory.OrderOfVanishing.MinimalPrimes
+import Mathlib.RingTheory.Flat.TorsionFree
 import Mathlib.RingTheory.LocalRing.Length
 import Mathlib.RingTheory.TensorProduct.Quotient
 
@@ -23,6 +25,10 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
 
 * `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
   `Ring.ord B (algebraMap A B a) = Ring.ord A a * length B (B ⧸ 𝔪_A B)`;
+* `TauCeti.Ring.ord_mul_length_eq_finsum_minimalPrimes`: if moreover `B` is Noetherian of
+  dimension at most one and `a` is a non-zero-divisor, `ord_A(a) · ℓ_B(B ⧸ 𝔪_A B)` is the sum over
+  the minimal primes `𝔮` of `B` of `ℓ_{B_𝔮}(B_𝔮) · ord_{B ⧸ 𝔮}(a)` (the local form of Stacks,
+  Lemma 42.20.1);
 * `TauCeti.AlgebraicGeometry.Chow.ord_stalkMap`: for `f : X ⟶ Y` flat and `x : X`, pulling a
   germ `a` at `f x` back to `x` multiplies its order of vanishing by `fiberLength f x`;
 * `TauCeti.AlgebraicGeometry.Chow.cycleFlatPullback_of_isOpenImmersion`: along an open immersion
@@ -54,6 +60,25 @@ theorem ord_algebraMap_of_flat (a : A) :
   rw [_root_.Ring.ord, _root_.Ring.ord, ← IsLocalRing.length_baseChange,
     ← (Algebra.TensorProduct.quotIdealMapEquivTensorQuot B
       (Ideal.span {a})).toLinearEquiv.length_eq, Ideal.map_span, Set.image_singleton]
+
+open scoped nonZeroDivisors in
+/-- **Orders of vanishing under flat local homomorphisms, over the minimal primes.** Let `A → B`
+be a flat local homomorphism with `B` Noetherian of dimension at most one, and `a` a
+non-zero-divisor of `A`. Then `ord_A(a) · ℓ_B(B ⧸ 𝔪_A B)` is the sum over the minimal primes `𝔮`
+of `B` of `ℓ_{B_𝔮}(B_𝔮) · ord_{B ⧸ 𝔮}(a)`: by flatness the image of `a` is a non-zero-divisor of
+`B`, and `ord_algebraMap_of_flat` and `ord_eq_finsum_minimalPrimes` compute its order in `B`
+in two ways. -/
+theorem ord_mul_length_eq_finsum_minimalPrimes [IsNoetherianRing B] [_root_.Ring.KrullDimLE 1 B]
+    {a : A} (ha : a ∈ A⁰) :
+    _root_.Ring.ord A a * Module.length B (B ⧸ (maximalIdeal A).map (algebraMap A B)) =
+      ∑ᶠ 𝔮 : {𝔮 : PrimeSpectrum B // 𝔮.asIdeal ∈ minimalPrimes B},
+        Module.length (Localization.AtPrime 𝔮.1.asIdeal) (Localization.AtPrime 𝔮.1.asIdeal) *
+          _root_.Ring.ord (B ⧸ 𝔮.1.asIdeal) (Ideal.Quotient.mk _ (algebraMap A B a)) := by
+  have hreg : IsSMulRegular B a := Module.Flat.isSMulRegular_of_nonZeroDivisors ha
+  refine (ord_algebraMap_of_flat a).symm.trans (ord_eq_finsum_minimalPrimes ?_)
+  refine mem_nonZeroDivisors_iff_right.mpr fun x hx => hreg ?_
+  change a • x = a • (0 : B)
+  rw [smul_zero, Algebra.smul_def, mul_comm, hx]
 
 end Ring
 
