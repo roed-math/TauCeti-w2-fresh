@@ -59,7 +59,8 @@ The remaining declarations are in the namespace `TauCeti.AlgebraicGeometry.Chow`
 * `trdeg_residueField_lt_aleph0`, `isScalarTower_residueField`: residue fields of schemes locally
   of finite type over `K` have finite transcendence degree, in a tower `K → κ(f x) → κ(x)`.
 * `height_eq_height_add`: for `f` of pure relative dimension `n` over a field, a generic point `x`
-  of its fibre has dimension `dim (f x) + n`.
+  of its fibre has dimension `dim (f x) + n`; `height_le_height_add`: every point `x` has
+  dimension at most `dim (f x) + n`.
 * `cycleFlatPullback`: the flat pullback `AlgebraicCycle Y ℤ → AlgebraicCycle X ℤ`, additive;
   `cyclesFlatPullback`: for `f` flat of pure relative dimension `n`, `Z_k(Y) →+ Z_{k+n}(X)`.
 * `cycleFlatPullback_comp`, `cyclesFlatPullback_comp`: functoriality `(f ≫ g)^* = f^* ∘ g^*`.
@@ -186,6 +187,19 @@ theorem height_asFiber_eq {n : ℕ} [PureRelativeDimension n f] {x : X}
     (asFiber_mem_genericPoints f hx)] at h
   exact_mod_cast h
 
+/-- If `f` has pure relative dimension `n`, every point of the fibre `f.fiber (f x)` has height at
+most `n`: its closure lies in an irreducible component of the fibre, of dimension `n`. -/
+theorem height_asFiber_le {n : ℕ} [PureRelativeDimension n f] (x : X) :
+    Order.height (f.asFiber x) ≤ n := by
+  have hsub : closure {f.asFiber x} ⊆ irreducibleComponent (f.asFiber x) :=
+    isClosed_irreducibleComponent.closure_subset_iff.mpr
+      (Set.singleton_subset_iff.mpr mem_irreducibleComponent)
+  have hle := (Topology.IsEmbedding.inclusion hsub).isInducing.topologicalKrullDim_le
+  rw [isPureDimensional_iff.mp (PureRelativeDimension.isPureDimensional_fiber (d := n) f (f x)) _
+    (irreducibleComponent_mem_irreducibleComponents _),
+    ← height_eq_topologicalKrullDim_closure_singleton] at hle
+  exact_mod_cast hle
+
 /-- For `f` locally of finite type, the height of a point of the fibre `f.fiber (f x)`, a scheme
 locally of finite type over `κ(f x)`, is the transcendence degree of its residue field over
 `κ(f x)`. -/
@@ -267,13 +281,13 @@ theorem isScalarTower_residueField (x : X) :
     Scheme.Γevaluation_naturality_apply, ← comp_over f (Spec (.of K))]
   rfl
 
-/-- **Dimension shift for morphisms of pure relative dimension.** Let `f : X ⟶ Y` be a morphism of
-schemes locally of finite type over a field `K`, of pure relative dimension `n`. A generic point
-`x` of its fibre has dimension `dim (f x) + n`: in the tower `K → κ(f x) → κ(x)`, the residue field
-`κ(x)` of the fibre has transcendence degree `n` over `κ(f x)` (Stacks 02JS). -/
-theorem height_eq_height_add {n : ℕ} [PureRelativeDimension n f]
-    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))] {x : X}
-    (hx : Maximal (· ∈ f ⁻¹' {f x}) x) : Order.height x = Order.height (f x) + n := by
+/-- **Dimension of a point and of its fibre.** Let `f : X ⟶ Y` be a morphism of schemes locally of
+finite type over a field `K`. The dimension of a point `x` is the dimension of `f x` plus the
+dimension of `x` in its fibre `f.fiber (f x)`: in the tower `K → κ(f x) → κ(x)`, the residue field
+of the fibre at `x` is `κ(x)` as a `κ(f x)`-algebra (Stacks 02JS). -/
+theorem height_eq_height_add_height_asFiber [LocallyOfFiniteType (X ↘ Spec (.of K))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of K))] (x : X) :
+    Order.height x = Order.height (f x) + Order.height (f.asFiber x) := by
   have : LocallyOfFiniteType f := by
     have : LocallyOfFiniteType (f ≫ Y ↘ Spec (.of K)) := by
       rw [comp_over]; infer_instance
@@ -284,14 +298,15 @@ theorem height_eq_height_add {n : ℕ} [PureRelativeDimension n f]
     ((X.residueFieldCongr (f.fiberι_asFiber x)).symm ≪≫
       asIso ((f.fiberι _).residueFieldMap (f.asFiber x))).commRingCatIsoToRingEquiv
   let := f.fiberOverSpecResidueField (f x)
-  have hn : (Algebra.trdeg (Y.residueField (f x)) (X.residueField x)).toNat = n := by
+  have hn : ((Algebra.trdeg (Y.residueField (f x)) (X.residueField x)).toNat : ℕ∞) =
+      Order.height (f.asFiber x) := by
     let e' : X.residueField x ≃ₐ[Y.residueField (f x)]
         (f.fiber (f x)).residueField (f.asFiber x) :=
       AlgEquiv.ofRingEquiv (f := e) fun c ↦ by
         have h := congr(($(algebraMap_residueField_fiber f x)).hom c)
         exact h.symm
     rw [e'.trdeg_eq]
-    exact_mod_cast (height_asFiber_eq_toNat_trdeg f x).symm.trans (height_asFiber_eq f hx)
+    exact (height_asFiber_eq_toNat_trdeg f x).symm
   have hX := (height_eq_topologicalKrullDim_closure_singleton x).trans
     (topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField K x)
   have hY := (height_eq_topologicalKrullDim_closure_singleton (f x)).trans
@@ -300,10 +315,29 @@ theorem height_eq_height_add {n : ℕ} [PureRelativeDimension n f]
   have hfin := trdeg_residueField_lt_aleph0 K x
   rw [← hsum] at hfin
   obtain ⟨h1, h2⟩ := Cardinal.add_lt_aleph0_iff.mp hfin
-  have : (Order.height x : WithBot ℕ∞) = (Order.height (f x) + n : ℕ∞) := by
-    rw [hX, WithBot.coe_add, hY, ← hsum, Cardinal.toNat_add h1 h2, hn]
+  have : (Order.height x : WithBot ℕ∞) =
+      (Order.height (f x) + Order.height (f.asFiber x) : ℕ∞) := by
+    rw [hX, WithBot.coe_add, hY, ← hsum, Cardinal.toNat_add h1 h2, ← hn]
     push_cast; rfl
   exact_mod_cast this
+
+/-- **Dimension shift for morphisms of pure relative dimension.** Let `f : X ⟶ Y` be a morphism of
+schemes locally of finite type over a field `K`, of pure relative dimension `n`. A generic point
+`x` of its fibre has dimension `dim (f x) + n`. -/
+theorem height_eq_height_add {n : ℕ} [PureRelativeDimension n f]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))] {x : X}
+    (hx : Maximal (· ∈ f ⁻¹' {f x}) x) : Order.height x = Order.height (f x) + n := by
+  rw [height_eq_height_add_height_asFiber f K x, height_asFiber_eq (n := n) f hx]
+
+/-- **Dimension inequality for morphisms of pure relative dimension.** Let `f : X ⟶ Y` be a
+morphism of schemes locally of finite type over a field `K`, of pure relative dimension `n`. Every
+point `x` has dimension at most `dim (f x) + n`. -/
+theorem height_le_height_add {n : ℕ} [PureRelativeDimension n f]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))] (x : X) :
+    Order.height x ≤ Order.height (f x) + n := by
+  rw [height_eq_height_add_height_asFiber f K x]
+  gcongr
+  exact height_asFiber_le (n := n) f x
 
 end
 

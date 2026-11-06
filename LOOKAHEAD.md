@@ -59,7 +59,17 @@ thirteenth round on 2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `
 along a closed immersion (`Scheme.ker_stalkMap_le_map_ideal_ker`,
 `Scheme.ker_stalkMap_pullback_fst_le`, via Mathlib's `IdealSheafData.ker_fst_of_isClosedImmersion`
 and `main`'s `IdealSheafData.ideal_comap_of_le`) and the resulting equality of fibre lengths
-`fiberLength_pullback_snd`: `fiberLength (X ×_Y W ⟶ W) x = fiberLength f x`.
+`fiberLength_pullback_snd`: `fiberLength (X ×_Y W ⟶ W) x = fiberLength f x`. A fourteenth round
+on 2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`, #29451 still open at
+`ed4b4ac70d`) did the dimension half of item 2(ii): it split the dimension shift into the general
+identity `height_eq_height_add_height_asFiber` (`dim x = dim f(x) + dim_{X_{f x}} x` at every
+point) with `height_asFiber_le`, giving the dimension inequality `height_le_height_add`, and proved
+`Scheme.ringKrullDim_stalk_le_one`, `ringKrullDim_stalk_pullback_le_one` (local rings of `X ×_Y W`
+at points of dimension `k + n` have dimension `≤ 1`), `height_eq_height_genericPoint_add`
+(components of a flat `X` over an integral `Y` have dimension `dim Y + n`) and
+`height_eq_height_genericPoint_add_of_pullback` (the same for the components of `X ×_Y W`). The other half of
+2(ii), the components as integral closed subschemes, is `main`'s
+`IdealSheafData.isIntegral_subscheme_vanishingIdeal_closure_singleton`.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -167,6 +177,12 @@ no `sorry`:
   finite transcendence degree (Mathlib's `FinTrdeg` of an `EssFiniteType` residue field, through
   an affine chart and `residueFieldAlgEquivOfIsOpenImmersion`);
 - `isScalarTower_residueField`: for `f` over `Spec K`, `K → κ(f x) → κ(x)` is a scalar tower;
+- `height_asFiber_le` (fourteenth round): for `[PureRelativeDimension n f]`, every point of the
+  fibre `f.fiber (f x)` has height `≤ n` (its closure lies in an irreducible component);
+- `height_eq_height_add_height_asFiber` (fourteenth round): at every point,
+  `height x = height (f x) + height (f.asFiber x)` (the proof formerly inside
+  `height_eq_height_add`, which is now its two-line corollary); `height_le_height_add`: hence
+  `height x ≤ height (f x) + n` everywhere;
 - `height_eq_height_add`: **the dimension shift**. For `X`, `Y` locally of finite type over a field
   `K`, `f` over `Spec K` of pure relative dimension `n`, and `x` a generic point of its fibre,
   `height x = height (f x) + n` (`trdeg_add_eq` for the tower, `κ(x) ≅ κ_{X_{f x}}(x)` as
@@ -197,7 +213,7 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 508 lines), no
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 597 lines), no
 `sorry`:
 
 - `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
@@ -287,6 +303,20 @@ affine open `U ∋ p z`, `ker (𝒪_{X,p z} ↠ 𝒪_{Z,z}) ≤ I_p(U) 𝒪_{X,p
 `fiberLength_pullback_snd` (for `f` flat, `fiberLength (pullback.snd f i) x =
 fiberLength f (pullback.fst f i x)`).
 
+`RatEquiv.lean` (fourteenth round) has the dimension input of item 2(ii):
+`Scheme.ringKrullDim_stalk_le_one` (at a point of height `m` of a scheme all of whose points have
+height `≤ m + 1`, the stalk has dimension `≤ 1`, from Mathlib's `ringKrullDim_stalk_eq_coheight`
+and `Order.krullDim_eq_iSup_height_add_coheight_of_nonempty`), `ringKrullDim_stalk_pullback_le_one`
+(for `f` of pure relative dimension `n` over `K`, `i : W ⟶ Y` a closed immersion with all points
+of `W` of height `≤ k + 1`, the stalks of `X ×_Y W` at points of height `k + n` have dimension
+`≤ 1`, via `height_le_height_add` and `main`'s `Scheme.Hom.height_apply_eq_height`) and
+`height_eq_height_genericPoint_add` (for `f` flat of pure relative dimension `n` over an integral
+`Y`, a generic point `x` of a component of `X` has `height x = height η_Y + n`) and
+`height_eq_height_genericPoint_add_of_pullback` (for `f` flat of pure relative dimension `n` and
+`i : W ⟶ Y` a closed immersion of an integral `W`, a generic point `x` of a component of
+`X ×_Y W` has `height x = height η_W + n`; computed through `pullback.fst f i` into `X`, with
+Mathlib's `Scheme.Pullback.range_fst`, so `X ×_Y W` needs no structure over `K`).
+
 `RatEquiv.lean` (tenth round) also has `TauCeti.Ring.ord_mul_length_eq_finsum_minimalPrimes`: for a
 flat local `A → B` with `B` Noetherian of dimension `≤ 1` and `a ∈ A⁰`,
 `ord_A(a) · ℓ_B(B ⧸ 𝔪_A B) = ∑ᶠ 𝔮 min B, ℓ_{B_𝔮}(B_𝔮) · ord_{B/𝔮}(a)` (the image of `a` is a
@@ -324,9 +354,15 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    (both are `ℓ(𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x})`; Mathlib has no API for stalks of fibre products,
    so this needs an affine-local computation via `pullbackSpecIso` and
    `IsAffineOpen.isLocalization_stalk`, or a direct argument that the kernel of
-   `𝒪_{X,x} ↠ 𝒪_{X_W,x'}` is `I_W 𝒪_{X,x}`)~~ (done, by the direct argument); (ii) the components `W'_i` of `X_W` as integral
+   `𝒪_{X,x} ↠ 𝒪_{X_W,x'}` is `I_W 𝒪_{X,x}`)~~ (done, by the direct argument); ~~(ii) the components `W'_i` of `X_W` as integral
    closed subschemes (reduced induced structure on the closure of `η'_i`, of dimension `k + 1` by
-   `height_eq_height_add`) and `dim 𝒪_{X_W,x'} ≤ 1` at points of dimension `k`; (iii) the
+   `height_eq_height_add`) and `dim 𝒪_{X_W,x'} ≤ 1` at points of dimension `k`~~ (done by the
+   fourteenth round: `ringKrullDim_stalk_pullback_le_one`, `height_eq_height_genericPoint_add`;
+   the integral closed subschemes are `main`'s
+   `(IdealSheafData.vanishingIdeal ⟨closure {η'}, isClosed_closure⟩).subscheme`, integral by
+   `isIntegral_subscheme_vanishingIdeal_closure_singleton`; their dimension `k + 1 + n` is
+   `height_eq_height_genericPoint_add_of_pullback`, computed in `X` so that no `K`-structure on
+   `X ×_Y W` is needed); (iii) the
    assembly into a `RatEquivFamily`.) Then `cyclesFlatPullback_mem_ratEquiv` follows
    by summing over a `RatEquivFamily` (members `W'_i`, functions `r|W'_i`, local finiteness as in
    `cycleFlatPullback`). This step needs no supplier: Fulton's proof via the norm formula is
@@ -372,7 +408,10 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
   prerequisite.
 - `trdeg_residueField_lt_aleph0` is general dimension theory: at port time move it to
   `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (same variables as
-  `topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField`).
+  `topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField`). So does the fourteenth
+  round's `Scheme.ringKrullDim_stalk_le_one` (general dimension theory, in `RatEquiv.lean` on this
+  branch); `height_asFiber_le`, `height_eq_height_add_height_asFiber` and `height_le_height_add`
+  belong with `height_eq_height_add` wherever the port puts the dimension shift.
   `isScalarTower_residueField` belongs next to `Scheme.residueFieldBaseAlgebra` in
   `TauCeti/AlgebraicGeometry/Scheme/BaseAlgebra.lean`, and `asFiber_mem_genericPoints`,
   `algebraMap_residueField_fiber` are about Mathlib's `Scheme.Hom.fiber`; they stay in
@@ -394,7 +433,7 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
   stalks of closed subschemes, not Chow groups: at port time they belong with
   `ker_stalkMap_eq_comap_maximalIdeal` in a stalks-of-closed-immersions file (or next to
   `IdealSheafData.ideal_comap_of_le` in `TauCeti/AlgebraicGeometry/IdealSheaf/Affine.lean`).
-  `RatEquiv.lean` reaches 508 lines with them; if split 4 grows past 600 lines, the port should
+  `RatEquiv.lean` reaches 597 lines with them (fourteenth round); if split 4 grows past 600 lines, the port should
   open these stalk lemmas, with the other `Scheme` stalk lemmas of `RatEquiv.lean`, as a
   prerequisite PR *feat(AlgebraicGeometry): stalks of closed subschemes and their base changes*.
 - `TauCeti.Ring.ord_algebraMap_of_flat` is general commutative algebra: at port time move it to
@@ -418,7 +457,7 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    every declaration listed for it above, ending with `ChowGroup.localization_exact`. After: 1. Subject:
    *feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and
    the localisation sequence*.
-3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (this branch, done, 489 lines); adds
+3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (this branch, done, 523 lines); adds
    the declarations listed for it above, through `cyclesFlatPullback_comp`. The port may split it
    in two: dimension shift
    (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
@@ -429,7 +468,7 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
    commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
    PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 508
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 597
    lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
    `ord_stalkMap`, `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`,
    `length_localization_stalkSpecializes`, `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
@@ -441,7 +480,9 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `ord_mul_fiberLength_eq_finsum`, `fiberLength_of_isOpenImmersion`,
    `cycleFlatPullback_of_isOpenImmersion`, `Scheme.ker_stalkMap_le_map_ideal_ker`,
    `Scheme.germ_mem_maximalIdeal_of_mem_ker_app`, `Scheme.ker_stalkMap_pullback_fst_le`,
-   `fiberLength_comp_of_ker_le`, `fiberLength_eq_one_of_surjective`, `fiberLength_pullback_snd`, and
+   `fiberLength_comp_of_ker_le`, `fiberLength_eq_one_of_surjective`, `fiberLength_pullback_snd`,
+   `Scheme.ringKrullDim_stalk_le_one`, `ringKrullDim_stalk_pullback_le_one`,
+   `height_eq_height_genericPoint_add`, `height_eq_height_genericPoint_add_of_pullback`, and
    (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.

@@ -14,6 +14,7 @@ import TauCeti.Algebra.Module.Equiv.Length
 import TauCeti.RingTheory.OrderOfVanishing
 import TauCeti.AlgebraicGeometry.Scheme.StalkSpecializes
 import TauCeti.AlgebraicGeometry.IdealSheaf.Affine
+import TauCeti.AlgebraicGeometry.Morphisms.ClosedImmersion.Basic
 import Mathlib.RingTheory.LocalRing.Length
 import Mathlib.RingTheory.TensorProduct.Quotient
 
@@ -53,6 +54,14 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
   `W ⟶ Y`, the kernel of `𝒪_{X,x} ↠ 𝒪_{X ×_Y W,x}` lies in `𝔪_{f x} 𝒪_{X,x}`;
 * `TauCeti.AlgebraicGeometry.Chow.fiberLength_pullback_snd`: for `f` flat and `i : W ⟶ Y` a
   closed immersion, the base change `X ×_Y W ⟶ W` has the fibre lengths of `f`;
+* `TauCeti.AlgebraicGeometry.Chow.height_eq_height_genericPoint_add`: for `f` flat of pure
+  relative dimension `n` over an integral scheme `Y`, every irreducible component of `X` has
+  dimension `dim Y + n`; `height_eq_height_genericPoint_add_of_pullback`: the components of
+  `X ×_Y W`, for an integral closed subscheme `W` of `Y`, have dimension `dim W + n`;
+* `TauCeti.AlgebraicGeometry.Chow.ringKrullDim_stalk_pullback_le_one`: for `f` of pure relative
+  dimension `n` and a closed subscheme `W` of dimension at most `k + 1`, the local rings of
+  `X ×_Y W` at points of dimension `k + n` have dimension at most one
+  (`Scheme.ringKrullDim_stalk_le_one`);
 * `TauCeti.AlgebraicGeometry.Chow.length_localization_stalkSpecializes`: for `x ⤳ y`, localizing
   `𝒪_{X,y}` at the prime of `x` does not change the length of `𝒪_{X,x}`;
 * `TauCeti.AlgebraicGeometry.Chow.cycleFlatPullback_of_isOpenImmersion`: along an open immersion
@@ -317,6 +326,21 @@ theorem ker_stalkMap_pullback_fst_le {Y W : Scheme.{u}} (f : X ⟶ Y) (i : W ⟶
   rw [Scheme.Hom.ker_apply] at hs
   exact germ_mem_maximalIdeal_of_mem_ker_app i ⟨U, hU⟩ hs hyU hrange
 
+/-- At a point `x` of height `m` on a scheme all of whose points have height at most `m + 1`, the
+local ring has dimension at most one: `height x + coheight x` is at most the dimension of `X`. -/
+theorem ringKrullDim_stalk_le_one {m : ℕ} (hx : Order.height x = m)
+    (h : ∀ z : X, Order.height z ≤ m + 1) : ringKrullDim (X.presheaf.stalk x) ≤ 1 := by
+  have : Nonempty X := ⟨x⟩
+  have hle : (↑(Order.height x + Order.coheight x) : WithBot ℕ∞) ≤ ↑((m : ℕ∞) + 1) :=
+    calc (↑(Order.height x + Order.coheight x) : WithBot ℕ∞)
+        ≤ Order.krullDim X := Order.krullDim_eq_iSup_height_add_coheight_of_nonempty (α := X) ▸
+          WithBot.coe_le_coe.mpr (le_iSup (fun a : X ↦ Order.height a + Order.coheight a) x)
+      _ ≤ ↑((m : ℕ∞) + 1) := Order.krullDim_eq_iSup_height_of_nonempty (α := X) ▸
+          WithBot.coe_le_coe.mpr (iSup_le h)
+  rw [hx] at hle
+  rw [ringKrullDim_stalk_eq_coheight]
+  exact_mod_cast (ENat.add_le_add_iff_left (ENat.natCast_ne_top m)).mp (WithBot.coe_le_coe.mp hle)
+
 end AlgebraicGeometry.Scheme
 
 namespace AlgebraicGeometry.Chow
@@ -365,6 +389,19 @@ theorem apply_eq_genericPoint_of_forall_specializes [Flat f] [IsIntegral Y] {x :
     Flat.generalizingMap f ((genericPoint_spec Y).specializes (Set.mem_univ (f x)))
   exact ((((hx x' hx').map f.continuous).trans (specializes_of_eq hx'Y)).antisymm
     ((genericPoint_spec Y).specializes trivial)).eq
+
+/-- Let `f : X ⟶ Y` be flat of pure relative dimension `n` between schemes locally of finite type
+over a field `K`, with `Y` integral. Every irreducible component of `X`, with generic point `x`,
+has dimension `dim Y + n`: `x` lies over the generic point of `Y`
+(`apply_eq_genericPoint_of_forall_specializes`) and is a generic point of its fibre
+(`height_eq_height_add`). -/
+theorem height_eq_height_genericPoint_add (K : Type u) [Field K] [X.Over (Spec (.of K))]
+    [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))] [LocallyOfFiniteType (X ↘ Spec (.of K))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of K))] [Flat f] [IsIntegral Y] {n : ℕ}
+    [PureRelativeDimension n f] {x : X} (hx : ∀ x' : X, x' ⤳ x → x ⤳ x') :
+    Order.height x = Order.height (genericPoint Y) + n := by
+  rw [← apply_eq_genericPoint_of_forall_specializes f hx]
+  exact height_eq_height_add f K ⟨rfl, fun x' _ hx' ↦ hx x' hx'⟩
 
 /-- For `f` flat over an integral scheme, at the generic point `x` of an irreducible component of
 `X` the fibre length is the length of `𝒪_{X,x}`: this is the multiplicity of the component in
@@ -436,6 +473,58 @@ theorem fiberLength_pullback_snd [Flat f] {W : Scheme.{u}} (i : W ⟶ Y) [IsClos
     fiberLength_comp_of_ker_le f _ x ((pullback.fst f i).stalkMap_surjective x)
       (Scheme.ker_stalkMap_pullback_fst_le f i x)] at this
   exact this.symm
+
+open Limits in
+/-- Let `f : X ⟶ Y` be flat of pure relative dimension `n` between schemes locally of finite type
+over a field `K`, and `i : W ⟶ Y` a closed immersion of an integral scheme. Every irreducible
+component of `X ×_Y W`, with generic point `x`, has dimension `dim W + n`: `x` lies over the generic
+point of `W` (`apply_eq_genericPoint_of_forall_specializes` for the flat base change), so its image
+in `X` is a generic point of a fibre of `f` (`height_eq_height_add`), and the closed immersions
+`X ×_Y W ⟶ X` and `i` preserve heights. -/
+theorem height_eq_height_genericPoint_add_of_pullback (K : Type u) [Field K]
+    [X.Over (Spec (.of K))] [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))] [Flat f]
+    {n : ℕ} [PureRelativeDimension n f] {W : Scheme.{u}} [IsIntegral W] (i : W ⟶ Y)
+    [IsClosedImmersion i] {x : ↥(pullback f i)}
+    (hx : ∀ x' : ↥(pullback f i), x' ⤳ x → x ⤳ x') :
+    Order.height x = Order.height (genericPoint W) + n := by
+  have hsnd : pullback.snd f i x = genericPoint W :=
+    apply_eq_genericPoint_of_forall_specializes (pullback.snd f i) hx
+  have hfx : f (pullback.fst f i x) = i (genericPoint W) := by
+    rw [← hsnd, ← Scheme.Hom.comp_apply, pullback.condition, Scheme.Hom.comp_apply]
+  have hmax : Maximal (· ∈ f ⁻¹' {f (pullback.fst f i x)}) (pullback.fst f i x) := by
+    refine ⟨rfl, fun y hy hxy ↦ ?_⟩
+    obtain ⟨y', rfl⟩ : y ∈ Set.range (pullback.fst f i) := by
+      rw [Scheme.Pullback.range_fst]
+      exact ⟨genericPoint W, ((show f y = _ from hy).trans hfx).symm⟩
+    have h : y' ⤳ x := (pullback.fst f i).isClosedEmbedding.isInducing.specializes_iff.mp hxy
+    exact (hx y' h).map (pullback.fst f i).continuous
+  rw [← Scheme.Hom.height_apply_eq_height (pullback.fst f i),
+    height_eq_height_add f K (n := n) hmax, hfx, Scheme.Hom.height_apply_eq_height]
+
+open Limits in
+/-- Let `f : X ⟶ Y` be a morphism of pure relative dimension `n` between schemes locally of finite
+type over a field `K`, and `i : W ⟶ Y` a closed immersion from a scheme all of whose points have
+dimension at most `k + 1` (for instance an integral closed subscheme of dimension `k + 1`). At a
+point of `X ×_Y W` of dimension `k + n`, the local ring has dimension at most one: every point of
+`X ×_Y W` has dimension at most `k + 1 + n` (`height_le_height_add`), heights being preserved by
+the closed immersions `X ×_Y W ⟶ X` and `i`. -/
+theorem ringKrullDim_stalk_pullback_le_one (K : Type u) [Field K] [X.Over (Spec (.of K))]
+    [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))] [LocallyOfFiniteType (X ↘ Spec (.of K))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of K))] {n k : ℕ} [PureRelativeDimension n f]
+    {W : Scheme.{u}} (i : W ⟶ Y) [IsClosedImmersion i] (hW : ∀ w : W, Order.height w ≤ k + 1)
+    {x : ↥(pullback f i)} (hx : Order.height x = (k + n : ℕ)) :
+    ringKrullDim ((pullback f i).presheaf.stalk x) ≤ 1 := by
+  refine Scheme.ringKrullDim_stalk_le_one hx fun z ↦ ?_
+  have hz : f (pullback.fst f i z) = i (pullback.snd f i z) := by
+    rw [← Scheme.Hom.comp_apply, pullback.condition, Scheme.Hom.comp_apply]
+  calc Order.height z = Order.height (pullback.fst f i z) :=
+        (Scheme.Hom.height_apply_eq_height _ z).symm
+    _ ≤ Order.height (f (pullback.fst f i z)) + n := height_le_height_add f K _
+    _ = Order.height (pullback.snd f i z) + n := by
+        rw [hz, Scheme.Hom.height_apply_eq_height]
+    _ ≤ k + 1 + n := by gcongr; exact hW _
+    _ = ↑(k + n) + 1 := by push_cast; ring
 
 /-- **Lengths of stalks at generizations.** For a specialization `x ⤳ y`, the length of the
 localization of `𝒪_{X,y}` at the prime of `x` is the length of `𝒪_{X,x}`
