@@ -214,6 +214,15 @@ directory (green, warnings as errors) and reran `lookahead-check` (ok). The time
 short to prove and check a new piece, so it added no declarations. The next piece is still split
 25 (finite presentation of `H⁰(projModel W, M)` for general `M`) or the leading terms of split 27.
 
+The twenty-sixth round left tip `a1d70b406c22`. The twenty-seventh round (this one) again found
+`main` unchanged (`385ec2dd`), so the merge was a no-op. Both suppliers' successor PRs (#28759,
+#28995) are still open, and the branch still uses neither, so there are still no stubs. It rebuilt
+the whole branch from a warm build directory in about nine minutes (green, warnings as errors) and
+reran `lookahead-check` (ok). The round started about forty-five minutes before its deadline, which
+was too short to prove and check a new piece, so it added no declarations. The next piece is still
+split 25 (finite presentation of `H⁰(projModel W, M)` for general `M`) or the leading terms of
+split 27. A round with a full hour should start on one of them right after the warm rebuild.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -1081,7 +1090,7 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 
 ## Verification
 
-`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`, and in the twenty-fifth and twenty-sixth rounds on `385ec2ddd8dd`) and
+`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`, and in the twenty-fifth through twenty-seventh rounds on `385ec2ddd8dd`) and
 `/opt/round/lookahead-check` all pass. In the eighteenth round, the new proofs build with
 warnings as errors; `#lint` was not rerun for lack of time. In the fifteenth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 1588 declarations, on the import closure of the two new modules of
