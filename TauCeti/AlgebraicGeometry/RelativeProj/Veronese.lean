@@ -7,17 +7,18 @@ module
 
 public import TauCeti.AlgebraicGeometry.Modules.GradedAlgebra.Veronese
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.Veronese
+public import TauCeti.AlgebraicGeometry.RelativeProj.Basic
 
 /-!
-# The charts of the relative `Proj` of a Veronese subalgebra
+# The relative `Proj` of a Veronese subalgebra
 
 Let `A = ⨁ₙ Aₙ` be a graded algebra on a scheme `X`, `d ≠ 0`, and `A^{(d)} = ⨁ₖ A_{dk}` its
 Veronese subalgebra (`CategoryTheory.CommMon.veronese`). Over an open `U` of `X`, the graded
 sections of `A^{(d)}` are the Veronese subalgebra of the graded sections of `A`
 (`CategoryTheory.CommMon.veroneseSectionsEquiv`), so the charts of the relative `Proj`s agree:
-`Proj (⨁ₖ Γ(A_{dk}, U)) ≅ Proj (⨁ₙ Γ(Aₙ, U))` (`AlgebraicGeometry.Proj.veroneseIso`). These are
-the charts of `Proj_X(A^{(d)}) ≅ Proj_X(A)` (Stacks, Lemma 27.11.8 (0B5J)) over the affine opens
-of `X`.
+`Proj (⨁ₖ Γ(A_{dk}, U)) ≅ Proj (⨁ₙ Γ(Aₙ, U))` (`AlgebraicGeometry.Proj.veroneseIso`). These
+isomorphisms are compatible with restriction and with the coefficient projections, so they glue
+to `Proj_X(A^{(d)}) ≅ Proj_X(A)` over `X` (Stacks, Lemma 27.11.8 (0B5J)).
 
 ## Main definitions
 
@@ -26,11 +27,21 @@ of `X`.
   as graded ring maps.
 * `CategoryTheory.CommMon.projVeroneseSectionsIso`: the isomorphism
   `Proj (⨁ₖ Γ(A_{dk}, U)) ≅ Proj (⨁ₙ Γ(Aₙ, U))`.
+* `CategoryTheory.CommMon.relativeProjFunctorVeroneseIso`: these isomorphisms over the affine
+  opens of `X`, as an isomorphism of gluing diagrams.
+* `CategoryTheory.CommMon.relativeProjVeroneseIso`: the isomorphism
+  `Proj_X(A^{(d)}) ≅ Proj_X(A)`.
 
 ## Main results
 
 * `CategoryTheory.CommMon.restrict_comp_veroneseSectionsGradedHomInv`: the identification of
   graded sections commutes with restriction.
+* `CategoryTheory.CommMon.map_restrict_projVeroneseSectionsIso_hom`: so does
+  `projVeroneseSectionsIso`.
+* `CategoryTheory.CommMon.projVeroneseSectionsIso_hom_toSpecCoeff`: `projVeroneseSectionsIso`
+  lies over `Spec Γ(X, U)`.
+* `CategoryTheory.CommMon.relativeProjVeroneseIso_hom_relativeProjToBase`:
+  `relativeProjVeroneseIso` lies over `X`.
 
 ## References
 
@@ -87,6 +98,25 @@ def _root_.CategoryTheory.CommMon.projVeroneseSectionsIso (U : X.Opens) :
     (fun x ↦ (A.veroneseSectionsEquiv d U (NeZero.ne d)).apply_symm_apply x) ≪≫
   Proj.veroneseIso _ d
 
+/-- `CategoryTheory.CommMon.projVeroneseSectionsIso` is `Proj.map` of the inverse of
+`veroneseSectionsEquiv`, followed by `Proj.veroneseIso`. -/
+theorem _root_.CategoryTheory.CommMon.projVeroneseSectionsIso_hom (U : X.Opens) :
+    (A.projVeroneseSectionsIso d U).hom =
+      Proj.map (A.veroneseSectionsGradedHomInv d U)
+        (HomogeneousIdeal.irrelevant_le_map_of_surjective _
+          (A.veroneseSectionsEquiv d U (NeZero.ne d)).symm.surjective) ≫
+        (Proj.veroneseIso _ d).hom :=
+  (Iso.trans_hom _ _).trans (congrArg (· ≫ _) (Proj.mapIso_hom _ _ _ _))
+
+/-- The isomorphism `projVeroneseSectionsIso` lies over `Spec Γ(X, U)`. -/
+theorem _root_.CategoryTheory.CommMon.projVeroneseSectionsIso_hom_toSpecCoeff (U : X.Opens) :
+    (A.projVeroneseSectionsIso d U).hom ≫ Proj.toSpecCoeff (A.gradedSectionsGrading U) =
+      Proj.toSpecCoeff ((A.veronese d).gradedSectionsGrading U) :=
+  (congrArg (· ≫ _) (A.projVeroneseSectionsIso_hom d U)).trans <| (Category.assoc _ _ _).trans <|
+    (congrArg (_ ≫ ·) (Proj.veroneseIso_hom_toSpecCoeff _ d)).trans <|
+      Proj.map_toSpecCoeff _ (A.veroneseSectionsGradedHomInv d U) _ fun r ↦
+        Subtype.ext (by exact (A.veroneseSectionsEquiv d U (NeZero.ne d)).symm.commutes r)
+
 variable {U V : X.Opens} (i : V ⟶ U)
 
 /-- The inverse of `veroneseSectionsEquiv` commutes with restriction of sections: restricting the
@@ -104,6 +134,97 @@ theorem _root_.CategoryTheory.CommMon.restrict_comp_veroneseSectionsGradedHomInv
     CommMon.coe_veroneseSectionsEquiv, CommMon.restrictGradedSectionsGradedHom_apply]
   rw [CommMon.veroneseSectionsAlgHom_restrictGradedSections,
     ← A.coe_veroneseSectionsEquiv d U (NeZero.ne d), AlgEquiv.apply_symm_apply]
+
+/-- The isomorphisms `projVeroneseSectionsIso` commute with the morphisms of projective spectra
+induced by restriction of sections. -/
+theorem _root_.CategoryTheory.CommMon.map_restrict_projVeroneseSectionsIso_hom
+    (h : HomogeneousIdeal.irrelevant ((A.veronese d).gradedSectionsGrading V) ≤
+      (HomogeneousIdeal.irrelevant ((A.veronese d).gradedSectionsGrading U)).map
+        ((A.veronese d).restrictGradedSectionsGradedHom i))
+    (h' : HomogeneousIdeal.irrelevant (A.gradedSectionsGrading V) ≤
+      (HomogeneousIdeal.irrelevant (A.gradedSectionsGrading U)).map
+        (A.restrictGradedSectionsGradedHom i)) :
+    Proj.map ((A.veronese d).restrictGradedSectionsGradedHom i) h ≫
+        (A.projVeroneseSectionsIso d U).hom =
+      (A.projVeroneseSectionsIso d V).hom ≫ Proj.map (A.restrictGradedSectionsGradedHom i) h' := by
+  have hU := HomogeneousIdeal.irrelevant_le_map_of_surjective
+    (A.veroneseSectionsGradedHomInv d U) (A.veroneseSectionsEquiv d U (NeZero.ne d)).symm.surjective
+  have hV := HomogeneousIdeal.irrelevant_le_map_of_surjective
+    (A.veroneseSectionsGradedHomInv d V) (A.veroneseSectionsEquiv d V (NeZero.ne d)).symm.surjective
+  have hV' := HomogeneousIdeal.irrelevant_le_map_of_surjective
+    (A.veroneseSectionsGradedHom d V) (A.veroneseSectionsEquiv d V (NeZero.ne d)).surjective
+  -- the restriction of the Veronese subalgebras is `veroneseSectionsEquiv` conjugate to the
+  -- restriction of the graded sections of `A^{(d)}`
+  have hcomp : (A.veroneseSectionsGradedHom d V).comp ((A.veroneseSectionsGradedHomInv d V).comp
+      (GradedAlgebra.veroneseMap d (A.restrictGradedSectionsGradedHom i))) =
+        GradedAlgebra.veroneseMap d (A.restrictGradedSectionsGradedHom i) :=
+    GradedRingHom.ext fun x ↦ (A.veroneseSectionsEquiv d V (NeZero.ne d)).apply_symm_apply _
+  have hres := HomogeneousIdeal.irrelevant_le_map_comp hU h
+  rw [A.restrict_comp_veroneseSectionsGradedHomInv d i] at hres
+  have hfd :
+      HomogeneousIdeal.irrelevant (GradedAlgebra.veroneseGrading (A.gradedSectionsGrading V) d) ≤
+        (HomogeneousIdeal.irrelevant
+          (GradedAlgebra.veroneseGrading (A.gradedSectionsGrading U) d)).map
+            (GradedAlgebra.veroneseMap d (A.restrictGradedSectionsGradedHom i)) :=
+    (HomogeneousIdeal.irrelevant_le_map_comp hres hV').trans_eq
+      (congrArg (fun φ ↦ (HomogeneousIdeal.irrelevant
+        (GradedAlgebra.veroneseGrading (A.gradedSectionsGrading U) d)).map φ) hcomp)
+  -- the rewrites time out on these instances of `Proj.map`, so the chain is spelled out
+  refine (congrArg (_ ≫ ·) (A.projVeroneseSectionsIso_hom d U)).trans <|
+    (Category.assoc _ _ _).symm.trans <| ((congrArg (· ≫ (Proj.veroneseIso _ d).hom) <|
+      (Proj.map_comp _ _ hU h).symm.trans <|
+        (Proj.map_congr (A.restrict_comp_veroneseSectionsGradedHomInv d i) _
+          (HomogeneousIdeal.irrelevant_le_map_comp hfd hV)).trans
+        (Proj.map_comp _ _ hfd hV)).trans <| (Category.assoc _ _ _).trans <|
+      (congrArg (Proj.map _ hV ≫ ·) (Proj.map_veroneseMap_veroneseIso_hom _ h' hfd)).trans <|
+        (Category.assoc _ _ _).symm.trans ?_)
+  exact congrArg (· ≫ Proj.map _ h') (A.projVeroneseSectionsIso_hom d V).symm
+
+section Gluing
+
+open Scheme.AffineZariskiSite
+
+variable [∀ n, (A.X n).IsQuasicoherent]
+
+/-- The isomorphisms `projVeroneseSectionsIso` over the affine opens of `X`, as an isomorphism of
+the gluing diagrams of the relative `Proj`s of `A^{(d)}` and `A`. -/
+def _root_.CategoryTheory.CommMon.relativeProjFunctorVeroneseIso :
+    (A.veronese d).relativeProjFunctor ≅ A.relativeProjFunctor :=
+  NatIso.ofComponents (fun U ↦ A.projVeroneseSectionsIso d U.toOpens) fun i ↦
+    A.map_restrict_projVeroneseSectionsIso_hom d ((toOpensFunctor X).map i)
+      ((A.veronese d).irrelevant_le_map_restrictGradedSectionsGradedHom_toOpensFunctor i)
+      (A.irrelevant_le_map_restrictGradedSectionsGradedHom_toOpensFunctor i)
+
+/-- **The relative `Proj` of a Veronese subalgebra.** For `d ≠ 0`, the relative `Proj` of the
+Veronese subalgebra `A^{(d)} = ⨁ₖ A_{dk}` is the relative `Proj` of `A`. -/
+@[stacks 0B5J]
+def _root_.CategoryTheory.CommMon.relativeProjVeroneseIso :
+    (A.veronese d).relativeProj ≅ A.relativeProj :=
+  Limits.HasColimit.isoOfNatIso (A.relativeProjFunctorVeroneseIso d)
+
+/-- On the chart over an affine open `U`, the isomorphism `relativeProjVeroneseIso` is
+`projVeroneseSectionsIso`. -/
+theorem _root_.CategoryTheory.CommMon.relativeProjCover_f_relativeProjVeroneseIso_hom
+    (U : X.AffineZariskiSite) :
+    (A.veronese d).relativeProjCover.f U ≫ (A.relativeProjVeroneseIso d).hom =
+      (A.projVeroneseSectionsIso d U.toOpens).hom ≫ A.relativeProjCover.f U :=
+  Limits.HasColimit.ι_isoOfNatIso_hom _ U
+
+/-- **The isomorphism `relativeProjVeroneseIso` lies over `X`.** -/
+@[reassoc (attr := simp)]
+theorem _root_.CategoryTheory.CommMon.relativeProjVeroneseIso_hom_relativeProjToBase :
+    (A.relativeProjVeroneseIso d).hom ≫ A.relativeProjToBase =
+      (A.veronese d).relativeProjToBase :=
+  (A.veronese d).relativeProjCover.hom_ext _ _ fun (U : X.AffineZariskiSite) ↦
+    (Category.assoc _ _ _).symm.trans <|
+      (congrArg (· ≫ _) (A.relativeProjCover_f_relativeProjVeroneseIso_hom d U)).trans <|
+      (Category.assoc _ _ _).trans <|
+      (congrArg (_ ≫ ·) (A.relativeProjCover_f_relativeProjToBase U)).trans <|
+      ((Category.assoc _ _ _).symm.trans
+        (congrArg (· ≫ U.2.fromSpec) (A.projVeroneseSectionsIso_hom_toSpecCoeff d U.toOpens))).trans
+      ((A.veronese d).relativeProjCover_f_relativeProjToBase U).symm
+
+end Gluing
 
 end
 
