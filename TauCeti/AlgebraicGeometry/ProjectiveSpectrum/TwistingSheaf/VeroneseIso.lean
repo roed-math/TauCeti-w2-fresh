@@ -7,6 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.Veronese
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.Veronese
+public import TauCeti.AlgebraicGeometry.Modules.Sheaf
 
 /-!
 # Twisting sheaves of `Proj` of a Veronese subalgebra
@@ -16,7 +17,8 @@ its Veronese subalgebra. The isomorphism `Proj A^{(d)} ≅ Proj A` of
 `AlgebraicGeometry.Proj.veroneseIso` is glued from affine charts. Here we identify its inverse
 `AlgebraicGeometry.Proj.toVeronese` on points with the contraction `q ↦ q ∩ A^{(d)}` of
 `AlgebraicGeometry.ProjectiveSpectrum.veroneseComap`, along which the twisting sheaf sections
-`Γ(U, 𝒪_{Proj A^{(d)}}(n)) → Γ(V, 𝒪_{Proj A}(d n))` are pulled back.
+`Γ(U, 𝒪_{Proj A^{(d)}}(n)) → Γ(V, 𝒪_{Proj A}(d n))` are pulled back, and deduce that
+`𝒪_{Proj A^{(d)}}(n)` corresponds to `𝒪_{Proj A}(d n)`.
 
 ## Main results
 
@@ -28,6 +30,13 @@ its Veronese subalgebra. The isomorphism `Proj A^{(d)} ≅ Proj A` of
 * `AlgebraicGeometry.Proj.awayToSection_comp_toVeronese_appLE`: on sections over `D₊(g)`,
   `toVeronese` is the isomorphism `A^{(d)}_{(g)} ≃ A_{(g)}` of
   `TauCeti.GradedAlgebra.awayVeroneseEquiv`.
+* `AlgebraicGeometry.Proj.isBasis_basicOpen_veronese`: the `D₊(g)`, `g ∈ A^{(d)}` homogeneous of
+  positive degree, form a basis of `Proj A^{(d)}`.
+* `AlgebraicGeometry.Proj.val_toVeronese_appLE_apply`: on sections, `toVeronese` is pointwise the
+  map of localizations `A^{(d)}_{q ∩ A^{(d)}} → A_q`.
+* `AlgebraicGeometry.Proj.twistingSheafVeroneseIso`: the isomorphism
+  `𝒪_{Proj A^{(d)}}(n) ≅ (toVeronese)_* 𝒪_{Proj A}(d n)`, given on sections by
+  `AlgebraicGeometry.Proj.twistingSheaf.comapVeronese`.
 
 ## References
 
@@ -144,5 +153,151 @@ theorem awayToSection_comp_toVeronese_appLE (hg : g ∈ veroneseGrading 𝒜 d k
   unfold veroneseChart
   refine (Scheme.Hom.appLE_comp_appLE _ _ _ ⊤ ⊤ e' le_rfl).symm.trans ?_
   congr 1
+
+variable (𝒜 d) in
+/-- The `D₊(g)`, for `g ∈ A^{(d)}` homogeneous of positive degree, form a basis of the topology
+of `Proj A^{(d)}`: every point lies in such a `D₊(g)` inside any given neighbourhood. -/
+theorem isBasis_basicOpen_veronese :
+    TopologicalSpace.Opens.IsBasis (Set.range fun g : Σ k : ℕ+, veroneseGrading 𝒜 d k ↦
+      basicOpen (veroneseGrading 𝒜 d) (g.2 : veronese 𝒜 d)) := by
+  refine TopologicalSpace.Opens.isBasis_iff_nbhd.2 fun {U x} hx ↦ ?_
+  obtain ⟨⟨k₀, g₀, hg₀⟩, hyg₀⟩ := TopologicalSpace.Opens.mem_iSup.mp
+    ((iSup_basicOpen_veronese_eq_top 𝒜 d).ge (Set.mem_univ (fromVeronese 𝒜 d x)))
+  obtain ⟨_, ⟨f, rfl⟩, hxf, hfU⟩ :=
+    TopologicalSpace.Opens.isBasis_iff_nbhd.mp (isBasis_basicOpen (veroneseGrading 𝒜 d)) hx
+  rw [basicOpen_eq_iSup_proj] at hxf
+  obtain ⟨i, hxi⟩ := TopologicalSpace.Opens.mem_iSup.mp hxf
+  refine ⟨_, ⟨⟨(⟨i + k₀, Nat.add_pos_right i k₀.pos⟩ : ℕ+), _,
+    SetLike.mul_mem_graded (Submodule.coe_mem (DirectSum.decompose _ f i)) hg₀⟩, rfl⟩, ?_, ?_⟩ <;>
+    dsimp only <;> rw [basicOpen_mul]
+  · refine ⟨hxi, (mem_basicOpen _ _ _).2 fun h ↦ (mem_basicOpen _ _ _).1 hyg₀ ?_⟩
+    rw [← veroneseComap_fromVeronese_apply x] at h
+    exact h
+  · exact inf_le_left.trans ((le_iSup (fun i ↦ basicOpen _ (GradedRing.proj _ i f)) i).trans
+      ((basicOpen_eq_iSup_proj _ f).ge.trans hfU))
+
+open ProjectiveSpectrum.TwistingSheaf in
+/-- **On sections, `AlgebraicGeometry.Proj.toVeronese` is the map of localizations**
+`A^{(d)}_{q ∩ A^{(d)}} → A_q` at every point `q`: the analogue of
+`AlgebraicGeometry.Proj.val_map_appLE_apply` for the glued morphism `toVeronese`. Near `q`, a
+section over `U` is the image of some `c ∈ A^{(d)}_{(g)}` on `D₊(g) ⊆ U`, and on `D₊(g)` the
+morphism `toVeronese` is `TauCeti.GradedAlgebra.awayVeroneseEquiv` by
+`AlgebraicGeometry.Proj.awayToSection_comp_toVeronese_appLE`. -/
+theorem val_toVeronese_appLE_apply {U : (Proj (veroneseGrading 𝒜 d)).Opens}
+    {V : (Proj 𝒜).Opens} (hUV : V ≤ toVeronese 𝒜 d ⁻¹ᵁ U) (a : Γ(Proj (veroneseGrading 𝒜 d), U))
+    (y : V) :
+    (((toVeronese 𝒜 d).appLE U V hUV a).1 y).val = veroneseLocalizationsMap y.1
+      (a.1 ⟨_, (coe_toVeronese_preimage U).subset (hUV y.2)⟩).val := by
+  have hxU := (coe_toVeronese_preimage U).subset (hUV y.2)
+  -- a homogeneous `g ∈ A^{(d)}` of positive degree with `q ∩ A^{(d)} ∈ D₊(g) ⊆ U`
+  obtain ⟨_, ⟨⟨k, g, hg⟩, rfl⟩, hxg, hgU⟩ :=
+    TopologicalSpace.Opens.isBasis_iff_nbhd.mp (isBasis_basicOpen_veronese 𝒜 d) hxU
+  have hk := k.pos
+  have hy : y.1 ∈ basicOpen 𝒜 (g : A) :=
+    (toVeronese_preimage_basicOpen hg hk).le (show toVeronese 𝒜 d y.1 ∈ basicOpen _ g by
+      rw [toVeronese_apply]; exact hxg)
+  -- the restriction of `a` to `D₊(g)` comes from some `c ∈ A^{(d)}_{(g)}`
+  have := (basicOpenIsoAway _ g hg hk).isIso_hom
+  rw [basicOpenIsoAway_hom] at this
+  obtain ⟨c, hc⟩ := (ConcreteCategory.bijective_of_isIso (awayToSection _ g)).2
+    ((Proj (veroneseGrading 𝒜 d)).presheaf.map (homOfLE hgU).op a)
+  let W : (Proj 𝒜).Opens := V ⊓ basicOpen 𝒜 (g : A)
+  have e₁ := ConcreteCategory.congr_hom
+    (Scheme.Hom.appLE_map (toVeronese 𝒜 d) hUV (homOfLE (inf_le_left : W ≤ V)).op) a
+  have e₂ := ConcreteCategory.congr_hom (Scheme.Hom.map_appLE (toVeronese 𝒜 d)
+    (inf_le_right.trans (toVeronese_preimage_basicOpen hg hk).ge : W ≤ _) (homOfLE hgU).op) a
+  have e₃ := ConcreteCategory.congr_hom (Scheme.Hom.appLE_map (toVeronese 𝒜 d)
+    (toVeronese_preimage_basicOpen hg hk).ge (homOfLE (inf_le_right : W ≤ _)).op)
+    (awayToSection _ g c)
+  have e₄ := ConcreteCategory.congr_hom (awayToSection_comp_toVeronese_appLE hg hk) c
+  simp only [ConcreteCategory.comp_apply] at e₁ e₂ e₃ e₄
+  have ev {W' : (Proj 𝒜).Opens} (hW' : y.1 ∈ W') {s t : Γ(Proj 𝒜, W')} (h : s = t) :
+      (s.1 ⟨y.1, hW'⟩).val = (t.1 ⟨y.1, hW'⟩).val :=
+    congrArg (fun s : Γ(Proj 𝒜, W') ↦ (s.1 ⟨y.1, hW'⟩).val) h
+  have res {W₁ W₂ : (Proj 𝒜).Opens} (i : W₁ ≤ W₂) (h₁ : y.1 ∈ W₁) (s : Γ(Proj 𝒜, W₂)) :
+      (((Proj 𝒜).presheaf.map (homOfLE i).op s).1 ⟨y.1, h₁⟩).val = (s.1 ⟨y.1, i h₁⟩).val :=
+    rfl
+  have hl : (((toVeronese 𝒜 d).appLE U V hUV a).1 y).val =
+      ((awayToSection 𝒜 (g : A) (awayVeroneseEquiv hg c)).1 ⟨y.1, hy⟩).val :=
+    (res inf_le_left ⟨y.2, hy⟩ _).symm.trans <| (ev _ e₁).trans <|
+      (ev _ (e₂.symm.trans (congrArg _ hc.symm))).trans <| (ev _ e₃.symm).trans <|
+        (res inf_le_right ⟨y.2, hy⟩ _).trans (ev hy e₄)
+  have hr : (a.1 ⟨_, hxU⟩).val = ((awayToSection _ g c).1 ⟨_, hxg⟩).val := by
+    rw [hc]
+    rfl
+  rw [hl, hr]
+  obtain ⟨n, b, hb, rfl⟩ := HomogeneousLocalization.Away.mk_surjective _ hg c
+  rw [awayVeroneseEquiv_mk]
+  refine (veroneseLocalizationsMap_mk (𝒜 := 𝒜) (d := d) y.1 b ⟨g ^ n, fun h ↦ ?_⟩).symm
+  exact (mem_basicOpen _ _ _).1 hxg (Ideal.IsPrime.mem_of_pow_mem inferInstance n h)
+
+namespace twistingSheaf
+
+open ProjectiveSpectrum.TwistingSheaf
+
+variable {n : ℤ} {U : (Proj (veroneseGrading 𝒜 d)).Opens} {V : (Proj 𝒜).Opens}
+
+/-- **The pullback along the Veronese contraction is linear** over the map of structure sheaves
+given by `AlgebraicGeometry.Proj.toVeronese`. -/
+theorem comapVeronese_smul (hUV : V.1 ⊆ ProjectiveSpectrum.veroneseComap 𝒜 d ⁻¹' U.1)
+    (a : Γ(Proj (veroneseGrading 𝒜 d), U)) (s : Γ(twistingSheaf (veroneseGrading 𝒜 d) n, U)) :
+    comapVeronese hUV (a • s) = (toVeronese 𝒜 d).appLE U V
+      (fun _ hy ↦ (coe_toVeronese_preimage U).ge (hUV hy)) a • comapVeronese hUV s := by
+  refine ext fun (y : V) ↦ ?_
+  simp only [comapVeronese_apply, smul_apply, map_mul, val_toVeronese_appLE_apply]
+  rfl
+
+end twistingSheaf
+
+open twistingSheaf
+
+variable (𝒜 d) in
+/-- **The morphism of twisting sheaves along the Veronese isomorphism**: the morphism
+`𝒪_{Proj A^{(d)}}(n) ⟶ (toVeronese)_* 𝒪_{Proj A}(d n)` of sheaves of modules on `Proj A^{(d)}`,
+given on sections over `U` by `AlgebraicGeometry.Proj.twistingSheaf.comapVeronese`. -/
+noncomputable def twistingSheafVeroneseMap (n : ℤ) :
+    twistingSheaf (veroneseGrading 𝒜 d) n ⟶
+      (Scheme.Modules.pushforward (toVeronese 𝒜 d)).obj (twistingSheaf 𝒜 (d * n)) where
+  val :=
+    { app U := ModuleCat.ofHom (X := (twistingSheaf (veroneseGrading 𝒜 d) n).val.obj U)
+        (Y := ((Scheme.Modules.pushforward (toVeronese 𝒜 d)).obj
+          (twistingSheaf 𝒜 (d * n))).val.obj U)
+        { toFun := comapVeronese (U := U.unop) (coe_toVeronese_preimage U.unop).subset
+          map_add' := map_add _
+          map_smul' := comapVeronese_smul (coe_toVeronese_preimage U.unop).subset }
+      naturality _ := rfl }
+
+/-- On sections over `U`, the morphism of twisting sheaves along the Veronese isomorphism is the
+pullback of sections along the contraction to the preimage of `U`. -/
+@[simp]
+theorem twistingSheafVeroneseMap_app (n : ℤ) (U : (Proj (veroneseGrading 𝒜 d)).Opens) :
+    Scheme.Modules.Hom.app (twistingSheafVeroneseMap 𝒜 d n) U =
+      AddCommGrpCat.ofHom (comapVeronese (U := U) (coe_toVeronese_preimage U).subset) :=
+  (rfl)
+
+/-- **The morphism of twisting sheaves along the Veronese isomorphism is an isomorphism**: over
+each `D₊(g)`, `g ∈ A^{(d)}` homogeneous of positive degree, it is bijective by
+`AlgebraicGeometry.Proj.twistingSheaf.bijective_comapVeronese_basicOpen`, and these opens form a
+basis. -/
+instance isIso_twistingSheafVeroneseMap (n : ℤ) : IsIso (twistingSheafVeroneseMap 𝒜 d n) := by
+  refine Scheme.Modules.Hom.isIso_of_isBasis _ (isBasis_basicOpen_veronese 𝒜 d)
+    fun ⟨k, g, hg⟩ ↦ ?_
+  rw [twistingSheafVeroneseMap_app]
+  -- the preimage of `D₊(g)` is `D₊(g)`, but not definitionally
+  have key : ∀ (V : (Proj 𝒜).Opens) (_ : V = basicOpen 𝒜 (g : A))
+      (hUV : V.1 ⊆ ProjectiveSpectrum.veroneseComap 𝒜 d ⁻¹' (basicOpen _ g).1),
+      Function.Bijective (comapVeronese (n := n) hUV) := by
+    rintro _ rfl _
+    exact bijective_comapVeronese_basicOpen hg k.pos
+  exact (ConcreteCategory.isIso_iff_bijective _).2
+    (key _ (toVeronese_preimage_basicOpen hg k.pos) _)
+
+variable (𝒜 d) in
+/-- **`𝒪_{Proj A^{(d)}}(n)` corresponds to `𝒪_{Proj A}(d n)`** along the Veronese isomorphism
+`Proj A^{(d)} ≅ Proj A`, whose inverse is `AlgebraicGeometry.Proj.toVeronese`. -/
+noncomputable def twistingSheafVeroneseIso (n : ℤ) :
+    twistingSheaf (veroneseGrading 𝒜 d) n ≅
+      (Scheme.Modules.pushforward (toVeronese 𝒜 d)).obj (twistingSheaf 𝒜 (d * n)) :=
+  asIso (twistingSheafVeroneseMap 𝒜 d n)
 
 end AlgebraicGeometry.Proj
