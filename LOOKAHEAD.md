@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-veronese","main":"3a0189695d62134a412200ef4237d0bbb2e95d75","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the Veronese subalgebra of a graded algebra"},{"n":2,"after":[1],"title":"feat: homogeneous localizations of a Veronese subalgebra"},{"n":3,"after":[2],"title":"feat: Proj of a Veronese subalgebra"},{"n":4,"after":[],"title":"feat: Veronese subalgebras of graded monoid objects"},{"n":5,"after":[1,4],"title":"feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra"},{"n":6,"after":[1],"title":"feat: pulling back twisting sheaf sections along the Veronese contraction"},{"n":7,"after":[3,6],"title":"feat: twisting sheaves of Proj of a Veronese subalgebra"},{"n":8,"after":[1,2,3,4,5],"title":"feat: relative Proj of a Veronese subalgebra"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: twisting sheaves of the relative Proj of a Veronese subalgebra"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-veronese","main":"7ac4960977499bb4976656e7658c457204e14c04","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the Veronese subalgebra of a graded algebra"},{"n":2,"after":[1],"title":"feat: homogeneous localizations of a Veronese subalgebra"},{"n":3,"after":[2],"title":"feat: Proj of a Veronese subalgebra"},{"n":4,"after":[],"title":"feat: Veronese subalgebras of graded monoid objects"},{"n":5,"after":[1,4],"title":"feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra"},{"n":6,"after":[1],"title":"feat: pulling back twisting sheaf sections along the Veronese contraction"},{"n":7,"after":[3,6],"title":"feat: twisting sheaves of Proj of a Veronese subalgebra"},{"n":8,"after":[1,2,3,4,5],"title":"feat: relative Proj of a Veronese subalgebra"},{"n":9,"after":[1,2,3,4,5,6,7,8],"title":"feat: twisting sheaves of the relative Proj of a Veronese subalgebra"}]}-->
 
 # Lookahead: `relative-proj-veronese` (SchemeAndStackFoundations, Layer 0, §0.3)
 
@@ -7,9 +7,10 @@ Target (README §0.3): prove `relativeProj_veronese`: for `d ≥ 1` the Veronese
 `relativeProj A^{(d)} ≅ relativeProj A` over `S`, with `O(n)` corresponding to `O(dn)`
 (Stacks, Lemma 27.11.8 (0B5J), on affine charts).
 
-Built on `main` at `3a0189695d6` (merged into the branch on 2026-11-06 at the sixth session; it
-changed only `.github/`). At the seventh session (2026-11-06) `main` was unchanged and PR #29201
-was still open.
+Built on `main` at `7ac49609774` (merged into the branch on 2026-11-06 at the eighth session;
+the merge was clean and no new declaration on `main` duplicates one of this branch: `main`'s
+`TauCeti/RingTheory/GradedAlgebra/Veronese.lean` is about generation of Veronese subrings, not the
+subalgebra itself). PR #29201 was still open at the eighth session.
 
 **Status: partial.** Splits 1 to 6 and 8 are proved on this branch, with no `sorry`: the
 Veronese subalgebra and its functoriality in graded ring maps, its affine charts,
@@ -244,7 +245,13 @@ fractions, so it should reduce to `Localization.localRingHom` composition lemmas
 isomorphisms `twistingSheafVeroneseIso` of the `Proj (A.gradedSectionsGrading U)` along
 `relativeProjFunctorVeroneseIso` into `relativeProjTwistingSheafVeroneseIso`, as listed above.
 
-Lessons for the next session: (seventh session) in `val_toVeronese_appLE_apply`, `rw` with the
+Lessons for the next session: (eighth session) the session only merged `main` and rebuilt;
+for step 5, `twistingSheafMap` (main's `TwistingSheaf/Functor.lean`) is built from
+`localizationsMap`, whose fibres are indexed by `Proj.map` of the point, so state the pointwise
+identity `veroneseLocalizationsMap ∘ localizationsMap (veroneseMap d f) = localizationsMap f ∘
+veroneseLocalizationsMap` on `Localization.mk` first (both sides are induced by the same ring map
+`A^{(d)} → B`), then lift to sections with `twistingSheaf.ext` as in `twistingSheafMap_comp`.
+(seventh session) in `val_toVeronese_appLE_apply`, `rw` with the
 `ConcreteCategory.congr_hom` forms of `appLE_map`/`map_appLE` fails (motive not type correct);
 chaining them through local `ev`/`res` evaluation lemmas with `Eq.trans` works, and the final
 fraction identity closes by `exact` against `veroneseLocalizationsMap_mk`. Transport along
