@@ -79,6 +79,14 @@ inline by the same induction in `Residual.lean` and `BoxPoints.lean`, into the g
 `Algebra/Group/Pointwise/Set/Finite.lean`, which has `Set.Finite.mul` and `Set.Finite.add` but
 not the iterated forms. Both former call sites now use `hA.nsmul k`.
 
+The round resuming at `e8ab4a844b0` (16:48 UTC) found `main` still at `3a0189695d6` and PR
+#28644 still open at head `583a153b95f`. It discharged the README's third check: rational
+independence of the `λ_j` gives multiplicative rank `≥ m−1` for the `α_j = exp λ_j`, in exactly
+the form of the rank hypothesis of `BoxPoints.lean`. This is
+`TauCeti.le_finrank_span_ofMul_add_one_of_linearIndependent`, in the new general file
+`TauCeti/Analysis/SpecialFunctions/Complex/ExpRank.lean`. So the measure's data, with its
+`λ_j` linearly independent over `ℚ`, meets the target's rank hypothesis.
+
 What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
 
@@ -329,6 +337,13 @@ In the new file `Interpolation/Residual.lean`:
        `k`-fold sumset, and the second count above for `k • A` with `A` in the box `‖s‖∞ ≤ R`,
        so that `A = (S−S) ∩ V`, `k = m + 1` and `R = ⌊T₀/2⌋` apply directly (+41 lines).
 
+   - `TauCeti/Analysis/SpecialFunctions/Complex/ExpRank.lean` (new, 68 lines), the README's
+     third check: `TauCeti.le_finrank_span_ofMul_add_one_of_linearIndependent`. If
+     `λ₁, …, λₘ` are linearly independent over `ℚ` and `α_j = exp λ_j` in `ℂˣ`, then
+     `m ≤ finrank ℤ (span ℤ (range fun j ↦ Additive.ofMul (α j))) + 1`. The proof maps the
+     exponent vectors with `∏ α_j ^ s_j = 1` injectively into `2πiℤ` by `s ↦ Σ s_j λ_j`, then
+     applies rank-nullity. It imports nothing from the branch.
+
    The rest is not on this branch. If split 5 grows past 600 lines, `BoxPoints.lean` can be
    opened on its own first, once split 3 (which supplies `ImageCard.lean`) has merged.
 
@@ -411,3 +426,11 @@ In the new file `Interpolation/Residual.lean`:
     `runLinter` passed on `Algebra.Group.Pointwise.Set.Finite`. `main` and pinned Mathlib were
     grepped for `Finite.pow` / `Finite.nsmul`; neither exists. The duplicated inline inductions
     were replaced by the new lemma rather than kept.
+  - 2026-11-06, about 17:05 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `Analysis.SpecialFunctions.Complex.ExpRank`. `main` and pinned Mathlib
+    were grepped for a rank bound on exponentials of `ℚ`-independent numbers; neither has one.
+    The proof reuses Mathlib's `Complex.exp_eq_one_iff`, `Complex.exp_sum`,
+    `linearIndependent_iff_injective_fintypeLinearCombination`,
+    `LinearIndependent.restrict_scalars'`, `LinearMap.finrank_le_finrank_of_injective`,
+    `finrank_span_le_card` and `Fintype.range_linearCombination`. Its proof-only imports are
+    private.
