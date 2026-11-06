@@ -66,6 +66,8 @@ applies to the quotients appearing here without any further appeal to defeq.
   ambient module.
 * `TauCeti.length_ker_add_length_quotient_range_eq_of_exact`: additivity of
   `length (M ⧸ range φ) - length (ker φ)` in short exact sequences, from the snake lemma.
+* `TauCeti.length_quotient_lsmul_submodule_eq`: `N ⧸ aN` and `M ⧸ aM` have the same length when
+  `a` acts injectively on `M` and `M ⧸ N` has finite length.
 * `TauCeti.length_quotient_lsmul_congr`: the length of `M ⧸ aM` is a linear-equivalence invariant.
 * `TauCeti.length_quotient_lsmul_le_of_forall_fg`: the finite-generation reduction for `M ⧸ aM`.
 * `TauCeti.isFiniteLength_quotient_of_nonZeroDivisor_mem`: `A ⧸ I` has finite length when `I`
@@ -452,6 +454,31 @@ theorem length_ker_add_length_quotient_range_eq_of_exact {N P : Type*} [AddCommG
     obtain ⟨m, rfl⟩ := hg p
     exact ⟨Submodule.Quotient.mk m, rfl⟩
   exact length_add_length_add_length_eq_of_exact h₁ h₂ h₃ h₄ h₅ h₆
+
+/-- **A submodule of finite colength has the same `M ⧸ aM`.** If `a` acts injectively on `M` and
+`M ⧸ N` has finite length, then `N ⧸ aN` and `M ⧸ aM` have the same length: in
+`length_ker_add_length_quotient_range_eq_of_exact` for `0 → N → M → M ⧸ N → 0` the kernels on `N`
+and `M` vanish, and the kernel and cokernel of `a` on `M ⧸ N` have the same finite length. This is
+the vanishing of `e(M ⧸ N, a)` in the additivity of Stacks, Section 42.2. -/
+theorem length_quotient_lsmul_submodule_eq {N : Submodule A M} (hN : IsFiniteLength A (M ⧸ N))
+    {a : A} (ha : Function.Injective (LinearMap.lsmul A M a)) :
+    Module.length A (↥N ⧸ LinearMap.range (LinearMap.lsmul A ↥N a))
+      = Module.length A (M ⧸ LinearMap.range (LinearMap.lsmul A M a)) := by
+  have hfin : Module.length A (M ⧸ N) ≠ ⊤ := Module.length_ne_top_iff.mpr hN
+  have hkerM : LinearMap.ker (LinearMap.lsmul A M a) = ⊥ := LinearMap.ker_eq_bot.mpr ha
+  have hkerN : LinearMap.ker (LinearMap.lsmul A ↥N a) = ⊥ :=
+    LinearMap.ker_eq_bot.mpr fun x y h => Subtype.ext (ha (congrArg Subtype.val h))
+  have h := length_ker_add_length_quotient_range_eq_of_exact (Submodule.subtype_injective N)
+    (LinearMap.exact_subtype_mkQ N) (Submodule.mkQ_surjective N)
+    (φN := LinearMap.lsmul A ↥N a) (φM := LinearMap.lsmul A M a)
+    (φP := LinearMap.lsmul A (M ⧸ N) a) (LinearMap.ext fun _ => rfl) (LinearMap.ext fun _ => rfl)
+  rw [hkerM, hkerN, length_ker_eq_length_quotient_range _ hfin, Module.length_bot,
+    Module.length_bot, zero_add, zero_add] at h
+  set c := Module.length A ((M ⧸ N) ⧸ LinearMap.range (LinearMap.lsmul A (M ⧸ N) a))
+  have hc : c ≠ ⊤ := ne_top_of_le_ne_top hfin
+    (Module.length_le_of_surjective _ (Submodule.mkQ_surjective _))
+  rw [add_comm c] at h
+  exact WithTop.add_right_cancel hc h
 
 end CommRing
 

@@ -30,7 +30,10 @@ round refined the plan for that step (see *What remains*, item 2). A seventh rou
 still open at `d327f903b0`, #29451 still open at `ed4b4ac70d`, so still no supplier declaration on
 `main`) and did step 2(a) of that plan: four general length lemmas in
 `TauCeti/RingTheory/Length.lean`, ending with the snake-lemma additivity of
-`length (coker φ) - length (ker φ)` in short exact sequences.
+`length (coker φ) - length (ker φ)` in short exact sequences. An eighth round on 2026-11-06 (main still `385ec2ddd8d`,
+#29425 still open at `d327f903b0`, #29451 still open at `ed4b4ac70d`) added
+`length_quotient_lsmul_submodule_eq` to the same file: the finite-colength invariance of
+`ℓ(M ⧸ aM)` that step 2(b) uses to discard the `B ⧸ 𝔪` pieces of a prime filtration.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -192,6 +195,10 @@ formula; namespace `TauCeti`), no `sorry`:
   compatible endomorphisms `φN`, `φM`, `φP`, `ℓ(ker φM) + ℓ(coker φN) + ℓ(coker φP) =
   ℓ(ker φN) + ℓ(ker φP) + ℓ(coker φM)`, from Mathlib's `SnakeLemma.exact_δ'_right`/`_left` (the
   additivity of `e(M, b)` of Stacks Section 42.2, stated without subtraction in `ℕ∞`).
+- `length_quotient_lsmul_submodule_eq` (eighth round): if `a` acts injectively on `M` and
+  `M ⧸ N` has finite length, then `ℓ(N ⧸ aN) = ℓ(M ⧸ aM)` (the snake-lemma additivity with
+  `e(M ⧸ N, a) = 0`). `main`'s `length_quotient_lsmul_ideal_eq_ord` is its special case `M = A`,
+  `N = I`; the port may re-derive it from the new lemma.
 
 ## What remains
 
@@ -221,7 +228,8 @@ formula; namespace `TauCeti`), no `sorry`:
    `Mathlib/Algebra/Module/SnakeLemma.lean`) and `Module.length_eq_add_of_exact`, and that it
    vanishes on finite-length `M` (kernel and cokernel of an endomorphism of a finite-length module
    have equal length);
-   (b) with Mathlib's prime filtration (`IsNoetherianRing.exists_relSeries_isQuotientEquivQuotientPrime`,
+   (b) (the finite-colength step is `length_quotient_lsmul_submodule_eq`, eighth round)
+   with Mathlib's prime filtration (`IsNoetherianRing.exists_relSeries_isQuotientEquivQuotientPrime`,
    `IsNoetherianRing.induction_on_isQuotientEquivQuotientPrime`), applied to the
    one-dimensional local ring `B` and a nonzerodivisor `b`: the quotients `B ⧸ 𝔪` contribute `0`
    by (a), and the number of quotients `B ⧸ 𝔮` for minimal `𝔮` is `ℓ_{B_𝔮}(B_𝔮)` after localising the
@@ -282,7 +290,7 @@ formula; namespace `TauCeti`), no `sorry`:
    in two: dimension shift
    (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
    flat pullback of cycles with generic-length multiplicities*.
-4. Files: `TauCeti/RingTheory/Length.lean` (four general length lemmas, +133 lines, done; the
+4. Files: `TauCeti/RingTheory/Length.lean` (five general length lemmas, +160 lines, done; the
    port may open them as a small prerequisite PR *feat(RingTheory/Length): lengths in four- and
    six-term exact sequences*, which needs no other split) and
    `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 102
