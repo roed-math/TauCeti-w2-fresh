@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
 
 # Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
 
-Built on `main` at `72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab`. Status: **partial**.
+Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. Status: **partial**. This round merged `main` forward from `72cbdfb14e3` without conflicts.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -76,6 +76,14 @@ no `sorry`:
    function field), check the closures form a locally finite family in the locally Noetherian `X`
    (each point has a Noetherian neighbourhood meeting finitely many), and apply
    `ker_cyclesRestrict_eq_range_cyclesPushforward` to `α − Σ div r̄_j`.
+   Concrete route found this round: take `W̄_j` to be Mathlib's scheme-theoretic image
+   `(W_j.i ≫ j).imageι` (`Mathlib/AlgebraicGeometry/IdealSheaf/Subscheme.lean`), a closed
+   immersion whose `toImage` is dominant once `W_j.i ≫ j` is quasi-compact. The pinned Mathlib
+   has neither (a) quasi-compactness of an open immersion into a locally Noetherian scheme, nor
+   (b) integrality of `f.image` for `f` quasi-compact with integral source, nor (c) that
+   `f.toImage` is an open immersion when `f` is an immersion. These three lemmas, with
+   `Scheme.ord_functionFieldMap` along `toImage`, give the closure family; they open split 2's
+   remaining work (or a small prerequisite split if they exceed its budget).
 2. (Split 3) `Chow.cyclesFlatPullback` for `f` flat with `PureRelativeDimension n f` (Tau Ceti's
    carrier): `f^*[V] = Σ_ξ length(O_{f⁻¹V, ξ}) [ξ]` over generic points of `f⁻¹(V)`, its local
    finiteness, the dimension shift `k ↦ k + n`, and `(g f)^* = f^* g^*` on cycles.
