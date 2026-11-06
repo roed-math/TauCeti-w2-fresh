@@ -1,28 +1,44 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"finite-dimensional-h1-structure-sheaf","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["riemann-surface-structure-sheaf-h1"],"splits":[{"n":1,"after":[],"title":"feat: Schwartz's theorem on compact perturbations of surjections"},{"n":2,"after":[],"title":"feat: compact operators into finite products"},{"n":3,"after":[],"title":"feat: bounded holomorphic maps on a complex manifold and Montel's theorem"},{"n":4,"after":[1,2,3],"title":"feat: bounded holomorphic Čech cochains and finiteness of bounded H¹"},{"n":5,"after":[4],"title":"feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf"},{"n":6,"after":[1,2,3,4,5],"title":"feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"finite-dimensional-h1-structure-sheaf","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":["riemann-surface-structure-sheaf-h1"],"splits":[{"n":1,"after":[],"title":"feat: Schwartz's theorem on compact perturbations of surjections"},{"n":2,"after":[],"title":"feat: bounded holomorphic maps on a complex manifold and Montel's theorem"},{"n":3,"after":[1,2],"title":"feat: bounded holomorphic Čech cochains and finiteness of bounded H¹"},{"n":4,"after":[3],"title":"feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf"},{"n":5,"after":[1,2,3,4],"title":"feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional"}]}-->
 
 # Lookahead: `finite-dimensional-h1-structure-sheaf` (ModularForms, Layer 10B (ii))
 
 Target: `dim H¹(X, 𝒪_D) < ∞` for a compact Riemann surface `X` and a divisor `D`
 (Forster, *Lectures on Riemann Surfaces*, §14). Built on `main` at
-`e8758b7b2f82b9b1c3f33b992ab8f499b510240f`. Status: **partial**.
+`afa08a3ed16fb167e35de371afb1eb03fbc5913a` (re-merged this round; `lake build` and
+`lookahead-check` green). Status: **partial**.
 
 ## Stubs: none
 
-The supplier `riemann-surface-structure-sheaf-h1` (Layer 10B (i)) still pins **no declarations**:
-`ModularForms/Suggested.lean` contains no 10B statement (only the final dimension examples and
-the `#check`s of the Fuchsian/degree API). Its in-flight PR #27339 ("the Dolbeault lemma on
-discs", still open) states only the local `∂̄`-lemma
-(`TauCeti.exists_contDiffOn_conjWirtingerDeriv_apply_one_eq_of_eball` and corollaries on balls
-and closed balls in `ℂ`), which the PR describes as partial. The objects the target's final
-statement needs — Čech `H¹(X, 𝒪_D)` of the divisor sheaf `TauCeti.RiemannSurface.divisorSheaf D`
-(on `main`), its refinement independence, and Forster's Leray theorem 12.8 — are pinned neither
-in `Suggested.lean` nor in any PR diff, so stubbing them would mean inventing their names and
-statements. No stub file exists and nothing on the branch uses `sorry`.
+The supplier `riemann-surface-structure-sheaf-h1` (Layer 10B (i)) still pins **no declarations**
+that this target consumes. `ModularForms/Suggested.lean` contains no 10B statement (only the final
+dimension examples and the `#check`s of the Fuchsian/degree API). Its assigned in-flight PR is now
+#29154 (open, self-described as partial): it proves only the generic bridge
+`TauCeti.Topology.subsingleton_H'_one_of_isZero_cechCohomology` (`Ȟ¹(W, F) = 0` for the
+cover-colimit Čech cohomology ⇒ sheaf `H¹(W, F) = 0`, for `AddCommGrpCat`-valued sheaves). The
+other parts it names are also open: #28963 (degree-one Leray comparison
+`homologyCechComplexIsoHOne`, `AddCommGrpCat`-valued, under memberwise `H¹(U i, F) = 0`) and
+#28407 (Dolbeault sequence and `Ȟ¹(D, 𝒪) = 0` on discs in `ℂ`). The earlier #27339 was closed.
+None of these states what the target consumes — the comparison of `Ȟ¹(X, 𝒪_D)` with the Čech
+`H¹` of one finite cover by coordinate discs of a Riemann surface, for `ModuleCat ℂ`-valued
+sheaves — so stubbing it would still mean inventing its name and statement. No stub file exists
+and nothing on the branch uses `sorry`.
 
-Everything proved so far is the supplier-independent part of §14: the functional analysis
-(splits 1–2), the Banach spaces of bounded holomorphic functions on a complex manifold with
-Montel's theorem (split 3), and the bounded Čech complex with the finiteness reduction (split 4).
-The supplier is listed in the header because splits 5–6 cannot be written until it lands.
+**New on `main` since the last round: the target's carrier.** `main` now has the cover-colimit
+Čech cohomology `TauCeti.Topology.cechCohomology` (`Topology/Sheaves/Cech/Colimit.lean`) and the
+divisor sheaf `TauCeti.RiemannSurface.divisorSheaf D : TopCat.Sheaf (ModuleCat ℂ) (TopCat.of X)`.
+This round checked that the exported statement of split 5 elaborates against them, with imports
+`TauCeti.Analysis.Complex.RiemannSurface.Divisor.Sheaf` and
+`TauCeti.Topology.Sheaves.Cech.Sheafification` (which supplies the `ModuleCat` colimit instances;
+with `Cech.Colimit` alone, `HasProducts (ModuleCat ℂ)` synthesis times out):
+
+```lean
+{X : Type} [TopologicalSpace X] [ChartedSpace ℂ X] [IsManifold 𝓘(ℂ) 1 X] [CompactSpace X] …
+    (D : TauCeti.AlgebraicGeometry.WeilDivisor X) :
+  FiniteDimensional ℂ ((TauCeti.Topology.cechCohomology (TopCat.of X) (ModuleCat.{0} ℂ) 1).obj
+    (TauCeti.RiemannSurface.divisorSheaf D).obj)
+```
+
+So the final statement needs no stub; only the comparison input of split 4 waits on the supplier.
 
 ## What is proved (all sorry-free, `lake build` green)
 
@@ -66,7 +82,7 @@ For a complex manifold `X` modelled by `I : ModelWithCorners ℂ E H` and a comp
   `isCompactOperator_restrict` / `isCompactOperator_restrict_of_isCompact_closure`
   (`[ProperSpace F]`; equicontinuity from the chart Cauchy estimate + Arzelà–Ascoli).
 * `MDifferentiableOn.exists_forall_norm_le_of_isCompact_closure`: a holomorphic map is bounded on
-  any `W'` with compact closure in `W` (to feed unbounded cocycles into `H^∞` in split 5).
+  any `W'` with compact closure in `W` (to feed unbounded cocycles into `H^∞` in split 4).
 
 ### `TauCeti/Geometry/Manifold/Complex/BoundedCechCochains.lean` (new this round, 330 lines)
 
@@ -80,7 +96,7 @@ Namespace `TauCeti.BoundedCech`, for `U V : ι → Opens X`:
 * Restrictions `restrict₀/₁/₂` commuting with `d₀`, `d₁`; `restrictCochains₀`,
   `restrictCocycles`, `restrictCocycles_comp_d₀Cocycles`.
 * `isCompactOperator_restrictCocycles`: for finite `ι` and `closure Vᵢ` compact in `Uᵢ`,
-  restriction of holomorphic cocycles is compact (Montel on each `Uᵢ ∩ Uⱼ` + split 2).
+  restriction of holomorphic cocycles is compact (Montel on each `Uᵢ ∩ Uⱼ` + `IsCompactOperator.pi`).
 * `exists_finiteDimensional_isCompl_range_d₀Cocycles`: **finiteness of bounded `H¹`** — if every
   bounded holomorphic cocycle on `V` is `restrictCocycles ζ + d₀Cocycles η`, the bounded
   coboundaries on `V` have a finite-dimensional complement in the bounded cocycles (split 1).
@@ -96,34 +112,47 @@ same reason: consumers can transport finiteness to `H¹` through the complement.
 
 ## Split plan
 
+`Compact/Pi.lean` (60 lines, previously its own split) is folded into the bounded Čech split, its
+only consumer, so no split is a 60-line PR.
+
 1. **feat: Schwartz's theorem on compact perturbations of surjections** — `Compact/FiniteRank.lean`
-   (+65), `Fredholm/SurjectiveCompactPerturbation.lean` (143). Needs: none. **On the branch.**
-2. **feat: compact operators into finite products** — `Compact/Pi.lean` (60). Needs: none.
-   **On the branch.** (Small; can be folded into split 4, its only consumer.)
-3. **feat: bounded holomorphic maps on a complex manifold and Montel's theorem** —
-   `Geometry/Manifold/Complex/BoundedHolomorphic.lean` (357). Needs: none. **On the branch.**
-4. **feat: bounded holomorphic Čech cochains and finiteness of bounded H¹** —
-   `Geometry/Manifold/Complex/BoundedCechCochains.lean` (330). Needs: 1, 2, 3. **On the
-   branch.**
-5. **feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf** —
+   (+65), `Fredholm/SurjectiveCompactPerturbation.lean` (143). Adds
+   `IsCompactOperator.exists_finiteDimensional_dist_le` and the four `ContinuousLinearMap`
+   theorems listed above. Needs: none. **On the branch.**
+2. **feat: bounded holomorphic maps on a complex manifold and Montel's theorem** —
+   `Geometry/Manifold/Complex/BoundedHolomorphic.lean` (357). Adds `boundedHolomorphicSections` and
+   the `BoundedHolomorphicSections` namespace listed above. Needs: none. **On the branch.**
+3. **feat: bounded holomorphic Čech cochains and finiteness of bounded H¹** —
+   `Analysis/Normed/Operator/Compact/Pi.lean` (60) and
+   `Geometry/Manifold/Complex/BoundedCechCochains.lean` (330). Adds `IsCompactOperator.pi`,
+   `IsCompactOperator.piMap` and the `BoundedCech` namespace listed above. Needs: 1, 2.
+   **On the branch.**
+4. **feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf** —
    *needs the supplier*. Forster 14.7/14.8 for finite covers `𝔚 ⋐ 𝔙 ⋐ 𝔘*` of compact `X` by
    coordinate discs: (a) every `ξ ∈ cocycles I 𝔙` is `restrictCocycles ζ + d₀Cocycles η` with
-   `ζ ∈ cocycles I 𝔘` — split `ξ` by a smooth partition of unity (`ξᵢⱼ = gⱼ - gᵢ`), glue the
-   `∂̄gᵢ` in each chart, solve `∂̄fᵢ = ω` on a larger disc with the Dolbeault lemma of #27339
-   (bounded on the smaller disc), and take `ζᵢⱼ = fⱼ - fᵢ`, `η = fᵢ - gᵢ`; (b) the supplier's
-   Čech `H¹(X, 𝒪)` is a quotient of the bounded cocycles on `𝔚` (Leray for disc covers;
+   `ζ ∈ cocycles I 𝔘` — split `ξ` by a smooth partition of unity (`ξᵢⱼ = gⱼ - gᵢ`; `main`'s
+   `Geometry/Manifold/Sheaf/Smooth/Cech.lean` has the smooth-sheaf contracting homotopy), glue the
+   `∂̄gᵢ` in each chart, solve `∂̄fᵢ = ω` on a larger disc with the Dolbeault lemma of #28407
+   (bounded on the smaller disc), and take `ζᵢⱼ = fⱼ - fᵢ`, `η = fᵢ - gᵢ`; (b) the cover-colimit
+   `Ȟ¹(X, 𝒪)` on `main` is a quotient of the bounded cocycles on `𝔚` (Leray for disc covers;
    `MDifferentiableOn.exists_forall_norm_le_of_isCompact_closure` makes restricted cocycles
-   bounded). Needs: 4 and the supplier's Čech `H¹(X, 𝒪_D)` + Leray theorem + Dolbeault lemma.
-6. **feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional** —
-   the exported theorem (`FiniteDimensional ℂ` of the supplier's `H¹(X, 𝒪_D)`; name to follow the
-   supplier's `H¹` declaration). `D = 0` from split 5(b) and
-   `exists_finiteDimensional_isCompl_range_d₀Cocycles` (split 4) fed by split 5(a); general `D` by
-   induction along `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`. Needs: 1, 2, 3, 4, 5.
+   bounded). Needs: 3 and the supplier's Leray comparison for disc covers (#28963 + #28407 + the
+   passage to coordinate discs and `ModuleCat ℂ` coefficients).
+5. **feat: H¹ of the sheaf of a divisor on a compact Riemann surface is finite dimensional** —
+   the exported theorem, `FiniteDimensional ℂ` of
+   `(TauCeti.Topology.cechCohomology (TopCat.of X) (ModuleCat ℂ) 1).obj (divisorSheaf D).obj`
+   (statement checked above; name to follow the supplier's final `H¹` naming).
+   `D = 0` from split 4(b) and `exists_finiteDimensional_isCompl_range_d₀Cocycles` (split 3) fed
+   by split 4(a); general `D` by induction along `0 → 𝒪_D → 𝒪_{D+P} → ℂ_P → 0`
+   (`divisorSheafMapOfLE` on `main`) and the long exact Čech sequence
+   (`Topology/Sheaves/Cech/Sheafification.lean`, `CategoryTheory/.../Cech/LongExactSequence.lean`).
+   Needs: 1, 2, 3, 4.
 
 ## What remains
 
-Splits 5–6. Both wait for the supplier `riemann-surface-structure-sheaf-h1` to pin and land Čech
-`H¹(X, 𝒪_D)` (refinement-independent) and the degree-one Leray theorem; PR #27339 (Dolbeault
-lemma, open) is one of its parts. Split 5(a) needs only #27339 plus smooth partitions of unity
-on `X` and the transformation of `∂̄` under holomorphic chart changes, so once #27339 lands it can
-be written before the `H¹` API is pinned.
+Splits 4–5. Split 4 waits for the supplier `riemann-surface-structure-sheaf-h1` to land the
+degree-one Leray comparison for finite covers by coordinate discs of a Riemann surface (its
+parts #28963, #28407, #29154 are open, none pins that statement). Split 4(a) needs only the
+Dolbeault lemma on discs (#28407) plus smooth partitions of unity and the chart change of `∂̄`,
+so once #28407 lands it can be written before the comparison is pinned. Split 5's statement is
+already expressible on `main`.
