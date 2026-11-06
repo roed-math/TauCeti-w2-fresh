@@ -53,7 +53,13 @@ minimal-prime/component correspondence for stalks
 (the minimal primes of a stalk reindexed by the components through the point via the bijection
 `Scheme.stalkMinimalPrime_bijective`, the weights turned into fibre lengths at the generic points
 by `fiberLength_of_forall_specializes`). It also added `Scheme.ord_stalkMap_of_isClosedImmersion`,
-which identifies `ord_{B ⧸ 𝔮}` with the order of vanishing on an integral closed subscheme.
+which identifies `ord_{B ⧸ 𝔮}` with the order of vanishing on an integral closed subscheme. A
+thirteenth round on 2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`,
+#29451 still open at `ed4b4ac70d`) did item 2(i) of *What remains*: the stalks of a base change
+along a closed immersion (`Scheme.ker_stalkMap_le_map_ideal_ker`,
+`Scheme.ker_stalkMap_pullback_fst_le`, via Mathlib's `IdealSheafData.ker_fst_of_isClosedImmersion`
+and `main`'s `IdealSheafData.ideal_comap_of_le`) and the resulting equality of fibre lengths
+`fiberLength_pullback_snd`: `fiberLength (X ×_Y W ⟶ W) x = fiberLength f x`.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -191,7 +197,7 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 355 lines), no
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 508 lines), no
 `sorry`:
 
 - `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
@@ -272,6 +278,15 @@ formula; namespace `TauCeti`), no `sorry`:
 - `Ring.ord_eq_finsum_minimalPrimes`: `ord_A(a) = ∑ᶠ 𝔮 min, ℓ_{A_𝔮}(A_𝔮) · ord_{A/𝔮}(a)` for
   `a ∈ A⁰` (the case `M = A`).
 
+`RatEquiv.lean` (thirteenth round) has the base change of fibre lengths along a closed immersion
+`i : W ⟶ Y`: `Scheme.ker_stalkMap_le_map_ideal_ker` (for a closed immersion `p : Z ⟶ X` and an
+affine open `U ∋ p z`, `ker (𝒪_{X,p z} ↠ 𝒪_{Z,z}) ≤ I_p(U) 𝒪_{X,p z}`),
+`Scheme.germ_mem_maximalIdeal_of_mem_ker_app`, `Scheme.ker_stalkMap_pullback_fst_le`
+(`ker (𝒪_{X,x} ↠ 𝒪_{X ×_Y W,x}) ≤ 𝔪_{f x} 𝒪_{X,x}`), `fiberLength_comp_of_ker_le`,
+`fiberLength_eq_one_of_surjective` (fibre length `1` for a map surjective on stalks) and
+`fiberLength_pullback_snd` (for `f` flat, `fiberLength (pullback.snd f i) x =
+fiberLength f (pullback.fst f i x)`).
+
 `RatEquiv.lean` (tenth round) also has `TauCeti.Ring.ord_mul_length_eq_finsum_minimalPrimes`: for a
 flat local `A → B` with `B` Noetherian of dimension `≤ 1` and `a ∈ A⁰`,
 `ord_A(a) · ℓ_B(B ⧸ 𝔪_A B) = ∑ᶠ 𝔮 min B, ℓ_{B_𝔮}(B_𝔮) · ord_{B/𝔮}(a)` (the image of `a` is a
@@ -303,12 +318,13 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    minimal-prime/component bijection at the level of a scheme's stalks. The twelfth round
    assembled the local formula for `f_W : f⁻¹(W) → W` itself (`ord_mul_fiberLength_eq_finsum`)
    and proved `B ⧸ 𝔮 ≅ 𝒪_{W'_i,x}` for a component given as an integral closed subscheme
-   (`Scheme.ord_stalkMap_of_isClosedImmersion`). Still missing: (i) stalks of the base change
+   (`Scheme.ord_stalkMap_of_isClosedImmersion`). (i) is **done by the thirteenth round** (`fiberLength_pullback_snd`, with no hypothesis beyond
+`[Flat f] [IsClosedImmersion i]`). Still missing: ~~(i) stalks of the base change
    `f_W : X ×_Y W → W` along the closed immersion `W ⟶ Y`: `fiberLength f_W x' = fiberLength f x'`
    (both are `ℓ(𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x})`; Mathlib has no API for stalks of fibre products,
    so this needs an affine-local computation via `pullbackSpecIso` and
    `IsAffineOpen.isLocalization_stalk`, or a direct argument that the kernel of
-   `𝒪_{X,x} ↠ 𝒪_{X_W,x'}` is `I_W 𝒪_{X,x}`); (ii) the components `W'_i` of `X_W` as integral
+   `𝒪_{X,x} ↠ 𝒪_{X_W,x'}` is `I_W 𝒪_{X,x}`)~~ (done, by the direct argument); (ii) the components `W'_i` of `X_W` as integral
    closed subschemes (reduced induced structure on the closure of `η'_i`, of dimension `k + 1` by
    `height_eq_height_add`) and `dim 𝒪_{X_W,x'} ≤ 1` at points of dimension `k`; (iii) the
    assembly into a `RatEquivFamily`.) Then `cyclesFlatPullback_mem_ratEquiv` follows
@@ -373,6 +389,14 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
   stalks-of-closed-immersions file next to Mathlib's `IsClosedImmersion`); `main`'s
   `exists_comap_stalkSpecializes_maximalIdeal_eq_span_singleton` can then be shortened by
   starting from `exists_comap_stalkSpecializes_maximalIdeal_eq`, whose proof repeats its first half.
+- The thirteenth round's `Scheme.ker_stalkMap_le_map_ideal_ker`,
+  `Scheme.germ_mem_maximalIdeal_of_mem_ker_app` and `Scheme.ker_stalkMap_pullback_fst_le` are about
+  stalks of closed subschemes, not Chow groups: at port time they belong with
+  `ker_stalkMap_eq_comap_maximalIdeal` in a stalks-of-closed-immersions file (or next to
+  `IdealSheafData.ideal_comap_of_le` in `TauCeti/AlgebraicGeometry/IdealSheaf/Affine.lean`).
+  `RatEquiv.lean` reaches 508 lines with them; if split 4 grows past 600 lines, the port should
+  open these stalk lemmas, with the other `Scheme` stalk lemmas of `RatEquiv.lean`, as a
+  prerequisite PR *feat(AlgebraicGeometry): stalks of closed subschemes and their base changes*.
 - `TauCeti.Ring.ord_algebraMap_of_flat` is general commutative algebra: at port time move it to
   `TauCeti/RingTheory/OrderOfVanishing.lean` (left in the Chow file to avoid rebuilding everything
   downstream of that module).
@@ -405,7 +429,7 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
    commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
    PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 355
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 508
    lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
    `ord_stalkMap`, `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`,
    `length_localization_stalkSpecializes`, `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
@@ -415,7 +439,10 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `Scheme.ker_stalkMap_eq_comap_maximalIdeal`, `Scheme.ord_stalkMap_of_isClosedImmersion`,
    `apply_eq_genericPoint_of_forall_specializes`, `fiberLength_of_forall_specializes`,
    `ord_mul_fiberLength_eq_finsum`, `fiberLength_of_isOpenImmersion`,
-   `cycleFlatPullback_of_isOpenImmersion`, and (remaining) `cyclesFlatPullback_mem_ratEquiv`.
+   `cycleFlatPullback_of_isOpenImmersion`, `Scheme.ker_stalkMap_le_map_ideal_ker`,
+   `Scheme.germ_mem_maximalIdeal_of_mem_ker_app`, `Scheme.ker_stalkMap_pullback_fst_le`,
+   `fiberLength_comp_of_ker_le`, `fiberLength_eq_one_of_surjective`, `fiberLength_pullback_snd`, and
+   (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.
 5. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/BaseChange.lean` (stubs of the supplier in
