@@ -92,6 +92,15 @@ theorem subschemeι_genericPoint_vanishingIdeal_closure_singleton (η : X) :
     closure_closure] at h
   exact h.eq isGenericPoint_closure
 
+/-- Every specialization `y` of `η` is the image of a point of the closure of `η`, with its
+reduced induced closed subscheme structure. -/
+theorem exists_subschemeι_vanishingIdeal_closure_singleton_eq {η y : X} (h : η ⤳ y) :
+    ∃ z, (vanishingIdeal ⟨closure {η}, isClosed_closure⟩).subschemeι z = y := by
+  have hy : y ∈ Set.range (vanishingIdeal ⟨closure {η}, isClosed_closure⟩).subschemeι := by
+    rw [range_subschemeι, coe_support_vanishingIdeal]
+    exact specializes_iff_mem_closure.mp h
+  exact hy
+
 /-- A morphism `f` from a reduced scheme whose image lies in a closed subset `Z` kills the
 vanishing ideal of `Z`, so it factors through the reduced induced closed subscheme on `Z`
 (`IsClosedImmersion.lift` along `subschemeι`): a section vanishing on `Z` pulls back to a section

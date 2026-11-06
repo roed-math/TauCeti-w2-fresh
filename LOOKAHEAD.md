@@ -96,6 +96,34 @@ and `isDominant_subschemeι_pullback_snd` (for `f` flat and `η` the generic poi
 So the members `W'` of the pulled-back family are the reduced closures in `X ×_Y W` (embedded into
 `X` by `ι ≫ pullback.fst f i`, a closed immersion), with function `φ r` along
 `ι ≫ pullback.snd f i`.
+A seventeenth round on 2026-11-06 (main still `3a0189695d6`, no supplier declaration on `main`)
+did the algebraic part of the rest of (β), in `RatEquiv.lean`: the instance
+`finite_generizations_forall_specializes` (the components through a point of a locally Noetherian
+scheme are finitely many, via `Scheme.stalkMinimalPrime_bijective` and Mathlib's
+`minimalPrimes.finite_of_isNoetherianRing`) and the integer quotient form
+`ord_sub_ord_mul_fiberLength_eq_finsum`: for non-zero-divisors `a`, `b` of a one-dimensional
+Noetherian `𝒪_{Y,f y}` and `fiberLength f y ≠ ⊤`,
+`(ord a - ord b) · fiberLength f y = Σᶠ x, fiberLength f x · (ord_x a - ord_x b)` in `ℤ` (all
+`ℕ∞` values through `toNat`, finiteness from `Ring.ord_ne_top` and `ENat.toNat_sum`). It also added
+`IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq` to `main`'s
+`TauCeti/AlgebraicGeometry/IdealSheaf/VanishingIdeal.lean` (+11 lines): a specialization of `η` is
+the image of a point of the reduced closure of `η`, which is the point `z` over `y` of each member.
+With these the same round finished the scheme-level (β), `ord_mul_fiberLength_eq_finsum_ord`:
+for `f` flat over a locally Noetherian integral `Y`, `y : X` with `dim 𝒪_{X,y} ≤ 1`, `f y` of
+codimension one, `fiberLength f y ≠ ⊤`, `dim y` finite, every component through `y` of dimension
+`dim y + 1`, a point `z_x` over `y` on each reduced component `Z_x` and `Z_x ⟶ Y` dominant (an
+instance argument `[∀ x, IsDominant (Z_x.ι ≫ f)]`, which `isDominant_subschemeι_pullback_snd`
+discharges for the base change), and `r ≠ 0` in `K(Y)`:
+`ord_{f y}(r) · fiberLength f y = Σᶠ x, fiberLength f x · ord_{z_x}((Z_x.ι ≫ f)^* r)` in `ℤ`. Its
+inputs: `Scheme.coheight_eq_one_of_height_apply_genericPoint_eq` (a point of an irreducible closed
+subscheme whose image has dimension one less than the generic point's, finite, has coheight one)
+and the instance `Scheme.IdealSheafData.isLocallyNoetherian_subscheme` (port: next to Mathlib's
+`IdealSheafData.subscheme` API, for instance in `IdealSheaf/VanishingIdeal.lean`).
+`RatEquiv.lean` is now 872 lines: the next round should put (γ), (δ) and
+`cyclesFlatPullback_mem_ratEquiv` in a new file importing it (for instance
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquivFamily.lean`), and the port may move the
+`Ring` and `Scheme` sections of `RatEquiv.lean` (pure local algebra and stalk lemmas) into their
+own prerequisite file.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -414,11 +442,16 @@ dominant).
    (`height_snd_eq_and_maximal_of_height_eq`, `maximal_mem_preimage_singleton_of_height_eq`).
    (α) and the local half of (β) below are **done by the sixteenth round**
    (`Scheme.ord_functionFieldMap_div_algebraMap_stalk`, `isDominant_subschemeι_pullback_snd`),
-   with the members taken as reduced closures inside `X ×_Y W` rather than inside `X`; what is
-   left of (β) is to write `r = a / b` (`IsFractionRing.div_surjective` for `𝒪_{W,w}`), subtract
-   two instances of `ord_mul_fiberLength_eq_finsum` for `pullback.snd f i`, and pick for each
-   generic point `x ⤳ y` the point of the reduced closure of `x` over `y` (its range is
-   `closure {x}`) and check it has coheight `1`. Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
+   with the members taken as reduced closures inside `X ×_Y W` rather than inside `X`; the
+   subtraction of the two instances of `ord_mul_fiberLength_eq_finsum` and the choice of the point
+   over `y` are **done by the seventeenth round** (`ord_sub_ord_mul_fiberLength_eq_finsum`,
+   `IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq`); what is left of (β)
+   is ~~to apply them~~ **done by the same round** (`ord_mul_fiberLength_eq_finsum_ord`, stated
+   for a general flat `f` over an integral `Y` and to be applied to `pullback.snd f i`; its
+   hypotheses there: `fiberLength ≠ ⊤` from `fiberLength_ne_top` at a point generic in its fibre,
+   the heights from `height_eq_height_genericPoint_add_of_pullback` and
+   `height_snd_eq_and_maximal_of_height_eq`, the points `z_x` from
+   `IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq`). Next: (γ), (δ). Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
    `X` is indexed by `Σ j, {η' : X ×_Y W_j // η' generic in a component}`, with member
    `W' = (IdealSheafData.vanishingIdeal ⟨closure {pullback.fst η'}, _⟩).subscheme` and function
    `(φ r_j) ^ fiberLength f (pullback.fst η')`, where `φ` is the function-field map of the dominant
@@ -535,7 +568,7 @@ dominant).
    `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
    commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
    PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 719
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 872
    lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
    `ord_stalkMap`, `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`,
    `length_localization_stalkSpecializes`, `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
@@ -552,7 +585,14 @@ dominant).
    `height_eq_height_genericPoint_add`, `height_eq_height_genericPoint_add_of_pullback`,
    `height_snd_eq_and_maximal_of_height_eq` (fifteenth round),
    `Scheme.ord_functionFieldMap_algebraMap_stalk`, `Scheme.ord_functionFieldMap_div_algebraMap_stalk`,
-   `isDominant_subschemeι_pullback_snd` (sixteenth round), and
+   `isDominant_subschemeι_pullback_snd` (sixteenth round),
+   `finite_generizations_forall_specializes`, `ord_sub_ord_mul_fiberLength_eq_finsum`
+   (seventeenth round; with
+   `IdealSheafData.exists_subschemeι_vanishingIdeal_closure_singleton_eq` in `main`'s
+   `TauCeti/AlgebraicGeometry/IdealSheaf/VanishingIdeal.lean`),
+   `Scheme.coheight_eq_one_of_height_apply_genericPoint_eq`,
+   `Scheme.IdealSheafData.isLocallyNoetherian_subscheme`, `ord_mul_fiberLength_eq_finsum_ord`
+   (seventeenth round), and
    (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.

@@ -14,11 +14,12 @@ import TauCeti.Algebra.Module.Equiv.Length
 import TauCeti.RingTheory.OrderOfVanishing
 import TauCeti.AlgebraicGeometry.Scheme.StalkSpecializes
 import TauCeti.AlgebraicGeometry.IdealSheaf.Affine
-import TauCeti.AlgebraicGeometry.IdealSheaf.VanishingIdeal
+public import TauCeti.AlgebraicGeometry.IdealSheaf.VanishingIdeal
 import TauCeti.AlgebraicGeometry.Morphisms.ClosedImmersion.Basic
 import TauCeti.AlgebraicGeometry.WeilDivisor.Scheme.Order
 import Mathlib.RingTheory.LocalRing.Length
 import Mathlib.RingTheory.TensorProduct.Quotient
+import Mathlib.Data.ENat.BigOperators
 
 /-!
 # Flat pullback and orders of vanishing
@@ -53,6 +54,10 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
 * `TauCeti.AlgebraicGeometry.Chow.ord_mul_fiberLength_eq_finsum`: for `f` flat over an integral
   scheme, `ord(a) · fiberLength f y` is the sum over the components through `y`, with generic
   points `x`, of `fiberLength f x` times the order of `a` along the component;
+  `ord_sub_ord_mul_fiberLength_eq_finsum` is its integer form for a quotient `a / b`, and
+  `ord_mul_fiberLength_eq_finsum_ord` its form for a rational function `r` on `Y`, with the orders
+  of the pullbacks of `r` to the reduced components at codimension-one points over `y`
+  (`Scheme.coheight_eq_one_of_height_apply_genericPoint_eq`);
 * `TauCeti.AlgebraicGeometry.Chow.ord_stalkMap`: for `f : X ⟶ Y` flat and `x : X`, pulling a
   germ `a` at `f x` back to `x` multiplies its order of vanishing by `fiberLength f x`;
 * `TauCeti.AlgebraicGeometry.Chow.fiberLength_of_apply_eq_genericPoint`: over the generic point
@@ -405,6 +410,43 @@ theorem ringKrullDim_stalk_le_one {m : ℕ} (hx : Order.height x = m)
   rw [ringKrullDim_stalk_eq_coheight]
   exact_mod_cast (ENat.add_le_add_iff_left (ENat.natCast_ne_top m)).mp (WithBot.coe_le_coe.mp hle)
 
+/-- **Codimension-one points of an irreducible closed subscheme.** Let `ι : Z ⟶ X` be a closed
+immersion of an irreducible scheme. A point `z` of `Z` whose image has finite dimension one less
+than the image of the generic point of `Z` has codimension one in `Z`: a chain `z < a < b` in `Z`
+would give `dim z + 2 ≤ dim b ≤ dim η_Z`, the closed immersion preserving dimensions
+(`Scheme.Hom.height_apply_eq_height`). This is the point of a component `Z` of `f⁻¹(W)` over a
+codimension-one point of `W` at which `Scheme.ord_functionFieldMap_div_algebraMap_stalk` applies. -/
+theorem coheight_eq_one_of_height_apply_genericPoint_eq {Z : Scheme.{u}} [IrreducibleSpace Z]
+    (ι : Z ⟶ X) [IsClosedImmersion ι] {z : Z}
+    (hz : Order.height (ι (genericPoint Z)) = Order.height (ι z) + 1)
+    (hfin : Order.height (ι z) ≠ ⊤) : Order.coheight z = 1 := by
+  simp only [Scheme.Hom.height_apply_eq_height] at hz hfin
+  obtain ⟨m, hm⟩ := ENat.ne_top_iff_exists.mp hfin
+  rw [← hm] at hz
+  have hle (a : Z) : a ≤ genericPoint Z := (genericPoint_spec Z).specializes trivial
+  have hlt : z < genericPoint Z := lt_iff_le_not_ge.mpr ⟨hle z, fun h ↦ by
+    have := Order.height_mono h
+    rw [hz, ← hm] at this
+    norm_cast at this
+    omega⟩
+  refine le_antisymm (Order.coheight_le fun p hp ↦ ?_) ?_
+  · by_contra! hlen
+    replace hlen : 1 < p.length := by exact_mod_cast hlen
+    have h01 : z < p ⟨1, by omega⟩ := hp ▸ p.strictMono (Fin.mk_lt_mk.mpr zero_lt_one)
+    have h12 : p ⟨1, by omega⟩ < p ⟨2, by omega⟩ := p.strictMono (Fin.mk_lt_mk.mpr one_lt_two)
+    have h2 := (add_le_add (Order.height_add_one_le h01) le_rfl).trans
+      ((Order.height_add_one_le h12).trans (Order.height_mono (hle _)))
+    rw [hz, ← hm] at h2
+    norm_cast at h2
+    omega
+  · exact Order.one_le_iff_ne_zero.mpr (Order.coheight_pos.mpr (not_isMax_of_lt hlt)).ne'
+
+/-- A closed subscheme of a locally Noetherian scheme is locally Noetherian: the closed immersion
+is locally of finite type. -/
+instance IdealSheafData.isLocallyNoetherian_subscheme [IsLocallyNoetherian X]
+    (I : X.IdealSheafData) : IsLocallyNoetherian I.subscheme :=
+  LocallyOfFiniteType.isLocallyNoetherian I.subschemeι
+
 end AlgebraicGeometry.Scheme
 
 namespace AlgebraicGeometry.Chow
@@ -689,6 +731,117 @@ theorem ord_mul_fiberLength_eq_finsum [Flat f] [IsIntegral Y] [IsLocallyNoetheri
     (finsum_eq_of_bijective _ (Scheme.stalkMinimalPrime_bijective y) fun x ↦ ?_).symm
   rw [fiberLength_of_forall_specializes f x.2.2, ← length_localization_stalkSpecializes x.2.1]
   rfl
+
+/-- The generic points of the irreducible components through a point `y` of a locally Noetherian
+scheme are finitely many: they correspond to the minimal primes of the Noetherian ring `𝒪_{X,y}`
+(`Scheme.stalkMinimalPrime_bijective`). -/
+instance finite_generizations_forall_specializes [IsLocallyNoetherian X] (y : X) :
+    Finite {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'} := by
+  have := (minimalPrimes.finite_of_isNoetherianRing (X.presheaf.stalk y)).to_subtype
+  have : Finite {𝔮 : PrimeSpectrum (X.presheaf.stalk y) //
+      𝔮.asIdeal ∈ minimalPrimes (X.presheaf.stalk y)} :=
+    Finite.of_injective (fun 𝔮 ↦ (⟨𝔮.1.asIdeal, 𝔮.2⟩ : minimalPrimes (X.presheaf.stalk y)))
+      fun 𝔮 𝔮' h ↦ Subtype.ext (PrimeSpectrum.ext (congrArg Subtype.val h))
+  exact Finite.of_injective _ (Scheme.stalkMinimalPrime_bijective y).1
+
+open scoped nonZeroDivisors in
+/-- **Flat pullback of the order of a quotient, over the components.** The integer form of
+`ord_mul_fiberLength_eq_finsum` for a quotient `a / b` of non-zero-divisors of a one-dimensional
+Noetherian stalk `𝒪_{Y,f y}`, with `fiberLength f y` finite: `(ord a - ord b) · fiberLength f y`
+is the sum over the generic points `x` of the components through `y` of `fiberLength f x` times
+the difference of the orders of `a` and `b` along the component. Every rational function on `Y`
+is such a quotient (`IsFractionRing.div_surjective`), and the factors along the components are
+the orders of its pullbacks (`Scheme.ord_functionFieldMap_div_algebraMap_stalk`). -/
+theorem ord_sub_ord_mul_fiberLength_eq_finsum [Flat f] [IsIntegral Y] [IsLocallyNoetherian X]
+    {y : X} [_root_.Ring.KrullDimLE 1 (X.presheaf.stalk y)]
+    [IsNoetherianRing (Y.presheaf.stalk (f y))] [_root_.Ring.KrullDimLE 1 (Y.presheaf.stalk (f y))]
+    (hy : fiberLength f y ≠ ⊤) {a b : Y.presheaf.stalk (f y)}
+    (ha : a ∈ (Y.presheaf.stalk (f y))⁰) (hb : b ∈ (Y.presheaf.stalk (f y))⁰) :
+    (((_root_.Ring.ord _ a).toNat : ℤ) - (_root_.Ring.ord _ b).toNat) * (fiberLength f y).toNat =
+      ∑ᶠ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}, ((fiberLength f x).toNat : ℤ) *
+        (((_root_.Ring.ord (X.presheaf.stalk y ⧸ (IsLocalRing.maximalIdeal
+          (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes x.2.1).hom)
+          (Ideal.Quotient.mk _ (f.stalkMap y a))).toNat : ℤ) -
+        (_root_.Ring.ord (X.presheaf.stalk y ⧸ (IsLocalRing.maximalIdeal
+          (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes x.2.1).hom)
+          (Ideal.Quotient.mk _ (f.stalkMap y b))).toNat) := by
+  have := Fintype.ofFinite {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}
+  have key {c : Y.presheaf.stalk (f y)} (hc : c ∈ (Y.presheaf.stalk (f y))⁰) :
+      (((_root_.Ring.ord _ c).toNat * (fiberLength f y).toNat : ℕ) : ℤ) =
+        ∑ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}, ((fiberLength f x).toNat : ℤ) *
+          ((_root_.Ring.ord (X.presheaf.stalk y ⧸ (IsLocalRing.maximalIdeal
+            (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes x.2.1).hom)
+            (Ideal.Quotient.mk _ (f.stalkMap y c))).toNat : ℤ) := by
+    have h := ord_mul_fiberLength_eq_finsum f (y := y) hc
+    rw [finsum_eq_sum_of_fintype] at h
+    have hne : _root_.Ring.ord _ c * fiberLength f y ≠ ⊤ :=
+      WithTop.mul_ne_top (_root_.Ring.ord_ne_top hc) hy
+    rw [h] at hne
+    rw [← ENat.toNat_mul, h, ENat.toNat_sum fun x hx ↦ (ENat.lt_top_of_sum_ne_top hne hx).ne]
+    push_cast
+    simp only [ENat.toNat_mul, Nat.cast_mul]
+  rw [finsum_eq_sum_of_fintype, sub_mul]
+  simp only [mul_sub, Finset.sum_sub_distrib]
+  rw [← key ha, ← key hb]
+  push_cast
+  ring
+
+open scoped nonZeroDivisors in
+/-- **Flat pullback of an order of vanishing, over the components** (Stacks, Lemma 42.20.1, at one
+point). Let `f : X ⟶ Y` be flat over a locally Noetherian integral scheme, `X` locally Noetherian,
+and `y : X` with `𝒪_{X,y}` of dimension at most one, `f y` of codimension one and `fiberLength f y`
+finite. Let `z_x` be a codimension-one point over `y` of the reduced closure `Z_x` of each generic
+point `x` of a component through `y`, with `Z_x ⟶ Y` dominant. Then for a nonzero rational
+function `r` on `Y`, `ord_{f y}(r) · fiberLength f y` is the sum of `fiberLength f x` times the
+order at `z_x` of the pullback of `r` to `Z_x`: write `r = a / b`
+(`ord_sub_ord_mul_fiberLength_eq_finsum`, `Scheme.ord_functionFieldMap_div_algebraMap_stalk`). -/
+theorem ord_mul_fiberLength_eq_finsum_ord [Flat f] [IsIntegral Y] [IsLocallyNoetherian Y]
+    [IsLocallyNoetherian X] {y : X} [_root_.Ring.KrullDimLE 1 (X.presheaf.stalk y)]
+    (hfy : Order.coheight (f y) = 1) (hy : fiberLength f y ≠ ⊤)
+    (z : ∀ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'},
+      (Scheme.IdealSheafData.vanishingIdeal ⟨closure {x.1}, isClosed_closure⟩).subscheme)
+    (hz : ∀ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'},
+      (Scheme.IdealSheafData.vanishingIdeal ⟨closure {x.1}, isClosed_closure⟩).subschemeι (z x) = y)
+    (hfin : Order.height y ≠ ⊤) (hht : ∀ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'},
+      Order.height x.1 = Order.height y + 1)
+    [∀ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}, IsDominant
+      ((Scheme.IdealSheafData.vanishingIdeal ⟨closure {x.1}, isClosed_closure⟩).subschemeι ≫ f)]
+    {r : Y.functionField} (hr : r ≠ 0) :
+    Y.ord r (f y) * (fiberLength f y).toNat =
+      ∑ᶠ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}, ((fiberLength f x).toNat : ℤ) *
+        Scheme.ord (((Scheme.IdealSheafData.vanishingIdeal
+          ⟨closure {x.1}, isClosed_closure⟩).subschemeι ≫ f).functionFieldMap.hom r) (z x) := by
+  have : _root_.Ring.KrullDimLE 1 (Y.presheaf.stalk (f y)) :=
+    krullDimLE_of_coheight_le hfy.le
+  obtain ⟨a, b, hb, rfl⟩ := IsFractionRing.div_surjective (A := Y.presheaf.stalk (f y)) r
+  have ha : a ≠ 0 := by
+    rintro rfl
+    simp at hr
+  have hb' : b ≠ 0 := nonZeroDivisors.ne_zero hb
+  rw [div_eq_mul_inv, Scheme.ord_mul ((map_ne_zero_iff _ (IsFractionRing.injective _ _)).mpr
+      ha) (inv_ne_zero ((map_ne_zero_iff _ (IsFractionRing.injective _ _)).mpr hb')),
+    Scheme.ord_inv, Scheme.ord_algebraMap_stalk hfy ha, Scheme.ord_algebraMap_stalk hfy hb',
+    ← sub_eq_add_neg, ord_sub_ord_mul_fiberLength_eq_finsum f hy
+      (mem_nonZeroDivisors_of_ne_zero ha) hb]
+  refine finsum_congr fun x ↦ ?_
+  congr 1
+  have key : ∀ {Z : Scheme.{u}} [IsIntegral Z] [IsLocallyNoetherian Z] (ι : Z ⟶ X)
+      [IsClosedImmersion ι] [IsDominant (ι ≫ f)] (w : Z) (hgen : ι (genericPoint Z) = x.1)
+      (y' : X) (e : ι w = y') (hη : x.1 ⤳ y') (a b : Y.presheaf.stalk (f y')), a ≠ 0 → b ≠ 0 →
+      Order.height y' ≠ ⊤ → Order.height x.1 = Order.height y' + 1 →
+      Z.ord ((ι ≫ f).functionFieldMap.hom
+          (algebraMap _ Y.functionField a / algebraMap _ Y.functionField b)) w =
+        ((_root_.Ring.ord (X.presheaf.stalk y' ⧸ (IsLocalRing.maximalIdeal
+          (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes hη).hom)
+          (Ideal.Quotient.mk _ (f.stalkMap y' a))).toNat : ℤ) -
+        (_root_.Ring.ord (X.presheaf.stalk y' ⧸ (IsLocalRing.maximalIdeal
+          (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes hη).hom)
+          (Ideal.Quotient.mk _ (f.stalkMap y' b))).toNat := by
+    rintro Z _ _ ι _ _ w hgen y' rfl hη a b ha hb hfin hh
+    exact Scheme.ord_functionFieldMap_div_algebraMap_stalk ι f
+      (Scheme.coheight_eq_one_of_height_apply_genericPoint_eq ι (by rwa [hgen]) hfin) hgen hη ha hb
+  exact (key _ (z x) (Scheme.IdealSheafData.subschemeι_genericPoint_vanishingIdeal_closure_singleton
+    x.1) y (hz x) x.2.1 a b ha hb' hfin (hht x)).symm
 
 /-- The fibre length of an open immersion is `1`: its stalk maps are isomorphisms, so the
 fibre's local ring at `x` is the residue field `κ(x)`. -/
