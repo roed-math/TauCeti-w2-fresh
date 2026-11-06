@@ -1,10 +1,10 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"waldschmidt-interpolation-rank","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: subspaces spanned by Waldschmidt's grid points"},{"n":2,"after":[1],"title":"feat: the rank of Waldschmidt's interpolation matrix and the zero estimate"},{"n":3,"after":[1],"title":"feat: the residual subspace of Waldschmidt's rank argument"},{"n":4,"after":[],"title":"feat: a multiplicity estimate on the additive group times the torus"},{"n":5,"after":[1,2,3,4],"title":"feat: the rank of Waldschmidt's interpolation matrix"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"waldschmidt-interpolation-rank","main":"3a0189695d62134a412200ef4237d0bbb2e95d75","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: subspaces spanned by Waldschmidt's grid points"},{"n":2,"after":[1],"title":"feat: the rank of Waldschmidt's interpolation matrix and the zero estimate"},{"n":3,"after":[1],"title":"feat: the residual subspace of Waldschmidt's rank argument"},{"n":4,"after":[],"title":"feat: a multiplicity estimate on the additive group times the torus"},{"n":5,"after":[1,2,3,4],"title":"feat: the rank of Waldschmidt's interpolation matrix"}]}-->
 
 # Lookahead: `waldschmidt-interpolation-rank` (partial)
 
 Target: DiophantineApproximationAndTranscendence §3.6, "Rank and multiplicity for the
 interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 9.16, Lemma 9.17;
-§9.3.2, Steps 1–2). Built on `main` at `385ec2ddd8d`.
+§9.3.2, Steps 1–2). Built on `main` at `3a0189695d6`.
 
 Earlier rounds added the material of splits 1–3: the counting half of the induction on proper
 subspaces, and the translation between index subspaces and grid-point subspaces. Six rounds on
@@ -63,6 +63,13 @@ The round resuming at `71fc3c5ae5a` (15:35 UTC) found `main` still at `385ec2ddd
 excluded case presents it, as span membership rather than as the coefficient identities:
 `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_mem_span` in `Data.lean`. A nonzero
 integral `s ∈ ℂ c` with `β₀ = 0` and `Λ ≠ 0` has `s_m ≠ 0` and `min 1 (δ/2) ≤ |s_m| |Λ|`.
+
+The round resuming at `f6946755e90` (16:10 UTC) merged `main` at `3a0189695d6`, which only
+changed `.github/`. PR #28644 is still open at head `583a153b95f`. It put the subgroup
+obstruction's count in the form split 5 applies it, to the columns `((S−S) ∩ V)[m+1]`:
+`TauCeti.abs_apply_le_of_mem_nsmul` (a `k`-fold sumset of points of the box `‖s‖∞ ≤ R` lies in
+the box `‖s‖∞ ≤ kR`) and `TauCeti.ncard_nsmul_le_mul_ncard_image_of_prod_zpow_eq_one`
+(`#(k • A) ≤ (4kR + 1)·#g(k • A)` under the multiplicative-rank hypothesis), in `BoxPoints.lean`.
 
 What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
@@ -292,7 +299,7 @@ In the new file `Interpolation/Residual.lean`:
      with a public import of `Trigonometric.Basic` for `π` and a private import of
      `SpecialFunctions.Complex.Log` for `Complex.exp_eq_one_iff`): the case `α^s = 1` and the
      two cases together, under `Λ ≠ 0`;
-   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 173 lines; imports `ImageCard.lean`
+   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 215 lines; imports `ImageCard.lean`
      of split 3), the subgroup obstruction's count:
      - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
        `≤ 1` has at most `2R + 1` points with `‖s‖∞ ≤ R`;
@@ -307,6 +314,10 @@ In the new file `Interpolation/Residual.lean`:
        `φ = Fintype.linearCombination ℤ (Additive.ofMul ∘ α)`, i.e. `s ↦ ∏ α_j ^ s_j`, with
        the multiplicative-rank hypothesis on the `α_j` (+43 lines; one private bridge
        `fintypeLinearCombination_ofMul_apply`).
+     - `TauCeti.abs_apply_le_of_mem_nsmul` and
+       `TauCeti.ncard_nsmul_le_mul_ncard_image_of_prod_zpow_eq_one`: the coordinate bound on a
+       `k`-fold sumset, and the second count above for `k • A` with `A` in the box `‖s‖∞ ≤ R`,
+       so that `A = (S−S) ∩ V`, `k = m + 1` and `R = ⌊T₀/2⌋` apply directly (+41 lines).
 
    The rest is not on this branch. If split 5 grows past 600 lines, `BoxPoints.lean` can be
    opened on its own first, once split 3 (which supplies `ImageCard.lean`) has merged.
@@ -382,3 +393,7 @@ In the new file `Interpolation/Residual.lean`:
   - 2026-11-06, about 15:45 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
     `runLinter` passed on `Interpolation.Data`. The new lemma only chains two lemmas already on
     the branch; `main` and pinned Mathlib have no such statement.
+  - 2026-11-06, about 16:25 UTC, against `main` at `3a0189695d6`: `lake build` green,
+    `lookahead-check` ok, and `runLinter` passed on `BoxPoints`. `main` and pinned Mathlib were
+    grepped for a coordinate bound on iterated sumsets and for a finiteness lemma for `k • A`;
+    neither exists (`Residual.lean` proves the finiteness inline by the same induction).
