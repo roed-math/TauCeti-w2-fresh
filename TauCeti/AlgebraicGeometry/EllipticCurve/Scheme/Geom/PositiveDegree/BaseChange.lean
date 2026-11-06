@@ -235,8 +235,6 @@ model of `c`. -/
 private theorem bijective_pushforwardBaseChange_app_app_of_forall_eulerDegree_pos :
     Function.Bijective (((pushforwardBaseChange hg.toCommSq).app M.obj).app
       k.baseMap.opensRange) := by
-  have : M.obj.IsQuasicoherent :=
-    inferInstanceAs ((InvertibleSheaf.toFiniteLocallyFree _).obj M).obj.IsQuasicoherent
   let G := modelMap hg hh
   let j := c.modelIso.inv ≫ c.toTotal
   let j' := k.modelIso.inv ≫ k.toTotal

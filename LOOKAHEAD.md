@@ -223,6 +223,19 @@ was too short to prove and check a new piece, so it added no declarations. The n
 split 25 (finite presentation of `H⁰(projModel W, M)` for general `M`) or the leading terms of
 split 27. A round with a full hour should start on one of them right after the warm rebuild.
 
+The twenty-seventh round left tip `7ab866900b42`. The twenty-eighth round (this one) again found
+`main` unchanged (`385ec2dd`), so the merge was a no-op. Both suppliers' successor PRs (#28759,
+#28995) are still open, and the branch still uses neither, so there are still no stubs. After the
+warm rebuild it did the reusable half of split 25: `Geom/PoleSheaf/LocallyFree.lean` (split 10)
+now proves its chart-to-sheaf steps for an arbitrary `𝒪_E`-module `M`
+(`finite_projective_sections_of_restrict_iso`,
+`isFiniteLocallyFree_pushforward_of_finite_projective_sections`,
+`rank_pushforward_of_finite_projective_sections`), and the `ℒ_n` statements are now corollaries.
+The general lemmas replace `finite_projective_sections_pushforward_poleSheaf`. It also dropped two
+manual quasi-coherence `have`s (in `LocallyFree.lean` and `Geom/PositiveDegree/BaseChange.lean`),
+which `main`'s instance `InvertibleSheaf.isQuasicoherent_obj` now supplies. What remains of split 25
+is only the finiteness of `H⁰(projModel W, M)` over a non-Noetherian base, described below.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -534,12 +547,23 @@ PR subject: `feat: π_*𝒪_E(n[0]) is locally free of rank n`
   `WeierstrassCurve.finite_projective_globalSections_poleSheaf`: `Γ(⊤, 𝒪(n[0]))` is finite
   projective of constant rank `n` over `Γ(projModel, ⊤)`. This transports split 7 along
   `R ≃+* Γ(projModel, ⊤)`.
-- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/LocallyFree.lean` (new, 166
-  lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`:
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PoleSheaf/LocallyFree.lean` (new, 258
+  lines), namespace `TauCeti.AlgebraicGeometry.EllipticCurveGeom`. Since the twenty-eighth round the
+  file proves the chart-to-sheaf steps for an arbitrary `𝒪_E`-module `M`, so that split 25 can reuse
+  them, and derives the `ℒ_n` statements as corollaries:
+  - `finite_projective_sections_of_restrict_iso`: if the restriction of `M` to the model of a chart
+    is isomorphic to a module with finite projective global sections of constant rank `d`, then
+    `Γ(π⁻¹(U), M)` is finite projective of rank `d` over `Γ(E, π⁻¹(U))` for the chart image `U`.
   - `finite_projective_sections_poleSheaf`: `Γ(π⁻¹(U), ℒ_n)` is finite projective of rank `n`
-    over `Γ(E, π⁻¹(U))` for a chart image `U`.
-  - `finite_projective_sections_pushforward_poleSheaf`: the same for `Γ(U, π_*ℒ_n)` over
-    `Γ(S, U)`, through `isIso_app_opensRange`.
+    over `Γ(E, π⁻¹(U))` for a chart image `U` (a corollary, through
+    `nonempty_restrict_poleSheaf_iso`).
+  - `finite_projective_sections_pushforward_of_finite_projective_sections` and
+    `rankAtStalk_sections_pushforward_of_finite_projective_sections`: the same for `Γ(U, π_*M)`
+    over `Γ(S, U)`, through `isIso_app_opensRange`. (They replace the former
+    `finite_projective_sections_pushforward_poleSheaf`, which had no other user.)
+  - `isFiniteLocallyFree_pushforward_of_finite_projective_sections` and
+    `rank_pushforward_of_finite_projective_sections`: for quasi-coherent `M` with such sections over
+    every chart preimage, `π_*M` is finite locally free (of rank `d`).
   - `isFiniteLocallyFree_pushforward_poleSheaf`: **`π_*ℒ_n` is finite locally free.**
   - `rank_pushforward_poleSheaf`: **it has rank `n` at every point.**
 
@@ -587,7 +611,7 @@ PR subject: `feat: π_*M commutes with arbitrary base change for line bundles of
     `A → B` when `A → R`, `B → T` are bijective and the square of rings commutes.
   These are a new module rather than an extension of `TauCeti/RingTheory/TensorProduct/IsBaseChange.lean`
   only because that file has 1637 transitive importers; the port may append them there instead.
-- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PositiveDegree/BaseChange.lean` (new, 418
+- `TauCeti/AlgebraicGeometry/EllipticCurve/Scheme/Geom/PositiveDegree/BaseChange.lean` (new, 416
   lines; the former `Geom/PoleSheaf/BaseChange.lean`, generalised from `ℒ_n` to `M`), namespace
   `TauCeti.AlgebraicGeometry`:
   - private, general: `bijective_appLE`, the ring-level analogue of split 11's
@@ -1041,12 +1065,12 @@ Neither supplier is used. About 350 lines.
       non-Noetherian ring that does not make it finitely generated. Twisting by `ℒ_m` reduces
       finiteness for `M` to finiteness for `M(m[0])`, which is no easier.)
     - With that, `H⁰(projModel W, M)` is finite projective of constant rank the fibre degree, as
-      split 7 shows for `ℒ_n`. Then `LocallyFree.lean` (split 10) generalises verbatim from `ℒ_n` to
-      `M`, with `d` in place of `n`. Its only `ℒ_n`-specific inputs are
-      `WeierstrassCurve.finite_projective_globalSections_poleSheaf` and
-      `nonempty_restrict_poleSheaf_iso`; the second is `restrictFunctorIsoPullback` for general `M`.
-      The `ℒ_n` statements then become corollaries through `eulerDegree_pullback_snd_poleSheaf`, as
-      splits 8 and 12 already are.
+      split 7 shows for `ℒ_n`. The step from there to `π_*M` is done for every `M` (split 10, since
+      the twenty-eighth round): apply `finite_projective_sections_of_restrict_iso` to
+      `restrictFunctorIsoPullback`, then `rank_pushforward_of_finite_projective_sections`. The
+      statements for `M` are then the analogues of `rank_pushforward_poleSheaf`, with `d` in place
+      of `n`, and the `ℒ_n` statements become corollaries through `eulerDegree_pullback_snd_poleSheaf`,
+      as splits 8 and 12 already are.
 26. **(after 25)** For `d = 1`: the evaluation section has a relative effective Cartier zero
     divisor of degree one, hence is the divisor of a unique section. Prove compatibility with
     base change and fppf descent. This needs `relative-cartier-divisor` and `polarised-descent`.
@@ -1090,8 +1114,10 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 
 ## Verification
 
-`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`, and in the twenty-fifth through twenty-seventh rounds on `385ec2ddd8dd`) and
-`/opt/round/lookahead-check` all pass. In the eighteenth round, the new proofs build with
+`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`, and in the twenty-fifth through twenty-eighth rounds on `385ec2ddd8dd`) and
+`/opt/round/lookahead-check` all pass. In the twenty-eighth round, `#lint in TauCeti` (15 linters) passes, with 0 errors in
+10314 declarations, on the import closure of `Geom/PoleSheaf/LocallyFree.lean` and
+`Geom/PositiveDegree/BaseChange.lean`, run from a scratch file outside the repository. In the eighteenth round, the new proofs build with
 warnings as errors; `#lint` was not rerun for lack of time. In the fifteenth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 1588 declarations, on the import closure of the two new modules of
 splits 21 and 22 (`PoleAlgebra.lean` imports `Braided/Evaluation.lean`), run from a scratch file
