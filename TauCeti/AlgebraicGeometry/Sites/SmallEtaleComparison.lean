@@ -6,6 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Sites.Comparison
+public import TauCeti.AlgebraicGeometry.Sites.Etale.Subcanonical
 public import TauCeti.AlgebraicGeometry.Sites.SmallEtaleBaseChange
 public import TauCeti.CategoryTheory.Functor.Flat
 public import TauCeti.CategoryTheory.Sites.ConstantSheaf
@@ -31,8 +32,6 @@ faithful, and the sections of `π_X⁻¹ F` over a scheme `h : T ⟶ X` are the 
 
 ## Main declarations
 
-* `AlgebraicGeometry.Scheme.coverPreserving_etaleForget`: étale coverings in `X.Etale` are étale
-  coverings of schemes over `X`.
 * `AlgebraicGeometry.Scheme.piX`, `piXAdjunction`: the inverse image of `π_X` and its adjunction
   with the direct image, which restricts a big étale sheaf to the small étale site.
 * `AlgebraicGeometry.Scheme.aX`, `aXAdjunction`: the inverse image of `a_X` and its adjunction with
@@ -62,15 +61,6 @@ namespace AlgebraicGeometry.Scheme
 
 variable (X : Scheme.{u})
 
-/-- The inclusion of the small étale site of `X` into its big étale site sends étale coverings to
-étale coverings. -/
-theorem coverPreserving_etaleForget :
-    CoverPreserving X.smallEtaleTopology (etaleTopology.over X) (Etale.forget X) := by
-  have : MorphismProperty.IsStableUnderComposition @AlgebraicGeometry.Etale :=
-    MorphismProperty.IsMultiplicative.toIsStableUnderComposition
-  exact @Functor.coverPreserving_restrictedTopology _ _ _ _ (Etale.forget X) (etaleTopology.over X)
-    (locallyCoverDense_of_le X le_rfl) _ _
-
 /-- The inclusion of the small étale site of `X` into its big étale site is representably flat,
 since it preserves finite limits. -/
 instance : RepresentablyFlat (Etale.forget X) :=
@@ -79,10 +69,6 @@ instance : RepresentablyFlat (Etale.forget X) :=
 /-- The inclusion of the small étale site of `X` into its big étale site is final. -/
 instance : (Etale.forget X).Final :=
   final_of_representablyFlat _
-
-/-- The inclusion of the small étale site of `X` into its big étale site is continuous. -/
-instance : (Etale.forget X).IsContinuous X.smallEtaleTopology (etaleTopology.over X) :=
-  Functor.isContinuous_iff_coverPreserving.mpr (coverPreserving_etaleForget X)
 
 /-- The inclusion of the small étale site of `X` into its big étale site is cocontinuous: an étale
 covering of a scheme étale over `X` consists of schemes étale over `X`. -/

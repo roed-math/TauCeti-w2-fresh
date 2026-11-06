@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: pullback of cohomology along the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: pullback of cohomology along the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
 
 # Lookahead: `epsilon-fppf-etale` (SchemeAndStackFoundations §2.10)
 
@@ -30,7 +30,9 @@ descriptions of the remaining sheafification-type comparisons (`equiv₀_epsilon
 `equiv₀_etaleToNisnevichH`, from the general `Sheaf.H.equiv₀_pullback_sheafInverseImage`). The
 roadmap checks `test_comparison_id` and
 `test_aX_constant` (for `aX` itself) are in the examples file. Fifth session: merged `main` (`72cbdfb14e3d`) and re-verified; supplier PR #28094 is still open
-at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Seventh session (2026-11-06): `main` is still at `afa08a3ed16f` and the three supplier PRs are still open at the same heads, so nothing was merged and the stubs are unchanged; the branch was rebuilt and re-checked. Eighth session (2026-11-06): `main` and the three supplier
+at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Twelfth session (2026-11-06): merged `main` (`385ec2ddd8dd`) without conflicts and rebuilt; #28094 (`6c29c999512d`) and #29365 (`440cc53de2c4`) are still open at unchanged heads, so the stub is unchanged. `main` now has the continuity instance of `Etale.forget X` (in
+`Sites/Etale/Subcanonical.lean`), so the branch's copy and the `coverPreserving_etaleForget` lemma
+it was built from were removed and `SmallEtaleComparison.lean` imports `main`'s. #27295 (cohomology of quasi-coherent sheaves commutes with localization, a partial of `qcoh-higher-direct-image-vanishing`) has landed on `main` as `dccad4dc828`; nothing on the branch consumes it yet, and it will be the starting point for the quasi-coherent comparison below. Seventh session (2026-11-06): `main` is still at `afa08a3ed16f` and the three supplier PRs are still open at the same heads, so nothing was merged and the stubs are unchanged; the branch was rebuilt and re-checked. Eighth session (2026-11-06): `main` and the three supplier
 PR heads are unchanged; added `aXAdjunction_unit_app` (the unit of `a_X⁻¹ ⊣ a_{X,*}` as the
 composite of the units of `π_X` and `ε`) and the degree-zero description of the pullback along
 `a_X`, `equiv₀_aXH`. Ninth session (2026-11-06): `main` and the three supplier PR heads are
@@ -158,7 +160,7 @@ No other supplier is consumed by what is on the branch:
 
 - `sheaf-h-pullback`'s `Sheaf.H.pullback` is already on `main`
   (`TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean`).
-- `qcoh-higher-direct-image-vanishing` (#27295) and `big-sheaf` (open PR #29365; partial #27307) are needed only by the
+- `qcoh-higher-direct-image-vanishing` (partial #27295, now on `main`) and `big-sheaf` (open PR #29365; partial #27307) are needed only by the
   cohomology comparisons, which are not yet proved, so they are not stubbed.
 
 ## Splits
@@ -246,8 +248,9 @@ Files:
   along a fully faithful functor restricts back through `lanUnit`), `fullyFaithfulSheafPullback`
   and the `Full`/`Faithful` instances.
 - `TauCeti/AlgebraicGeometry/Sites/SmallEtaleComparison.lean` (321 lines, new), namespace
-  `AlgebraicGeometry.Scheme`: `coverPreserving_etaleForget`, the `RepresentablyFlat`, `Final`,
-  `IsContinuous` and `IsCocontinuous` instances for `Etale.forget X`, `piX X A`
+  `AlgebraicGeometry.Scheme`: the `RepresentablyFlat`, `Final` and `IsCocontinuous` instances
+  for `Etale.forget X` (its `IsContinuous` instance is `main`'s, from
+  `TauCeti/AlgebraicGeometry/Sites/Etale/Subcanonical.lean`), `piX X A`
   (`Functor.sheafPullback` along `Etale.forget X`) with `piXAdjunction`, `IsLeftAdjoint`,
   `constantSheafCompPiXIso` and `constantSheafCompPiXIso_inv_app`; `aX X A := piX X A ⋙
   epsilonFppfEtale X A` with `aXAdjunction`, `aXAdjunction_unit_app`, `IsLeftAdjoint`, `constantSheafCompAXIso` and
@@ -427,7 +430,7 @@ Still unproved from §2.10:
    degree-zero descriptions of all five cohomology maps (fourth session, splits 5–7), and of
    `aXH` (eighth session, split 5).
 3. **`quasiCoherent_topology_comparison`** (`H^q(X_Zar, F) = H^q(X_ét, F^a) = H^q(X_fppf, F^a)`,
-   Stacks 35.9.3). It needs `big-sheaf` (open PR #29365; partial #27307), `qcoh-higher-direct-image-vanishing` (#27295)
+   Stacks 35.9.3). It needs `big-sheaf` (open PR #29365; partial #27307), `qcoh-higher-direct-image-vanishing` (partial #27295, now on `main`)
    and the cohomology maps of splits 5 and 7. It is the statement that `nisnevichToZariskiH`,
    `etaleToNisnevichH`, `piXH` and `epsilonFppfEtaleH` are bijective on `F^a`. In degree zero this
    is the sheaf property of `F^a` for the finer topologies (fpqc descent of quasi-coherent
