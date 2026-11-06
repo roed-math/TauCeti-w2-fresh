@@ -26,10 +26,14 @@ and the `0`-cochain is bounded on `V i` because `ξ` is bounded. Together with
 `TauCeti.BoundedCech.exists_finiteDimensional_isCompl_range_d₀Cocycles` this shows that the
 bounded holomorphic coboundaries on `V` have a finite-dimensional complement in the bounded
 holomorphic cocycles
-(`TauCeti.BoundedCech.exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball`). Such
+(`TauCeti.BoundedCech.exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball`), and,
+since every holomorphic cocycle on `V` extends to the `U' i` up to a coboundary and is then
+bounded on `V`, that every holomorphic cocycle on `V` is cohomologous to an element of one
+finite-dimensional space of bounded cocycles
+(`TauCeti.BoundedCech.exists_finiteDimensional_forall_cocycle_eq_add_sub_of_chart_ball`). Such
 covers exist: a compact Riemann surface is covered by finitely many chart discs of radii
 `4⁻¹ * R`, inside the concentric discs of radii `2⁻¹ * R` and `R`
-(`TauCeti.BoundedCech.exists_chart_ball_cover_finiteDimensional_isCompl_range_d₀Cocycles`).
+(`TauCeti.BoundedCech.exists_chart_ball_cover_finiteDimensional_forall_cocycle_eq_add_sub`).
 
 ## References
 
@@ -129,20 +133,85 @@ theorem exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball
   exists_finiteDimensional_isCompl_range_d₀Cocycles (fun _ => isClosed_closure.isCompact) hVU
     (exists_restrictCocycles_add_d₀Cocycles_eq hR hU' hUU' hVU hVcov)
 
-/-- **A compact Riemann surface has a finite chart-disc cover with finite bounded `H¹`.** There
-are finitely many points `y ∈ t` and radii `R y > 0`, the coordinate disc of radius `R y` lying in
-the chart target at `y`, such that the chart discs `V y` of radii `4⁻¹ * R y` cover `X` and the
-bounded holomorphic coboundaries on `V` have a finite-dimensional complement in the bounded
-holomorphic cocycles. -/
-theorem exists_chart_ball_cover_finiteDimensional_isCompl_range_d₀Cocycles :
+/-- **Finiteness of holomorphic `H¹` of a chart-disc cover** (Forster 14.9). For `V ⋐ U ⋐ U'` as
+in `TauCeti.BoundedCech.exists_restrictCocycles_add_d₀Cocycles_eq`, there is a
+finite-dimensional space `B` of bounded holomorphic cocycles on `V` such that every holomorphic
+Čech `1`-cocycle `ξ` on `V`, bounded or not, is cohomologous to an element of `B`: on
+`V i ∩ V j`, `ξ i j = b i j + η j - η i` for a holomorphic `0`-cochain `η` on `V`.
+
+The cocycle `ξ` extends to the discs `U' i` up to a coboundary
+(`TauCeti.exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball`), and the extension is
+bounded on `V`, whose closure is a compact subset of `U'`. -/
+theorem exists_finiteDimensional_forall_cocycle_eq_add_sub_of_chart_ball
+    (hR : ∀ i, ball (extChartAt 𝓘(ℂ) (x i) (x i)) (R i) ⊆ (extChartAt 𝓘(ℂ) (x i)).target)
+    (hU' : ∀ i, U' i = (extChartAt 𝓘(ℂ) (x i)).source ∩
+      extChartAt 𝓘(ℂ) (x i) ⁻¹' ball (extChartAt 𝓘(ℂ) (x i) (x i)) (R i))
+    (hUU' : ∀ i, closure (U i : Set X) ⊆ U' i) (hVU : ∀ i, closure (V i : Set X) ⊆ U i)
+    (hVcov : ⋃ i, (V i : Set X) = univ) :
+    ∃ B : Submodule ℂ (cocycles 𝓘(ℂ) V), FiniteDimensional ℂ B ∧
+      ∀ ξ : ι → ι → X → ℂ, (∀ i j, MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) (ξ i j) (V i ∩ V j)) →
+        (∀ i j k, ∀ y ∈ (V i : Set X) ∩ V j ∩ V k, ξ i j y + ξ j k y = ξ i k y) →
+        ∃ b ∈ B, ∃ η : ι → X → ℂ, (∀ i, MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) (η i) (V i)) ∧
+          ∀ i j (y : ↥(V i ⊓ V j)),
+            ξ i j y = ((b : cocycles 𝓘(ℂ) V) : BoundedCochain₁ V) i j y + η j y - η i y := by
+  obtain ⟨B, hB, hcompl⟩ :=
+    exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball hR hU' hUU' hVU hVcov
+  refine ⟨B, hB, fun ξ hξ hcocycle => ?_⟩
+  have hVU' (i : ι) : closure (V i : Set X) ⊆ U' i :=
+    (hVU i).trans (subset_closure.trans (hUU' i))
+  have hVU'' (i : ι) : (V i : Set X) ⊆ U' i := subset_closure.trans (hVU' i)
+  obtain ⟨ζ, η', hζ, hζcoc, hη', heq, -⟩ :=
+    TauCeti.exists_mdifferentiableOn_cocycle_eq_add_sub_of_chart_ball hR hU'
+      (fun i => (V i).isOpen) hVU'' hVcov hξ hcocycle
+  -- `ζ` is bounded on `V i ∩ V j`, whose closure is a compact subset of `U' i ∩ U' j`.
+  choose C hC using fun i j => (hζ i j).exists_forall_norm_le_of_isCompact_closure
+    isClosed_closure.isCompact ((closure_inter_subset_inter_closure _ _).trans
+      (inter_subset_inter (hVU' i) (hVU' j)))
+  let ζb : BoundedCochain₁ V := fun i j => (of (V i ⊓ V j) (ζ i j)
+    ((hζ i j).mono fun _ hy => ⟨hVU'' i hy.1, hVU'' j hy.2⟩) (C i j) (hC i j) :
+      ↥(V i ⊓ V j) →ᵇ ℂ)
+  have hζb : ζb ∈ cocycles 𝓘(ℂ) V := by
+    refine mem_cocycles_iff.2 ⟨mem_cochains₁_iff.2 fun i j => (of _ _ _ _ _).2,
+      funext fun i => funext fun j => funext fun k => BoundedContinuousFunction.ext fun y => ?_⟩
+    have hy := hζcoc i j k y ⟨⟨hVU'' i y.2.1.1, hVU'' j y.2.1.2⟩, hVU'' k y.2.2⟩
+    simp only [ζb, d₁_apply, FunLike.coe_add, FunLike.coe_sub, Pi.add_apply, Pi.sub_apply,
+      restrictBCF_apply, of_apply, Pi.zero_apply, FunLike.coe_zero]
+    linear_combination hy
+  let z : cocycles 𝓘(ℂ) V := ⟨ζb, hζb⟩
+  obtain ⟨_, ⟨η₀, rfl⟩, b, hb, hzb⟩ :=
+    Submodule.mem_sup.1 (hcompl.sup_eq_top.symm ▸ Submodule.mem_top : z ∈ _ ⊔ B)
+  have hη₀ := mem_cochains₀_iff.1 η₀.2
+  refine ⟨b, hb, fun i => extend ⟨_, hη₀ i⟩ - η' i,
+    fun i => (mdifferentiableOn_extend _).sub (hη' i), fun i j y => ?_⟩
+  have hy := heq i j y y.2
+  have hzy := congr($(congr_arg Subtype.val hzb) i j y)
+  simp only [ContinuousLinearMap.coe_coe, Submodule.coe_add, Pi.add_apply,
+    coe_d₀Cocycles_apply, d₀_apply, FunLike.coe_add, FunLike.coe_sub, Pi.sub_apply,
+    restrictBCF_apply, z, ζb, of_apply] at hzy
+  have hi : extend ⟨_, hη₀ i⟩ (y : X) = (η₀ : BoundedCochain₀ V) i ⟨y, y.2.1⟩ :=
+    BoundedHolomorphicSections.extend_apply _ ⟨(y : X), y.2.1⟩
+  have hj : extend ⟨_, hη₀ j⟩ (y : X) = (η₀ : BoundedCochain₀ V) j ⟨y, y.2.2⟩ :=
+    BoundedHolomorphicSections.extend_apply _ ⟨(y : X), y.2.2⟩
+  simp only [Pi.sub_apply, hi, hj]
+  linear_combination -hzy - hy
+
+/-- **A compact Riemann surface has a finite chart-disc cover with finite holomorphic `H¹`.**
+There are finitely many points `y ∈ t` and radii `R y > 0`, the coordinate disc of radius `R y`
+lying in the chart target at `y`, such that the chart discs `V y` of radii `4⁻¹ * R y` cover `X`
+and every holomorphic Čech `1`-cocycle on `V` is cohomologous to an element of one
+finite-dimensional space `B` of bounded holomorphic cocycles. -/
+theorem exists_chart_ball_cover_finiteDimensional_forall_cocycle_eq_add_sub :
     ∃ t : Finset X, ∃ R : X → ℝ, (∀ y, 0 < R y) ∧
       (∀ y, ball (extChartAt 𝓘(ℂ) y y) (R y) ⊆ (extChartAt 𝓘(ℂ) y).target) ∧
       ∃ V : t → Opens X, (∀ i, (V i : Set X) = (extChartAt 𝓘(ℂ) i.1).source ∩
         extChartAt 𝓘(ℂ) i.1 ⁻¹' ball (extChartAt 𝓘(ℂ) i.1 i.1) (4⁻¹ * R i)) ∧
       ⋃ i, (V i : Set X) = univ ∧
       ∃ B : Submodule ℂ (cocycles 𝓘(ℂ) V), FiniteDimensional ℂ B ∧
-        IsCompl (LinearMap.range (d₀Cocycles 𝓘(ℂ) V : cochains₀ 𝓘(ℂ) V →ₗ[ℂ] cocycles 𝓘(ℂ) V))
-          B := by
+        ∀ ξ : t → t → X → ℂ, (∀ i j, MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) (ξ i j) (V i ∩ V j)) →
+          (∀ i j k, ∀ y ∈ (V i : Set X) ∩ V j ∩ V k, ξ i j y + ξ j k y = ξ i k y) →
+          ∃ b ∈ B, ∃ η : t → X → ℂ, (∀ i, MDifferentiableOn 𝓘(ℂ) 𝓘(ℂ) (η i) (V i)) ∧
+            ∀ i j (y : ↥(V i ⊓ V j)),
+              ξ i j y = ((b : cocycles 𝓘(ℂ) V) : BoundedCochain₁ V) i j y + η j y - η i y := by
   obtain ⟨t, R, hR, hRt, hcov⟩ :=
     exists_finset_iUnion_extChartAt_preimage_ball_eq_univ (I := 𝓘(ℂ)) (M := X)
       (by norm_num : (0 : ℝ) < 4⁻¹)
@@ -155,7 +224,7 @@ theorem exists_chart_ball_cover_finiteDimensional_isCompl_range_d₀Cocycles :
       obtain ⟨z, hz, hy⟩ := mem_iUnion₂.1 (hcov.ge (mem_univ y))
       exact mem_iUnion.2 ⟨⟨z, hz⟩, hy⟩
   refine ⟨t, R, hR, hRt, fun i => disc i.1 (4⁻¹ * R i), fun _ => rfl, hcov',
-    exists_finiteDimensional_isCompl_range_d₀Cocycles_of_chart_ball (x := Subtype.val)
+    exists_finiteDimensional_forall_cocycle_eq_add_sub_of_chart_ball (x := Subtype.val)
       (R := fun i => R i) (U' := fun i => disc i.1 (R i)) (U := fun i => disc i.1 (2⁻¹ * R i))
       (fun i => hRt i) (fun _ => rfl) (fun i => ?_) (fun i => ?_) hcov'⟩
   · exact closure_extChartAt_source_inter_preimage_ball_subset _ (by linarith [hR i]) (hRt i)
