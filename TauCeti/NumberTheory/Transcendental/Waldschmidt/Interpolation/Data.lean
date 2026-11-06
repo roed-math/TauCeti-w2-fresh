@@ -366,6 +366,27 @@ theorem finrank_map_waldschmidtPointMap_sup (b : Fin (n + 1) → K)
     rw [sup_eq_left.2 ((Submodule.span_singleton_le_iff_mem _ _).2 he₀)]
     exact (Submodule.equivMapOfInjective Y hinj V).finrank_eq.symm
 
+/-- A nonzero integral index `s` on the line through the coefficient vector
+`c = (β₁, …, β_{m-1}, -1)` is a short rational coefficient relation: its last coordinate is nonzero
+and `β_k = -s_k / s_m` for `1 ≤ k < m`. This is the case `β₀ = 0`, `(S - S)[2] ∩ K c ≠ {0}` that
+the rank argument reduces by Liouville's inequality. -/
+theorem eq_neg_div_of_intCast_mem_span_snoc [CharZero K] (b : Fin (n + 1) → K)
+    {s : Fin (n + 1) → ℤ} (hs : s ≠ 0)
+    (hmem : (fun i ↦ (s i : K)) ∈ K ∙ Fin.snoc (fun k : Fin n ↦ b k.succ) (-1)) :
+    s (Fin.last n) ≠ 0 ∧ ∀ k : Fin n, b k.succ = -(s k.castSucc : K) / s (Fin.last n) := by
+  rw [← comap_waldschmidtPointMap_span_single, Submodule.mem_comap] at hmem
+  have hv := eq_neg_smul_snoc_of_waldschmidtPointMap_mem b hmem
+  have hlast : s (Fin.last n) ≠ 0 := by
+    refine fun h ↦ hs (funext fun i ↦ ?_)
+    have := congrFun hv i
+    simp only [h, Int.cast_zero, neg_zero, zero_smul, Pi.zero_apply, Int.cast_eq_zero] at this
+    exact this
+  refine ⟨hlast, fun k ↦ ?_⟩
+  have := congrFun hv k.castSucc
+  simp only [Pi.smul_apply, Fin.snoc_castSucc, smul_eq_mul] at this
+  rw [eq_div_iff (Int.cast_ne_zero.2 hlast), this]
+  ring
+
 end FinrankPointMap
 
 /-- Waldschmidt's auxiliary function `z ↦ F(z) exp(t (z₀ + λ₁ z₁ + ⋯ + λ_{m-1} z_{m-1}))` on

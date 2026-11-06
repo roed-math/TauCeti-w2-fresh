@@ -7,14 +7,14 @@ interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 
 §9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`.
 
 Earlier rounds added the material of splits 1–3: the counting half of the induction on proper
-subspaces, and the translation between index subspaces and grid-point subspaces. Six later
-rounds on 2026-11-06 (resuming at `107089e3b11`, `a38b52feaed`, `4d992c71939`,
-`08abe8146a9`, `8a07eab50a8` and `1e5efa090b8`, the last at 09:37 UTC) found `main` unmoved at
-`afa08a3ed16`, so each merge was empty, and supplier PR #28644 still open at head `583a153b95f`
-with nothing the rank argument consumes. They added no mathematics; the branch still builds and
-passes `lookahead-check`. `main` and pinned Mathlib still have no zero or multiplicity estimate,
-Philippon-type or otherwise, that split 4 could reuse. What remains is the multiplicity estimate
-of split 4, which does not fit in one round, and the assembly in split 5.
+subspaces, and the translation between index subspaces and grid-point subspaces. Six rounds on
+2026-11-06 (the last at 09:37 UTC) found `main` unmoved at `afa08a3ed16` and added no
+mathematics. The round resuming at `5bb61a91a0b` (09:55 UTC) again found `main` at `afa08a3ed16`
+and supplier PR #28644 still open at head `583a153b95f`. It added one input of the Liouville
+reduction to split 5: `eq_neg_div_of_intCast_mem_span_snoc`. `main` and pinned Mathlib still have
+no zero or multiplicity estimate, Philippon-type or otherwise, that split 4 could reuse. What
+remains is the multiplicity estimate of split 4, which does not fit in one round, and the
+assembly in split 5.
 
 ## Stubs
 
@@ -65,6 +65,14 @@ New section `FinrankPointMap`, over a field:
 
 `main`'s `rank_waldschmidtInterpolationMatrix_le` in `Matrix.lean` now uses it, which drops about
 30 lines of inline argument.
+
+**Input to split 5 (Liouville reduction).** Also in section `FinrankPointMap` of `Data.lean`,
+with `[CharZero K]`:
+
+- `eq_neg_div_of_intCast_mem_span_snoc`: a nonzero integral `s ∈ K c` has `s_m ≠ 0` and
+  `β_k = -s_k / s_m` for `1 ≤ k < m`. So the excluded case `β₀ = 0`, `(S−S)[2] ∩ K c ≠ {0}` makes
+  the `β_k` rational with height at most `‖s‖∞`, which is what the Liouville step consumes. It
+  belongs to split 5 (+25 lines in `Data.lean`), next to its consumer.
 
 **Split 2: the rank and the zero estimate.** In `Interpolation/Rank.lean`, with `[Infinite K]`:
 
@@ -141,7 +149,9 @@ In the new file `Interpolation/Residual.lean`:
        `s ↦ α^s` as a `ℤ`-linear map into `Additive ℂˣ`. Then Mathlib's
        `LinearMap.rank_range_add_rank_ker`, via the instance `IsDomain.hasRankNullity`, gives
        `rank ker ≤ m − (m−1)`. What remains is to use the kernel against the obstruction;
-     - the reduction of a short rational coefficient relation by Liouville.
+     - the reduction of a short rational coefficient relation by Liouville. Its first step,
+       reading the rational `β_k` off the relation, is `eq_neg_div_of_intCast_mem_span_snoc`;
+       the Liouville inequality applied to `α^s` remains.
 
 ## Splits
 
@@ -185,7 +195,8 @@ In the new file `Interpolation/Residual.lean`:
 4. **feat: a multiplicity estimate on the additive group times the torus.** Needs none. Not on
    this branch.
 5. **feat: the rank of Waldschmidt's interpolation matrix.** Needs 1, 2, 3 and 4. Carries
-   `waldschmidtInterpolationRank` and completes the target. Not on this branch.
+   `waldschmidtInterpolationRank` and completes the target. On this branch so far only its input
+   `eq_neg_div_of_intCast_mem_span_snoc` (`Data.lean`, +25); the rest is not on this branch.
 
 ## Self-audit notes (rubrics)
 
@@ -211,8 +222,10 @@ In the new file `Interpolation/Residual.lean`:
   and `exists_restrictTotalDegree_linearMap`. A reviewer may ask to make the second public in
   `RingTheory/MvPolynomial/Finrank.lean`.
 - **Checks run.**
-  - `lake build` is green and `lookahead-check` is ok. Both were rerun on 2026-11-06 against
-    `main` at `afa08a3ed16`.
+  - `lake build` is green and `lookahead-check` is ok. Both were rerun on 2026-11-06 at about
+    10:05 UTC against `main` at `afa08a3ed16`.
+  - `eq_neg_div_of_intCast_mem_span_snoc` reuses `comap_waldschmidtPointMap_span_single` and
+    `eq_neg_smul_snoc_of_waldschmidtPointMap_mem` rather than redoing the coordinate argument.
   - An earlier round grepped `main` and pinned Mathlib for every helper on the branch. None
     has landed in the meantime.
   - In an earlier round, the Batteries environment linters (simpNF, unusedArguments, docBlame, …) passed
