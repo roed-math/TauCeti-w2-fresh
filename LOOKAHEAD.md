@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-veronese","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the Veronese subalgebra of a graded algebra"},{"n":2,"after":[1],"title":"feat: homogeneous localizations of a Veronese subalgebra"},{"n":3,"after":[2],"title":"feat: Proj of a Veronese subalgebra"},{"n":4,"after":[],"title":"feat: Veronese subalgebras of graded monoid objects"},{"n":5,"after":[1,4],"title":"feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra"},{"n":6,"after":[3],"title":"feat: twisting sheaves of Proj of a Veronese subalgebra"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: relative Proj of a Veronese subalgebra"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"relative-proj-veronese","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: the Veronese subalgebra of a graded algebra"},{"n":2,"after":[1],"title":"feat: homogeneous localizations of a Veronese subalgebra"},{"n":3,"after":[2],"title":"feat: Proj of a Veronese subalgebra"},{"n":4,"after":[],"title":"feat: Veronese subalgebras of graded monoid objects"},{"n":5,"after":[1,4],"title":"feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra"},{"n":6,"after":[3],"title":"feat: twisting sheaves of Proj of a Veronese subalgebra"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: relative Proj of a Veronese subalgebra"}]}-->
 
 # Lookahead: `relative-proj-veronese` (SchemeAndStackFoundations, Layer 0, §0.3)
 
@@ -7,13 +7,14 @@ Target (README §0.3): prove `relativeProj_veronese`: for `d ≥ 1` the Veronese
 `relativeProj A^{(d)} ≅ relativeProj A` over `S`, with `O(n)` corresponding to `O(dn)`
 (Stacks, Lemma 27.11.8 (0B5J), on affine charts).
 
-Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`.
+Built on `main` at `385ec2ddd8d` (merged into the branch on 2026-11-06).
 
-**Status: partial.** Splits 1, 2, 3 and 4 are proved on this branch, with no `sorry`: the
-Veronese subalgebra, its affine charts, `Proj A^{(d)} ≅ Proj A` over `Spec 𝒜 0`, and the
-sheaf-level Veronese subalgebra `A^{(d)}` of a graded (commutative) monoid object. The
-identification of its graded sections, the `O(n)`/`O(dn)` comparison and the relative statement
-(splits 5 to 7) remain.
+**Status: partial.** Splits 1 to 5 are proved on this branch, with no `sorry`: the
+Veronese subalgebra, its affine charts, `Proj A^{(d)} ≅ Proj A` over `Spec 𝒜 0`, the
+sheaf-level Veronese subalgebra `A^{(d)}` of a graded (commutative) monoid object, and the
+identification of its graded sections over an open with the Veronese subalgebra of the graded
+sections of `A`. The `O(n)`/`O(dn)` comparison and the relative statement (splits 6 and 7)
+remain.
 
 ## Stubbed declarations
 
@@ -90,19 +91,26 @@ specified in the README only.
      `veroneseOne_whiskerRight_veroneseMul`, `whiskerLeft_veroneseOne_veroneseMul`,
      `veroneseMul_assoc`, and `veronese A d : Mon (GradedObject ℕ C)` with components
      `A.X (d * k)` (assembled by `GradedObject.monObjOfHomogeneous`), with `veronese_X`,
+     (`veroneseOne` and `veroneseMul` are `@[expose]`, so that split 5 can unfold them),
      `veronese_mul`, `veronese_one`. In `CategoryTheory.CommMon`: `veroneseMul_comm` and
      `veronese A d : CommMon (GradedObject ℕ C)`, with `veronese_toMon` and `veronese_X`. For
      `C = X.Modules` this is the Veronese subalgebra `A^{(d)}` of the graded algebra `A` that
      `relativeProj` takes; its components are those of `A`, so it is quasi-coherent when `A` is.
 5. **`feat: graded sections of the Veronese subalgebra of a graded quasi-coherent algebra`**.
-   After: 1, 4. *Remains.*
-   - File: `TauCeti/AlgebraicGeometry/Modules/GradedAlgebra/Veronese.lean`.
-   - Adds: the quasi-coherence instance for `(A.veronese d).X k`, and the graded ring
-     isomorphism `⨁ k, Γ(A_{dk}, U) ≃+* veronese (⨁ n, Γ(A_n, U)) d` carrying
-     `(A.veronese d).gradedSectionsGrading U` to `veroneseGrading (A.gradedSectionsGrading U) d`
-     and `Γ(X, U)`-linear, natural in restriction to basic opens (`restrictGradedSections`).
-     Built with `DirectSum.toSemiring` from `of (d * k)` and `CommMon.sections_gMul_def`,
-     with the transports handled by `Mon.eqToHom_whiskerRight_mul` of split 4.
+   After: 1, 4. *Done on this branch.*
+   - File: `TauCeti/AlgebraicGeometry/Modules/GradedAlgebra/Veronese.lean` (253 lines).
+   - Adds, in `CategoryTheory.CommMon`: the instance `isQuasicoherent_veronese_X`;
+     `veroneseSectionsAlgHom : (⨁ k, Γ((A.veronese d).X k, U)) →ₐ[Γ(X, U)] ⨁ n, Γ(A.X n, U)`
+     (degree `k` placed in degree `d k`, built with `DirectSum.toAlgebra`) with
+     `veroneseSectionsAlgHom_of`, `veroneseSectionsAlgHom_apply_mul`,
+     `veroneseSectionsAlgHom_apply_of_not_dvd`, `injective_veroneseSectionsAlgHom` (for `d ≠ 0`),
+     `range_veroneseSectionsAlgHom` (the range is `veronese (A.gradedSectionsGrading U) d`),
+     `veroneseSectionsEquiv : (⨁ k, Γ((A.veronese d).X k, U)) ≃ₐ[Γ(X, U)]
+     veronese (A.gradedSectionsGrading U) d` with `coe_veroneseSectionsEquiv`,
+     `veroneseSectionsEquiv_mem_veroneseGrading` and
+     `map_veroneseSectionsEquiv_gradedSectionsGrading` (it carries
+     `(A.veronese d).gradedSectionsGrading U k` onto `veroneseGrading _ d k`), and
+     `veroneseSectionsAlgHom_restrictGradedSections` (naturality in restriction).
 6. **`feat: twisting sheaves of Proj of a Veronese subalgebra`**. After: 3. *Remains.*
    - File: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/Veronese.lean`.
    - Adds: `O_{Proj A^{(d)}}(n) ≅ (veroneseIso).hom^* O_{Proj A}(d n)`, using main's
@@ -130,7 +138,10 @@ commutative monoid object `A` in `ℕ`-graded objects of a braided monoidal cate
 particular a graded algebra of `O_X`-modules), `CommMon.veronese A d` is its Veronese subalgebra
 `⨁ₖ A_{dk}`, with the unit and multiplications of `A`.
 
-Remaining: splits 5, 6 and 7 as described above. These are the identification of the graded
-sections of `A^{(d)}` over an affine open with the Veronese subalgebra of the graded sections of
-`A`, the twisting-sheaf comparison `O(n)`/`O(dn)` on `Proj`, and the relative statement
+Also proved (split 5): over every open `U`, the graded sections `⨁ₖ Γ(A_{dk}, U)` of
+`A^{(d)}` are `Γ(X, U)`-isomorphic to the Veronese subalgebra of `⨁ₙ Γ(Aₙ, U)`, degree by
+degree and compatibly with restriction (`CommMon.veroneseSectionsEquiv`).
+
+Remaining: splits 6 and 7 as described above. These are the twisting-sheaf comparison
+`O(n)`/`O(dn)` on `Proj`, and the relative statement
 `relativeProj_veronese`, glued from `Proj.veroneseIso` over affine opens of the base.

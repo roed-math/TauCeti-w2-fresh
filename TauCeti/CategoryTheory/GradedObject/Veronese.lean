@@ -86,12 +86,12 @@ variable {C : Type*} [Category* C] [MonoidalCategory C]
   (A : Mon (GradedObject ℕ C)) (d : ℕ)
 
 /-- The unit of the `d`-th Veronese subalgebra: the unit of `A`, landing in `A_{d·0} = A₀`. -/
-def veroneseOne : 𝟙_ C ⟶ A.X (d * 0) :=
+@[expose] def veroneseOne : 𝟙_ C ⟶ A.X (d * 0) :=
   A.one ≫ eqToHom (congrArg A.X (mul_zero d).symm)
 
 /-- The homogeneous multiplications of the `d`-th Veronese subalgebra: the multiplication
 `A_{di} ⊗ A_{dj} ⟶ A_{di + dj} = A_{d(i+j)}` of `A`. -/
-def veroneseMul (i j : ℕ) : A.X (d * i) ⊗ A.X (d * j) ⟶ A.X (d * (i + j)) :=
+@[expose] def veroneseMul (i j : ℕ) : A.X (d * i) ⊗ A.X (d * j) ⟶ A.X (d * (i + j)) :=
   A.mul (d * i) (d * j) ≫ eqToHom (congrArg A.X (mul_add d i j).symm)
 
 /-- The unit of the `d`-th Veronese subalgebra is a left identity. -/
