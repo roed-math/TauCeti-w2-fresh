@@ -44,6 +44,8 @@ faithful, and the sections of `π_X⁻¹ F` over a scheme `h : T ⟶ X` are the 
 * `AlgebraicGeometry.Scheme.fullyFaithfulPiX`: `π_X⁻¹` is fully faithful.
 * `AlgebraicGeometry.Scheme.piXObjIso`: the sections of `π_X⁻¹ F` over `h : T ⟶ X` are
   `Γ(T_ét, h⁻¹ F)`.
+* `AlgebraicGeometry.Scheme.aXObjIsoOfIsSheaf`: when `π_X⁻¹ F` is an fppf sheaf, the sections of
+  `a_X⁻¹ F` over `h : T ⟶ X` are `Γ(T_ét, h⁻¹ F)`.
 
 ## References
 
@@ -255,6 +257,19 @@ noncomputable def piXObjIso (F : Sheaf X.smallEtaleTopology A) :
       (op (Over.mk (𝟙 T))) ≪≫
     ((sheafToPresheaf _ A).mapIso (((Etale.forget T).sheafPullbackCompSheafPushforwardContinuousIso
       A T.smallEtaleTopology (etaleTopology.over T)).app _)).app (op (Etale.mk (𝟙 T)))
+
+/-- **The values of `a_X⁻¹ F` when `π_X⁻¹ F` is an fppf sheaf**: if the big étale sheaf `π_X⁻¹ F`
+is already an fppf sheaf, then the sections of `a_X⁻¹ F` over a scheme `h : T ⟶ X` over `X` are
+the global sections `Γ(T_ét, h⁻¹ F)` of the pullback of `F` to the small étale site of `T`. -/
+noncomputable def aXObjIsoOfIsSheaf [HasWeakSheafify (fppfTopology.over X) A]
+    (F : Sheaf X.smallEtaleTopology A)
+    (hF : Presheaf.IsSheaf (fppfTopology.over X) ((piX X A).obj F).obj) :
+    ((aX X A).obj F).obj.obj (op (Over.mk h)) ≅
+      (((Etale.pullback h).sheafPullback A X.smallEtaleTopology T.smallEtaleTopology).obj F).obj.obj
+        (op (Etale.mk (𝟙 T))) :=
+  ((sheafToPresheaf _ A).mapIso (epsilonFppfEtaleObjIsoOfIsSheaf X A _ hF)).app
+      (op (Over.mk h)) ≪≫
+    piXObjIso h A F
 
 end Sections
 

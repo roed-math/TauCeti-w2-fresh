@@ -45,6 +45,8 @@ finer topology `K` (`Sheaf.H.equiv₀_pullback_sheafInverseImage`).
 * `CategoryTheory.Sheaf.H.equiv₀_pullback_sheafInverseImage`: for topologies `J ≤ K`, the pullback
   along the `K`-sheafification of `J`-sheaves in degree zero is restriction of global sections along
   the unit of the adjunction between inverse and direct images.
+* `CategoryTheory.Sheaf.H.pullback_sheafInverseImage_zero_bijective`: for topologies `J ≤ K`, the
+  pullback in degree zero is bijective on a `J`-sheaf that is already a `K`-sheaf.
 -/
 
 public section
@@ -253,5 +255,24 @@ lemma equiv₀_pullback_sheafInverseImage {T : C} (hT : IsTerminal T)
   rw [hM]
   -- Both sides evaluate the same morphism `ℤ ⟶ G^K(T)` at `1`.
   rfl
+
+/-- For topologies `J ≤ K` and a terminal object of `C`, the pullback along the inverse image is
+bijective in degree zero on a `J`-sheaf that is already a `K`-sheaf: the unit `G ⟶ G^K` of the
+adjunction between inverse and direct images is then an isomorphism. -/
+theorem pullback_sheafInverseImage_zero_bijective {T : C} (hT : IsTerminal T)
+    (G : Sheaf J AddCommGrpCat.{w}) (hG : Presheaf.IsSheaf K G.obj) :
+    Function.Bijective (pullback (GrothendieckTopology.sheafInverseImage J K AddCommGrpCat.{w})
+      ((GrothendieckTopology.constantSheafCompSheafInverseImageIso AddCommGrpCat.{w} h).inv.app
+        (of (ULift ℤ))) G 0) := by
+  have : IsIso ((GrothendieckTopology.sheafAdjunctionOfLE AddCommGrpCat.{w} h).unit.app G) :=
+    (GrothendieckTopology.sheafAdjunctionOfLE AddCommGrpCat.{w} h).isIso_unit_app_of_iso
+      (X := ⟨G.obj, hG⟩) (Iso.refl _)
+  have hu : Function.Bijective
+      (((GrothendieckTopology.sheafAdjunctionOfLE AddCommGrpCat.{w} h).unit.app G).hom.app
+        (op T)) :=
+    ConcreteCategory.bijective_of_isIso _
+  rw [← (H.equiv₀ _ hT).bijective.of_comp_iff',
+    show _ ∘ _ = _ from funext (equiv₀_pullback_sheafInverseImage h hT G)]
+  exact hu.comp (H.equiv₀ G hT).bijective
 
 end CategoryTheory.Sheaf.H

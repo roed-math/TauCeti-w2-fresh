@@ -20,7 +20,8 @@ sheaves to constant sheaves. They therefore induce pullback maps on sheaf cohomo
 
 through `CategoryTheory.Sheaf.H.pullback`. In degree zero both are the restriction of global
 sections along the unit of the adjunction (`equiv₀_etaleToNisnevichH`,
-`equiv₀_nisnevichToZariskiH`).
+`equiv₀_nisnevichToZariskiH`), so the first is bijective in degree zero on Nisnevich sheaves that
+are already étale sheaves (`etaleToNisnevichH_zero_bijective`).
 Their composite is the pullback of cohomology from the Zariski site to the small étale site
 (`map_etaleToNisnevichH_nisnevichToZariskiH`).
 
@@ -34,6 +35,8 @@ instance for `w = u`.
   cohomology.
 * `AlgebraicGeometry.Scheme.equiv₀_etaleToNisnevichH`, `equiv₀_nisnevichToZariskiH`: in degree
   zero, the pullbacks are the restriction of global sections.
+* `AlgebraicGeometry.Scheme.etaleToNisnevichH_zero_bijective`: in degree zero, the pullback to
+  the étale site is bijective on Nisnevich sheaves that are already étale sheaves.
 * `AlgebraicGeometry.Scheme.map_etaleToNisnevichH_nisnevichToZariskiH`: the pullbacks from the
   Zariski site to the Nisnevich site and from there to the étale site compose to the pullback from
   the Zariski site to the étale site.
@@ -82,6 +85,17 @@ lemma equiv₀_etaleToNisnevichH (F : Sheaf X.smallNisnevichTopology AddCommGrpC
     inferInstanceAs (PreservesFiniteColimits (etaleToNisnevich X _))
   Sheaf.H.equiv₀_pullback_sheafInverseImage (smallNisnevichTopology_le_smallEtaleTopology X)
     (isTerminalRestrictEtaleFunctorObjTop X) F x
+
+/-- In degree zero, the pullback of cohomology from the small Nisnevich site to the small étale
+site is bijective on a Nisnevich sheaf that is already an étale sheaf. -/
+theorem etaleToNisnevichH_zero_bijective (F : Sheaf X.smallNisnevichTopology AddCommGrpCat.{w})
+    (hF : Presheaf.IsSheaf X.smallEtaleTopology F.obj) :
+    Function.Bijective (etaleToNisnevichH X F 0) :=
+  have : PreservesFiniteColimits (sheafInverseImage X.smallNisnevichTopology
+      X.smallEtaleTopology AddCommGrpCat.{w}) :=
+    inferInstanceAs (PreservesFiniteColimits (etaleToNisnevich X _))
+  Sheaf.H.pullback_sheafInverseImage_zero_bijective (smallNisnevichTopology_le_smallEtaleTopology X)
+    (isTerminalRestrictEtaleFunctorObjTop X) F hF
 
 end Etale
 

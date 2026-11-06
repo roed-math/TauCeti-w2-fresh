@@ -103,6 +103,13 @@ example (X : Scheme.{u}) [HasExt.{u + 1} (Sheaf X.smallEtaleTopology AddCommGrpC
       epsilonFppfEtaleH X ((piX X AddCommGrpCat.{u + 1}).obj F) n (piXH X F n x) :=
   aXH_apply X F n x
 
+-- In degree zero, the pullback of cohomology along `π_X` is bijective.
+example (X : Scheme.{u}) [HasExt.{u + 1} (Sheaf X.smallEtaleTopology AddCommGrpCat.{u + 1})]
+    [HasExt.{u + 1} (Sheaf (etaleTopology.over X) AddCommGrpCat.{u + 1})]
+    (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{u + 1}) :
+    Function.Bijective (piXH X F 0) :=
+  piXH_zero_bijective X F
+
 -- The pullback of cohomology from the Zariski site to the small Nisnevich site, followed by the
 -- pullback to the small étale site, is the pullback from the Zariski site to the small étale site.
 example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}]

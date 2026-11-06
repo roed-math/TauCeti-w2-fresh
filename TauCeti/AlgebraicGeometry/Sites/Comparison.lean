@@ -25,6 +25,8 @@ morphism `Y ⟶ X` (`epsilonFppfEtaleBaseChangeIso`).
 * `AlgebraicGeometry.Scheme.etaleTopology_le_fppfTopology`: étale coverings are fppf coverings.
 * `AlgebraicGeometry.Scheme.epsilonFppfEtale`, `epsilonFppfEtaleAdjunction`: the inverse image
   of `ε` and its adjunction with the direct image.
+* `AlgebraicGeometry.Scheme.epsilonFppfEtaleObjIsoOfIsSheaf`: `ε⁻¹` does not change an étale
+  sheaf that is already an fppf sheaf.
 * `AlgebraicGeometry.Scheme.constantSheafCompEpsilonFppfEtaleIso`: `ε⁻¹` of a constant sheaf is
   constant.
 * `AlgebraicGeometry.Scheme.epsilonFppfEtaleBaseChangeIso`: compatibility of `ε⁻¹` with the
@@ -74,6 +76,12 @@ site over `X`: the fppf sheafification of an étale sheaf. Stacks, Section 59.10
 lemma epsilonFppfEtale_obj (F : Sheaf (etaleTopology.over X) A) :
     (epsilonFppfEtale X A).obj F = (presheafToSheaf _ A).obj F.obj :=
   (rfl)
+
+/-- An étale sheaf that is already an fppf sheaf is not changed by the inverse image `ε⁻¹`. -/
+noncomputable def epsilonFppfEtaleObjIsoOfIsSheaf (F : Sheaf (etaleTopology.over X) A)
+    (hF : Presheaf.IsSheaf (fppfTopology.over X) F.obj) :
+    (epsilonFppfEtale X A).obj F ≅ ⟨F.obj, hF⟩ :=
+  sheafInverseImageObjIsoOfIsSheaf A (etaleTopology_over_le_fppfTopology_over X) F hF
 
 /-- The inverse image `ε⁻¹` is left adjoint to the direct image `ε_*`, which regards an fppf
 sheaf as an étale sheaf. -/

@@ -24,7 +24,10 @@ Stacks, Section 59.100 (0DDK) assert to be isomorphisms. The pullback along `a_X
 of the pullbacks along `π_X` and `ε` (`aXH_apply`), and in degree zero the pullback along `π_X`
 is the restriction of global sections along the unit of `π_X⁻¹ ⊣ π_{X,*}` (`equiv₀_piXH`), and
 the pullback along `ε` that along the unit of `ε⁻¹ ⊣ ε_*` (`equiv₀_epsilonFppfEtaleH`); so the
-pullback along `a_X` is that along the unit of `a_X⁻¹ ⊣ a_{X,*}` (`equiv₀_aXH`).
+pullback along `a_X` is that along the unit of `a_X⁻¹ ⊣ a_{X,*}` (`equiv₀_aXH`). Hence in degree
+zero the pullback along `π_X` is bijective, since `π_X⁻¹` is fully faithful
+(`piXH_zero_bijective`), and the pullbacks along `ε` and `a_X` are bijective on sheaves that are
+already fppf sheaves (`epsilonFppfEtaleH_zero_bijective`, `aXH_zero_bijective`).
 
 The coefficient universe `w` is arbitrary: the categories of abelian sheaves are assumed to have
 `Ext` groups, and `π_X⁻¹` to be exact, which is an instance for `w = u + 1`.
@@ -37,6 +40,9 @@ The coefficient universe `w` is arbitrary: the categories of abelian sheaves are
   along `π_X` and `ε`.
 * `AlgebraicGeometry.Scheme.equiv₀_piXH`, `equiv₀_epsilonFppfEtaleH`, `equiv₀_aXH`: in degree
   zero, the pullbacks along `π_X`, `ε` and `a_X` are the restriction of global sections.
+* `AlgebraicGeometry.Scheme.piXH_zero_bijective`, `epsilonFppfEtaleH_zero_bijective`,
+  `aXH_zero_bijective`: in degree zero, the pullbacks are bijective (along `ε` and `a_X`, on
+  sheaves that are already fppf sheaves).
 
 ## References
 
@@ -88,6 +94,17 @@ lemma equiv₀_epsilonFppfEtaleH (F : Sheaf (etaleTopology.over X) AddCommGrpCat
   Sheaf.H.equiv₀_pullback_sheafInverseImage (etaleTopology_over_le_fppfTopology_over X)
     (Over.mkIdTerminal (X := X)) F x
 
+/-- **`ε` induces a bijection on global sections of fppf sheaves**: in degree zero, the pullback of
+cohomology along `ε` is bijective on an étale sheaf that is already an fppf sheaf. -/
+theorem epsilonFppfEtaleH_zero_bijective (F : Sheaf (etaleTopology.over X) AddCommGrpCat.{w})
+    (hF : Presheaf.IsSheaf (fppfTopology.over X) F.obj) :
+    Function.Bijective (epsilonFppfEtaleH X F 0) :=
+  have : PreservesFiniteColimits (sheafInverseImage (etaleTopology.over X)
+      (fppfTopology.over X) AddCommGrpCat.{w}) :=
+    inferInstanceAs (PreservesFiniteColimits (epsilonFppfEtale X _))
+  Sheaf.H.pullback_sheafInverseImage_zero_bijective (etaleTopology_over_le_fppfTopology_over X)
+    (Over.mkIdTerminal (X := X)) F hF
+
 end Fppf
 
 section SmallEtale
@@ -126,6 +143,20 @@ lemma equiv₀_piXH (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{w}) (x : F.H 
     Over.mkIdTerminal F x
   rw [piXH, constantSheafCompPiXIso_inv_app]
   exact h
+
+/-- In degree zero, the pullback of cohomology along `π_X` is bijective: the unit of
+`π_X⁻¹ ⊣ π_{X,*}` is an isomorphism, since `π_X⁻¹` is fully faithful. -/
+theorem piXH_zero_bijective
+    [∀ F : X.Etaleᵒᵖ ⥤ AddCommGrpCat.{w}, (Etale.forget X).op.HasPointwiseLeftKanExtension F]
+    [∀ F : X.Etaleᵒᵖ ⥤ AddCommGrpCat.{w}, (Etale.forget X).op.HasPointwiseRightKanExtension F]
+    (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{w}) :
+    Function.Bijective (piXH X F 0) := by
+  have hu : Function.Bijective
+      (((piXAdjunction X _).unit.app F).hom.app (op (Etale.mk (𝟙 X)))) :=
+    ConcreteCategory.bijective_of_isIso _
+  rw [← (Sheaf.H.equiv₀ _ Over.mkIdTerminal).bijective.of_comp_iff',
+    show _ ∘ _ = _ from funext (equiv₀_piXH X F)]
+  exact hu.comp (Sheaf.H.equiv₀ F _).bijective
 
 end SmallEtale
 
@@ -171,6 +202,17 @@ lemma equiv₀_aXH [HasExt.{w₂} (Sheaf (etaleTopology.over X) AddCommGrpCat.{w
   refine (equiv₀_epsilonFppfEtaleH X _ _).trans ?_
   rw [equiv₀_piXH, aXAdjunction_unit_app]
   rfl
+
+/-- In degree zero, the pullback of cohomology along `a_X` is bijective on a sheaf `F` for which
+`π_X⁻¹ F` is already an fppf sheaf. -/
+theorem aXH_zero_bijective [HasExt.{w₂} (Sheaf (etaleTopology.over X) AddCommGrpCat.{w})]
+    [∀ F : X.Etaleᵒᵖ ⥤ AddCommGrpCat.{w}, (Etale.forget X).op.HasPointwiseLeftKanExtension F]
+    [∀ F : X.Etaleᵒᵖ ⥤ AddCommGrpCat.{w}, (Etale.forget X).op.HasPointwiseRightKanExtension F]
+    (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{w})
+    (hF : Presheaf.IsSheaf (fppfTopology.over X) ((piX X AddCommGrpCat.{w}).obj F).obj) :
+    Function.Bijective (aXH X F 0) := by
+  rw [show ⇑(aXH X F 0) = _ ∘ _ from funext (aXH_apply X F 0)]
+  exact (epsilonFppfEtaleH_zero_bijective X _ hF).comp (piXH_zero_bijective X F)
 
 end AX
 

@@ -37,6 +37,8 @@ the big fppf and big étale topologies over a scheme, or the small étale and Ni
 * `CategoryTheory.GrothendieckTopology.sheafInverseImage`: `K`-sheafification of a `J`-sheaf.
 * `CategoryTheory.GrothendieckTopology.sheafAdjunctionOfLE`: the inverse image is left adjoint to
   the direct image.
+* `CategoryTheory.GrothendieckTopology.sheafInverseImageObjIsoOfIsSheaf`: the inverse image of a
+  `J`-sheaf that is already a `K`-sheaf is the sheaf itself.
 * `CategoryTheory.GrothendieckTopology.sheafInverseImageRefl`: the comparison of a topology with
   itself is the identity.
 * `CategoryTheory.GrothendieckTopology.sheafInverseImageTrans`: the comparisons compose.
@@ -131,6 +133,14 @@ instance [HasWeakSheafify K A] (h : J ≤ K) : (sheafDirectImageOfLE A h).IsRigh
 lemma preservesColimits_sheafInverseImage [HasWeakSheafify K A] (h : J ≤ K) :
     PreservesColimitsOfSize.{w', w'} (sheafInverseImage J K A) :=
   (sheafAdjunctionOfLE A h).leftAdjoint_preservesColimits
+
+/-- **The inverse image does not change a sheaf for the finer topology**: if the underlying
+presheaf of a `J`-sheaf `F` is a `K`-sheaf, then the inverse image of `F` is `F` itself,
+regarded as a `K`-sheaf. -/
+noncomputable def sheafInverseImageObjIsoOfIsSheaf [HasWeakSheafify K A] (h : J ≤ K)
+    (F : Sheaf J A) (hF : Presheaf.IsSheaf K F.obj) :
+    (sheafInverseImage J K A).obj F ≅ ⟨F.obj, hF⟩ :=
+  (asIso (sheafAdjunctionOfLE A h).counit).app ⟨F.obj, hF⟩
 
 variable (J) in
 /-- **The comparison of a topology with itself is the identity**: sheafifying a sheaf gives the
