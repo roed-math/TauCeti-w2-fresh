@@ -110,6 +110,31 @@ the Schwartz theorem to `cocycles` timed out in `isDefEq`. Reproduced with Mathl
 `M` works). The result is stated with a complement (`IsCompl`) rather than a quotient for the
 same reason: consumers can transport finiteness to `H¹` through the complement.
 
+### `TauCeti/Geometry/Manifold/PartitionOfUnity/CechSplitting.lean` (new this round, 95 lines)
+
+First ingredient of split 4(a), the smooth splitting of a cocycle (Forster 14.7, first step). For
+a real model `I`, `IsManifold I ∞ M`, `M` Hausdorff and σ-compact, `E` finite-dimensional:
+
+* `TauCeti.SmoothPartitionOfUnity.contMDiffOn_finsum_smul_of_isSubordinate`: for `ρ`
+  subordinate to an open cover `U` and `ξ i j` that are `C^n` on `U i ∩ U j`,
+  `∑ᶠ k, ρ k • ξ k i` is `C^n` on `U i`.
+* `TauCeti.SmoothPartitionOfUnity.eq_finsum_smul_sub_finsum_smul_of_isSubordinate`: under the
+  cocycle relation `ξ i j + ξ j k = ξ i k`, `ξ i j = gⱼ - gᵢ` for these sums.
+* `TauCeti.exists_contMDiffOn_eq_sub_of_cocycle`: **smooth Čech `1`-cocycles split** —
+  `∃ g, (∀ i, ContMDiffOn I 𝓘(ℝ, F) n (g i) (U i)) ∧ ∀ i j, ∀ x ∈ U i ∩ U j, ξ i j x = g j x - g i x`.
+
+A Riemann surface `X` (`ChartedSpace ℂ X`, `IsManifold 𝓘(ℂ) n X`) is fed in with the real model
+`𝓘(ℝ, ℂ)` via `main`'s `IsManifold.restrictScalars` and `ContMDiffOn.restrictScalars`
+(`Geometry/Manifold/{IsManifold,ContMDiff}/RestrictScalars.lean`).
+
+**Correction to the previous round.** The Dolbeault lemma is already on `main`
+(`TauCeti.exists_contDiffOn_conjWirtingerDeriv_apply_one_eq_of_eball` /
+`…_of_ball`, `TauCeti/Analysis/Complex/Wirtinger/DolbeaultLemma.lean`); #28407 only packages it
+as the Dolbeault sequence and `Ȟ¹(D, 𝒪) = 0`. So split 4(a) does **not** wait on any supplier
+PR: what it still needs is the chart gluing of `∂̄gᵢ` into a global `(0,1)`-datum (on overlaps
+`∂̄gᵢ = ∂̄gⱼ` because `gⱼ - gᵢ = ξᵢⱼ` is holomorphic), then the Dolbeault lemma on a larger disc
+in each chart and the boundedness lemma of split 2.
+
 ## Split plan
 
 `Compact/Pi.lean` (60 lines, previously its own split) is folded into the bounded Čech split, its
@@ -128,7 +153,8 @@ only consumer, so no split is a 60-line PR.
    `IsCompactOperator.piMap` and the `BoundedCech` namespace listed above. Needs: 1, 2.
    **On the branch.**
 4. **feat: bounded cocycles on nested disc covers lift and compute H¹ of the structure sheaf** —
-   *needs the supplier*. Forster 14.7/14.8 for finite covers `𝔚 ⋐ 𝔙 ⋐ 𝔘*` of compact `X` by
+   `Geometry/Manifold/PartitionOfUnity/CechSplitting.lean` (95, **on the branch**) plus the rest;
+   part (b) *needs the supplier*. Forster 14.7/14.8 for finite covers `𝔚 ⋐ 𝔙 ⋐ 𝔘*` of compact `X` by
    coordinate discs: (a) every `ξ ∈ cocycles I 𝔙` is `restrictCocycles ζ + d₀Cocycles η` with
    `ζ ∈ cocycles I 𝔘` — split `ξ` by a smooth partition of unity (`ξᵢⱼ = gⱼ - gᵢ`; `main`'s
    `Geometry/Manifold/Sheaf/Smooth/Cech.lean` has the smooth-sheaf contracting homotopy), glue the
@@ -150,9 +176,10 @@ only consumer, so no split is a 60-line PR.
 
 ## What remains
 
-Splits 4–5. Split 4 waits for the supplier `riemann-surface-structure-sheaf-h1` to land the
+Splits 4–5 (split 4's smooth cocycle splitting is on the branch). Split 4(b) waits for the supplier `riemann-surface-structure-sheaf-h1` to land the
 degree-one Leray comparison for finite covers by coordinate discs of a Riemann surface (its
-parts #28963, #28407, #29154 are open, none pins that statement). Split 4(a) needs only the
-Dolbeault lemma on discs (#28407) plus smooth partitions of unity and the chart change of `∂̄`,
-so once #28407 lands it can be written before the comparison is pinned. Split 5's statement is
+parts #28963, #28407, #29154 are open, none pins that statement). Split 4(a) needs no
+supplier: the Dolbeault lemma on discs is on `main` and the partition-of-unity splitting is on
+the branch; it remains to glue `∂̄gᵢ` across charts (chart change of `∂̄` for holomorphic
+transition maps), solve on each disc, and bound on the smaller disc. Split 5's statement is
 already expressible on `main`.
