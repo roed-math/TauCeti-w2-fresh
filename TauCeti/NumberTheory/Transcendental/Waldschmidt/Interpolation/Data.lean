@@ -8,7 +8,9 @@ module
 public import Mathlib.Algebra.Polynomial.Taylor
 public import TauCeti.Analysis.MvPolynomial.Deriv
 public import Mathlib.LinearAlgebra.Dimension.Finrank
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 public import TauCeti.RingTheory.MvPolynomial.RestrictTotalDegree
+import Mathlib.Analysis.SpecialFunctions.Complex.Log
 import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 
 /-!
@@ -434,6 +436,41 @@ theorem min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm (l b : Fin (n 
     rw [mul_comm, ← norm_neg ((s (Fin.last n) : ℂ) * _)]
     exact hδ.trans (Complex.norm_exp_sub_one_le ((norm_neg _).trans_le h))
   · exact min_le_of_left_le h.le
+
+/-- The case `α^s = 1` of the Liouville reduction: for a short rational coefficient relation with
+`α₁ ^ s₁ ⋯ αₘ ^ sₘ = 1` and `Λ ≠ 0`, `s_m Λ` is a nonzero multiple of `2πi`
+(`TauCeti.exp_neg_intCast_mul_waldschmidtLinearForm`), so `2π ≤ |s_m Λ|`. -/
+theorem two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm (l b : Fin (n + 1) → ℂ)
+    {s : Fin (n + 1) → ℤ} (hlast : s (Fin.last n) ≠ 0) (hb₀ : b 0 = 0)
+    (hb : ∀ k : Fin n, b k.succ = -(s k.castSucc : ℂ) / s (Fin.last n))
+    (hΛ : waldschmidtLinearForm l b ≠ 0) (hα : ∏ j, cexp (l j) ^ s j = 1) :
+    2 * Real.pi ≤ ‖(s (Fin.last n) : ℂ) * waldschmidtLinearForm l b‖ := by
+  rw [← exp_neg_intCast_mul_waldschmidtLinearForm l b hlast hb₀ hb, Complex.exp_eq_one_iff]
+    at hα
+  obtain ⟨k, hk⟩ := hα
+  have hk0 : k ≠ 0 := by
+    rintro rfl
+    exact mul_ne_zero (Int.cast_ne_zero.2 hlast) hΛ (by simpa using hk)
+  rw [← norm_neg, hk, norm_mul, Complex.norm_intCast, norm_mul, norm_mul, Complex.norm_ofNat,
+    Complex.norm_real, Complex.norm_I, Real.norm_of_nonneg Real.pi_pos.le, mul_one]
+  exact le_mul_of_one_le_left (by positivity) (by exact_mod_cast Int.one_le_abs hk0)
+
+/-- The Liouville reduction of a short rational coefficient relation, both cases together: if
+`Λ ≠ 0` and `δ ≤ |α^s - 1|` whenever `α^s ≠ 1` (for instance by Liouville's inequality,
+`NumberField.exp_neg_le_norm_prod_zpow_sub_one`), then `min 1 (δ / 2) ≤ |s_m Λ|`. The case
+`α^s ≠ 1` is `TauCeti.min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm`, and the case
+`α^s = 1` is `TauCeti.two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm`. -/
+theorem min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero
+    (l b : Fin (n + 1) → ℂ) {s : Fin (n + 1) → ℤ} (hlast : s (Fin.last n) ≠ 0) (hb₀ : b 0 = 0)
+    (hb : ∀ k : Fin n, b k.succ = -(s k.castSucc : ℂ) / s (Fin.last n))
+    (hΛ : waldschmidtLinearForm l b ≠ 0) {δ : ℝ}
+    (hδ : ∏ j, cexp (l j) ^ s j ≠ 1 → δ ≤ ‖∏ j, cexp (l j) ^ s j - 1‖) :
+    min 1 (δ / 2) ≤ ‖(s (Fin.last n) : ℂ) * waldschmidtLinearForm l b‖ := by
+  by_cases hα : ∏ j, cexp (l j) ^ s j = 1
+  · refine min_le_of_left_le (le_trans ?_
+      (two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm l b hlast hb₀ hb hΛ hα))
+    linarith [Real.two_le_pi]
+  · exact min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm l b hlast hb₀ hb (hδ hα)
 
 /-- Waldschmidt's auxiliary function `z ↦ F(z) exp(t (z₀ + λ₁ z₁ + ⋯ + λ_{m-1} z_{m-1}))` on
 `ℂᵐ`, for a polynomial `F` and an integer `t`; here `l = (λ₁, …, λₘ)`, of which `λₘ` does not

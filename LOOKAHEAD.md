@@ -44,6 +44,12 @@ of split 5:
 - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` in `Data.lean`, which turns such a
   lower bound into `min 1 (δ/2) ≤ |s_m Λ|`.
 
+The round resuming at `aaa5ce06170` (14:38 UTC) found `main` still at `385ec2ddd8d` and PR
+#28644 still open at head `583a153b95f`. It closed the case `α^s = 1` of the Liouville reduction:
+`two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm` (`2π ≤ |s_m Λ|` when `Λ ≠ 0`, since `s_m Λ`
+is then a nonzero multiple of `2πi`) and the combined
+`min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero`, in `Data.lean`.
+
 What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
 
@@ -194,9 +200,13 @@ In the new file `Interpolation/Residual.lean`:
        - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` gives
          `min 1 (δ/2) ≤ |s_m Λ|`.
 
+       - `two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm` handles `α^s = 1` (then
+         `s_m Λ ∈ 2πiℤ ∖ {0}` for `Λ ≠ 0`), and
+         `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero` combines both
+         cases under `Λ ≠ 0`.
+
        Split 5 only has to feed the measure's height bounds `h(α_j) ≤ log A_j`, `|s_j| < T₀/2`
-       into the exponent. For `α^s = 1`, `exp(-s_m Λ) = 1`, so `s_m Λ ∈ 2πiℤ`; that case is
-       left to the assembly.
+       into the exponent.
 
 ## Splits
 
@@ -253,6 +263,11 @@ In the new file `Interpolation/Residual.lean`:
      `α^s - 1` at an infinite place and under a complex embedding;
    - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +19):
      `δ ≤ |α^s - 1|` gives `min 1 (δ/2) ≤ |s_m Λ|`;
+   - `two_mul_pi_le_norm_intCast_mul_waldschmidtLinearForm` and
+     `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm_of_ne_zero` (`Data.lean`, +37,
+     with a public import of `Trigonometric.Basic` for `π` and a private import of
+     `SpecialFunctions.Complex.Log` for `Complex.exp_eq_one_iff`): the case `α^s = 1` and the
+     two cases together, under `Λ ≠ 0`;
    - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 173 lines; imports `ImageCard.lean`
      of split 3), the subgroup obstruction's count:
      - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
@@ -333,3 +348,7 @@ In the new file `Interpolation/Residual.lean`:
     step reuses `Complex.norm_exp_sub_one_le`. The Liouville lemmas are general, with no
     roadmap vocabulary, so they sit in `FundamentalInequality.lean` next to the bound they
     consume. `Data.lean` gains no height import.
+  - 2026-11-06, about 14:45 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `Interpolation.Data`. `main` and pinned Mathlib have no lower bound for
+    a linear form in logarithms whose exponential is `1`; the new lemma reuses Mathlib's
+    `Complex.exp_eq_one_iff`, `Int.one_le_abs` and `Real.two_le_pi`.
