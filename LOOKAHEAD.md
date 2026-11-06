@@ -2,8 +2,12 @@
 
 # Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
 
-Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. Status: **partial**. This round found `main` unchanged since the previous round and completed split 2
-(the localisation sequence `localization_exact`).
+Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. Status: **partial**. Splits 1 and
+2 (the localisation sequence `localization_exact`) are done. The round of 2026-11-06 found `main`
+unchanged and started split 3: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` now defines the
+cycle-level flat pullback `cycleFlatPullback` with generic-length multiplicities and proves its
+local finiteness; its dimension shift and functoriality remain. Supplier PRs #29425 (head
+`d327f903b0`) and #29451 were still open.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -83,16 +87,40 @@ no `sorry`:
   immersion `i` onto the complement of `U`; with `ChowGroup.restrict_surjective` this is the
   localisation sequence `CH_k(Z) → CH_k(X) → CH_k(U) → 0` (Fulton Proposition 1.8).
 
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (split 3, in progress, 215 lines), no `sorry`:
+
+- `TauCeti.GeneralizingMap.maximal_mem_preimage_closure_singleton_iff` (topological) and
+  `Chow.maximal_mem_preimage_closure_singleton_iff` (for `[Flat f]`, via Mathlib's
+  `Flat.generalizingMap`): the generic points of `f⁻¹(closure {y})` are the generic points of the
+  fibre `f⁻¹{y}`; `apply_eq_of_maximal_mem_preimage_closure_singleton`: they lie over `y`;
+- `TauCeti.finite_maximal_mem_inter`: a closed set in a quasi-sober `T0` space has finitely many
+  generic points inside a Noetherian open subset (via `genericPoints.finite` and Tau Ceti's
+  `mem_genericPoints_iff`);
+- `maximal_mem_preimage_comp_iff`: for flat `f`, `x` is generic in its `(f ≫ g)`-fibre iff it is
+  generic in its `f`-fibre and `f x` is generic in its `g`-fibre (for split 3's functoriality);
+- `fiberLength f x := Module.length 𝒪_{X,x} (𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x})` and
+  `fiberLength_ne_top`: finite at generic points of fibres of a locally Noetherian `X` (primes over
+  `𝔪_{f x}𝒪_{X,x}` are generalizations of `x` in the fibre, via `range_fromSpecStalk`; so the ring
+  is Noetherian of dimension `0`, hence Artinian by Hopkins–Levitzki);
+- `cycleFlatPullback f α` for `[Flat f] [IsLocallyNoetherian X]`: coefficient
+  `(fiberLength f x).toNat * α (f x)` at generic points `x` of fibres, `0` elsewhere (the `toNat`
+  never truncates there, by `fiberLength_ne_top`); local finiteness via a Noetherian affine
+  neighbourhood `V`, the finiteness of `f '' V ∩ supp α`, and `finite_maximal_mem_inter`;
+  `cycleFlatPullback_apply`, `cycleFlatPullback_zero`, `cycleFlatPullback_add`.
+
 ## What remains
 
-1. (Split 3) `Chow.cyclesFlatPullback` for `f` flat with `PureRelativeDimension n f` (Tau Ceti's
-   carrier): `f^*[V] = Σ_ξ length(O_{f⁻¹V, ξ}) [ξ]` over generic points of `f⁻¹(V)`, its local
-   finiteness, the dimension shift `k ↦ k + n`, and `(g f)^* = f^* g^*` on cycles.
-   Suggested route: for flat `f`, `ξ` is a generic point of `f⁻¹(closure {y})` iff `f ξ = y` and
-   `ξ` is a generic point of its fibre (going down), so `(f^* α)(x) = e(x) · α(f x)` with
-   `e(x) = length 𝒪_{X_{f x}, x}` (finite exactly at generic points of fibres). Local finiteness
-   then reduces to local finiteness of the irreducible components of `f⁻¹(supp α)` in the locally
-   Noetherian `X`.
+1. (Split 3, rest) For `X`, `Y` locally of finite type over a field `K` and `f` flat with
+   `PureRelativeDimension n f` (Tau Ceti's carrier in
+   `TauCeti/AlgebraicGeometry/Morphisms/PureRelativeDimension.lean`):
+   - the dimension shift: a generic point `x` of its fibre has dimension `dim (f x) + n`
+     (dimension formula for flat morphisms, Stacks 00ON / 02JS, with the fibre of pure dimension
+     `n`, `PureRelativeDimension.isPureDimensional_fiber`), giving
+     `cyclesFlatPullback : cyclesOfDimension Y k →+ cyclesOfDimension X (k + n)`;
+   - `(f ≫ g)^* = f^* g^*` on cycles: the support part is `maximal_mem_preimage_comp_iff`; the
+     multiplicity part is `fiberLength (f ≫ g) x = fiberLength f x * fiberLength g (f x)` at
+     generic points of fibres, for flat `f` (Stacks 02N8, length multiplicativity under the flat
+     local map `𝒪_{Y,y} ⧸ 𝔪_z𝒪_{Y,y} → 𝒪_{X,x} ⧸ 𝔪_z𝒪_{X,x}`, Stacks 00IX / 02M1).
 2. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
    Proposition 1.7 / Stacks 42.20, needs the norm formula from `chow-proper-pushforward`).
 3. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
@@ -110,6 +138,10 @@ no `sorry`:
   port time move them to `TauCeti/AlgebraicGeometry/SchemeTheoreticImage/Basic.lean` (next to
   `isReduced_image`, which `isIntegral_image` uses); they were left here to avoid rebuilding
   everything downstream of that module. If they move, split 2 needs no new prerequisite split.
+- `TauCeti.GeneralizingMap.maximal_mem_preimage_closure_singleton_iff` and
+  `TauCeti.finite_maximal_mem_inter` are general topology: at port time move them to
+  `TauCeti/Topology/Sober.lean` (next to `mem_genericPoints_iff`), in split 3's PR or as a tiny
+  prerequisite.
 - `Localization.lean` assumes `[IsLocallyNoetherian X] [IsLocallyNoetherian U]` as instances
   next to `LocallyOfFiniteType (X ↘ Spec (.of K))`, which implies both; the Chow groups need the
   instances to be stated. A reviewer may ask to derive them instead.
@@ -124,8 +156,10 @@ no `sorry`:
    every declaration listed for it above, ending with `ChowGroup.localization_exact`. After: 1. Subject:
    *feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and
    the localisation sequence*.
-3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean`; adds `cyclesFlatPullback`, its
-   apply lemmas, `cyclesFlatPullback_comp`. After: none.
+3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (this branch, in progress); adds the
+   declarations listed for it above, then `cyclesFlatPullback` on `k`-cycles, its apply lemmas,
+   `cyclesFlatPullback_comp`. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
+   flat pullback of cycles with generic-length multiplicities*.
 4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean`; adds
    `cyclesFlatPullback_mem_ratEquiv`. After: 2, 3.
 5. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/BaseChange.lean` (stubs of the supplier in
