@@ -7,9 +7,9 @@ interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 
 §9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`.
 
 Earlier rounds added the material of splits 1–3: the counting half of the induction on proper
-subspaces, and the translation between index subspaces and grid-point subspaces. Three later
-rounds on 2026-11-06 (resuming at `107089e3b11`, `a38b52feaed` and `4d992c71939`) found `main`
-unmoved, so each merge was empty, and supplier PR #28644 still open at head `583a153b95f` with
+subspaces, and the translation between index subspaces and grid-point subspaces. Four later
+rounds on 2026-11-06 (resuming at `107089e3b11`, `a38b52feaed`, `4d992c71939` and
+`08abe8146a9`, the last at 09:02 UTC) found `main` unmoved, so each merge was empty, and supplier PR #28644 still open at head `583a153b95f` with
 nothing the rank argument consumes. They added no mathematics; the branch still builds and passes
 `lookahead-check`. `main` and pinned Mathlib still have no zero or multiplicity estimate,
 Philippon-type or otherwise, that split 4 could reuse. What remains is the multiplicity estimate
