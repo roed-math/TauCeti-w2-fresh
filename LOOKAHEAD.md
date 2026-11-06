@@ -1,12 +1,18 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"waldschmidt-interpolation-rank","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: subspaces spanned by Waldschmidt's grid points"},{"n":2,"after":[1],"title":"feat: the rank of Waldschmidt's interpolation matrix and the zero estimate"},{"n":3,"after":[1],"title":"feat: the residual subspace of Waldschmidt's rank argument"},{"n":4,"after":[],"title":"feat: a multiplicity estimate on the additive group times the torus"},{"n":5,"after":[1,2,3,4],"title":"feat: the rank of Waldschmidt's interpolation matrix"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"waldschmidt-interpolation-rank","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: subspaces spanned by Waldschmidt's grid points"},{"n":2,"after":[1],"title":"feat: the rank of Waldschmidt's interpolation matrix and the zero estimate"},{"n":3,"after":[1],"title":"feat: the residual subspace of Waldschmidt's rank argument"},{"n":4,"after":[],"title":"feat: a multiplicity estimate on the additive group times the torus"},{"n":5,"after":[1,2,3,4],"title":"feat: the rank of Waldschmidt's interpolation matrix"}]}-->
 
 # Lookahead: `waldschmidt-interpolation-rank` (partial)
 
 Target: DiophantineApproximationAndTranscendence §3.6, "Rank and multiplicity for the
 interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 9.16, Lemma 9.17;
-§9.3.2, Steps 1–2). Built on `main` at `e8758b7b2f8`. This round resumed the branch at
-`bcb3693e6d7` and merged `main` into it. It then added the counting half of the induction on
-proper subspaces and the translation between index subspaces and grid-point subspaces.
+§9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`. This round resumed the branch at
+`b285d3cd200` and merged `main` into it. The only conflict was in
+`RingTheory/MvPolynomial/DirectionalOrder.lean`, where `main` had added
+`MvPolynomial.isHomogeneous_iff_forall_eval_smul` next to this branch's
+`MvPolynomial.eval_pderiv_eq_zero_of_forall_eval_add_smul_single`. Both are kept, and the module
+docstring describes both. The earlier round added the counting half of the induction on proper
+subspaces and the translation between index subspaces and grid-point subspaces. This round adds
+no new mathematics: what remains is the multiplicity estimate of split 4, which does not fit in one
+round.
 
 ## Stubs
 
@@ -19,13 +25,17 @@ uses the following from `main` directly: `waldschmidtPoint`, `waldschmidtPointMa
 `waldschmidtOperatorEntry_eq_sum_hasseDeriv`, `waldschmidtInterpolationMatrix` and
 `rank_waldschmidtInterpolationMatrix_le{,_of_mem}`.
 
-Two parts of the supplier are still open:
+Since the last round, PR #27120 (the denominators of the entries) has landed as
+`Interpolation/Denominator.lean`. The one part of the supplier still open is PR #28644, the
+delta-polynomial rows. Its diff adds:
 
-- open PR #27120, the denominators of the entries (`mul_waldschmidtEntry_mem`,
-  `mul_waldschmidtInterpolationMatrix_mem`, …);
-- the denominators of the delta-polynomial rows.
+- `Interpolation/Delta.lean`;
+- lemmas in `Baker/Delta.lean` and `Algebra/MvPolynomial/PDeriv.lean`;
+- `waldschmidtOperatorEntry_prod_aeval_X` in `Data.lean`, the entry of a separated row;
+- denominator bounds for the delta rows in `Denominator.lean`.
 
-Both are arithmetic and play no part in the rank. The rank is a statement over the coefficient
+None of this is consumed by the rank argument. The delta rows and their denominators are
+arithmetic and play no part in the rank. The rank is a statement over the coefficient
 field. It does not depend on the choice of basis (the merged `span_image_*` lemmas). So nothing
 needs stubbing, there is no `TauCeti/Lookahead/` file, and `suppliers` is empty. The roadmap's
 `Suggested.lean` pins no signature for `waldschmidtInterpolationRank`: it is only named in the §3.6
@@ -177,7 +187,8 @@ In the new file `Interpolation/Residual.lean`:
 - **Correctness.** The rank results are iff statements, so the zero estimate is never a
   hypothesis. The counting results take the minimality clause in exactly the form
   `exists_waldschmidtResidualSubspace` returns it. They need `T₀ ≠ 0`, to cancel the factor
-  `T₀^(m−d)` shared by the two inequalities, and the sumset form needs `S` nonempty, so that `0 ∈ (S−S) ∩ V`.
+  `T₀^(m−d)` shared by the two inequalities, and the sumset form needs `S` nonempty, so
+  that `0 ∈ (S−S) ∩ V`.
 - **Reuse.**
   - Rank side: Mathlib's `Matrix.toMvPolynomial`, `LinearMap.exists_leftInverse_of_injective` and
     `MvPolynomial.funext`; Tau Ceti's `aeval_mem_restrictTotalDegree`,
@@ -195,8 +206,12 @@ In the new file `Interpolation/Residual.lean`:
   and `exists_restrictTotalDegree_linearMap`. A reviewer may ask to make the second public in
   `RingTheory/MvPolynomial/Finrank.lean`.
 - **Checks run.**
-  - `lake build` is green and `lookahead-check` is ok.
-  - Batteries environment linters (simpNF, unusedArguments, docBlame, …) pass on all five touched
-    modules. This used the `LintEnvDriver.lean` stand-in, not `scripts/lint-env.sh`, which needs
-    `uvx`.
+  - `lake build` is green and `lookahead-check` is ok. Both were rerun after this round's merge of
+    `main`.
+  - This round grepped `main` and pinned Mathlib for every helper on the branch. None has
+    landed in the meantime.
+  - Last round, the Batteries environment linters (simpNF, unusedArguments, docBlame, …) passed
+    on all five touched modules. This round's merge changed no declaration, so they were not
+    rerun. Those runs used the `LintEnvDriver.lean` stand-in, not `scripts/lint-env.sh`, which
+    needs `uvx`.
   - Lines are ≤ 100 characters.
