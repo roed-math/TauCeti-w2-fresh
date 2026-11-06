@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"e8758b7b2f82b9b1c3f33b992ab8f499b510240f","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: pullback of cohomology along the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: pullback of cohomology along the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
 
 # Lookahead: `epsilon-fppf-etale` (SchemeAndStackFoundations §2.10)
 
-Built on `main` at `e8758b7b2f82b9b1c3f33b992ab8f499b510240f`. **Status: partial.** All four
+Built on `main` at `72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab`. **Status: partial.** All four
 comparison morphisms of §2.10 are on this branch, each through its exact inverse-image functor and
 its adjunction with the direct image: `epsilonFppfEtale X` (`ε⁻¹`), `aX X` (`a_X⁻¹ = π_X⁻¹ ⋙ ε⁻¹`,
 with `piX X` the inverse image from the small to the big étale site), `etaleToNisnevich X` and
@@ -29,7 +29,8 @@ along the morphism of sites from the étale to the Zariski site, through the gen
 descriptions of the remaining sheafification-type comparisons (`equiv₀_epsilonFppfEtaleH`,
 `equiv₀_etaleToNisnevichH`, from the general `Sheaf.H.equiv₀_pullback_sheafInverseImage`). The
 roadmap checks `test_comparison_id` and
-`test_aX_constant` (for `aX` itself) are in the examples file. Not yet proved: the fppf half of
+`test_aX_constant` (for `aX` itself) are in the examples file. Fifth session: merged `main` (`72cbdfb14e3d`) and re-verified; supplier PR #28094 is still open
+at head `6c29c999512d`, unchanged, so the stubs are unchanged. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
 
@@ -133,7 +134,7 @@ No other supplier is consumed by what is on the branch:
 
 - `sheaf-h-pullback`'s `Sheaf.H.pullback` is already on `main`
   (`TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean`).
-- `qcoh-higher-direct-image-vanishing` (#27295) and `big-sheaf` (#27307) are needed only by the
+- `qcoh-higher-direct-image-vanishing` (#27295) and `big-sheaf` (open PR #29365; partial #27307) are needed only by the
   cohomology comparisons, which are not yet proved, so they are not stubbed.
 
 ## Splits
@@ -383,7 +384,7 @@ Still unproved from §2.10:
    (third session, splits 5 and 7); `comparison_comp` on cohomology for the small sites and the
    degree-zero descriptions of all five cohomology maps (fourth session, splits 5–7).
 3. **`quasiCoherent_topology_comparison`** (`H^q(X_Zar, F) = H^q(X_ét, F^a) = H^q(X_fppf, F^a)`,
-   Stacks 35.9.3). It needs `big-sheaf` (#27307), `qcoh-higher-direct-image-vanishing` (#27295)
+   Stacks 35.9.3). It needs `big-sheaf` (open PR #29365; partial #27307), `qcoh-higher-direct-image-vanishing` (#27295)
    and the cohomology maps of splits 5 and 7. It is the statement that `nisnevichToZariskiH`,
    `etaleToNisnevichH`, `piXH` and `epsilonFppfEtaleH` are bijective on `F^a`. In degree zero this
    is the sheaf property of `F^a` for the finer topologies (fpqc descent of quasi-coherent
