@@ -15,6 +15,8 @@ public import TauCeti.AlgebraicGeometry.Chow.Basic
 public import TauCeti.AlgebraicGeometry.Morphisms.PureRelativeDimension
 public import TauCeti.AlgebraicGeometry.Scheme.BaseAlgebra
 import Mathlib.FieldTheory.FinTrdeg
+import Mathlib.RingTheory.LocalRing.Length
+import Mathlib.RingTheory.TensorProduct.Quotient
 import TauCeti.AlgebraicGeometry.ResidueField
 import TauCeti.AlgebraicGeometry.Scheme.LocalDimension
 import TauCeti.Topology.KrullDimension.Basic
@@ -50,7 +52,8 @@ The remaining declarations are in the namespace `TauCeti.AlgebraicGeometry.Chow`
 * `height_asFiber_eq`, `height_asFiber_eq_toNat_trdeg`: as a point of the scheme-theoretic fibre,
   such a generic point `x` has height `n`, which is `trdeg_{κ(f x)} κ_{X_{f x}}(x)`.
 * `fiberLength`: the length of the local ring of the fibre, `fiberLength_ne_top`: it is finite at
-  generic points of fibres of a locally Noetherian scheme.
+  generic points of fibres of a locally Noetherian scheme; `fiberLength_comp`: it is
+  multiplicative along `f ≫ g` for flat `f`.
 * `algebraMap_residueField_fiber`: the residue field of the fibre `X_{f x}` at `x` is `κ(x)` as a
   `κ(f x)`-algebra.
 * `trdeg_residueField_lt_aleph0`, `isScalarTower_residueField`: residue fields of schemes locally
@@ -59,6 +62,7 @@ The remaining declarations are in the namespace `TauCeti.AlgebraicGeometry.Chow`
   of its fibre has dimension `dim (f x) + n`.
 * `cycleFlatPullback`: the flat pullback `AlgebraicCycle Y ℤ → AlgebraicCycle X ℤ`, additive;
   `cyclesFlatPullback`: for `f` flat of pure relative dimension `n`, `Z_k(Y) →+ Z_{k+n}(X)`.
+* `cycleFlatPullback_comp`, `cyclesFlatPullback_comp`: functoriality `(f ≫ g)^* = f^* ∘ g^*`.
 
 ## References
 
@@ -345,6 +349,36 @@ theorem fiberLength_ne_top [IsLocallyNoetherian X] {x : X}
     isArtinian_of_surjective_algebraMap (Ideal.Quotient.mk_surjective (I := I))
   exact Module.length_ne_top
 
+open scoped TensorProduct in
+/-- **Multiplicativity of `fiberLength`.** For `f` flat, the fibre length of `f ≫ g` at `x` is the
+product of the fibre lengths of `f` at `x` and of `g` at `f x`: `𝒪_{X,x} ⧸ 𝔪_{g (f x)} 𝒪_{X,x}` is
+the base change of `𝒪_{Y,f x} ⧸ 𝔪_{g (f x)} 𝒪_{Y,f x}` along the flat local map
+`𝒪_{Y,f x} → 𝒪_{X,x}`, which multiplies lengths by `fiberLength f x`
+(`IsLocalRing.length_baseChange`). -/
+theorem fiberLength_comp [Flat f] {Z : Scheme.{u}} (g : Y ⟶ Z) (x : X) :
+    fiberLength (f ≫ g) x = fiberLength f x * fiberLength g (f x) := by
+  let := (f.stalkMap x).hom.toAlgebra
+  have : Module.Flat (Y.presheaf.stalk (f x)) (X.presheaf.stalk x) := Flat.stalkMap f x
+  have : IsLocalHom (algebraMap (Y.presheaf.stalk (f x)) (X.presheaf.stalk x)) :=
+    inferInstanceAs (IsLocalHom (f.stalkMap x).hom)
+  set I := (IsLocalRing.maximalIdeal (Z.presheaf.stalk (g (f x)))).map (g.stalkMap (f x)).hom
+  have h : ((f ≫ g).stalkMap x).hom = (f.stalkMap x).hom.comp (g.stalkMap (f x)).hom := by
+    rw [Scheme.Hom.stalkMap_comp]
+    rfl
+  calc fiberLength (f ≫ g) x
+      = Module.length (X.presheaf.stalk x)
+          (X.presheaf.stalk x ⧸ I.map (algebraMap (Y.presheaf.stalk (f x)) _)) := by
+        rw [fiberLength, h]
+        simp only [I]
+        rw [Ideal.map_map]
+        rfl
+    _ = Module.length (X.presheaf.stalk x)
+          (X.presheaf.stalk x ⊗[Y.presheaf.stalk (f x)] (Y.presheaf.stalk (f x) ⧸ I)) :=
+        (Algebra.TensorProduct.quotIdealMapEquivTensorQuot _ I).toLinearEquiv.length_eq
+    _ = fiberLength f x * fiberLength g (f x) := by
+        rw [IsLocalRing.length_baseChange, mul_comm]
+        rfl
+
 open scoped Classical in
 /-- The flat pullback of an algebraic cycle along a flat morphism `f : X ⟶ Y` to a locally
 Noetherian scheme: the coefficient at a generic point `x` of its fibre is the coefficient of `α`
@@ -395,6 +429,21 @@ lemma cycleFlatPullback_add [Flat f] [IsLocallyNoetherian X] (α β : AlgebraicC
   simp only [cycleFlatPullback_apply, Function.locallyFinsuppWithin.coe_add, Pi.add_apply]
   split_ifs <;> simp [mul_add]
 
+/-- **Functoriality of flat pullback of cycles**: `(f ≫ g)^* = f^* ∘ g^*`. The supports agree by
+`maximal_mem_preimage_comp_iff` and the multiplicities by `fiberLength_comp`. -/
+theorem cycleFlatPullback_comp [Flat f] [IsLocallyNoetherian X] [IsLocallyNoetherian Y]
+    {Z : Scheme.{u}} (g : Y ⟶ Z) [Flat g] (α : AlgebraicCycle Z ℤ) :
+    cycleFlatPullback (f ≫ g) α = cycleFlatPullback f (cycleFlatPullback g α) := by
+  ext x
+  rw [cycleFlatPullback_apply, maximal_mem_preimage_comp_iff, fiberLength_comp, ENat.toNat_mul,
+    cycleFlatPullback_apply, cycleFlatPullback_apply]
+  by_cases hf : Maximal (· ∈ f ⁻¹' {f x}) x
+  · by_cases hg : Maximal (· ∈ g ⁻¹' {g (f x)}) (f x)
+    · rw [ite_eq_left ⟨hf, hg⟩, ite_eq_left hf, ite_eq_left hg, Nat.cast_mul, mul_assoc]
+      rfl
+    · rw [ite_eq_right (hg ·.2), ite_eq_left hf, ite_eq_right hg, mul_zero]
+  · rw [ite_eq_right (hf ·.1), ite_eq_right hf]
+
 /-- **Flat pullback of `k`-cycles.** For `f : X ⟶ Y` flat of pure relative dimension `n` between
 schemes locally of finite type over a field `K`, the flat pullback `cycleFlatPullback f` sends
 `k`-cycles to `(k + n)`-cycles (`height_eq_height_add`), giving `f^* : Z_k(Y) →+ Z_{k+n}(X)`. -/
@@ -422,5 +471,19 @@ lemma cyclesFlatPullback_apply (K : Type u) [Field K] [X.Over (Spec (.of K))]
     [PureRelativeDimension n f] {k : ℤ} (α : cyclesOfDimension Y k) :
     (cyclesFlatPullback f K (n := n) k α : AlgebraicCycle X ℤ) = cycleFlatPullback f α :=
   rfl
+
+/-- **Functoriality of flat pullback of `k`-cycles**: `(f ≫ g)^* = f^* ∘ g^*` from `Z_k(Z)` to
+`Z_{k+m+n}(X)`, for `g` of pure relative dimension `m` and `f` of pure relative dimension `n` (the
+dimension `m + n` of `f ≫ g` is stated as an instance). -/
+lemma cyclesFlatPullback_comp (K : Type u) [Field K] [X.Over (Spec (.of K))]
+    [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))] [LocallyOfFiniteType (X ↘ Spec (.of K))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of K))] [IsLocallyNoetherian X] [IsLocallyNoetherian Y]
+    [Flat f] {Z : Scheme.{u}} (g : Y ⟶ Z) [Z.Over (Spec (.of K))] [g.IsOver (Spec (.of K))]
+    [LocallyOfFiniteType (Z ↘ Spec (.of K))] [Flat g] {m n : ℕ} [PureRelativeDimension n f]
+    [PureRelativeDimension m g] [PureRelativeDimension (m + n) (f ≫ g)] {k : ℤ}
+    (α : cyclesOfDimension Z k) :
+    (cyclesFlatPullback (f ≫ g) K (n := m + n) k α : AlgebraicCycle X ℤ) =
+      cyclesFlatPullback f K (n := n) (k + m) (cyclesFlatPullback g K (n := m) k α) :=
+  cycleFlatPullback_comp f g α
 
 end TauCeti.AlgebraicGeometry.Chow

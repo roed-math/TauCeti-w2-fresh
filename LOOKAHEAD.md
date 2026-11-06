@@ -12,7 +12,11 @@ and the residue-field isomorphism for fibre inclusions. Supplier PRs #29425 (hea
 and #29451 were still open. A third round the same day (main still `afa08a3ed16`, both supplier
 PRs still open) completed the dimension shift (`height_eq_height_add`) and defined
 `cyclesFlatPullback : Z_k(Y) →+ Z_{k+n}(X)`; it also dropped the branch's duplicate of `main`'s
-`Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`.
+`Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`. A fourth round the same day (main still
+`afa08a3ed16`, #29425 still at head `d327f903b0`, #29451 still open) proved functoriality on
+cycles: `fiberLength_comp` (multiplicativity of fibre lengths, from Mathlib's
+`IsLocalRing.length_baseChange`), `cycleFlatPullback_comp` and `cyclesFlatPullback_comp`. Split 3
+is now complete.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -137,18 +141,25 @@ no `sorry`:
 - `cyclesFlatPullback f K k : cyclesOfDimension Y k →+ cyclesOfDimension X (k + n)` for `f` flat of
   pure relative dimension `n` between schemes locally of finite type over `K` (with
   `[IsLocallyNoetherian X]` stated, as in `Localization.lean`), and `cyclesFlatPullback_apply`.
+- `fiberLength_comp`: for flat `f`, `fiberLength (f ≫ g) x = fiberLength f x * fiberLength g (f x)`
+  (`𝒪_{X,x} ⧸ 𝔪_z 𝒪_{X,x}` is `𝒪_{X,x} ⊗ (𝒪_{Y,y} ⧸ 𝔪_z 𝒪_{Y,y})` by
+  `Algebra.TensorProduct.quotIdealMapEquivTensorQuot`, then Mathlib's
+  `IsLocalRing.length_baseChange` for the flat local map `𝒪_{Y,y} → 𝒪_{X,x}`; this holds at every
+  point, with `ℕ∞` lengths, so no finiteness hypothesis is needed);
+- `cycleFlatPullback_comp`: `cycleFlatPullback (f ≫ g) α = cycleFlatPullback f (cycleFlatPullback g α)`
+  for flat `f`, `g` (supports by `maximal_mem_preimage_comp_iff`, coefficients by
+  `fiberLength_comp` and `ENat.toNat_mul`);
+- `cyclesFlatPullback_comp`: the same on `k`-cycles, `(f ≫ g)^* α = f^* (g^* α)` in
+  `Z_{k+m+n}(X)` as algebraic cycles, for `g` of pure relative dimension `m`, `f` of pure relative
+  dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
+  (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
 ## What remains
 
-1. (Split 3, rest) `(f ≫ g)^* = f^* g^*` on cycles (`cyclesFlatPullback_comp`). The support part
-   is `maximal_mem_preimage_comp_iff`; the multiplicity part is
-   `fiberLength (f ≫ g) x = fiberLength f x * fiberLength g (f x)` at generic points of fibres,
-   for flat `f` (Stacks 02N8: length multiplicativity under the flat local map
-   `𝒪_{Y,y} ⧸ 𝔪_z𝒪_{Y,y} → 𝒪_{X,x} ⧸ 𝔪_z𝒪_{X,x}` of Artinian local rings, Stacks 00IX / 02M1;
-   Mathlib's `Module.length` API has no such lemma yet, so prove it by a composition series of
-   the Artinian `𝒪_{Y,y} ⧸ 𝔪_z𝒪_{Y,y}`, each factor `κ(y)` tensoring to `𝒪_{X,x} ⧸ 𝔪_y𝒪_{X,x}`
-   by flatness). The dimension shift for `f ≫ g` needs `PureRelativeDimension (m + n) (f ≫ g)`
-   or can be avoided by stating functoriality on `AlgebraicCycle` (`cycleFlatPullback`) first.
+1. (Optional, general dimension theory) an instance `PureRelativeDimension (m + n) (f ≫ g)` for
+   `f`, `g` flat and locally of finite type of pure relative dimensions `n`, `m` (the fibre dimension of a
+   composite). `cyclesFlatPullback_comp` currently states it as an instance
+   argument; `cycleFlatPullback_comp` on `AlgebraicCycle` needs no dimension hypothesis at all.
 2. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
    Proposition 1.7 / Stacks 42.20, needs the norm formula from `chow-proper-pushforward`).
 3. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
@@ -194,9 +205,9 @@ no `sorry`:
    every declaration listed for it above, ending with `ChowGroup.localization_exact`. After: 1. Subject:
    *feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and
    the localisation sequence*.
-3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (this branch, in progress); adds the
-   declarations listed for it above (through `cyclesFlatPullback`, done), then
-   `cyclesFlatPullback_comp`. At 426 lines already, the port may split it in two: dimension shift
+3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (this branch, done, 489 lines); adds
+   the declarations listed for it above, through `cyclesFlatPullback_comp`. The port may split it
+   in two: dimension shift
    (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
    flat pullback of cycles with generic-length multiplicities*.
 4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean`; adds
