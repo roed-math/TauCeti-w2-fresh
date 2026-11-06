@@ -1,0 +1,115 @@
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
+
+# Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
+
+Built on `main` at `72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab`. Status: **partial**.
+
+The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
+of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
+`(g f)^* = f^* g^*`, the base-change square `f^* g_* = g'_* f'^*` against proper pushforward
+(`flatPullback_properPushforward`), and the localisation sequence `localization_exact`:
+`CH_k(Y) → CH_k(X) → CH_k(U) → 0` exact for `Y ⊆ X` closed with complement `U`.
+
+## Stubs
+
+None yet. This round proved only the part of the target that needs no supplier, so the branch has
+no `TauCeti/Lookahead/ChowFlatPullback/Stubs.lean` and the header lists no suppliers.
+
+The supplier `chow-proper-pushforward` has no pinned declarations in
+`SchemeAndStackFoundations/Suggested.lean` (Layer 5 there pins only `cyclesOfDimension`, `RatEquiv`,
+`ChowGroup`, `cycleClass` and `CH_coprod`). Its open PR #29425 (head `d327f903b0`) states the
+cycle-level pushforward
+
+```lean
+noncomputable def cyclesMap (f : X ⟶ Y) [f.IsOver (Spec (.of k))] [QuasiCompact f] {n : ℤ} :
+    cyclesOfDimension X n →+ cyclesOfDimension Y n
+lemma cyclesMap_comp (f : X ⟶ Y) (g : Y ⟶ Z) [f.IsOver (Spec (.of k))]
+    [g.IsOver (Spec (.of k))] [QuasiCompact f] [QuasiCompact g] {n : ℤ} :
+    cyclesMap k (f ≫ g) (n := n) = (cyclesMap k g).comp (cyclesMap k f)
+noncomputable def cyclesDegree : cyclesOfDimension X 0 →+ ℤ
+```
+
+in namespace `TauCeti.AlgebraicGeometry.Chow`. PR #29451 is linear algebra (cokernel lengths) and
+pins nothing the target consumes. The Chow-group-level pushforward `CH_k(X) → CH_k(Y)`, which the
+base-change square (split 5) consumes, is stated neither in `Suggested.lean` nor in either PR.
+Split 5 should stub `cyclesMap` from PR #29425 and the Chow-level descent of `cyclesMap` once its
+statement is fixed by the supplier, together with its compatibility with `cycleClass`.
+
+## What is proved
+
+`TauCeti/AlgebraicGeometry/Chow/OpenRestriction.lean` (namespace `TauCeti.AlgebraicGeometry.Chow`),
+no `sorry`:
+
+- `height_apply_of_isOpenImmersion`: for `X` locally of finite type over a field `K` and
+  `j : U ⟶ X` an open immersion, `height (j x) = height x`;
+- `apply_mem_pointsOfDimension_iff`: so `j` preserves `pointsOfDimension`;
+- `cycleRestrict`, `cycleRestrict_apply`: pullback of algebraic cycles along an open immersion;
+- `cyclesRestrict`, `cyclesRestrict_apply`: the restriction `Z_k(X) →+ Z_k(U)` (the flat pullback
+  of relative dimension `0` along `j`, and the second map of the localisation sequence);
+- `cycleExtend`, `cycleExtend_apply`, `cycleExtend_apply_of_notMem_range`,
+  `cycleRestrict_cycleExtend`: extension by zero of cycles from `U` to a locally Noetherian `X`
+  (local finiteness from quasi-compactness of `V ∩ U` in a Noetherian affine `V`);
+- `cyclesExtend`, `cyclesRestrict_cyclesExtend`, `cyclesRestrict_surjective`: on `k`-cycles;
+- `cyclesRestrict_eq_zero_iff`, `ker_cyclesRestrict_eq_range_cyclesPushforward`: the kernel of
+  restriction is the image of `main`'s closed-immersion `cyclesPushforward` along any closed
+  immersion onto the complement. Together: `Z_k(Z) → Z_k(X) → Z_k(U) → 0` is exact.
+
+`TauCeti/AlgebraicGeometry/Chow/Localization.lean` (same namespace), no `sorry`:
+
+- `RatEquivFamily.RestrictIndex`, `RatEquivFamily.restrict`: a rational-equivalence family on `X`
+  restricted to `U` (members meeting `U`, replaced by `W ×_X U`, which is integral, closed in `U`
+  and of the same dimension; rational functions pulled back by `functionFieldMap`);
+- `RatEquivFamily.component_restrict`, `RatEquivFamily.cycle_restrict`: its cycle is the
+  restriction of the cycle (via `main`'s `Scheme.ord_functionFieldMap`);
+- `cyclesRestrict_mem_ratEquiv`: restriction preserves rational equivalence;
+- `ChowGroup.restrict`, `ChowGroup.restrict_cycleClass`, `ChowGroup.restrict_surjective`:
+  `CH_k(X) →+ CH_k(U)` (flat pullback along `j`), surjective;
+- `ChowGroup.restrict_comp_pushforward`: `CH_k(Z) → CH_k(X) → CH_k(U)` composes to zero for a
+  closed immersion onto the complement.
+
+## What remains
+
+1. (Split 2, rest) `localization_exact`: the remaining inclusion
+   `ker (ChowGroup.restrict j K k) ≤ range (ChowGroup.pushforward i)`. If `α|U` is
+   `Σ div r_j` on a family `W_j` in `U`, take the closures `W̄_j` in `X` (reduced closed
+   subschemes, integral of the same dimension, with `W_j` open and dense in `W̄_j`, so the same
+   function field), check the closures form a locally finite family in the locally Noetherian `X`
+   (each point has a Noetherian neighbourhood meeting finitely many), and apply
+   `ker_cyclesRestrict_eq_range_cyclesPushforward` to `α − Σ div r̄_j`.
+2. (Split 3) `Chow.cyclesFlatPullback` for `f` flat with `PureRelativeDimension n f` (Tau Ceti's
+   carrier): `f^*[V] = Σ_ξ length(O_{f⁻¹V, ξ}) [ξ]` over generic points of `f⁻¹(V)`, its local
+   finiteness, the dimension shift `k ↦ k + n`, and `(g f)^* = f^* g^*` on cycles.
+3. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
+   Proposition 1.7 / Stacks 42.20, needs the norm formula from `chow-proper-pushforward`).
+4. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
+   `flatPullback_properPushforward` (Stacks 42.15.1 on cycles, then descent), with the supplier's
+   Chow-level pushforward stubbed.
+
+## Notes for the port
+
+- `height_apply_of_isOpenImmersion` and `apply_mem_pointsOfDimension_iff` are general dimension
+  theory. At port time move them to `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (which
+  already has the `[X.Over (Spec (.of k))] [LocallyOfFiniteType (X ↘ Spec (.of k))]` variables),
+  next to `topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField`. They were left in
+  the Chow file on this branch to avoid rebuilding everything downstream of that module.
+- `Localization.lean` assumes `[IsLocallyNoetherian X] [IsLocallyNoetherian U]` as instances
+  next to `LocallyOfFiniteType (X ↘ Spec (.of K))`, which implies both; the Chow groups need the
+  instances to be stated. A reviewer may ask to derive them instead.
+
+## Splits
+
+1. Files: `TauCeti/AlgebraicGeometry/Chow/OpenRestriction.lean` (this branch, done). Adds all the
+   declarations listed under *What is proved*. After: none. Subject: *feat(AlgebraicGeometry/Chow/
+   OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation
+   sequence*.
+2. Files: `TauCeti/AlgebraicGeometry/Chow/Localization.lean` (on this branch, partial: everything
+   listed above for it; still to add `localization_exact`). After: 1. Subject:
+   *feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and
+   the localisation sequence*.
+3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean`; adds `cyclesFlatPullback`, its
+   apply lemmas, `cyclesFlatPullback_comp`. After: none.
+4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean`; adds
+   `cyclesFlatPullback_mem_ratEquiv`. After: 2, 3.
+5. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/BaseChange.lean` (stubs of the supplier in
+   `TauCeti/Lookahead/ChowFlatPullback/Stubs.lean` until it lands); adds `ChowGroup.flatPullback`,
+   `flatPullback_comp`, `flatPullback_properPushforward`. After: 1, 2, 3, 4. Completes the target.
