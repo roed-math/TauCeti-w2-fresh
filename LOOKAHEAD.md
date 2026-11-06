@@ -5,10 +5,11 @@
 Target: DiophantineApproximationAndTranscendence §3.6, "Rank and multiplicity for the
 interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 9.16, Lemma 9.17;
 §9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`. The round of 2026-11-06 resumed the
-branch at `107089e3b11`. `main` had not moved, so the merge was empty, and the branch still builds
-and passes `lookahead-check`. It rechecked supplier PR #28644 at head `583a153b95f`. That PR is
-still open and still adds only the delta rows, their denominators and the separated-row entry,
-none of which the rank argument consumes. That round adds no new mathematics. It recorded that
+branch at `107089e3b11`, and a later round of the same day resumed it at `a38b52feaed`. In both,
+`main` had not moved, so the merge was empty, and the branch still builds and passes
+`lookahead-check`. Both rechecked supplier PR #28644 at head `583a153b95f`. That PR is still open
+and still adds only the delta rows, their denominators and the separated-row entry, none of which
+the rank argument consumes. Neither round adds new mathematics. It recorded that
 `main` and pinned Mathlib still have no zero or multiplicity estimate, Philippon-type or
 otherwise, that split 4 could reuse. Earlier rounds added the material of splits 1–3: the counting
 half of the induction on proper subspaces, and the translation between index subspaces and
@@ -136,7 +137,10 @@ In the new file `Interpolation/Residual.lean`:
   4. The obstructions with `e₀ ∉ W'` or with trivial torus part use two more inputs, neither
      formalized yet:
      - the subgroup obstruction from the multiplicative rank of the `α_j`, whose kernel
-       `s ↦ α^s` has rank `≤ 1`;
+       `s ↦ α^s` has rank `≤ 1`. The rank bound itself needs no new lemma. View
+       `s ↦ α^s` as a `ℤ`-linear map into `Additive ℂˣ`. Then Mathlib's
+       `LinearMap.rank_range_add_rank_ker`, via the instance `IsDomain.hasRankNullity`, gives
+       `rank ker ≤ m − (m−1)`. What remains is to use the kernel against the obstruction;
      - the reduction of a short rational coefficient relation by Liouville.
 
 ## Splits
