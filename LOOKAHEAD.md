@@ -30,7 +30,7 @@ descriptions of the remaining sheafification-type comparisons (`equiv₀_epsilon
 `equiv₀_etaleToNisnevichH`, from the general `Sheaf.H.equiv₀_pullback_sheafInverseImage`). The
 roadmap checks `test_comparison_id` and
 `test_aX_constant` (for `aX` itself) are in the examples file. Fifth session: merged `main` (`72cbdfb14e3d`) and re-verified; supplier PR #28094 is still open
-at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Not yet proved: the fppf half of
+at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Seventh session (2026-11-06): `main` is still at `afa08a3ed16f` and the three supplier PRs are still open at the same heads, so nothing was merged and the stubs are unchanged; the branch was rebuilt and re-checked. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
 
