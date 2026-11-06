@@ -45,7 +45,7 @@ theorem TauCeti.AlgebraicGeometry.AtWorstNodalOfRelativeDimensionOne.of_etale_co
 
 ## Split plan
 
-The whole proof is about 320 lines, so it is one pull request.
+The whole proof is about 360 lines, so it is one pull request.
 
 1. **feat: prestable models from a special fibre with only ordinary nodes** (after: none, but it
    needs the supplier's étale-locality theorem on `main`).
@@ -67,8 +67,13 @@ The whole proof is about 320 lines, so it is one pull request.
      `AtWorstNodalOfRelativeDimensionOne.of_forall_notMem_smoothLocus_exists_isSeparable` (for a
      syntomic curve, finite separable extensions are needed only at the singular points).
    - `TauCeti/AlgebraicGeometry/Curves/StableReduction/Model/NodalSpecialFiber.lean` (new): the
-     exported theorems `TauCeti.Model.prestableFamily_toBase_of_specialFiber` and
-     `TauCeti.Model.prestableFamily_toBase_of_specialFiber_of_isSeparable`.
+     helper `TauCeti.Model.prestableFamily_toBase_of_atWorstNodal` (a geometrically connected, at
+     worst nodal special fibre makes a proper model of a prestable curve prestable) and the
+     exported theorems `TauCeti.Model.prestableFamily_toBase_of_specialFiber`,
+     `TauCeti.Model.prestableFamily_toBase_of_specialFiber_of_isSeparable` and
+     `TauCeti.Model.prestableFamily_toBase_of_specialFiber_of_notMem_smoothLocus_isSeparable`
+     (syntomic special fibre; separable extensions asked only at the singular points, the README's
+     "finite separable residue extensions at singular points").
    - Port: replace `import TauCeti.Lookahead.PrestableModelOfNodalSpecialFiber.Stubs` in
      `Ordinary.lean` by the supplier's module, delete `TauCeti/Lookahead/`, and delete this file.
      `comp_spec_map_of_etale` uses only `main`; if a reviewer prefers, it can move to
@@ -79,7 +84,9 @@ The whole proof is about 320 lines, so it is one pull request.
 Proved (modulo the stub): a proper model of a prestable curve `C ⟶ Spec K` over a DVR whose special
 fibre is geometrically connected and, after a field extension `L` of the residue field (e.g. an
 algebraic closure), has only smooth points and ordinary nodes, is a prestable model; and the same
-with a finite separable extension chosen at each point. Design choices recorded for review:
+with a finite separable extension chosen at each point. For a syntomic special fibre the separable extensions
+are needed only at the singular points (model-level form added 2026-11-06).
+Design choices recorded for review:
 
 - "Ordinary node" is formalized étale locally (an étale neighbourhood étale over
   `Spec L[u,v]/(uv)` over `L`), not through the completed local ring `L[[x,y]]/(xy)`.

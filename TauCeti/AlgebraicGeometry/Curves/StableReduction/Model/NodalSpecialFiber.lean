@@ -31,6 +31,9 @@ node.
   is a prestable model.
 * `TauCeti.Model.prestableFamily_toBase_of_specialFiber_of_isSeparable`: the same, with a finite
   separable residue extension chosen separately at each point.
+* `TauCeti.Model.prestableFamily_toBase_of_specialFiber_of_notMem_smoothLocus_isSeparable`: for a
+  syntomic special fibre, finite separable residue extensions are needed only at the singular
+  points.
 
 ## References
 
@@ -54,6 +57,18 @@ variable {R K : Type u} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
 variable [Field K] [Algebra R K] [IsFractionRing R K]
 variable {C : Scheme.{u}} {toK : C ⟶ Spec (.of K)}
 
+/-- A proper model of a prestable curve over a discrete valuation ring is a prestable model when
+its special fibre is geometrically connected and at worst nodal of relative dimension one. -/
+theorem prestableFamily_toBase_of_atWorstNodal (M : Model R K C toK) [M.IsProper]
+    [PrestableFamily toK] [GeometricallyConnected (specialFiber R M.toBase).hom]
+    (h : AtWorstNodalOfRelativeDimensionOne (specialFiber R M.toBase).hom) :
+    PrestableFamily M.toBase := by
+  refine M.prestableFamily_toBase_iff.mpr ⟨‹_›, ‹_›, ?_⟩
+  have : AlgebraicGeometry.IsProper (specialFiber R M.toBase).hom :=
+    MorphismProperty.of_isPullback (P := @AlgebraicGeometry.IsProper)
+      (isPullback_specialFiber R M.toBase) inferInstance
+  exact { atWorstNodalOfRelativeDimensionOne := h }
+
 /-- **The prestable criterion.** A proper model of a prestable curve over a discrete valuation
 ring is a prestable model when its special fibre is geometrically connected and, after a field
 extension `L` of the residue field (for instance an algebraic closure), each point of the base
@@ -64,14 +79,9 @@ theorem prestableFamily_toBase_of_specialFiber (M : Model R K C toK) [M.IsProper
     (h : ∀ x, IsOrdinaryNodeOrSmoothAt
       (pullback.fst (Spec.map (CommRingCat.ofHom (algebraMap (IsLocalRing.ResidueField R) L)))
         (specialFiber R M.toBase).hom) x) :
-    PrestableFamily M.toBase := by
-  refine M.prestableFamily_toBase_iff.mpr ⟨‹_›, ‹_›, ?_⟩
-  have : AlgebraicGeometry.IsProper (specialFiber R M.toBase).hom :=
-    MorphismProperty.of_isPullback (P := @AlgebraicGeometry.IsProper)
-      (isPullback_specialFiber R M.toBase) inferInstance
-  exact
-    { atWorstNodalOfRelativeDimensionOne :=
-        AtWorstNodalOfRelativeDimensionOne.of_baseChange_isOrdinaryNodeOrSmoothAt L _ h }
+    PrestableFamily M.toBase :=
+  M.prestableFamily_toBase_of_atWorstNodal
+    (AtWorstNodalOfRelativeDimensionOne.of_baseChange_isOrdinaryNodeOrSmoothAt L _ h)
 
 /-- **The prestable criterion with finite separable residue extensions.** A proper model of a
 prestable curve over a discrete valuation ring is a prestable model when its special fibre is
@@ -87,14 +97,30 @@ theorem prestableFamily_toBase_of_specialFiber_of_isSeparable (M : Model R K C t
         (specialFiber R M.toBase).hom)),
       pullback.snd _ (specialFiber R M.toBase).hom y = x ∧
         IsOrdinaryNodeOrSmoothAt (pullback.fst _ (specialFiber R M.toBase).hom) y) :
-    PrestableFamily M.toBase := by
-  refine M.prestableFamily_toBase_iff.mpr ⟨‹_›, ‹_›, ?_⟩
-  have : AlgebraicGeometry.IsProper (specialFiber R M.toBase).hom :=
-    MorphismProperty.of_isPullback (P := @AlgebraicGeometry.IsProper)
-      (isPullback_specialFiber R M.toBase) inferInstance
-  exact
-    { atWorstNodalOfRelativeDimensionOne :=
-        AtWorstNodalOfRelativeDimensionOne.of_forall_exists_isSeparable _ h }
+    PrestableFamily M.toBase :=
+  M.prestableFamily_toBase_of_atWorstNodal
+    (AtWorstNodalOfRelativeDimensionOne.of_forall_exists_isSeparable _ h)
+
+/-- **The prestable criterion with finite separable residue extensions at singular points.** A
+proper model of a prestable curve over a discrete valuation ring whose special fibre is a
+geometrically connected syntomic curve is a prestable model when each point outside the smooth
+locus of the special fibre has, after some finite separable extension `L` of the residue field
+depending on the point, a point above it that is a smooth point or an ordinary node. -/
+theorem prestableFamily_toBase_of_specialFiber_of_notMem_smoothLocus_isSeparable
+    (M : Model R K C toK) [M.IsProper] [PrestableFamily toK]
+    [GeometricallyConnected (specialFiber R M.toBase).hom]
+    [SyntomicOfRelativeDimension 1 (specialFiber R M.toBase).hom]
+    (h : ∀ x ∉ (specialFiber R M.toBase).hom.smoothLocus, ∃ (L : Type u) (_ : Field L)
+      (_ : Algebra (IsLocalRing.ResidueField R) L)
+      (_ : FiniteDimensional (IsLocalRing.ResidueField R) L)
+      (_ : Algebra.IsSeparable (IsLocalRing.ResidueField R) L)
+      (y : ↥(pullback (Spec.map (CommRingCat.ofHom (algebraMap (IsLocalRing.ResidueField R) L)))
+        (specialFiber R M.toBase).hom)),
+      pullback.snd _ (specialFiber R M.toBase).hom y = x ∧
+        IsOrdinaryNodeOrSmoothAt (pullback.fst _ (specialFiber R M.toBase).hom) y) :
+    PrestableFamily M.toBase :=
+  M.prestableFamily_toBase_of_atWorstNodal
+    (AtWorstNodalOfRelativeDimensionOne.of_forall_notMem_smoothLocus_exists_isSeparable _ h)
 
 end Model
 
