@@ -163,6 +163,14 @@ declarations: the first bullet of split 26 needs that a product of sections of e
 fibre, which does not fit in what the round had left after the rebuild. The next piece is still
 the first bullet of split 26.
 
+The twenty-first round left tip `4773669a55d5`. The twenty-second round (this one) again found
+`main` unchanged (`afa08a3ed16f`), so the merge was a no-op, and both suppliers' successor PRs
+(#28759, #28995) are still open. The branch still uses neither supplier, so there are still no stubs. The rebuild
+replayed from a warm build directory and took about nine minutes (green, warnings as errors), and
+`lookahead-check` passed. The round added no declarations. Its remaining half hour was too
+short for the exact-pole-order computation that the first bullet of split 26 needs. A later round
+that starts with a warm build should go straight to that piece.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -994,7 +1002,7 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 
 ## Verification
 
-`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth, twentieth and twenty-first rounds on `afa08a3ed16f`) and
+`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-second rounds on `afa08a3ed16f`) and
 `/opt/round/lookahead-check` all pass. In the eighteenth round, the new proofs build with
 warnings as errors; `#lint` was not rerun for lack of time. In the fifteenth round, `#lint in TauCeti` (15 linters)
 passes, with 0 errors in 1588 declarations, on the import closure of the two new modules of
