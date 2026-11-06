@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: pullback of cohomology along the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"epsilon-fppf-etale","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":["is-nisnevich-covering"],"splits":[{"n":1,"after":[],"title":"feat: the comparison morphism from the big fppf site to the big étale site"},{"n":2,"after":[],"title":"feat: left Kan extension along a flat functor is exact without smallness assumptions"},{"n":3,"after":[1,2,4],"title":"feat: the comparison morphism from the big fppf site to the small étale site"},{"n":4,"after":[],"title":"feat: base change of the small étale site"},{"n":5,"after":[1,2,3,4],"title":"feat: pullback of cohomology along the comparison morphisms from the big fppf site"},{"n":6,"after":[1,2,3,4],"title":"feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites"},{"n":7,"after":[1,2,3,4,5,6],"title":"feat: pullback of cohomology along the comparison morphisms between the small Zariski, Nisnevich and étale sites"}]}-->
 
 # Lookahead: `epsilon-fppf-etale` (SchemeAndStackFoundations §2.10)
 
-Built on `main` at `72cbdfb14e3d048fdf0a9a417b0b00bf875f61ab`. **Status: partial.** All four
+Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. **Status: partial.** All four
 comparison morphisms of §2.10 are on this branch, each through its exact inverse-image functor and
 its adjunction with the direct image: `epsilonFppfEtale X` (`ε⁻¹`), `aX X` (`a_X⁻¹ = π_X⁻¹ ⋙ ε⁻¹`,
 with `piX X` the inverse image from the small to the big étale site), `etaleToNisnevich X` and
@@ -30,7 +30,7 @@ descriptions of the remaining sheafification-type comparisons (`equiv₀_epsilon
 `equiv₀_etaleToNisnevichH`, from the general `Sheaf.H.equiv₀_pullback_sheafInverseImage`). The
 roadmap checks `test_comparison_id` and
 `test_aX_constant` (for `aX` itself) are in the examples file. Fifth session: merged `main` (`72cbdfb14e3d`) and re-verified; supplier PR #28094 is still open
-at head `6c29c999512d`, unchanged, so the stubs are unchanged. Not yet proved: the fppf half of
+at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
 
