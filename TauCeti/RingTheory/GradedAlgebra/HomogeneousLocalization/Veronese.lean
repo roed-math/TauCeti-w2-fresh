@@ -37,6 +37,9 @@ are the affine charts of the identification `Proj A^{(d)} ≅ Proj A`.
 * `TauCeti.GradedAlgebra.injective_veroneseHomogeneousLocalizationMap_powers` and
   `TauCeti.GradedAlgebra.surjective_veroneseHomogeneousLocalizationMap_powers`: the map
   `A^{(d)}_{(f)} → A_{(f)}` is bijective for homogeneous `f ∈ A^{(d)}`.
+* `TauCeti.GradedAlgebra.awayVeroneseEquiv_awayMap` and
+  `TauCeti.GradedAlgebra.awayVeroneseEquiv_fromZeroRingHom`: these isomorphisms commute with the
+  transition maps `A_{(f)} → A_{(f g)}` and with the maps from the degree-zero parts.
 
 ## References
 
@@ -166,6 +169,41 @@ theorem val_awayVeroneseEquiv {k : ℕ} (hf : f ∈ veroneseGrading 𝒜 d k)
     (x : Away (veroneseGrading 𝒜 d) f) :
     (awayVeroneseEquiv hf x).val = veroneseLocalizationMap 𝒜 d powers_le_comap_val_powers x.val :=
   val_veroneseHomogeneousLocalizationMap 𝒜 d _ x
+
+/-- `TauCeti.GradedAlgebra.awayVeroneseEquiv` sends the fraction `a / fⁿ` of `A^{(d)}` to the
+same fraction of `A`. -/
+theorem awayVeroneseEquiv_mk {k : ℕ} (hf : f ∈ veroneseGrading 𝒜 d k) (n : ℕ)
+    (a : veronese 𝒜 d) (ha : a ∈ veroneseGrading 𝒜 d (n • k)) :
+    awayVeroneseEquiv hf (Away.mk _ hf n a ha) =
+      Away.mk 𝒜 (mem_veroneseGrading.1 hf) n (a : A)
+        (by simpa only [smul_eq_mul, mul_left_comm] using mem_veroneseGrading.1 ha) :=
+  val_injective _ <| by
+    rw [val_awayVeroneseEquiv, Away.val_mk, Away.val_mk, veroneseLocalizationMap_mk]
+    rfl
+
+/-- `TauCeti.GradedAlgebra.awayVeroneseEquiv` commutes with the transition maps
+`A_{(f)} → A_{(f g)}`. -/
+theorem awayVeroneseEquiv_awayMap {g x : veronese 𝒜 d} {k k' l : ℕ}
+    (hf : f ∈ veroneseGrading 𝒜 d k) (hg : g ∈ veroneseGrading 𝒜 d k')
+    (hx : x ∈ veroneseGrading 𝒜 d l) (hfg : x = f * g) (a : Away (veroneseGrading 𝒜 d) f) :
+    awayVeroneseEquiv hx (awayMap _ hg hfg a) =
+      awayMap 𝒜 (mem_veroneseGrading.1 hg) (congrArg Subtype.val hfg) (awayVeroneseEquiv hf a) := by
+  obtain ⟨n, a, ha, rfl⟩ := Away.mk_surjective _ hf a
+  subst hfg
+  rw [awayMap_mk, awayVeroneseEquiv_mk, awayMap_mk]
+  refine val_injective _ ?_
+  rw [val_awayVeroneseEquiv, Away.val_mk, Away.val_mk, veroneseLocalizationMap_mk]
+  rfl
+
+/-- `TauCeti.GradedAlgebra.awayVeroneseEquiv` is compatible with the maps from the degree-zero
+parts, which agree under `TauCeti.GradedAlgebra.veroneseGradingZeroEquiv`. -/
+theorem awayVeroneseEquiv_fromZeroRingHom {k : ℕ} (hf : f ∈ veroneseGrading 𝒜 d k)
+    (a : veroneseGrading 𝒜 d 0) :
+    awayVeroneseEquiv hf (fromZeroRingHom _ _ a) =
+      fromZeroRingHom 𝒜 _ (veroneseGradingZeroEquiv 𝒜 d a) :=
+  val_injective _ <| by
+    rw [val_awayVeroneseEquiv]
+    exact veroneseLocalizationMap_mk 𝒜 d powers_le_comap_val_powers _ _
 
 end Away
 

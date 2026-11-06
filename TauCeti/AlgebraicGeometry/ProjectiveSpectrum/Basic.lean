@@ -107,6 +107,12 @@ theorem SpecMap_awayLift_awayι_eq {R : Type u} [CommRing R] (φ : A →+* R) {f
   congr 2
   exact add_comm m m'
 
+/-- The standard chart `Spec A_{(f)} ⟶ Proj A` does not depend on the degree chosen for `f`. -/
+theorem awayι_congr {f : A} {m m' : ℕ} (hf : f ∈ 𝒜 m) (hm : 0 < m) (hf' : f ∈ 𝒜 m')
+    (hm' : 0 < m') : awayι 𝒜 f hf hm = awayι 𝒜 f hf' hm' := by
+  rw [awayι, awayι]
+  congr 1
+
 /-- `Proj.map f` lies over `Spec` of the ring homomorphism `𝒜 0 →+* ℬ 0` induced by `f` on the
 degree-zero parts. -/
 @[reassoc (attr := simp)]

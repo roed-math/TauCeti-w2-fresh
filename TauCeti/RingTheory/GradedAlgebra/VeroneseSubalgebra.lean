@@ -30,6 +30,7 @@ is stated.
 * `TauCeti.GradedAlgebra.veroneseGrading 𝒜 d`: its grading, with degree-`k` part `𝒜 (d k)`.
 * `TauCeti.GradedAlgebra.instGradedAlgebraVeroneseGrading`: for `d ≠ 0`, this grading makes the
   Veronese subalgebra an `ℕ`-graded `R`-algebra.
+* `TauCeti.GradedAlgebra.veroneseGradingZeroEquiv`: its degree-zero part is `𝒜 0`, as rings.
 
 ## Main results
 
@@ -156,5 +157,21 @@ theorem coe_decompose_veroneseGrading [NeZero d] (x : veronese 𝒜 d) (k : ℕ)
   · intro hk
     rw [DFinsupp.notMem_support_iff.1 hk, ZeroMemClass.coe_zero, ZeroMemClass.coe_zero,
       decompose_zero, DirectSum.zero_apply, ZeroMemClass.coe_zero]
+
+/-- The degree-zero part of the Veronese subalgebra is the degree-zero part `𝒜 0` of `A`, as
+rings. -/
+def veroneseGradingZeroEquiv : veroneseGrading 𝒜 d 0 ≃+* 𝒜 0 where
+  toFun a := ⟨a, by simpa only [mul_zero] using mem_veroneseGrading.1 a.2⟩
+  invFun b := ⟨⟨b, mem_veronese_of_mem (k := 0) (by rw [mul_zero]; exact b.2)⟩,
+    mem_veroneseGrading.2 (by rw [mul_zero]; exact b.2)⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+  map_mul' _ _ := rfl
+  map_add' _ _ := rfl
+
+@[simp]
+theorem coe_veroneseGradingZeroEquiv (a : veroneseGrading 𝒜 d 0) :
+    (veroneseGradingZeroEquiv 𝒜 d a : A) = ((a : veronese 𝒜 d) : A) :=
+  rfl
 
 end TauCeti.GradedAlgebra
