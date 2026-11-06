@@ -145,6 +145,14 @@ noncomputable def aXAdjunction :
       (Etale.forget X).sheafPushforwardContinuous A _ (etaleTopology.over X) :=
   (piXAdjunction X A).comp (epsilonFppfEtaleAdjunction X A)
 
+/-- The unit of `a_X⁻¹ ⊣ a_{X,*}` is the unit of `π_X⁻¹ ⊣ π_{X,*}` followed by the direct image of
+the unit of `ε⁻¹ ⊣ ε_*`. -/
+lemma aXAdjunction_unit_app (F : Sheaf X.smallEtaleTopology A) :
+    (aXAdjunction X A).unit.app F = (piXAdjunction X A).unit.app F ≫
+      ((Etale.forget X).sheafPushforwardContinuous A _ (etaleTopology.over X)).map
+        ((epsilonFppfEtaleAdjunction X A).unit.app ((piX X A).obj F)) :=
+  Adjunction.comp_unit_app _ _ _
+
 /-- The inverse image `a_X⁻¹` is a left adjoint. -/
 instance : (aX X A).IsLeftAdjoint :=
   (aXAdjunction X A).isLeftAdjoint

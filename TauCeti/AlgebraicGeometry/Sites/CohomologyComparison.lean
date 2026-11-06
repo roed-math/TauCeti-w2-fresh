@@ -23,7 +23,8 @@ through `CategoryTheory.Sheaf.H.pullback`. They are the maps that the comparison
 Stacks, Section 59.100 (0DDK) assert to be isomorphisms. The pullback along `a_X` is the composite
 of the pullbacks along `π_X` and `ε` (`aXH_apply`), and in degree zero the pullback along `π_X`
 is the restriction of global sections along the unit of `π_X⁻¹ ⊣ π_{X,*}` (`equiv₀_piXH`), and
-the pullback along `ε` that along the unit of `ε⁻¹ ⊣ ε_*` (`equiv₀_epsilonFppfEtaleH`).
+the pullback along `ε` that along the unit of `ε⁻¹ ⊣ ε_*` (`equiv₀_epsilonFppfEtaleH`); so the
+pullback along `a_X` is that along the unit of `a_X⁻¹ ⊣ a_{X,*}` (`equiv₀_aXH`).
 
 The coefficient universe `w` is arbitrary: the categories of abelian sheaves are assumed to have
 `Ext` groups, and `π_X⁻¹` to be exact, which is an instance for `w = u + 1`.
@@ -34,8 +35,8 @@ The coefficient universe `w` is arbitrary: the categories of abelian sheaves are
   `ε`, `π_X` and `a_X`.
 * `AlgebraicGeometry.Scheme.aXH_apply`: the pullback along `a_X` is the composite of the pullbacks
   along `π_X` and `ε`.
-* `AlgebraicGeometry.Scheme.equiv₀_piXH`, `equiv₀_epsilonFppfEtaleH`: in degree zero, the
-  pullbacks along `π_X` and `ε` are the restriction of global sections.
+* `AlgebraicGeometry.Scheme.equiv₀_piXH`, `equiv₀_epsilonFppfEtaleH`, `equiv₀_aXH`: in degree
+  zero, the pullbacks along `π_X`, `ε` and `a_X` are the restriction of global sections.
 
 ## References
 
@@ -157,6 +158,19 @@ lemma aXH_apply [HasExt.{w₂} (Sheaf (etaleTopology.over X) AddCommGrpCat.{w})]
     aXH X F n x = epsilonFppfEtaleH X _ n (piXH X F n x) := by
   rw [aXH, constantSheafCompAXIso_inv_app]
   exact Sheaf.H.pullback_comp_apply (piX X _) _ (epsilonFppfEtale X _) _ F n x
+
+/-- In degree zero, the pullback of cohomology along `a_X` is the restriction of global sections
+`F(X) ⟶ (a_X⁻¹ F)(X)` along the unit of the adjunction `a_X⁻¹ ⊣ a_{X,*}`. -/
+lemma equiv₀_aXH [HasExt.{w₂} (Sheaf (etaleTopology.over X) AddCommGrpCat.{w})]
+    (F : Sheaf X.smallEtaleTopology AddCommGrpCat.{w}) (x : F.H 0) :
+    Sheaf.H.equiv₀ _ (Over.mkIdTerminal (X := X)) (aXH X F 0 x) =
+      ((aXAdjunction X _).unit.app F).hom.app (op (Etale.mk (𝟙 X)))
+        (Sheaf.H.equiv₀ F (@MorphismProperty.Over.mkIdTerminal _ _ @Etale X
+          ⟨fun _ ↦ inferInstance⟩) x) := by
+  rw [aXH_apply]
+  refine (equiv₀_epsilonFppfEtaleH X _ _).trans ?_
+  rw [equiv₀_piXH, aXAdjunction_unit_app]
+  rfl
 
 end AX
 

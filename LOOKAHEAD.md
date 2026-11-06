@@ -30,7 +30,10 @@ descriptions of the remaining sheafification-type comparisons (`equiv₀_epsilon
 `equiv₀_etaleToNisnevichH`, from the general `Sheaf.H.equiv₀_pullback_sheafInverseImage`). The
 roadmap checks `test_comparison_id` and
 `test_aX_constant` (for `aX` itself) are in the examples file. Fifth session: merged `main` (`72cbdfb14e3d`) and re-verified; supplier PR #28094 is still open
-at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Seventh session (2026-11-06): `main` is still at `afa08a3ed16f` and the three supplier PRs are still open at the same heads, so nothing was merged and the stubs are unchanged; the branch was rebuilt and re-checked. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
+at head `6c29c999512d`, unchanged, so the stubs are unchanged. Sixth session: merged `main` (`afa08a3ed16f`) without conflicts and re-verified; the three supplier PRs are still open at unchanged heads (#28094 at `6c29c999512d`, #29365 at `440cc53de2c4`, #27295 at `075b1bd4978d`), so the stubs are unchanged and nothing on the branch yet consumes `big-sheaf` or `qcoh-higher-direct-image-vanishing`. Seventh session (2026-11-06): `main` is still at `afa08a3ed16f` and the three supplier PRs are still open at the same heads, so nothing was merged and the stubs are unchanged; the branch was rebuilt and re-checked. Eighth session (2026-11-06): `main` and the three supplier
+PR heads are unchanged; added `aXAdjunction_unit_app` (the unit of `a_X⁻¹ ⊣ a_{X,*}` as the
+composite of the units of `π_X` and `ε`) and the degree-zero description of the pullback along
+`a_X`, `equiv₀_aXH`. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
 
@@ -219,12 +222,12 @@ Files:
   through Mathlib's `pushforwardContinuousSheafificationCompatibility`, and the left Kan extension
   along a fully faithful functor restricts back through `lanUnit`), `fullyFaithfulSheafPullback`
   and the `Full`/`Faithful` instances.
-- `TauCeti/AlgebraicGeometry/Sites/SmallEtaleComparison.lean` (298 lines, new), namespace
+- `TauCeti/AlgebraicGeometry/Sites/SmallEtaleComparison.lean` (306 lines, new), namespace
   `AlgebraicGeometry.Scheme`: `coverPreserving_etaleForget`, the `RepresentablyFlat`, `Final`,
   `IsContinuous` and `IsCocontinuous` instances for `Etale.forget X`, `piX X A`
   (`Functor.sheafPullback` along `Etale.forget X`) with `piXAdjunction`, `IsLeftAdjoint`,
   `constantSheafCompPiXIso` and `constantSheafCompPiXIso_inv_app`; `aX X A := piX X A ⋙
-  epsilonFppfEtale X A` with `aXAdjunction`, `IsLeftAdjoint`, `constantSheafCompAXIso` and
+  epsilonFppfEtale X A` with `aXAdjunction`, `aXAdjunction_unit_app`, `IsLeftAdjoint`, `constantSheafCompAXIso` and
   `constantSheafCompAXIso_inv_app`; `piX`, `piXAdjunction` and `aX` carry `@[expose]`, because the
   cohomology files must unfold them to apply the `Functor.sheafPullback` and composite-functor API
   (in particular `Sheaf.H.equiv₀_pullback_sheafPullback` and `Sheaf.H.pullback_comp_apply`); base change along `g : Y ⟶ X`:
@@ -236,7 +239,7 @@ Files:
   coefficients with sections in `Type (u + 1)` (through split 2), in particular for
   `AddCommGrpCat.{u + 1}`, and for `aX` whenever `piX` is exact.
 
-About 380 lines.
+About 390 lines.
 
 ### Split 4: `feat: base change of the small étale site`
 
@@ -279,7 +282,7 @@ Files:
   (for `J ≤ K`, the pullback along the `K`-sheafification of `J`-sheaves is, in degree zero, the
   restriction of global sections along the unit of the adjunction; the analogue of `main`'s
   `equiv₀_pullback_sheafPullback`).
-- `TauCeti/AlgebraicGeometry/Sites/CohomologyComparison.lean` (163 lines, new), namespace
+- `TauCeti/AlgebraicGeometry/Sites/CohomologyComparison.lean` (177 lines, new), namespace
   `AlgebraicGeometry.Scheme`: the `Additive` instances for `epsilonFppfEtale`, `piX` and `aX` on
   abelian sheaves; `epsilonFppfEtaleH X F n : Hⁿ((Sch/X)_ét, F) →+ Hⁿ((Sch/X)_fppf, ε⁻¹ F)`,
   `piXH X F n : Hⁿ(X_ét, F) →+ Hⁿ((Sch/X)_ét, π_X⁻¹ F)` and
@@ -289,11 +292,12 @@ Files:
   `Sheaf.H.equiv₀_pullback_sheafPullback`); `aXH_apply` (`comparison_comp` on cohomology:
   `aXH = epsilonFppfEtaleH ∘ piXH`, from `Sheaf.H.pullback_comp_apply`); `equiv₀_epsilonFppfEtaleH`
   (in degree zero, `epsilonFppfEtaleH` is the restriction of global sections along the unit of
-  `ε⁻¹ ⊣ ε_*`, at the terminal object `Over.mk (𝟙 X)`). The coefficient universe
+  `ε⁻¹ ⊣ ε_*`, at the terminal object `Over.mk (𝟙 X)`); `equiv₀_aXH` (in degree zero, `aXH` is the
+  restriction of global sections along the unit of `a_X⁻¹ ⊣ a_{X,*}`). The coefficient universe
   is arbitrary, with `HasExt` and the exactness of `π_X⁻¹` as instance hypotheses (the latter an
   instance for `w = u + 1`).
 
-About 230 lines.
+About 245 lines.
 
 ### Split 6: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
 
@@ -382,7 +386,8 @@ Still unproved from §2.10:
 2. *(Done.)* `comparison_baseChange` for `piX` and `aX` (second session); the cohomology maps
    along every comparison morphism, which the comparison theorems below assert to be bijective
    (third session, splits 5 and 7); `comparison_comp` on cohomology for the small sites and the
-   degree-zero descriptions of all five cohomology maps (fourth session, splits 5–7).
+   degree-zero descriptions of all five cohomology maps (fourth session, splits 5–7), and of
+   `aXH` (eighth session, split 5).
 3. **`quasiCoherent_topology_comparison`** (`H^q(X_Zar, F) = H^q(X_ét, F^a) = H^q(X_fppf, F^a)`,
    Stacks 35.9.3). It needs `big-sheaf` (open PR #29365; partial #27307), `qcoh-higher-direct-image-vanishing` (#27295)
    and the cohomology maps of splits 5 and 7. It is the statement that `nisnevichToZariskiH`,
