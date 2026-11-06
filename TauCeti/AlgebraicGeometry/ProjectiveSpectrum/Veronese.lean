@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.Basic
+public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.BaseChange
 public import TauCeti.RingTheory.GradedAlgebra.HomogeneousLocalization.Veronese
 
 /-!
@@ -34,7 +34,11 @@ glue to mutually inverse morphisms.
   `g ∈ A^{(d)}` of positive degree cover `Proj A`.
 * `AlgebraicGeometry.Proj.awayι_fromVeronese`, `AlgebraicGeometry.Proj.awayι_toVeronese`:
   on the charts, `veroneseIso` is `Spec` of `awayVeroneseEquiv`.
-* `AlgebraicGeometry.Proj.veroneseIso_hom_toSpecZero`: `veroneseIso` lies over `Spec 𝒜 0`.
+* `AlgebraicGeometry.Proj.veroneseIso_hom_toSpecZero`,
+  `AlgebraicGeometry.Proj.veroneseIso_hom_toSpecCoeff`: `veroneseIso` lies over `Spec 𝒜 0`, hence
+  over `Spec R`.
+* `AlgebraicGeometry.Proj.map_veroneseMap_veroneseIso_hom`: `veroneseIso` is natural in graded
+  ring maps.
 
 ## References
 
@@ -248,5 +252,52 @@ theorem veroneseIso_hom_toSpecZero :
     rw [veroneseIso, awayι_fromVeronese_assoc hx k.pos, veroneseChartInv, Category.assoc,
       awayι_toSpecZero, awayι_toSpecZero_assoc, ← Spec.map_comp, ← Spec.map_comp,
       ← CommRingCat.ofHom_comp, ← CommRingCat.ofHom_comp, e]
+
+/-- The identification `Proj A^{(d)} ≅ Proj A` lies over `Spec R`. -/
+@[reassoc]
+theorem veroneseIso_hom_toSpecCoeff :
+    (veroneseIso 𝒜 d).hom ≫ toSpecCoeff 𝒜 = toSpecCoeff (veroneseGrading 𝒜 d) := by
+  rw [toSpecCoeff_def, veroneseIso_hom_toSpecZero_assoc, ← Spec.map_comp,
+    ← CommRingCat.ofHom_comp, toSpecCoeff_def]
+  -- both sides are `Spec` of `algebraMap R (veroneseGrading 𝒜 d 0)`
+  rfl
+
+section Map
+
+variable {R' B : Type u} [CommRing R'] [CommRing B] [Algebra R' B] {ℬ : ℕ → Submodule R' B}
+  [GradedAlgebra ℬ] {𝒜 d}
+
+/-- The identification `Proj A^{(d)} ≅ Proj A` is natural in graded ring maps `f : A → B`. -/
+@[reassoc]
+theorem map_veroneseMap_veroneseIso_hom (f : 𝒜 →+*ᵍ ℬ)
+    (hf : HomogeneousIdeal.irrelevant ℬ ≤ (HomogeneousIdeal.irrelevant 𝒜).map f)
+    (hfd : HomogeneousIdeal.irrelevant (veroneseGrading ℬ d) ≤
+      (HomogeneousIdeal.irrelevant (veroneseGrading 𝒜 d)).map (veroneseMap d f)) :
+    map (veroneseMap d f) hfd ≫ (veroneseIso 𝒜 d).hom = (veroneseIso ℬ d).hom ≫ map f hf :=
+  (mapAffineOpenCover _ hfd).openCover.hom_ext _ _
+    fun (s : Σ k : ℕ+, veroneseGrading 𝒜 d k) ↦ by
+    obtain ⟨k, g, hg⟩ := s
+    change awayι _ (veroneseMap d f g) ((veroneseMap d f).map_mem hg) k.pos ≫ _ =
+      awayι _ (veroneseMap d f g) ((veroneseMap d f).map_mem hg) k.pos ≫ _
+    change _ ≫ _ ≫ fromVeronese 𝒜 d = _ ≫ fromVeronese ℬ d ≫ _
+    rw [awayι_comp_map_assoc (hi := k.pos) (hs := hg), awayι_fromVeronese,
+      awayι_fromVeronese_assoc, veroneseChartInv, veroneseChartInv, Category.assoc]
+    -- on the chart `D₊(g)`, both sides are `Spec` of the maps `A_{(g)} → B^{(d)}_{(f g)}` that
+    -- `awayVeroneseEquiv_awayMap_veroneseMap` identifies
+    have e : CommRingCat.ofHom ((awayVeroneseEquiv hg).symm : _ →+* _) ≫
+        CommRingCat.ofHom (Away.map (veroneseMap d f) g) =
+        CommRingCat.ofHom (Away.map f (g : A)) ≫
+          CommRingCat.ofHom (awayVeroneseEquiv ((veroneseMap d f).map_mem hg)).symm.toRingHom := by
+      refine CommRingCat.hom_ext (RingHom.ext fun y ↦ ?_)
+      apply (awayVeroneseEquiv ((veroneseMap d f).map_mem hg)).injective
+      simp only [CommRingCat.hom_comp, CommRingCat.hom_ofHom, RingHom.coe_comp, RingHom.coe_coe,
+        Function.comp_apply]
+      rw [awayVeroneseEquiv_awayMap_veroneseMap f hg, RingEquiv.apply_symm_apply]
+      exact ((awayVeroneseEquiv ((veroneseMap d f).map_mem hg)).apply_symm_apply _).symm
+    rw [← Spec.map_comp_assoc, e, Spec.map_comp, Category.assoc]
+    exact congrArg (_ ≫ ·)
+      (awayι_comp_map f hf (Nat.mul_pos (NeZero.pos d) k.pos) _ (mem_veroneseGrading.1 hg)).symm
+
+end Map
 
 end AlgebraicGeometry.Proj

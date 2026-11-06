@@ -7,14 +7,17 @@ Target (README §0.3): prove `relativeProj_veronese`: for `d ≥ 1` the Veronese
 `relativeProj A^{(d)} ≅ relativeProj A` over `S`, with `O(n)` corresponding to `O(dn)`
 (Stacks, Lemma 27.11.8 (0B5J), on affine charts).
 
-Built on `main` at `385ec2ddd8d` (merged into the branch on 2026-11-06).
+Built on `main` at `385ec2ddd8d` (merged into the branch on 2026-11-06; `main` was unchanged at
+the second session of 2026-11-06).
 
 **Status: partial.** Splits 1 to 5 are proved on this branch, with no `sorry`: the
-Veronese subalgebra, its affine charts, `Proj A^{(d)} ≅ Proj A` over `Spec 𝒜 0`, the
+Veronese subalgebra and its functoriality in graded ring maps, its affine charts,
+`Proj A^{(d)} ≅ Proj A` over `Spec 𝒜 0` and over `Spec R`, natural in graded ring maps, the
 sheaf-level Veronese subalgebra `A^{(d)}` of a graded (commutative) monoid object, and the
 identification of its graded sections over an open with the Veronese subalgebra of the graded
-sections of `A`. The `O(n)`/`O(dn)` comparison and the relative statement (splits 6 and 7)
-remain.
+sections of `A`. Split 7 is started: the chart isomorphisms `Proj Γ(A^{(d)}, U) ≅ Proj Γ(A, U)`
+and the compatibility of the section identification with restriction. The `O(n)`/`O(dn)`
+comparison (split 6) and the rest of split 7 remain.
 
 ## Stubbed declarations
 
@@ -44,7 +47,7 @@ specified in the README only.
 ## Split plan
 
 1. **`feat: the Veronese subalgebra of a graded algebra`**. After: none. *Done on this branch.*
-   - File: `TauCeti/RingTheory/GradedAlgebra/VeroneseSubalgebra.lean` (177 lines).
+   - File: `TauCeti/RingTheory/GradedAlgebra/VeroneseSubalgebra.lean` (203 lines).
    - Adds, in `TauCeti.GradedAlgebra`: `veronese 𝒜 d : Subalgebra R A` (the span of the
      `𝒜 (d k)`), `mem_veronese`, `mem_veronese_of_mem`, `veroneseGrading 𝒜 d : ℕ → Submodule R
      (veronese 𝒜 d)` (degree `k` part `𝒜 (d k)`), `mem_veroneseGrading`, `map_veroneseGrading`,
@@ -52,10 +55,12 @@ specified in the README only.
      instance, `iSupIndep_veroneseGrading`, `iSup_veroneseGrading_eq_top`,
      `isInternal_veroneseGrading` (for `d ≠ 0`), `instGradedAlgebraVeroneseGrading` (for
      `[NeZero d]`), `coe_decompose_veroneseGrading` (the degree-`k` component is the
-     degree-`d k` component in `A`), and `veroneseGradingZeroEquiv : veroneseGrading 𝒜 d 0 ≃+* 𝒜 0`
-     with `coe_veroneseGradingZeroEquiv`.
+     degree-`d k` component in `A`), `veroneseGradingZeroEquiv : veroneseGrading 𝒜 d 0 ≃+* 𝒜 0`
+     with `coe_veroneseGradingZeroEquiv`, and `veroneseMap d f : veroneseGrading 𝒜 d →+*ᵍ
+     veroneseGrading ℬ d` (the restriction of a graded ring map `f : 𝒜 →+*ᵍ ℬ`) with
+     `coe_veroneseMap_apply`.
 2. **`feat: homogeneous localizations of a Veronese subalgebra`**. After: 1. *Done on this branch.*
-   - File: `TauCeti/RingTheory/GradedAlgebra/HomogeneousLocalization/Veronese.lean` (210 lines).
+   - File: `TauCeti/RingTheory/GradedAlgebra/HomogeneousLocalization/Veronese.lean` (223 lines).
    - Adds, in `TauCeti.GradedAlgebra`: `NumDenSameDeg.ofVeronese`, `veroneseLocalizationMap`
      with `veroneseLocalizationMap_mk`, `veroneseHomogeneousLocalizationFun` with its `val`
      lemma, `veroneseHomogeneousLocalizationMap` (the ring map from `A^{(d)}` localized at `P` in
@@ -66,9 +71,10 @@ specified in the README only.
      Away (veroneseGrading 𝒜 d) f ≃+* Away 𝒜 f` for homogeneous `f ∈ A^{(d)}`, with
      `val_awayVeroneseEquiv`, `awayVeroneseEquiv_mk`, `awayVeroneseEquiv_awayMap` (compatibility
      with the transition maps `A_{(f)} → A_{(fg)}`) and `awayVeroneseEquiv_fromZeroRingHom`
-     (compatibility with `𝒜 0`). These are the affine charts of Stacks 0B5J.
+     (compatibility with `𝒜 0`), and `awayVeroneseEquiv_awayMap_veroneseMap` (compatibility with
+     the maps `Away.map` induced by a graded ring map). These are the affine charts of Stacks 0B5J.
 3. **`feat: Proj of a Veronese subalgebra`**. After: 2. *Done on this branch.*
-   - Files: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/Veronese.lean` (252 lines, new) and
+   - Files: `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/Veronese.lean` (303 lines, new) and
      `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/Basic.lean` (+6 lines).
    - Adds, in `AlgebraicGeometry.Proj`: `awayι_congr` (in `Basic.lean`: the chart `awayι` does
      not depend on the degree chosen for `f`), `iSup_basicOpen_veronese_eq_top` (the `D₊(g)`,
@@ -78,7 +84,11 @@ specified in the README only.
      `pullback_fst_veroneseChart(Inv)`, `veroneseAffineOpenCover`, the glued morphisms
      `toVeronese` and `fromVeronese` with `awayι_toVeronese` and `awayι_fromVeronese`,
      `veroneseIso : Proj (veroneseGrading 𝒜 d) ≅ Proj 𝒜`, and `veroneseIso_hom_toSpecZero` (it
-     lies over `Spec 𝒜 0` under `veroneseGradingZeroEquiv`).
+     lies over `Spec 𝒜 0` under `veroneseGradingZeroEquiv`), `veroneseIso_hom_toSpecCoeff` (it lies
+     over `Spec R`), and `map_veroneseMap_veroneseIso_hom` (naturality: for a graded ring map
+     `f : 𝒜 →+*ᵍ ℬ`, `Proj.map (veroneseMap d f) ≫ (veroneseIso 𝒜 d).hom =
+     (veroneseIso ℬ d).hom ≫ Proj.map f`). The last is what lets split 7 glue the chart
+     isomorphisms along the restriction maps of the relative `Proj`.
    - The earlier plan built the morphism with `Proj.fromOfGlobalSections`. That does not apply,
      because elements of positive degree are not global sections of `Proj A`. Mathlib's
      `Proj.map` does not apply either: it needs a degree-preserving graded map, and
@@ -117,10 +127,21 @@ specified in the README only.
      `TauCeti/AlgebraicGeometry/ProjectiveSpectrum/TwistingSheaf/*` on the charts of split 3. This
      is the module analogue of `awayVeroneseEquiv`: degree `n` of `M_{(g)}` over `A^{(d)}` is
      degree `d n` of `M_{(g)}` over `A`.
-7. **`feat: relative Proj of a Veronese subalgebra`**. After: 1, 2, 3, 4, 5, 6. *Remains.*
+7. **`feat: relative Proj of a Veronese subalgebra`**. After: 1, 2, 3, 4, 5, 6. *Started.*
    Completes the target.
-   - File: `TauCeti/AlgebraicGeometry/RelativeProj/Veronese.lean`.
-   - Adds: `CategoryTheory.CommMon.relativeProjVeroneseIso :
+   - File: `TauCeti/AlgebraicGeometry/RelativeProj/Veronese.lean` (110 lines so far).
+   - On the branch already, in `CategoryTheory.CommMon`: `veroneseSectionsGradedHom` and
+     `veroneseSectionsGradedHomInv` (split 5's `veroneseSectionsEquiv` and its inverse as graded
+     ring maps) with `veroneseSectionsGradedHomInv_apply`, `projVeroneseSectionsIso U :
+     Proj ((A.veronese d).gradedSectionsGrading U) ≅ Proj (A.gradedSectionsGrading U)`
+     (`Proj.mapIso` followed by `Proj.veroneseIso`), and
+     `restrict_comp_veroneseSectionsGradedHomInv` (the inverse commutes with restriction, with
+     `veroneseMap` of the restriction of `A` on the other side).
+   - Still to add: `relativeProjFunctor_map_projVeroneseSectionsIso_hom` (naturality of
+     `projVeroneseSectionsIso` along the transition maps of `relativeProjFunctor`), the natural
+     isomorphism `relativeProjFunctorVeroneseIso` (`NatIso.ofComponents`), its compatibility with
+     `relativeProjToSpec` (from `Proj.map_toSpecCoeff` and `Proj.veroneseIso_hom_toSpecCoeff`),
+     and then `CommMon.relativeProjVeroneseIso :
      (A.veronese d).relativeProj ≅ A.relativeProj` over `X` (glued from split 3 over the affine
      opens, using `isPullback_relativeProjCover` and split 5's identification), and
      `relativeProjTwistingSheaf (A.veronese d) n` matching `relativeProjTwistingSheaf A (d * n)`
@@ -142,6 +163,23 @@ Also proved (split 5): over every open `U`, the graded sections `⨁ₖ Γ(A_{dk
 `A^{(d)}` are `Γ(X, U)`-isomorphic to the Veronese subalgebra of `⨁ₙ Γ(Aₙ, U)`, degree by
 degree and compatibly with restriction (`CommMon.veroneseSectionsEquiv`).
 
-Remaining: splits 6 and 7 as described above. These are the twisting-sheaf comparison
+Also proved (split 7, started): the chart isomorphisms
+`Proj (⨁ₖ Γ(A_{dk}, U)) ≅ Proj (⨁ₙ Γ(Aₙ, U))` (`CommMon.projVeroneseSectionsIso`), and the
+compatibility of the section identification with restriction.
+
+Remaining: split 6, and the rest of split 7 as listed above. The naturality square
+`relativeProjFunctor_map_projVeroneseSectionsIso_hom` was written in this session. Its rewrite
+chain is `← Category.assoc, ← Proj.map_comp, Proj.map_congr (restrict_comp_...), Proj.map_comp,
+Category.assoc, Proj.map_veroneseMap_veroneseIso_hom`, and the needed irrelevant-ideal hypothesis
+for `veroneseMap d (A.restrictGradedSectionsGradedHom _)` is transported from
+`irrelevant_le_map_comp` through the two section isomorphisms with an explicit `Eq.subst` motive.
+The statement times out (heartbeats) as soon as the goal is unfolded, whether by `change` or by
+`dsimp only [relativeProjFunctor, projVeroneseSectionsIso, Iso.trans_hom, Proj.mapIso_hom]`,
+before any rewrite happens. A `rw [Proj.mapIso_hom]`-style unfolding also fails, because the
+graded sections over `(toOpensFunctor X).obj U` and over `U.toOpens` agree only up to defeq. The
+next attempt should state the square for `Proj.map` of explicit graded maps over opens `V ≤ U`
+first (no `AffineZariskiSite` and no `Iso`), then specialise. It also needs a
+`Proj.mapIso`/`Proj.map` lemma for `projVeroneseSectionsIso_hom` stated with `Proj.map`, since
+the `toSpecCoeff` compatibility timed out under the module system for the same reason. These are the twisting-sheaf comparison
 `O(n)`/`O(dn)` on `Proj`, and the relative statement
 `relativeProj_veronese`, glued from `Proj.veroneseIso` over affine opens of the base.

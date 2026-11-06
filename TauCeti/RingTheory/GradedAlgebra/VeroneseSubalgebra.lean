@@ -7,6 +7,7 @@ module
 
 public import Mathlib.Algebra.DirectSum.Module
 public import Mathlib.RingTheory.GradedAlgebra.Basic
+public import Mathlib.RingTheory.GradedAlgebra.RingHom
 
 /-!
 # The Veronese subalgebra of a graded algebra
@@ -28,6 +29,8 @@ is stated.
 
 * `TauCeti.GradedAlgebra.veronese 𝒜 d`: the Veronese subalgebra `⨁ₖ 𝒜 (d k)` of `A`.
 * `TauCeti.GradedAlgebra.veroneseGrading 𝒜 d`: its grading, with degree-`k` part `𝒜 (d k)`.
+* `TauCeti.GradedAlgebra.veroneseMap d f`: the graded ring map `A^{(d)} → B^{(d)}` induced by a
+  graded ring map `f : A → B`.
 * `TauCeti.GradedAlgebra.instGradedAlgebraVeroneseGrading`: for `d ≠ 0`, this grading makes the
   Veronese subalgebra an `ℕ`-graded `R`-algebra.
 * `TauCeti.GradedAlgebra.veroneseGradingZeroEquiv`: its degree-zero part is `𝒜 0`, as rings.
@@ -173,5 +176,28 @@ def veroneseGradingZeroEquiv : veroneseGrading 𝒜 d 0 ≃+* 𝒜 0 where
 theorem coe_veroneseGradingZeroEquiv (a : veroneseGrading 𝒜 d 0) :
     (veroneseGradingZeroEquiv 𝒜 d a : A) = ((a : veronese 𝒜 d) : A) :=
   rfl
+
+section Map
+
+variable {R' B : Type*} [CommRing R'] [CommRing B] [Algebra R' B] {ℬ : ℕ → Submodule R' B}
+  [GradedAlgebra ℬ] {𝒜}
+
+/-- A graded ring map `A → B` restricts to a graded ring map `A^{(d)} → B^{(d)}` between the
+Veronese subalgebras. -/
+def veroneseMap (f : 𝒜 →+*ᵍ ℬ) : veroneseGrading 𝒜 d →+*ᵍ veroneseGrading ℬ d where
+  toRingHom := (f.toRingHom.comp (veronese 𝒜 d).val.toRingHom).codRestrict (veronese ℬ d)
+    fun ⟨x, hx⟩ ↦ by
+      induction hx using Submodule.iSup_induction' with
+      | mem k x hx => exact mem_veronese_of_mem (f.map_mem hx)
+      | zero => simp
+      | add x y _ _ hx hy => simpa using add_mem hx hy
+  map_mem hx := mem_veroneseGrading.2 (f.map_mem (mem_veroneseGrading.1 hx))
+
+@[simp]
+theorem coe_veroneseMap_apply (f : 𝒜 →+*ᵍ ℬ) (x : veronese 𝒜 d) :
+    (veroneseMap d f x : B) = f x :=
+  rfl
+
+end Map
 
 end TauCeti.GradedAlgebra

@@ -205,6 +205,19 @@ theorem awayVeroneseEquiv_fromZeroRingHom {k : ℕ} (hf : f ∈ veroneseGrading 
     rw [val_awayVeroneseEquiv]
     exact veroneseLocalizationMap_mk 𝒜 d powers_le_comap_val_powers _ _
 
+variable {R' B : Type*} [CommRing R'] [CommRing B] [Algebra R' B] {ℬ : ℕ → Submodule R' B}
+  [GradedAlgebra ℬ]
+
+/-- `TauCeti.GradedAlgebra.awayVeroneseEquiv` commutes with the maps of homogeneous localizations
+induced by a graded ring map `φ`. -/
+theorem awayVeroneseEquiv_awayMap_veroneseMap (φ : 𝒜 →+*ᵍ ℬ) {k : ℕ}
+    (hf : f ∈ veroneseGrading 𝒜 d k) (a : Away (veroneseGrading 𝒜 d) f) :
+    awayVeroneseEquiv ((veroneseMap d φ).map_mem hf) (Away.map (veroneseMap d φ) f a) =
+      Away.map φ (f : A) (awayVeroneseEquiv hf a) := by
+  obtain ⟨n, a, ha, rfl⟩ := Away.mk_surjective _ hf a
+  rw [Away.map_mk, awayVeroneseEquiv_mk, awayVeroneseEquiv_mk, Away.map_mk]
+  rfl
+
 end Away
 
 end TauCeti.GradedAlgebra
