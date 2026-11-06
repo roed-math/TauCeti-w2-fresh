@@ -7,6 +7,7 @@ module
 
 public import TauCeti.Algebra.Homology.Ext.AcyclicResolution
 public import TauCeti.CategoryTheory.Sites.SheafCohomology.FreeYoneda
+public import TauCeti.CategoryTheory.Sites.Sheaf
 
 /-!
 # Sections of acyclic resolutions compute sheaf cohomology
@@ -183,12 +184,6 @@ theorem exists_d_hom_app_eq_of_resolution (n : ℕ) (hF : Subsingleton (F.H' (n 
     (s : (K.X (n + 1)).obj.obj (op V)) (hs : (K.d (n + 1) (n + 2)).hom.app (op V) s = 0) :
     ∃ t : (K.X n).obj.obj (op V), (K.d n (n + 1)).hom.app (op V) t = s :=
   (resolutionClass_succ_eq_zero_iff ι hι hι' hK V hKV s hs).1 (Subsingleton.elim _ _)
-
-omit [HasSheafify J AddCommGrpCat.{v}] in
-/-- The functor of sections over an object of the site is additive. -/
-instance {A : Type*} [Category* A] [Preadditive A] (X : Cᵒᵖ) :
-    ((sheafSections J A).obj X).Additive :=
-  inferInstanceAs (sheafToPresheaf J A ⋙ (evaluation Cᵒᵖ A).obj X).Additive
 
 /-- **Sheaf cohomology from an acyclic resolution.** Let `0 ⟶ F ⟶ K⁰ ⟶ K¹ ⟶ ⋯` be a resolution of
 a sheaf of abelian groups `F` whose terms have no cohomology in positive degrees over an object `V`

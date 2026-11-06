@@ -35,9 +35,8 @@ variable {C : Type u} [Category.{v} C] [Preadditive C] {G : C ⥤ AddCommGrpCat.
 noncomputable def homAddEquiv (X : C) : (P ⟶ X) ≃+ G.obj X where
   __ := R.homEquiv
   map_add' f f' := by
-    simp only [Equiv.toFun_as_coe, R.homEquiv_eq f, R.homEquiv_eq f', R.homEquiv_eq (f + f')]
-    exact congrArg (fun g : G.obj P ⟶ G.obj X ↦ g (R.homEquiv (𝟙 P)))
-      (G.map_add (f := f) (g := f'))
+    rw [Equiv.toFun_as_coe, R.homEquiv_eq f, R.homEquiv_eq f', R.homEquiv_eq (f + f')]
+    simp only [Functor.comp_map, TypeCat.ofHom_apply, G.map_add, AddCommGrpCat.hom_add_apply]
 
 @[simp]
 lemma homAddEquiv_apply {X : C} (f : P ⟶ X) : R.homAddEquiv X f = R.homEquiv f :=
