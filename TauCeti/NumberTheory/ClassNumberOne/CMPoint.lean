@@ -53,11 +53,11 @@ namespace TauCeti
 
 /-- The linear coefficient `B` of the monic polynomial `X² + B X + C` of the CM point `τ_D`:
 `0` if `D ≡ 0 (mod 4)` and `-3` otherwise. -/
-def cmTauLinearCoeff (D : ℤ) : ℤ := if D % 4 = 0 then 0 else -3
+@[expose] def cmTauLinearCoeff (D : ℤ) : ℤ := if D % 4 = 0 then 0 else -3
 
 /-- The constant coefficient `C` of the monic polynomial `X² + B X + C` of the CM point `τ_D`:
 `-D / 4` if `D ≡ 0 (mod 4)` and `(9 - D) / 4` otherwise. -/
-def cmTauConstCoeff (D : ℤ) : ℤ := if D % 4 = 0 then -D / 4 else (9 - D) / 4
+@[expose] def cmTauConstCoeff (D : ℤ) : ℤ := if D % 4 = 0 then -D / 4 else (9 - D) / 4
 
 /-- The discriminant of `X² + B X + C` is `D`. -/
 theorem cmTauLinearCoeff_sq_sub_four_mul_cmTauConstCoeff {D : ℤ} (hD : D % 4 = 0 ∨ D % 4 = 1) :
@@ -115,7 +115,7 @@ variable {R : Type*} [CommRing R]
 
 /-- **The multiplication matrix** `[[t - B s, -C s], [s, t]]`: the matrix of multiplication by
 `t + s τ` on the basis `(τ, 1)`, for `τ` a root of `X² + B X + C`. -/
-def cmMulMatrix (B C s t : R) : Matrix (Fin 2) (Fin 2) R :=
+@[expose] def cmMulMatrix (B C s t : R) : Matrix (Fin 2) (Fin 2) R :=
   !![t - B * s, -C * s; s, t]
 
 /-- **The column `(τ, 1)` is an eigenvector** of the multiplication matrix of `t + s τ`, with

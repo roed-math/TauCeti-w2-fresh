@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-tau","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: the CM point τ_D and its multiplication matrices"},{"n":2,"after":[1],"title":"feat: units of the quadratic order as CM multiplication matrices"},{"n":3,"after":[1],"title":"feat: the reciprocity action of the CM multiplication matrices on level-N values"},{"n":4,"after":[1,2,3],"title":"feat: the CM reciprocity kernel is the image of the units, with ray degrees and conjugate norms"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"cm-tau","main":"3a0189695d62134a412200ef4237d0bbb2e95d75","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: the CM point τ_D and its multiplication matrices"},{"n":2,"after":[1],"title":"feat: the units of the quadratic order as CM multiplication matrices of level N"},{"n":3,"after":[1],"title":"feat: the reciprocity action of the CM multiplication matrices on level-N values"},{"n":4,"after":[1,2,3],"title":"feat: the CM reciprocity kernel is the image of the units, with ray degrees and conjugate norms"}]}-->
 
 # Lookahead: `cm-tau` (ImaginaryQuadraticClassNumber, H3.1)
 
-Built on `main` at `385ec2ddd8ddf8cc779b78c176308cb9c6b55499`. Status: **partial**.
+Built on `main` at `3a0189695d62134a412200ef4237d0bbb2e95d75`. Status: **partial**.
 
 ## Stubbed declarations (supplier `modular-function-field`)
 
@@ -34,7 +34,7 @@ statement is to be taken from the supplier's landed form (or a later Suggested.l
 
 ## What is proved (no `sorry`)
 
-`TauCeti/NumberTheory/ClassNumberOne/CMPoint.lean` (237 lines), namespace `TauCeti`:
+`TauCeti/NumberTheory/ClassNumberOne/CMPoint.lean` (237 lines, split 1), namespace `TauCeti`:
 
 * `cmTau D hD : ℍ`, exactly the target's pinned `Suggested.lean` form
   (`i √|D| / 2` if `D % 4 = 0`, else `(3 + i √|D|) / 2`), with `cmTauCoe`, `coe_cmTau`,
@@ -46,36 +46,62 @@ statement is to be taken from the supplier's landed form (or a later Suggested.l
   `det_cmMulMatrix` (determinant = norm form), `cmMulMatrix_mul` (multiplicativity),
   `cmMulMatrix_zero_one`, `cmMulMatrix_neg`, `map_cmMulMatrix` (reduction mod `N`),
   `four_mul_cmNormForm`.
-* Units / exceptional kernels on the norm-form side: `cmNormForm_eq_one_iff_of_lt_neg_four`
+* Units on the norm-form side: `cmNormForm_eq_one_iff_of_lt_neg_four`
   (only `(0, ±1)` once `D < -4`), `cmNormForm_eq_one_iff_neg_four` (four units),
   `cmNormForm_eq_one_iff_neg_three` (six units).
+* This session: `cmTauLinearCoeff`, `cmTauConstCoeff`, `cmMulMatrix` are now `@[expose]` so
+  that split 2 can compute with them under the module system.
+
+`TauCeti/NumberTheory/ClassNumberOne/CMUnits.lean` (≈270 lines, split 2, new this session),
+namespace `TauCeti`, no supplier needed:
+
+* `cmTauShift D = (B + D)/2` with `two_mul_cmTauShift`: the generator `(D + √D)/2` of
+  `QuadraticOrder.toSubalgebra D hD` is `τ_D + (B + D)/2`.
+* `cmMulMatrix_shift_mul_self`: the multiplication matrix of that generator satisfies the
+  defining relation `ω² = (D - D²)/4 + D ω` of the integral model.
+* `cmMulMatrixHom D hD : toSubalgebra D hD →ₐ[ℤ] Matrix (Fin 2) (Fin 2) ℤ` (the regular
+  representation on `(τ_D, 1)`, via `QuadraticAlgebra.lift`), with
+  `cmMulMatrixHom_equivToSubalgebra` (`m + n ω ↦ cmMulMatrix B C n (m + n (B + D)/2)`),
+  `cmMulMatrixHom_injective`, `det_cmMulMatrixHom_unit` (determinant `1` on units, `D < 0`).
+* `cmUnitsToGL D hD N : (toSubalgebra D hD)ˣ →* GL (Fin 2) (ZMod N)` (units as level-`N`
+  multiplication matrices), `coe_cmUnitsToGL`.
+* `eq_zero_one_of_cmNormForm_eq_one` (a norm-one `(s, t) ≡ (0, 1) mod N`, `N ≥ 3`,
+  `B² - 4C ≤ -3`, is `(0, 1)`), hence `cmUnitsToGL_injective` (`D < 0`, `N ≥ 3`) and
+  **`card_range_cmUnitsToGL`**: the image of the units has order `6` at `D = -3`, `4` at
+  `D = -4`, `2` otherwise — the exceptional kernels, not a quotient by `{±1}`;
+  `cmUnitsToGL_two_neg_one` (at level `2`, `-1` is already trivial).
+* The **actual** units of `O_K`: `ringOfIntegersEquivToSubalgebra` (`𝓞 ℚ(√D) ≃ₐ[ℤ]` the order,
+  for fundamental `D`, from `QuadraticOrder.toSubalgebra_eq_integralClosure_iff`),
+  `cmRingOfIntegersUnitsToGL`, `cmRingOfIntegersUnitsToGL_injective`,
+  `card_range_cmRingOfIntegersUnitsToGL` (image order `= |O_Kˣ|`, which the landed
+  `NumberField.Units.card_units_of_isTotallyComplex_of_discr` evaluates as `6, 4, 2`).
 
 ## What remains
 
-1. Identify the pairs `(s, t)` with `t + s τ_D` a unit with the **actual** units of the order:
-   transport through `TauCeti.QuadraticOrder.toSubalgebra D hD` (whose generator is
-   `(D + √D)/2 = τ_D + (D + B)/2`) and its unit counts in
-   `TauCeti/NumberTheory/QuadraticOrder/NormOne.lean`, then to `𝓞 K` for a field of
-   discriminant `D` (the landed `card-units-of-is-totally-complex-of-discr`), giving the
-   unit-image subgroup of `GL(2, ℤ/Nℤ)` and the exceptional kernels at `D = -3, -4`.
-2. The reciprocity action: for `f ∈ F_N` finite at `τ_D`, the value `f(τ_D)` is sent by the Artin
-   symbol of `t + s τ_D` to `(f ∘ M(s, t)⁻¹)(τ_D)` via `modularFunctionActionGL`
-   (Shimura reciprocity). This needs the ray/ring class field and Artin-map interfaces of
-   ClassFieldTheory (Layer 13 `rayClassField`), which are **not** among this list item's listed
-   suppliers; the next session should confirm whether they are on `main` before attempting it.
-3. Kernel = image of the actual units of `O_K`; the conductor/ray-degree formula
-   `[K_(N) : H_K] = |(O_K/N)ˣ| / |image of O_Kˣ|`; and the norm-as-product-of-conjugates
-   comparison for `N = 2, 3, 6, 8`.
+1. (Split 3) The reciprocity action: for `f ∈ F_N` finite at `τ_D`, the Artin symbol of
+   `t + s τ_D` sends `f(τ_D)` to `(f ∘ M(s, t)⁻¹)(τ_D)` through the supplier's
+   `modularFunctionActionGL` (Shimura reciprocity), with the ClassFieldTheory arithmetic-Frobenius
+   convention and the inverse it forces. This needs Layer 13 `rayClassField` / Artin-map
+   interfaces of ClassFieldTheory and the CM main theorem over `H_K`; the next session must first
+   check what of these is on `main` (they are not listed suppliers of this item). It also needs
+   the `diag(1, d)`-on-Fourier-coefficients clause of the supplier, not yet stubbed.
+2. (Split 4) Kernel of that action = `(cmRingOfIntegersUnitsToGL D hD hfund N).range` (split 2
+   supplies this subgroup and its order); the conductor/ray-degree formula
+   `[K_(N) : H_K] = |(O_K/N)ˣ| / |image of O_Kˣ|` (the residue-unit counts are on `main` in
+   `TauCeti/NumberTheory/NumberField/Quadratic/ResidueUnits.lean`); the
+   norm-as-product-of-conjugates comparison for `N = 2, 3, 6, 8`.
+3. Not done in split 2 (optional polish): the comparison of `cmMulMatrixHom` with Mathlib's
+   `Algebra.leftMulMatrix` on the basis `(τ_D, 1)` (it is the transpose), and the evaluation of
+   an order element at the complex embedding `√D ↦ i √|D|` as `t + s τ_D`.
 
 ## Split plan
 
 1. **feat: the CM point τ_D and its multiplication matrices** — after: none.
    File `TauCeti/NumberTheory/ClassNumberOne/CMPoint.lean` (done on this branch); all
    declarations listed above.
-2. **feat: units of the quadratic order as CM multiplication matrices** — after: 1.
-   File `TauCeti/NumberTheory/ClassNumberOne/CMUnits.lean`: the bijection between the units of
-   `QuadraticOrder.toSubalgebra D hD` (and of `𝓞 K`) and the norm-one pairs, the unit-image
-   subgroup of `GL(2, ℤ/Nℤ)`, and its order `2`, `4`, `6`.
+2. **feat: the units of the quadratic order as CM multiplication matrices of level N** —
+   after: 1. File `TauCeti/NumberTheory/ClassNumberOne/CMUnits.lean` (done on this branch); all
+   its declarations listed above. Does not import the stubs.
 3. **feat: the reciprocity action of the CM multiplication matrices on level-N values** —
    after: 1. File `TauCeti/NumberTheory/ClassNumberOne/CMReciprocity.lean`, importing the
    supplier's `GL(2, ℤ/Nℤ)` action (stubbed here) and the ray class field interface.
