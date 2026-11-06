@@ -49,6 +49,9 @@ can only increase it. At a single place the two bounds read
 * `NumberField.InfinitePlace.max_apply_one_pow_mult_le_mulHeight₁` and
   `NumberField.InfinitePlace.inv_mulHeight₁_le_min_one_apply_pow_mult`: the bounds at a single
   infinite place, keeping the weight `mult v`.
+* `NumberField.InfinitePlace.exp_neg_le_apply_prod_zpow_sub_one` and
+  `NumberField.exp_neg_le_norm_prod_zpow_sub_one`: Liouville's inequality for `∏ j, α j ^ s j - 1`
+  at an infinite place and under a complex embedding.
 
 The logarithmic form of the single-place bounds, for the normalized absolute value at a place, is
 `TauCeti.GlobalNumberFields.abs_log_normalizedAbsValue_le_logHeight₁`.
@@ -183,6 +186,40 @@ theorem InfinitePlace.inv_mulHeight₁_le_min_one_apply (v : InfinitePlace K) {x
 theorem FinitePlace.inv_mulHeight₁_le_min_one_apply (v : FinitePlace K) {x : K} (hx : x ≠ 0) :
     (mulHeight₁ x)⁻¹ ≤ min 1 (v x) := by
   simpa using inv_mulHeight₁_le_prod_min_one_apply ∅ {v} hx
+
+/-! ### Liouville's inequality for a product of powers -/
+
+/-- **Liouville's inequality** for a product of powers: if `∏ j, α j ^ s j ≠ 1`, then at every
+infinite place `v`, `|∏ j, α j ^ s j - 1|_v ≥ exp (-([K : ℚ] log 2 + ∑ j, |s j| h(α j)))`, where
+`h` is the logarithmic height `logHeight₁`. This is the lower bound that rules out a short
+rational relation among the logarithms `log α j` when it does not make the product equal to
+`1`. -/
+theorem InfinitePlace.exp_neg_le_apply_prod_zpow_sub_one (v : InfinitePlace K) {ι : Type*}
+    [Fintype ι] (α : ι → K) (s : ι → ℤ) (h : ∏ j, α j ^ s j ≠ 1) :
+    Real.exp (-(Module.finrank ℚ K * Real.log 2 + ∑ j, |(s j : ℝ)| * logHeight₁ (α j))) ≤
+      v (∏ j, α j ^ s j - 1) := by
+  have hx : ∏ j, α j ^ s j - 1 ≠ 0 := sub_ne_zero.mpr h
+  have hheight : logHeight₁ (∏ j, α j ^ s j - 1) ≤
+      Module.finrank ℚ K * Real.log 2 + ∑ j, |(s j : ℝ)| * logHeight₁ (α j) := by
+    refine (logHeight₁_sub_le _ _).trans ?_
+    rw [logHeight₁_one, add_zero, totalWeight_eq_finrank]
+    gcongr
+    refine (logHeight₁_prod_le _ _).trans_eq (Finset.sum_congr rfl fun j _ ↦ ?_)
+    rw [logHeight₁_zpow, Nat.cast_natAbs, Int.cast_abs]
+  calc Real.exp (-(Module.finrank ℚ K * Real.log 2 + ∑ j, |(s j : ℝ)| * logHeight₁ (α j)))
+      ≤ Real.exp (-logHeight₁ (∏ j, α j ^ s j - 1)) := Real.exp_le_exp.mpr (neg_le_neg hheight)
+    _ = (mulHeight₁ (∏ j, α j ^ s j - 1))⁻¹ := by
+        rw [Real.exp_neg, logHeight₁_eq_log_mulHeight₁, Real.exp_log (mulHeight₁_pos _)]
+    _ ≤ v (∏ j, α j ^ s j - 1) := (v.inv_mulHeight₁_le_min_one_apply hx).trans (min_le_right _ _)
+
+/-- **Liouville's inequality** for a product of powers under a complex embedding `φ` of `K`: if
+`∏ j, α j ^ s j ≠ 1`, then
+`‖∏ j, φ (α j) ^ s j - 1‖ ≥ exp (-([K : ℚ] log 2 + ∑ j, |s j| h(α j)))`. -/
+theorem exp_neg_le_norm_prod_zpow_sub_one (φ : K →+* ℂ) {ι : Type*} [Fintype ι] (α : ι → K)
+    (s : ι → ℤ) (h : ∏ j, α j ^ s j ≠ 1) :
+    Real.exp (-(Module.finrank ℚ K * Real.log 2 + ∑ j, |(s j : ℝ)| * logHeight₁ (α j))) ≤
+      ‖∏ j, φ (α j) ^ s j - 1‖ := by
+  simpa [InfinitePlace.apply] using (InfinitePlace.mk φ).exp_neg_le_apply_prod_zpow_sub_one α s h
 
 /-! ### Examples -/
 

@@ -83,6 +83,8 @@ rows and columns of the interpolation matrix, hence its rank, unchanged.
   vector, then `V · y + K e₀` has the same dimension as `V`.
 * `TauCeti.add_sum_mul_eq_neg_mul_waldschmidtLinearForm`: a linear form with nonzero last
   coefficient `cₘ` is `-cₘ` times the normalized linear form.
+* `TauCeti.min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm`: for a short rational
+  coefficient relation, a lower bound `δ ≤ |α^s - 1|` gives `min 1 (δ / 2) ≤ |s_m Λ|`.
 * `TauCeti.iteratedDeriv_waldschmidtFunction`: the entry identity
   `∂^σ/∂z₀^σ (F(z) exp(t ⟨λ, z⟩))|_{z = s · y} = γ exp(t sₘ Λ)`.
 * `TauCeti.waldschmidtOperatorEntry_eq_sum_hasseDeriv`: the Leibniz formula
@@ -415,6 +417,23 @@ theorem exp_neg_intCast_mul_waldschmidtLinearForm (l b : Fin (n + 1) → ℂ)
     cexp (-((s (Fin.last n) : ℂ) * waldschmidtLinearForm l b)) = ∏ j, cexp (l j) ^ s j := by
   rw [intCast_mul_waldschmidtLinearForm_eq_neg_sum l b hlast hb₀ hb, neg_neg, Complex.exp_sum]
   exact prod_congr rfl fun j _ ↦ Complex.exp_int_mul (l j) (s j)
+
+/-- A lower bound `δ ≤ |α^s - 1|` (for instance Liouville's inequality,
+`NumberField.exp_neg_le_norm_prod_zpow_sub_one`) bounds the linear form of a short rational
+coefficient relation from below: `min 1 (δ / 2) ≤ |s_m Λ|`. This is because
+`exp(-s_m Λ) = α^s` (`TauCeti.exp_neg_intCast_mul_waldschmidtLinearForm`) and
+`|exp z - 1| ≤ 2 |z|` for `|z| ≤ 1`. -/
+theorem min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm (l b : Fin (n + 1) → ℂ)
+    {s : Fin (n + 1) → ℤ} (hlast : s (Fin.last n) ≠ 0) (hb₀ : b 0 = 0)
+    (hb : ∀ k : Fin n, b k.succ = -(s k.castSucc : ℂ) / s (Fin.last n)) {δ : ℝ}
+    (hδ : δ ≤ ‖∏ j, cexp (l j) ^ s j - 1‖) :
+    min 1 (δ / 2) ≤ ‖(s (Fin.last n) : ℂ) * waldschmidtLinearForm l b‖ := by
+  rcases le_or_gt ‖(s (Fin.last n) : ℂ) * waldschmidtLinearForm l b‖ 1 with h | h
+  · refine min_le_of_right_le (div_le_of_le_mul₀ zero_le_two (norm_nonneg _) ?_)
+    rw [← exp_neg_intCast_mul_waldschmidtLinearForm l b hlast hb₀ hb] at hδ
+    rw [mul_comm, ← norm_neg ((s (Fin.last n) : ℂ) * _)]
+    exact hδ.trans (Complex.norm_exp_sub_one_le ((norm_neg _).trans_le h))
+  · exact min_le_of_left_le h.le
 
 /-- Waldschmidt's auxiliary function `z ↦ F(z) exp(t (z₀ + λ₁ z₁ + ⋯ + λ_{m-1} z_{m-1}))` on
 `ℂᵐ`, for a polynomial `F` and an integer `t`; here `l = (λ₁, …, λₘ)`, of which `λₘ` does not

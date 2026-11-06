@@ -34,8 +34,18 @@ the fibre count of split 3), and the Liouville bridge
 `TauCeti.ncard_setOf_prod_zpow_eq_one_abs_le_le` and
 `TauCeti.ncard_le_mul_ncard_image_of_prod_zpow_eq_one`. Their rank hypothesis is the README's
 "the α_j generate multiplicative rank ≥ m−1", stated as
-`m ≤ finrank ℤ (span ℤ (range fun j ↦ Additive.ofMul (α j))) + 1`. What remains is the
-multiplicity estimate of split 4, which does not fit in one round, and the assembly in split 5.
+`m ≤ finrank ℤ (span ℤ (range fun j ↦ Additive.ofMul (α j))) + 1`. The round resuming at `3b7646fd84e` (14:13 UTC) found `main` still at
+`385ec2ddd8d` and PR #28644 still open at head `583a153b95f`. It closed the Liouville reduction
+of split 5:
+- `NumberField.InfinitePlace.exp_neg_le_apply_prod_zpow_sub_one` and
+  `NumberField.exp_neg_le_norm_prod_zpow_sub_one`, in `main`'s
+  `TauCeti/NumberTheory/Height/FundamentalInequality.lean`. They give Liouville's inequality
+  `|α^s - 1| ≥ exp(-([K:ℚ] log 2 + Σ |s_j| h(α_j)))` for `α^s ≠ 1`;
+- `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` in `Data.lean`, which turns such a
+  lower bound into `min 1 (δ/2) ≤ |s_m Λ|`.
+
+What remains is the multiplicity estimate of split 4, which does not fit in one round, and the
+assembly in split 5.
 
 ## Stubs
 
@@ -174,12 +184,19 @@ In the new file `Interpolation/Residual.lean`:
        lies in that of `s ↦ α^s` (for instance `s ↦ (π_{W'}(s·y), α^s)`, the quotient map of an
        obstruction with trivial torus part). What remains is to put this count into the degree
        inequality that split 4 will produce;
-     - the reduction of a short rational coefficient relation by Liouville. Its first step,
-       reading the rational `β_k` off the relation, is `eq_neg_div_of_intCast_mem_span_snoc`;
-       the second, `exp_neg_intCast_mul_waldschmidtLinearForm`, turns the relation into
-       `exp(-s_m Λ) = α^s`, so that `Λ ≠ 0` when `α^s ≠ 1`. The Liouville inequality for
-       `α^s - 1` itself remains: `main` has no height-based Liouville bound for algebraic
-       numbers in this form, and its exact shape is fixed by the measure's parameters.
+     - the reduction of a short rational coefficient relation by Liouville. Its steps are now
+       all on this branch:
+       - `eq_neg_div_of_intCast_mem_span_snoc` reads the rational `β_k` off the relation;
+       - `exp_neg_intCast_mul_waldschmidtLinearForm` turns the relation into
+         `exp(-s_m Λ) = α^s`, so that `Λ ≠ 0` when `α^s ≠ 1`;
+       - `NumberField.exp_neg_le_norm_prod_zpow_sub_one` is Liouville's inequality for
+         `α^s - 1`;
+       - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` gives
+         `min 1 (δ/2) ≤ |s_m Λ|`.
+
+       Split 5 only has to feed the measure's height bounds `h(α_j) ≤ log A_j`, `|s_j| < T₀/2`
+       into the exponent. For `α^s = 1`, `exp(-s_m Λ) = 1`, so `s_m Λ ∈ 2πiℤ`; that case is
+       left to the assembly.
 
 ## Splits
 
@@ -230,6 +247,12 @@ In the new file `Interpolation/Residual.lean`:
    - `intCast_mul_waldschmidtLinearForm_eq_neg_sum` and
      `exp_neg_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +27): with `β₀ = 0` and
      `β_k = -s_k/s_m`, `s_m Λ = -Σ s_j λ_j` and `exp(-s_m Λ) = ∏ α_j^{s_j}`;
+   - `NumberField.InfinitePlace.exp_neg_le_apply_prod_zpow_sub_one` and
+     `NumberField.exp_neg_le_norm_prod_zpow_sub_one`
+     (`TauCeti/NumberTheory/Height/FundamentalInequality.lean`, +37), Liouville's inequality for
+     `α^s - 1` at an infinite place and under a complex embedding;
+   - `min_one_div_two_le_norm_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +19):
+     `δ ≤ |α^s - 1|` gives `min 1 (δ/2) ≤ |s_m Λ|`;
    - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 173 lines; imports `ImageCard.lean`
      of split 3), the subgroup obstruction's count:
      - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
@@ -301,3 +324,12 @@ In the new file `Interpolation/Residual.lean`:
     exponent vectors with `∏ α_j ^ s_j = 1`; none exists. The new declarations sit in
     `namespace TauCeti` (they are about a family in a group, not about `LinearMap`), and reuse
     Mathlib's `Fintype.range_linearCombination`, `ofMul_prod` and `ofMul_zpow`.
+  - 2026-11-06, about 14:20 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `Height.FundamentalInequality` and `Interpolation.Data`. Before adding
+    the Liouville lemmas, `main` and pinned Mathlib were grepped. They have the single-place
+    bound `InfinitePlace.inv_mulHeight₁_le_min_one_apply` and Mathlib's height arithmetic, which
+    the new lemmas reuse: `logHeight₁_sub_le`, `logHeight₁_prod_le`, `logHeight₁_zpow` and
+    `totalWeight_eq_finrank`. Neither has the inequality for a product of powers. The analytic
+    step reuses `Complex.norm_exp_sub_one_le`. The Liouville lemmas are general, with no
+    roadmap vocabulary, so they sit in `FundamentalInequality.lean` next to the bound they
+    consume. `Data.lean` gains no height import.
