@@ -245,6 +245,15 @@ cokernel over an affine open. The new general file `Modules/Quasicoherent/Cokern
 supplies it, from left exactness of sections and `main`'s surjectivity on affine opens. The old
 splits 25–29 are renumbered 26–30.
 
+The thirtieth round left tip `53ab971ecd48`. The thirty-first round (this one) again found
+`main` unchanged (`385ec2dd`), so the merge was a no-op. Both suppliers' successor PRs (#28759,
+#28995) are still open, and the branch still uses neither, so there are still no stubs. It rebuilt
+the whole branch from a warm build directory (green, warnings as errors, about eleven minutes) and
+reran `lookahead-check` (ok). Only about twenty-five minutes were left after the rebuild, which was
+too short to prove and check a new piece, so it added no declarations. The next piece is still
+split 26 (finite presentation of `H⁰(projModel W, M)` for general `M`) or the choice of `x` and
+`y` in split 28.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
