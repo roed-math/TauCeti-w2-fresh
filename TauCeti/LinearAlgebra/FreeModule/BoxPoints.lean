@@ -49,6 +49,10 @@ most `2R + 1` points, and `#S ≤ (2R + 1) · #g(S)`.
 * `LinearMap.ncard_le_mul_ncard_image_of_ker_le`: a finite `S ⊆ ℤ^m` whose differences lie in
   the box `‖s‖∞ ≤ R` has at most `(2R + 1) · #g(S)` elements, for every homomorphism `g` whose
   kernel lies in the kernel of such a map.
+* `TauCeti.ncard_setOf_prod_zpow_eq_one_abs_le_le` and
+  `TauCeti.ncard_le_mul_ncard_image_of_prod_zpow_eq_one`: the same two counts for
+  `s ↦ α₁ ^ s₁ ⋯ αₘ ^ sₘ`, when `α₁, …, αₘ` generate a subgroup of rank at least `m - 1` of a
+  commutative group.
 -/
 
 public section
@@ -128,3 +132,42 @@ theorem ncard_le_mul_ncard_image_of_ker_le {C : Type*} [AddGroup C] (φ : (Fin m
           (φ.ncard_setOf_apply_eq_zero_abs_le_le hφ R))
 
 end LinearMap
+
+namespace TauCeti
+
+variable {m : ℕ} {G : Type*} [CommGroup G]
+
+/-- In `Additive G`, the linear combination `s₁ α₁ + ⋯ + sₘ αₘ` is the product
+`α₁ ^ s₁ ⋯ αₘ ^ sₘ`. -/
+private theorem fintypeLinearCombination_ofMul_apply (α : Fin m → G) (s : Fin m → ℤ) :
+    Fintype.linearCombination ℤ (fun j ↦ Additive.ofMul (α j)) s =
+      Additive.ofMul (∏ j, α j ^ s j) := by
+  simp [Fintype.linearCombination_apply, ofMul_prod, ofMul_zpow]
+
+/-- If `α₁, …, αₘ` generate a subgroup of rank at least `m - 1` of a commutative group, then at
+most `2R + 1` exponent vectors `s` with all coordinates of absolute value at most `R` satisfy
+`α₁ ^ s₁ ⋯ αₘ ^ sₘ = 1`. -/
+theorem ncard_setOf_prod_zpow_eq_one_abs_le_le (α : Fin m → G)
+    (hα : m ≤ finrank ℤ (Submodule.span ℤ (range fun j ↦ Additive.ofMul (α j))) + 1) (R : ℕ) :
+    {s : Fin m → ℤ | ∏ j, α j ^ s j = 1 ∧ ∀ i, |s i| ≤ R}.ncard ≤ 2 * R + 1 := by
+  have h := LinearMap.ncard_setOf_apply_eq_zero_abs_le_le
+    (Fintype.linearCombination ℤ fun j ↦ Additive.ofMul (α j))
+    (by rwa [Fintype.range_linearCombination]) R
+  simpa only [fintypeLinearCombination_ofMul_apply, ofMul_eq_zero] using h
+
+/-- Let `α₁, …, αₘ` generate a subgroup of rank at least `m - 1` of a commutative group, and let
+`g` be an additive homomorphism out of `ℤ^m` with `α₁ ^ s₁ ⋯ αₘ ^ sₘ = 1` whenever `g s = 0`. A
+finite set `S ⊆ ℤ^m` whose differences all have coordinates of absolute value at most `R` has at
+most `(2R + 1) · #g(S)` elements. This is the subgroup obstruction's count in Waldschmidt's rank
+argument, for `g` the quotient map of an obstruction subgroup. -/
+theorem ncard_le_mul_ncard_image_of_prod_zpow_eq_one {C : Type*} [AddGroup C] (α : Fin m → G)
+    (hα : m ≤ finrank ℤ (Submodule.span ℤ (range fun j ↦ Additive.ofMul (α j))) + 1)
+    (g : (Fin m → ℤ) →+ C) (hg : ∀ s, g s = 0 → ∏ j, α j ^ s j = 1)
+    {S : Set (Fin m → ℤ)} (hS : S.Finite) {R : ℕ}
+    (hR : ∀ s ∈ S, ∀ t ∈ S, ∀ i, |s i - t i| ≤ R) :
+    S.ncard ≤ (g '' S).ncard * (2 * R + 1) :=
+  (Fintype.linearCombination ℤ fun j ↦ Additive.ofMul (α j)).ncard_le_mul_ncard_image_of_ker_le
+    (by rwa [Fintype.range_linearCombination]) g
+    (fun s hs ↦ by rw [fintypeLinearCombination_ofMul_apply, hg s hs, ofMul_one]) hS hR
+
+end TauCeti

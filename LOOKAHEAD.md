@@ -28,8 +28,14 @@ still open at head `583a153b95f`. It added two more inputs of split 5:
 `LinearMap.ncard_le_mul_ncard_image_of_ker_le` in `BoxPoints.lean` (the box count fed through
 the fibre count of split 3), and the Liouville bridge
 `intCast_mul_waldschmidtLinearForm_eq_neg_sum` / `exp_neg_intCast_mul_waldschmidtLinearForm` in
-`Data.lean`. What remains is the multiplicity estimate of split 4, which does not fit in one
-round, and the assembly in split 5.
+`Data.lean`. The round resuming at `1ce6e5ea7a6` (13:56 UTC) found `main` still at
+`385ec2ddd8d` and PR #28644 still open at head `583a153b95f`. It specialised the box counts of
+`BoxPoints.lean` to the exponent map `s ↦ α₁ ^ s₁ ⋯ αₘ ^ sₘ` of a family in a commutative group:
+`TauCeti.ncard_setOf_prod_zpow_eq_one_abs_le_le` and
+`TauCeti.ncard_le_mul_ncard_image_of_prod_zpow_eq_one`. Their rank hypothesis is the README's
+"the α_j generate multiplicative rank ≥ m−1", stated as
+`m ≤ finrank ℤ (span ℤ (range fun j ↦ Additive.ofMul (α j))) + 1`. What remains is the
+multiplicity estimate of split 4, which does not fit in one round, and the assembly in split 5.
 
 ## Stubs
 
@@ -224,7 +230,7 @@ In the new file `Interpolation/Residual.lean`:
    - `intCast_mul_waldschmidtLinearForm_eq_neg_sum` and
      `exp_neg_intCast_mul_waldschmidtLinearForm` (`Data.lean`, +27): with `β₀ = 0` and
      `β_k = -s_k/s_m`, `s_m Λ = -Σ s_j λ_j` and `exp(-s_m Λ) = ∏ α_j^{s_j}`;
-   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 130 lines; imports `ImageCard.lean`
+   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 173 lines; imports `ImageCard.lean`
      of split 3), the subgroup obstruction's count:
      - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
        `≤ 1` has at most `2R + 1` points with `‖s‖∞ ≤ R`;
@@ -234,6 +240,11 @@ In the new file `Interpolation/Residual.lean`:
        points of the box;
      - `LinearMap.ncard_le_mul_ncard_image_of_ker_le`: a finite `S` whose differences lie in
        the box has `#S ≤ #g(S)·(2R + 1)` for every additive `g` with `ker g ≤ ker φ`.
+     - `TauCeti.ncard_setOf_prod_zpow_eq_one_abs_le_le` and
+       `TauCeti.ncard_le_mul_ncard_image_of_prod_zpow_eq_one`: the two counts above for
+       `φ = Fintype.linearCombination ℤ (Additive.ofMul ∘ α)`, i.e. `s ↦ ∏ α_j ^ s_j`, with
+       the multiplicative-rank hypothesis on the `α_j` (+43 lines; one private bridge
+       `fintypeLinearCombination_ofMul_apply`).
 
    The rest is not on this branch. If split 5 grows past 600 lines, `BoxPoints.lean` can be
    opened on its own first, once split 3 (which supplies `ImageCard.lean`) has merged.
@@ -285,3 +296,8 @@ In the new file `Interpolation/Residual.lean`:
     of the normalized linear form; neither exists. The bridge reuses Mathlib's
     `Complex.exp_sum` and `Complex.exp_int_mul`; the count reuses split 3's
     `ncard_image_le_mul_ncard_image_sub_inter_ker` with `f = id` rather than recounting fibres.
+  - 2026-11-06, about 14:00 UTC, same `main`: `lake build` green, `lookahead-check` ok, and
+    `runLinter` passed on `BoxPoints`. `main` and pinned Mathlib were grepped for a count of
+    exponent vectors with `∏ α_j ^ s_j = 1`; none exists. The new declarations sit in
+    `namespace TauCeti` (they are about a family in a group, not about `LinearMap`), and reuse
+    Mathlib's `Fintype.range_linearCombination`, `ofMul_prod` and `ofMul_zpow`.
