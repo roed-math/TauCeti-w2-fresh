@@ -108,3 +108,12 @@ What remains:
    form is not yet stated anywhere; stub it once the supplier PR states it.
 2. Optionally, the comparison of `IsOrdinaryNodeOrSmoothAt` over an algebraically closed field
    with the completed-local-ring definition `κ̄[[x,y]]/(xy)`.
+
+## Round of 2026-11-06 (15:00 UTC)
+
+Rechecked with nothing new to add: `main` is still `385ec2ddd8d`, and open PR #28569 still states
+only the nondegenerate Hessian at a node, not the local normal form or étale locality. The
+étale-locality stub is unchanged. The singular half of the converse (item 1 above) is the
+special-fibre case of the supplier's local normal form over a field. No `Suggested.lean` entry or
+supplier PR pins that form yet, so it stays open until the supplier states it. The branch builds
+green and passes `lookahead-check`.
