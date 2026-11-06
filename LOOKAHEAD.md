@@ -47,7 +47,13 @@ with field stalk (`fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq
 and the length of a stalk localized at a generization (`length_localization_stalkSpecializes`,
 via `main`'s `Scheme.isLocalization_stalkSpecializes` and `RingEquiv.length_self_eq`), and the
 minimal-prime/component correspondence for stalks
-(`Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff`).
+(`Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff`). A twelfth round on
+2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`, #29451 still open at
+`ed4b4ac70d`) assembled these into the scheme-level local formula `ord_mul_fiberLength_eq_finsum`
+(the minimal primes of a stalk reindexed by the components through the point via the bijection
+`Scheme.stalkMinimalPrime_bijective`, the weights turned into fibre lengths at the generic points
+by `fiberLength_of_forall_specializes`). It also added `Scheme.ord_stalkMap_of_isClosedImmersion`,
+which identifies `ord_{B ⧸ 𝔮}` with the order of vanishing on an integral closed subscheme.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -185,7 +191,7 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 242 lines), no
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 355 lines), no
 `sorry`:
 
 - `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
@@ -208,6 +214,21 @@ no `sorry`:
   prime of `𝒪_{X,y}` is the prime of a generization `x ⤳ y`, these primes are ordered as the
   generizations are, and the prime of `x` is minimal iff `x` has no proper generization (`x` is
   the generic point of an irreducible component through `y`).
+- `Scheme.stalkMinimalPrime`, `Scheme.stalkMinimalPrime_bijective` (twelfth round): the map from
+  generizations of `y` without proper generization to the minimal primes of `𝒪_{X,y}` is a
+  bijection (injective by `main`'s `specializes_of_comap_stalkSpecializes_maximalIdeal_le` and
+  `T0`, surjective by `exists_comap_stalkSpecializes_maximalIdeal_eq`);
+- `Scheme.ker_stalkMap_eq_comap_maximalIdeal`, `Scheme.ord_stalkMap_of_isClosedImmersion`
+  (twelfth round): for a closed immersion `i : Z ⟶ X` of an integral scheme, the kernel of
+  `𝒪_{X,i z} ↠ 𝒪_{Z,z}` is the prime of `i η_Z` (`𝒪_{Z,z}` embeds into the function field), so
+  `ord_{𝒪_{Z,z}}(i^# a) = ord_{𝒪_{X,i z} ⧸ 𝔮}(a)` (`TauCeti.Ring.ord_ringEquiv`);
+- `apply_eq_genericPoint_of_forall_specializes`, `fiberLength_of_forall_specializes` (twelfth
+  round): a flat `f` to an integral `Y` sends generic points of components of `X` to the generic
+  point of `Y`, where the fibre length is `ℓ(𝒪_{X,x})`;
+- `ord_mul_fiberLength_eq_finsum` (twelfth round): **the scheme-level local form of Stacks Lemma
+  42.20.1**. For `f` flat over an integral `Y`, `X` locally Noetherian, `dim 𝒪_{X,y} ≤ 1` and `a`
+  a non-zero-divisor of `𝒪_{Y,f y}`, `ord(a) · fiberLength f y = ∑ᶠ x, fiberLength f x ·
+  ord_{𝒪_{X,y} ⧸ 𝔮_x}(f^# a)`, the sum over generic points `x` of the components through `y`.
 
 `TauCeti/RingTheory/Length.lean` (`main`'s file, extended by the seventh round for split 4's order
 formula; namespace `TauCeti`), no `sorry`:
@@ -279,9 +300,18 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `ℓ(B_𝔮)` into `ℓ(𝒪_{f⁻¹(W),η'})` at the generic point `η'` of the component, and
    `fiberLength_of_apply_eq_genericPoint` turns that into `fiberLength` of the base change
    `f⁻¹(W) → W`, and `Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff` is the
-   minimal-prime/component bijection at the level of a scheme's stalks. Still missing: the
-   comparison of `fiberLength` of the base change with `fiberLength f` at `η'`,
-   `B ⧸ 𝔮 ≅ 𝒪_{W'_i,x}`, and the assembly.) Then `cyclesFlatPullback_mem_ratEquiv` follows
+   minimal-prime/component bijection at the level of a scheme's stalks. The twelfth round
+   assembled the local formula for `f_W : f⁻¹(W) → W` itself (`ord_mul_fiberLength_eq_finsum`)
+   and proved `B ⧸ 𝔮 ≅ 𝒪_{W'_i,x}` for a component given as an integral closed subscheme
+   (`Scheme.ord_stalkMap_of_isClosedImmersion`). Still missing: (i) stalks of the base change
+   `f_W : X ×_Y W → W` along the closed immersion `W ⟶ Y`: `fiberLength f_W x' = fiberLength f x'`
+   (both are `ℓ(𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x})`; Mathlib has no API for stalks of fibre products,
+   so this needs an affine-local computation via `pullbackSpecIso` and
+   `IsAffineOpen.isLocalization_stalk`, or a direct argument that the kernel of
+   `𝒪_{X,x} ↠ 𝒪_{X_W,x'}` is `I_W 𝒪_{X,x}`); (ii) the components `W'_i` of `X_W` as integral
+   closed subschemes (reduced induced structure on the closure of `η'_i`, of dimension `k + 1` by
+   `height_eq_height_add`) and `dim 𝒪_{X_W,x'} ≤ 1` at points of dimension `k`; (iii) the
+   assembly into a `RatEquivFamily`.) Then `cyclesFlatPullback_mem_ratEquiv` follows
    by summing over a `RatEquivFamily` (members `W'_i`, functions `r|W'_i`, local finiteness as in
    `cycleFlatPullback`). This step needs no supplier: Fulton's proof via the norm formula is
    avoidable with the Stacks route.
@@ -337,8 +367,10 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
 - `length_localization_stalkSpecializes` is about stalks only: at port time move it to
   `TauCeti/AlgebraicGeometry/Scheme/StalkSpecializes.lean` (next to
   `isLocalization_stalkSpecializes`), left in `RatEquiv.lean` to avoid a rebuild. The same holds
-  for the three `TauCeti.AlgebraicGeometry.Scheme` lemmas on primes of stalks in `RatEquiv.lean`
-  (already in that namespace); `main`'s
+  for the `TauCeti.AlgebraicGeometry.Scheme` lemmas on primes of stalks in `RatEquiv.lean`
+  (already in that namespace, including the twelfth round's `stalkMinimalPrime`; the closed-immersion
+  pair `ker_stalkMap_eq_comap_maximalIdeal`, `ord_stalkMap_of_isClosedImmersion` belongs in a
+  stalks-of-closed-immersions file next to Mathlib's `IsClosedImmersion`); `main`'s
   `exists_comap_stalkSpecializes_maximalIdeal_eq_span_singleton` can then be shortened by
   starting from `exists_comap_stalkSpecializes_maximalIdeal_eq`, whose proof repeats its first half.
 - `TauCeti.Ring.ord_algebraMap_of_flat` is general commutative algebra: at port time move it to
@@ -373,13 +405,16 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
    commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
    PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 242
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 355
    lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
    `ord_stalkMap`, `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`,
    `length_localization_stalkSpecializes`, `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
    `Scheme.comap_stalkSpecializes_maximalIdeal_mono`,
    `Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff`,
-   `fiberLength_of_isOpenImmersion`,
+   `Scheme.stalkMinimalPrime`, `Scheme.stalkMinimalPrime_bijective`,
+   `Scheme.ker_stalkMap_eq_comap_maximalIdeal`, `Scheme.ord_stalkMap_of_isClosedImmersion`,
+   `apply_eq_genericPoint_of_forall_specializes`, `fiberLength_of_forall_specializes`,
+   `ord_mul_fiberLength_eq_finsum`, `fiberLength_of_isOpenImmersion`,
    `cycleFlatPullback_of_isOpenImmersion`, and (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.

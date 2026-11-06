@@ -11,6 +11,7 @@ public import TauCeti.AlgebraicGeometry.Chow.OpenRestriction
 public import TauCeti.RingTheory.OrderOfVanishing.MinimalPrimes
 import Mathlib.RingTheory.Flat.TorsionFree
 import TauCeti.Algebra.Module.Equiv.Length
+import TauCeti.RingTheory.OrderOfVanishing
 import TauCeti.AlgebraicGeometry.Scheme.StalkSpecializes
 import Mathlib.RingTheory.LocalRing.Length
 import Mathlib.RingTheory.TensorProduct.Quotient
@@ -35,6 +36,14 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
   the minimal primes of `𝒪_{X,y}` are the primes of the generizations of `y` without proper
   generization (every prime comes from a generization,
   `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`);
+* `TauCeti.AlgebraicGeometry.Scheme.stalkMinimalPrime_bijective`: the minimal primes of
+  `𝒪_{X,y}` correspond to the generic points of the irreducible components through `y`;
+* `TauCeti.AlgebraicGeometry.Scheme.ord_stalkMap_of_isClosedImmersion`: for an integral closed
+  subscheme `Z`, orders of vanishing in `𝒪_{Z,z}` are orders in the quotient of `𝒪_{X,z}` by the
+  prime of the generic point of `Z` (`Scheme.ker_stalkMap_eq_comap_maximalIdeal`);
+* `TauCeti.AlgebraicGeometry.Chow.ord_mul_fiberLength_eq_finsum`: for `f` flat over an integral
+  scheme, `ord(a) · fiberLength f y` is the sum over the components through `y`, with generic
+  points `x`, of `fiberLength f x` times the order of `a` along the component;
 * `TauCeti.AlgebraicGeometry.Chow.ord_stalkMap`: for `f : X ⟶ Y` flat and `x : X`, pulling a
   germ `a` at `f x` back to `x` multiplies its order of vanishing by `fiberLength f x`;
 * `TauCeti.AlgebraicGeometry.Chow.fiberLength_of_apply_eq_genericPoint`: over the generic point
@@ -156,6 +165,68 @@ theorem comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff (h : x ⤳ y) 
     exact comap_stalkSpecializes_maximalIdeal_mono h hx'
       (H x' (specializes_of_comap_stalkSpecializes_maximalIdeal_le hx' h hle))
 
+/-- **Stalks of an integral closed subscheme.** For a closed immersion `i : Z ⟶ X` of an
+integral scheme and `z : Z`, the kernel of `𝒪_{X,i z} ↠ 𝒪_{Z,z}` is the prime of `𝒪_{X,i z}`
+attached to the image of the generic point of `Z`: `𝒪_{Z,z}` embeds into the function field
+`𝒪_{Z,η}`, and the kernel of `𝒪_{X,i η} ↠ 𝒪_{Z,η}` is the maximal ideal. -/
+theorem ker_stalkMap_eq_comap_maximalIdeal {Z : Scheme.{u}} [IsIntegral Z] (i : Z ⟶ X)
+    [IsClosedImmersion i] (z : Z) :
+    RingHom.ker (i.stalkMap z).hom =
+      (maximalIdeal (X.presheaf.stalk (i (genericPoint Z)))).comap
+        (X.presheaf.stalkSpecializes
+          (i.base.hom.map_specializes ((genericPoint_spec Z).specializes trivial))).hom := by
+  set hη : genericPoint Z ⤳ z := (genericPoint_spec Z).specializes trivial
+  have hinj : Function.Injective (Z.presheaf.stalkSpecializes hη).hom :=
+    IsFractionRing.injective (Z.presheaf.stalk z) Z.functionField
+  have hmax : RingHom.ker (i.stalkMap (genericPoint Z)).hom =
+      maximalIdeal (X.presheaf.stalk (i (genericPoint Z))) :=
+    have := RingHom.ker_isMaximal_of_surjective _ (i.stalkMap_surjective (genericPoint Z))
+    IsLocalRing.eq_maximalIdeal this
+  ext a
+  rw [← hmax, Ideal.mem_comap, RingHom.mem_ker, RingHom.mem_ker,
+    i.stalkSpecializes_stalkMap_apply _ _ hη, map_eq_zero_iff _ hinj]
+
+/-- For a closed immersion `i : Z ⟶ X` of an integral scheme, the order of vanishing of a germ
+`a` at `i z` pulled back to `𝒪_{Z,z}` is its order in the quotient of `𝒪_{X,i z}` by the prime
+of the generic point of `Z` (`ker_stalkMap_eq_comap_maximalIdeal`). This identifies the factor
+`ord_{B ⧸ 𝔮}(a)` of `Ring.ord_mul_length_eq_finsum_minimalPrimes` with an order of vanishing on a
+component. -/
+theorem ord_stalkMap_of_isClosedImmersion {Z : Scheme.{u}} [IsIntegral Z] (i : Z ⟶ X)
+    [IsClosedImmersion i] (z : Z) (a : X.presheaf.stalk (i z)) :
+    _root_.Ring.ord (Z.presheaf.stalk z) (i.stalkMap z a) =
+      _root_.Ring.ord (X.presheaf.stalk (i z) ⧸ (maximalIdeal
+          (X.presheaf.stalk (i (genericPoint Z)))).comap (X.presheaf.stalkSpecializes
+            (i.base.hom.map_specializes ((genericPoint_spec Z).specializes trivial))).hom)
+        (Ideal.Quotient.mk _ a) := by
+  let σ := (Ideal.quotEquivOfEq (ker_stalkMap_eq_comap_maximalIdeal i z).symm).trans
+    (RingHom.quotientKerEquivOfSurjective (i.stalkMap_surjective z))
+  have hσ : σ (Ideal.Quotient.mk _ a) = i.stalkMap z a := by
+    simp only [σ, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
+      RingHom.quotientKerEquivOfSurjective_apply_mk]
+  rw [← hσ, Ring.ord_ringEquiv]
+
+/-- The minimal prime of `𝒪_{X,y}` attached to a generization `x` of `y` without proper
+generization (the generic point of an irreducible component through `y`). -/
+noncomputable def stalkMinimalPrime (y : X) (x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}) :
+    {𝔮 : PrimeSpectrum (X.presheaf.stalk y) // 𝔮.asIdeal ∈ minimalPrimes (X.presheaf.stalk y)} :=
+  ⟨⟨(maximalIdeal (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes x.2.1).hom,
+    inferInstance⟩, (comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff x.2.1).2 x.2.2⟩
+
+/-- **Minimal primes of a stalk are the components through the point.** The minimal primes of
+`𝒪_{X,y}` correspond bijectively to the generic points of the irreducible components of `X`
+through `y`. -/
+theorem stalkMinimalPrime_bijective (y : X) : Function.Bijective (stalkMinimalPrime y) := by
+  refine ⟨fun x x' h ↦ ?_, fun 𝔮 ↦ ?_⟩
+  · have h : (stalkMinimalPrime y x).1.asIdeal = (stalkMinimalPrime y x').1.asIdeal := by rw [h]
+    exact Subtype.ext ((specializes_of_comap_stalkSpecializes_maximalIdeal_le x.2.1 x'.2.1
+      h.le).antisymm (specializes_of_comap_stalkSpecializes_maximalIdeal_le x'.2.1 x.2.1
+        h.ge)).eq
+  · obtain ⟨x, hx, h⟩ := exists_comap_stalkSpecializes_maximalIdeal_eq 𝔮.1.asIdeal
+    have hmin := 𝔮.2
+    rw [← h] at hmin
+    exact ⟨⟨x, hx, (comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff hx).1 hmin⟩,
+      Subtype.ext (PrimeSpectrum.ext h)⟩
+
 end AlgebraicGeometry.Scheme
 
 namespace AlgebraicGeometry.Chow
@@ -195,6 +266,24 @@ theorem fiberLength_of_apply_eq_genericPoint [IsIntegral Y] {x : X} (hx : f x = 
     exact IsLocalRing.maximalIdeal_eq_bot (R := Y.functionField)
   exact this _ hx
 
+/-- A flat morphism to an integral scheme sends every point without proper generization (the
+generic point of an irreducible component) to the generic point: flat morphisms are generizing
+(`Flat.generalizingMap`). -/
+theorem apply_eq_genericPoint_of_forall_specializes [Flat f] [IsIntegral Y] {x : X}
+    (hx : ∀ x' : X, x' ⤳ x → x ⤳ x') : f x = genericPoint Y := by
+  obtain ⟨x', hx', hx'Y⟩ :=
+    Flat.generalizingMap f ((genericPoint_spec Y).specializes (Set.mem_univ (f x)))
+  exact ((((hx x' hx').map f.continuous).trans (specializes_of_eq hx'Y)).antisymm
+    ((genericPoint_spec Y).specializes trivial)).eq
+
+/-- For `f` flat over an integral scheme, at the generic point `x` of an irreducible component of
+`X` the fibre length is the length of `𝒪_{X,x}`: this is the multiplicity of the component in
+`f^*[Y]`. -/
+theorem fiberLength_of_forall_specializes [Flat f] [IsIntegral Y] {x : X}
+    (hx : ∀ x' : X, x' ⤳ x → x ⤳ x') :
+    fiberLength f x = Module.length (X.presheaf.stalk x) (X.presheaf.stalk x) :=
+  fiberLength_of_apply_eq_genericPoint f (apply_eq_genericPoint_of_forall_specializes f hx)
+
 /-- **Lengths of stalks at generizations.** For a specialization `x ⤳ y`, the length of the
 localization of `𝒪_{X,y}` at the prime of `x` is the length of `𝒪_{X,x}`
 (`Scheme.isLocalization_stalkSpecializes`). For a minimal prime `𝔮` of `𝒪_{X,y}` this computes the
@@ -212,6 +301,30 @@ theorem length_localization_stalkSpecializes {x y : X} (h : x ⤳ y) :
   exact (IsLocalization.algEquiv (Ideal.primeCompl ((IsLocalRing.maximalIdeal
     (X.presheaf.stalk x)).comap (X.presheaf.stalkSpecializes h).hom)) _
       (X.presheaf.stalk x)).toRingEquiv.length_self_eq
+
+open scoped nonZeroDivisors in
+/-- **Flat pullback of an order of vanishing, over the components** (the local form of Stacks,
+Lemma 42.20.1). Let `f : X ⟶ Y` be flat over an integral scheme, `X` locally Noetherian, and
+`y : X` with `𝒪_{X,y}` of dimension at most one. For a non-zero-divisor `a` of `𝒪_{Y,f y}`,
+`ord(a) · fiberLength f y` is the sum, over the generic points `x` of the irreducible components of
+`X` through `y`, of `fiberLength f x` times the order of `a` in the quotient of `𝒪_{X,y}` by the
+prime of `x`. -/
+theorem ord_mul_fiberLength_eq_finsum [Flat f] [IsIntegral Y] [IsLocallyNoetherian X] {y : X}
+    [_root_.Ring.KrullDimLE 1 (X.presheaf.stalk y)] {a : Y.presheaf.stalk (f y)}
+    (ha : a ∈ (Y.presheaf.stalk (f y))⁰) :
+    _root_.Ring.ord (Y.presheaf.stalk (f y)) a * fiberLength f y =
+      ∑ᶠ x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}, fiberLength f x *
+        _root_.Ring.ord (X.presheaf.stalk y ⧸ (IsLocalRing.maximalIdeal
+          (X.presheaf.stalk x.1)).comap (X.presheaf.stalkSpecializes x.2.1).hom)
+          (Ideal.Quotient.mk _ (f.stalkMap y a)) := by
+  let := (f.stalkMap y).hom.toAlgebra
+  have : Module.Flat (Y.presheaf.stalk (f y)) (X.presheaf.stalk y) := Flat.stalkMap f y
+  have : IsLocalHom (algebraMap (Y.presheaf.stalk (f y)) (X.presheaf.stalk y)) :=
+    inferInstanceAs (IsLocalHom (f.stalkMap y).hom)
+  refine (Ring.ord_mul_length_eq_finsum_minimalPrimes ha).trans
+    (finsum_eq_of_bijective _ (Scheme.stalkMinimalPrime_bijective y) fun x ↦ ?_).symm
+  rw [fiberLength_of_forall_specializes f x.2.2, ← length_localization_stalkSpecializes x.2.1]
+  rfl
 
 /-- The fibre length of an open immersion is `1`: its stalk maps are isomorphisms, so the
 fibre's local ring at `x` is the residue field `κ(x)`. -/
