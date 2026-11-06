@@ -9,7 +9,10 @@ cycle-level flat pullback `cycleFlatPullback` with generic-length multiplicities
 local finiteness; its dimension shift and functoriality remain. A second round the same day (main
 still `afa08a3ed16`) added the fibre half of the dimension shift (`height_preimage_singleton_eq`)
 and the residue-field isomorphism for fibre inclusions. Supplier PRs #29425 (head `d327f903b0`)
-and #29451 were still open.
+and #29451 were still open. A third round the same day (main still `afa08a3ed16`, both supplier
+PRs still open) completed the dimension shift (`height_eq_height_add`) and defined
+`cyclesFlatPullback : Z_k(Y) →+ Z_{k+n}(X)`; it also dropped the branch's duplicate of `main`'s
+`Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -89,7 +92,7 @@ no `sorry`:
   immersion `i` onto the complement of `U`; with `ChowGroup.restrict_surjective` this is the
   localisation sequence `CH_k(Z) → CH_k(X) → CH_k(U) → 0` (Fulton Proposition 1.8).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (split 3, in progress, 264 lines), no `sorry`:
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (split 3, in progress, 426 lines), no `sorry`:
 
 - `TauCeti.GeneralizingMap.maximal_mem_preimage_closure_singleton_iff` (topological) and
   `Chow.maximal_mem_preimage_closure_singleton_iff` (for `[Flat f]`, via Mathlib's
@@ -103,9 +106,25 @@ no `sorry`:
 - `height_preimage_singleton_eq`: for `[PureRelativeDimension n f]`, a generic point `x` of its
   fibre has height `n` in the fibre `f ⁻¹' {f x}` (its closure there is an irreducible component,
   by `TauCeti.mem_genericPoints_iff` and `height_eq_topologicalKrullDim_closure_singleton`);
-- `TauCeti.AlgebraicGeometry.isIso_residueFieldMap_of_surjectiveOnStalks` (instance): a morphism
-  surjective on stalks, e.g. `f.fiberι y`, induces isomorphisms of residue fields (not yet used:
-  it is the first step of the transcendence-degree comparison below);
+- `asFiber_mem_genericPoints`, `height_asFiber_eq`: such an `x` is a generic point of the
+  scheme-theoretic fibre `f.fiber (f x)` (Mathlib's `Scheme.Hom.asFiber`), of height `n` there
+  (`PureRelativeDimension.isPureDimensional_fiber`);
+- `height_asFiber_eq_toNat_trdeg`: for `[LocallyOfFiniteType f]`, that height is
+  `trdeg_{κ(f x)} κ_{X_{f x}}(x)` (`topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField`
+  over the field `κ(f x)`, with `f.fiberOverSpecResidueField`);
+- `algebraMap_residueField_fiber`: the `κ(f x)`-algebra map to `κ_{X_{f x}}(x)` is
+  `f.residueFieldMap x ≫ (residueFieldCongr _).inv ≫ (f.fiberι _).residueFieldMap _` (compared
+  after `Spec` against the monomorphism `Y.fromSpecResidueField (f x)` via
+  `Scheme.eq_of_SpecMap_comp_fromSpecResidueField` and the fibre square `Scheme.Hom.fiber_fac`);
+- `trdeg_residueField_lt_aleph0`: residue fields of a scheme locally of finite type over `K` have
+  finite transcendence degree (Mathlib's `FinTrdeg` of an `EssFiniteType` residue field, through
+  an affine chart and `residueFieldAlgEquivOfIsOpenImmersion`);
+- `isScalarTower_residueField`: for `f` over `Spec K`, `K → κ(f x) → κ(x)` is a scalar tower;
+- `height_eq_height_add`: **the dimension shift**. For `X`, `Y` locally of finite type over a field
+  `K`, `f` over `Spec K` of pure relative dimension `n`, and `x` a generic point of its fibre,
+  `height x = height (f x) + n` (`trdeg_add_eq` for the tower, `κ(x) ≅ κ_{X_{f x}}(x)` as
+  `κ(f x)`-algebras by `algebraMap_residueField_fiber` and `main`'s
+  `Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`);
 - `fiberLength f x := Module.length 𝒪_{X,x} (𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x})` and
   `fiberLength_ne_top`: finite at generic points of fibres of a locally Noetherian `X` (primes over
   `𝔪_{f x}𝒪_{X,x}` are generalizations of `x` in the fibre, via `range_fromSpecStalk`; so the ring
@@ -114,34 +133,22 @@ no `sorry`:
   `(fiberLength f x).toNat * α (f x)` at generic points `x` of fibres, `0` elsewhere (the `toNat`
   never truncates there, by `fiberLength_ne_top`); local finiteness via a Noetherian affine
   neighbourhood `V`, the finiteness of `f '' V ∩ supp α`, and `finite_maximal_mem_inter`;
-  `cycleFlatPullback_apply`, `cycleFlatPullback_zero`, `cycleFlatPullback_add`.
+  `cycleFlatPullback_apply`, `cycleFlatPullback_zero`, `cycleFlatPullback_add`;
+- `cyclesFlatPullback f K k : cyclesOfDimension Y k →+ cyclesOfDimension X (k + n)` for `f` flat of
+  pure relative dimension `n` between schemes locally of finite type over `K` (with
+  `[IsLocallyNoetherian X]` stated, as in `Localization.lean`), and `cyclesFlatPullback_apply`.
 
 ## What remains
 
-1. (Split 3, rest) For `X`, `Y` locally of finite type over a field `K` and `f` flat with
-   `PureRelativeDimension n f` (Tau Ceti's carrier in
-   `TauCeti/AlgebraicGeometry/Morphisms/PureRelativeDimension.lean`):
-   - the dimension shift: a generic point `x` of its fibre has dimension `dim (f x) + n`,
-     giving `cyclesFlatPullback : cyclesOfDimension Y k →+ cyclesOfDimension X (k + n)`. The fibre
-     half is done (`height_preimage_singleton_eq`: height `n` inside `f ⁻¹' {f x}`). Planned
-     route for the rest, by transcendence degrees (Stacks 02JS / 0A21):
-     (a) `height x = trdeg_K κ(x)` and `height (f x) = trdeg_K κ(f x)` from
-     `topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField` and
-     `height_eq_topologicalKrullDim_closure_singleton`;
-     (b) the point `p` of the scheme fibre `f.fiber (f x)` over `x` (via `f.fiberHomeo`) has
-     `height p = trdeg_{κ(f x)} κ_F(p)` by the same theorem over the field `κ(f x)` (instance
-     `(f.fiber y).Over (Spec (Y.residueField y))`, `LocallyOfFiniteType` by base change), and
-     `f.fiberHomeo` is an order isomorphism for specialization, so `height p = n`;
-     (c) `κ_F(p) ≅ κ(x)` by `isIso_residueFieldMap_of_surjectiveOnStalks (f.fiberι y)`, as
-     `κ(f x)`-algebras (`Scheme.residueFieldBaseAlgebra_eq_compHom` and the fibre square
-     `Scheme.Hom.fiber_fac`): the plumbing that remains;
-     (d) `Algebra.trdeg_add_eq` for the tower `K → κ(f x) → κ(x)` (scalar tower since `f` is
-     over `Spec K`).
-     The residue fields are fields, so `trdeg` is finite here (finite type), and `toNat` is safe;
-   - `(f ≫ g)^* = f^* g^*` on cycles: the support part is `maximal_mem_preimage_comp_iff`; the
-     multiplicity part is `fiberLength (f ≫ g) x = fiberLength f x * fiberLength g (f x)` at
-     generic points of fibres, for flat `f` (Stacks 02N8, length multiplicativity under the flat
-     local map `𝒪_{Y,y} ⧸ 𝔪_z𝒪_{Y,y} → 𝒪_{X,x} ⧸ 𝔪_z𝒪_{X,x}`, Stacks 00IX / 02M1).
+1. (Split 3, rest) `(f ≫ g)^* = f^* g^*` on cycles (`cyclesFlatPullback_comp`). The support part
+   is `maximal_mem_preimage_comp_iff`; the multiplicity part is
+   `fiberLength (f ≫ g) x = fiberLength f x * fiberLength g (f x)` at generic points of fibres,
+   for flat `f` (Stacks 02N8: length multiplicativity under the flat local map
+   `𝒪_{Y,y} ⧸ 𝔪_z𝒪_{Y,y} → 𝒪_{X,x} ⧸ 𝔪_z𝒪_{X,x}` of Artinian local rings, Stacks 00IX / 02M1;
+   Mathlib's `Module.length` API has no such lemma yet, so prove it by a composition series of
+   the Artinian `𝒪_{Y,y} ⧸ 𝔪_z𝒪_{Y,y}`, each factor `κ(y)` tensoring to `𝒪_{X,x} ⧸ 𝔪_y𝒪_{X,x}`
+   by flatness). The dimension shift for `f ≫ g` needs `PureRelativeDimension (m + n) (f ≫ g)`
+   or can be avoided by stating functoriality on `AlgebraicCycle` (`cycleFlatPullback`) first.
 2. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
    Proposition 1.7 / Stacks 42.20, needs the norm formula from `chow-proper-pushforward`).
 3. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
@@ -163,10 +170,16 @@ no `sorry`:
   `TauCeti.finite_maximal_mem_inter` are general topology: at port time move them to
   `TauCeti/Topology/Sober.lean` (next to `mem_genericPoints_iff`), in split 3's PR or as a tiny
   prerequisite.
-- `isIso_residueFieldMap_of_surjectiveOnStalks` is general: at port time move it next to
-  `Scheme.Hom.stalkMap_surjective` (a new `TauCeti/AlgebraicGeometry/ResidueField.lean`, or the
-  module of split 3's dimension shift), and drop its `SurjectiveOnStalks`/`ResidueField` imports
-  from `FlatPullback.lean`.
+- `trdeg_residueField_lt_aleph0` is general dimension theory: at port time move it to
+  `TauCeti/AlgebraicGeometry/Scheme/LocalDimension.lean` (same variables as
+  `topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField`).
+  `isScalarTower_residueField` belongs next to `Scheme.residueFieldBaseAlgebra` in
+  `TauCeti/AlgebraicGeometry/Scheme/BaseAlgebra.lean`, and `asFiber_mem_genericPoints`,
+  `algebraMap_residueField_fiber` are about Mathlib's `Scheme.Hom.fiber`; they stay in
+  `FlatPullback.lean` on this branch to avoid rebuilding everything downstream of those modules.
+- The branch's former duplicate `TauCeti.AlgebraicGeometry.isIso_residueFieldMap_of_surjectiveOnStalks`
+  was removed in favour of `main`'s `Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`
+  (`TauCeti/AlgebraicGeometry/ResidueField.lean`).
 - `Localization.lean` assumes `[IsLocallyNoetherian X] [IsLocallyNoetherian U]` as instances
   next to `LocallyOfFiniteType (X ↘ Spec (.of K))`, which implies both; the Chow groups need the
   instances to be stated. A reviewer may ask to derive them instead.
@@ -182,8 +195,9 @@ no `sorry`:
    *feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and
    the localisation sequence*.
 3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` (this branch, in progress); adds the
-   declarations listed for it above, then `cyclesFlatPullback` on `k`-cycles, its apply lemmas,
-   `cyclesFlatPullback_comp`. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
+   declarations listed for it above (through `cyclesFlatPullback`, done), then
+   `cyclesFlatPullback_comp`. At 426 lines already, the port may split it in two: dimension shift
+   (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
    flat pullback of cycles with generic-length multiplicities*.
 4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean`; adds
    `cyclesFlatPullback_mem_ratEquiv`. After: 2, 3.

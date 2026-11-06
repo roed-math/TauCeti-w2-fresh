@@ -7,12 +7,16 @@ module
 
 public import Mathlib.AlgebraicGeometry.AlgebraicCycle.Basic
 public import Mathlib.AlgebraicGeometry.Morphisms.UniversallyOpen
-public import Mathlib.AlgebraicGeometry.Morphisms.SurjectiveOnStalks
 public import Mathlib.AlgebraicGeometry.Noetherian
 public import Mathlib.AlgebraicGeometry.ResidueField
 public import Mathlib.RingTheory.HopkinsLevitzki
 public import Mathlib.RingTheory.Length
+public import TauCeti.AlgebraicGeometry.Chow.Basic
 public import TauCeti.AlgebraicGeometry.Morphisms.PureRelativeDimension
+public import TauCeti.AlgebraicGeometry.Scheme.BaseAlgebra
+import Mathlib.FieldTheory.FinTrdeg
+import TauCeti.AlgebraicGeometry.ResidueField
+import TauCeti.AlgebraicGeometry.Scheme.LocalDimension
 import TauCeti.Topology.KrullDimension.Basic
 import TauCeti.Topology.Sober
 
@@ -38,17 +42,23 @@ zero otherwise.
 * `TauCeti.finite_maximal_mem_inter`: a closed subset of a quasi-sober `T0` space has finitely many
   generic points in a Noetherian open subset.
 
-* `TauCeti.AlgebraicGeometry.isIso_residueFieldMap_of_surjectiveOnStalks`: a morphism surjective
-  on stalks (for instance the inclusion of a fibre) induces isomorphisms of residue fields.
-
 The remaining declarations are in the namespace `TauCeti.AlgebraicGeometry.Chow`.
 
 * `maximal_mem_preimage_comp_iff`: generic points of the fibres of `f ≫ g` for flat `f`.
 * `height_preimage_singleton_eq`: for `f` of pure relative dimension `n`, a generic point of a
   fibre has dimension `n` inside the fibre.
+* `height_asFiber_eq`, `height_asFiber_eq_toNat_trdeg`: as a point of the scheme-theoretic fibre,
+  such a generic point `x` has height `n`, which is `trdeg_{κ(f x)} κ_{X_{f x}}(x)`.
 * `fiberLength`: the length of the local ring of the fibre, `fiberLength_ne_top`: it is finite at
   generic points of fibres of a locally Noetherian scheme.
-* `cycleFlatPullback`: the flat pullback `AlgebraicCycle Y ℤ → AlgebraicCycle X ℤ`, additive.
+* `algebraMap_residueField_fiber`: the residue field of the fibre `X_{f x}` at `x` is `κ(x)` as a
+  `κ(f x)`-algebra.
+* `trdeg_residueField_lt_aleph0`, `isScalarTower_residueField`: residue fields of schemes locally
+  of finite type over `K` have finite transcendence degree, in a tower `K → κ(f x) → κ(x)`.
+* `height_eq_height_add`: for `f` of pure relative dimension `n` over a field, a generic point `x`
+  of its fibre has dimension `dim (f x) + n`.
+* `cycleFlatPullback`: the flat pullback `AlgebraicCycle Y ℤ → AlgebraicCycle X ℤ`, additive;
+  `cyclesFlatPullback`: for `f` flat of pure relative dimension `n`, `Z_k(Y) →+ Z_{k+n}(X)`.
 
 ## References
 
@@ -102,21 +112,6 @@ theorem finite_maximal_mem_inter {X : Type*} [TopologicalSpace X] [QuasiSober X]
 
 end TauCeti
 
-namespace TauCeti.AlgebraicGeometry
-
-/-- A morphism surjective on stalks, such as the inclusion `f.fiberι y` of a fibre, induces
-isomorphisms of residue fields. -/
-instance isIso_residueFieldMap_of_surjectiveOnStalks {X Y : Scheme.{u}} (f : X ⟶ Y)
-    [SurjectiveOnStalks f] (x : X) : IsIso (f.residueFieldMap x) := by
-  rw [ConcreteCategory.isIso_iff_bijective]
-  refine ⟨(f.residueFieldMap x).hom.injective, fun a ↦ ?_⟩
-  obtain ⟨b, rfl⟩ := X.residue_surjective x a
-  obtain ⟨c, rfl⟩ := f.stalkMap_surjective x b
-  exact ⟨Y.residue (f x) c, by
-    rw [← CommRingCat.comp_apply, Scheme.residue_residueFieldMap, CommRingCat.comp_apply]⟩
-
-end TauCeti.AlgebraicGeometry
-
 namespace TauCeti.AlgebraicGeometry.Chow
 
 /-- For a flat morphism `f : X ⟶ Y`, the generic points of `f⁻¹(closure {y})` are the generic
@@ -168,6 +163,145 @@ theorem height_preimage_singleton_eq {n : ℕ} [PureRelativeDimension n f] {x : 
   have h' : @Order.height _ (specializationPreorder _) (⟨x, rfl⟩ : f ⁻¹' {f x}) = n := by
     exact_mod_cast h
   rwa [← hord] at h'
+
+/-- A generic point `x` of its fibre `f ⁻¹' {f x}` is a generic point of the scheme-theoretic fibre
+`f.fiber (f x)`. -/
+theorem asFiber_mem_genericPoints {x : X} (hx : Maximal (· ∈ f ⁻¹' {f x}) x) :
+    f.asFiber x ∈ genericPoints (f.fiber (f x)) :=
+  TauCeti.mem_genericPoints_iff.mpr fun q hq ↦ by
+    have h : f.fiberι _ q ⤳ x := by simpa using hq.map (f.fiberι _).continuous
+    have hmem : f.fiberι _ q ∈ f ⁻¹' {f x} := by rw [← f.range_fiberι]; exact ⟨q, rfl⟩
+    exact (f.fiberι _).isEmbedding.injective (by simpa using (h.antisymm (hx.2 hmem h)).eq)
+
+/-- If `f` has pure relative dimension `n`, a generic point `x` of its fibre has height `n` as a
+point of the scheme-theoretic fibre `f.fiber (f x)`. -/
+theorem height_asFiber_eq {n : ℕ} [PureRelativeDimension n f] {x : X}
+    (hx : Maximal (· ∈ f ⁻¹' {f x}) x) : Order.height (f.asFiber x) = n := by
+  have h := height_eq_topologicalKrullDim_closure_singleton (f.asFiber x)
+  rw [isPureDimensional_iff.mp (PureRelativeDimension.isPureDimensional_fiber (d := n) f (f x)) _
+    (asFiber_mem_genericPoints f hx)] at h
+  exact_mod_cast h
+
+/-- For `f` locally of finite type, the height of a point of the fibre `f.fiber (f x)`, a scheme
+locally of finite type over `κ(f x)`, is the transcendence degree of its residue field over
+`κ(f x)`. -/
+theorem height_asFiber_eq_toNat_trdeg [LocallyOfFiniteType f] (x : X) :
+    letI := f.fiberOverSpecResidueField (f x)
+    Order.height (f.asFiber x) =
+      (Algebra.trdeg (Y.residueField (f x))
+        ((f.fiber (f x)).residueField (f.asFiber x))).toNat := by
+  let := f.fiberOverSpecResidueField (f x)
+  have : LocallyOfFiniteType (f.fiber (f x) ↘ Spec (.of (Y.residueField (f x)))) :=
+    inferInstanceAs (LocallyOfFiniteType (Limits.pullback.snd f (Y.fromSpecResidueField (f x))))
+  have h := height_eq_topologicalKrullDim_closure_singleton (f.asFiber x)
+  rw [topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField
+    (Y.residueField (f x))] at h
+  exact_mod_cast h
+
+/-- The `κ(f x)`-algebra structure on the residue field of the fibre `f.fiber (f x)` at `x` is
+`κ(f x) → κ(x) ≅ κ_{X_{f x}}(x)`, the isomorphism being induced by the inclusion `f.fiberι`. -/
+theorem algebraMap_residueField_fiber (x : X) :
+    letI := f.fiberOverSpecResidueField (f x)
+    CommRingCat.ofHom (algebraMap (Y.residueField (f x))
+        ((f.fiber (f x)).residueField (f.asFiber x))) =
+      f.residueFieldMap x ≫ (X.residueFieldCongr (f.fiberι_asFiber x)).inv ≫
+        (f.fiberι _).residueFieldMap (f.asFiber x) := by
+  let := f.fiberOverSpecResidueField (f x)
+  -- Both sides are compared after `Spec` and the monomorphism `Y.fromSpecResidueField (f x)`:
+  -- each becomes the composite of the fibre square `f.fiber_fac` through `Spec κ_{X_{f x}}(x)`.
+  have hs (s : Spec (.of (Y.residueField (f x)))) :
+      Spec.map (Scheme.Spec.residueFieldIsoOfField s).inv =
+        (Spec (.of (Y.residueField (f x)))).fromSpecResidueField s := by
+    simp [Scheme.Spec.residueFieldIsoOfField_inv, Scheme.fromSpecResidueField,
+      Spec.fromSpecStalk_eq, ← Spec.map_comp]
+    rfl
+  have h1 := Scheme.Hom.residueFieldIsoOfField_inv_residueFieldMap
+    (f.fiber (f x) ↘ Spec (.of (Y.residueField (f x)))) (f.asFiber x)
+  have h2 : CommRingCat.ofHom (algebraMap (Y.residueField (f x))
+        ((f.fiber (f x)).residueField (f.asFiber x))) =
+      (Scheme.Spec.residueFieldIsoOfField _).inv ≫
+        (f.fiber (f x) ↘ Spec (.of (Y.residueField (f x)))).residueFieldMap (f.asFiber x) := by
+    rw [h1, Scheme.residueFieldBaseAlgebra_eq_compHom]; rfl
+  apply Scheme.eq_of_SpecMap_comp_fromSpecResidueField
+  rw [h2, Spec.map_comp_assoc, hs, Scheme.Hom.SpecMap_residueFieldMap_fromSpecResidueField_assoc]
+  change _ ≫ f.fiberToSpecResidueField _ ≫ _ = _
+  rw [← Scheme.Hom.fiber_fac]
+  simp [Spec.map_comp]
+
+section
+
+variable (K : Type u) [Field K]
+
+/-- On a scheme locally of finite type over a field `K`, every residue field has finite
+transcendence degree over `K`: in an affine chart of finite type it is the residue field of a
+prime of a finitely generated `K`-algebra, essentially of finite type over `K`. -/
+theorem trdeg_residueField_lt_aleph0 {X : Scheme.{u}} [X.Over (Spec (.of K))]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] (x : X) :
+    Algebra.trdeg K (X.residueField x) < Cardinal.aleph0 := by
+  obtain ⟨R, g, _, y, φ, hφ, rfl, hR⟩ := (X ↘ Spec (.of K)).exists_isOpenImmersion_finiteType x
+  let := φ.hom.toAlgebra
+  have : Algebra.FiniteType K R := hR
+  have := y.isPrime
+  have : Algebra.EssFiniteType K y.asIdeal.ResidueField := .comp K R _
+  rw [(g.residueFieldAlgEquivOfIsOpenImmersion φ hφ y).trdeg_eq]
+  exact trdeg_lt_aleph0 K _
+
+variable [X.Over (Spec (.of K))] [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))]
+
+/-- For `f` a morphism over `Spec K`, the `K`-algebra structures on residue fields form a scalar
+tower `K → κ(f x) → κ(x)` along `f.residueFieldMap x`. -/
+theorem isScalarTower_residueField (x : X) :
+    letI := (f.residueFieldMap x).hom.toAlgebra
+    IsScalarTower K (Y.residueField (f x)) (X.residueField x) := by
+  let := (f.residueFieldMap x).hom.toAlgebra
+  refine IsScalarTower.of_algebraMap_eq' ?_
+  ext c
+  change X.residue x (Scheme.baseRingToStalk K X x c) =
+    f.residueFieldMap x (Y.residue (f x) (Scheme.baseRingToStalk K Y (f x) c))
+  rw [Scheme.residue_baseRingToStalk, Scheme.residue_baseRingToStalk,
+    Scheme.Modules.baseRingToGlobalSections_apply, Scheme.Modules.baseRingToGlobalSections_apply,
+    Scheme.Γevaluation_naturality_apply, ← comp_over f (Spec (.of K))]
+  rfl
+
+/-- **Dimension shift for morphisms of pure relative dimension.** Let `f : X ⟶ Y` be a morphism of
+schemes locally of finite type over a field `K`, of pure relative dimension `n`. A generic point
+`x` of its fibre has dimension `dim (f x) + n`: in the tower `K → κ(f x) → κ(x)`, the residue field
+`κ(x)` of the fibre has transcendence degree `n` over `κ(f x)` (Stacks 02JS). -/
+theorem height_eq_height_add {n : ℕ} [PureRelativeDimension n f]
+    [LocallyOfFiniteType (X ↘ Spec (.of K))] [LocallyOfFiniteType (Y ↘ Spec (.of K))] {x : X}
+    (hx : Maximal (· ∈ f ⁻¹' {f x}) x) : Order.height x = Order.height (f x) + n := by
+  have : LocallyOfFiniteType f := by
+    have : LocallyOfFiniteType (f ≫ Y ↘ Spec (.of K)) := by
+      rw [comp_over]; infer_instance
+    exact locallyOfFiniteType_of_comp f (Y ↘ Spec (.of K))
+  let := (f.residueFieldMap x).hom.toAlgebra
+  have := isScalarTower_residueField f K x
+  let e : X.residueField x ≃+* (f.fiber (f x)).residueField (f.asFiber x) :=
+    ((X.residueFieldCongr (f.fiberι_asFiber x)).symm ≪≫
+      asIso ((f.fiberι _).residueFieldMap (f.asFiber x))).commRingCatIsoToRingEquiv
+  let := f.fiberOverSpecResidueField (f x)
+  have hn : (Algebra.trdeg (Y.residueField (f x)) (X.residueField x)).toNat = n := by
+    let e' : X.residueField x ≃ₐ[Y.residueField (f x)]
+        (f.fiber (f x)).residueField (f.asFiber x) :=
+      AlgEquiv.ofRingEquiv (f := e) fun c ↦ by
+        have h := congr(($(algebraMap_residueField_fiber f x)).hom c)
+        exact h.symm
+    rw [e'.trdeg_eq]
+    exact_mod_cast (height_asFiber_eq_toNat_trdeg f x).symm.trans (height_asFiber_eq f hx)
+  have hX := (height_eq_topologicalKrullDim_closure_singleton x).trans
+    (topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField K x)
+  have hY := (height_eq_topologicalKrullDim_closure_singleton (f x)).trans
+    (topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField K (f x))
+  have hsum := trdeg_add_eq K (Y.residueField (f x)) (A := X.residueField x)
+  have hfin := trdeg_residueField_lt_aleph0 K x
+  rw [← hsum] at hfin
+  obtain ⟨h1, h2⟩ := Cardinal.add_lt_aleph0_iff.mp hfin
+  have : (Order.height x : WithBot ℕ∞) = (Order.height (f x) + n : ℕ∞) := by
+    rw [hX, WithBot.coe_add, hY, ← hsum, Cardinal.toNat_add h1 h2, hn]
+    push_cast; rfl
+  exact_mod_cast this
+
+end
 
 /-- The multiplicity of the flat pullback at a point `x`: the length of the local ring
 `𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x}` of the fibre `X_{f x}` at `x`. At a generic point `x` of `f⁻¹(V)`,
@@ -260,5 +394,33 @@ lemma cycleFlatPullback_add [Flat f] [IsLocallyNoetherian X] (α β : AlgebraicC
   ext x
   simp only [cycleFlatPullback_apply, Function.locallyFinsuppWithin.coe_add, Pi.add_apply]
   split_ifs <;> simp [mul_add]
+
+/-- **Flat pullback of `k`-cycles.** For `f : X ⟶ Y` flat of pure relative dimension `n` between
+schemes locally of finite type over a field `K`, the flat pullback `cycleFlatPullback f` sends
+`k`-cycles to `(k + n)`-cycles (`height_eq_height_add`), giving `f^* : Z_k(Y) →+ Z_{k+n}(X)`. -/
+noncomputable def cyclesFlatPullback (K : Type u) [Field K] [X.Over (Spec (.of K))]
+    [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))] [LocallyOfFiniteType (X ↘ Spec (.of K))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of K))] [IsLocallyNoetherian X] [Flat f] {n : ℕ}
+    [PureRelativeDimension n f] (k : ℤ) :
+    cyclesOfDimension Y k →+ cyclesOfDimension X (k + n) where
+  toFun α := ⟨cycleFlatPullback f α, mem_cyclesOfDimension_iff.mpr fun x hx ↦ by
+    classical
+    rw [Function.mem_support, cycleFlatPullback_apply] at hx
+    split_ifs at hx with hmax
+    · obtain ⟨m, hm, rfl⟩ :=
+        mem_pointsOfDimension.mp (mem_cyclesOfDimension_iff.mp α.2 (right_ne_zero_of_mul hx))
+      exact mem_pointsOfDimension.mpr
+        ⟨m + n, by rw [height_eq_height_add f K (n := n) hmax, hm]; rfl, by push_cast; rfl⟩
+    · exact absurd rfl hx⟩
+  map_zero' := Subtype.ext (cycleFlatPullback_zero f)
+  map_add' α β := Subtype.ext (cycleFlatPullback_add f α β)
+
+@[simp]
+lemma cyclesFlatPullback_apply (K : Type u) [Field K] [X.Over (Spec (.of K))]
+    [Y.Over (Spec (.of K))] [f.IsOver (Spec (.of K))] [LocallyOfFiniteType (X ↘ Spec (.of K))]
+    [LocallyOfFiniteType (Y ↘ Spec (.of K))] [IsLocallyNoetherian X] [Flat f] {n : ℕ}
+    [PureRelativeDimension n f] {k : ℤ} (α : cyclesOfDimension Y k) :
+    (cyclesFlatPullback f K (n := n) k α : AlgebraicCycle X ℤ) = cycleFlatPullback f α :=
+  rfl
 
 end TauCeti.AlgebraicGeometry.Chow
