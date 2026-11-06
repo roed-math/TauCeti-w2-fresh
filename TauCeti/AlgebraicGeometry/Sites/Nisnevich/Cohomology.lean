@@ -22,7 +22,8 @@ through `CategoryTheory.Sheaf.H.pullback`. In degree zero both are the restricti
 sections along the unit of the adjunction (`equiv₀_etaleToNisnevichH`,
 `equiv₀_nisnevichToZariskiH`), so the first is bijective in degree zero on Nisnevich sheaves that
 are already étale sheaves (`etaleToNisnevichH_zero_bijective`), in particular on étale sheaves
-(`etaleToNisnevichH_zero_bijective_of_etale`).
+(`etaleToNisnevichH_zero_bijective_of_etale`), and the second is injective in degree zero on
+restrictions of Nisnevich sheaves (`nisnevichToZariskiH_zero_injective`).
 Their composite is the pullback of cohomology from the Zariski site to the small étale site
 (`map_etaleToNisnevichH_nisnevichToZariskiH`).
 
@@ -39,6 +40,8 @@ instance for `w = u`.
 * `AlgebraicGeometry.Scheme.etaleToNisnevichH_zero_bijective`,
   `etaleToNisnevichH_zero_bijective_of_etale`: in degree zero, the pullback to the étale site is
   bijective on Nisnevich sheaves that are already étale sheaves.
+* `AlgebraicGeometry.Scheme.nisnevichToZariskiH_zero_injective`: in degree zero, the pullback to
+  the Nisnevich site is injective on restrictions of Nisnevich sheaves to the Zariski site.
 * `AlgebraicGeometry.Scheme.map_etaleToNisnevichH_nisnevichToZariskiH`: the pullbacks from the
   Zariski site to the Nisnevich site and from there to the étale site compose to the pullback from
   the Zariski site to the étale site.
@@ -149,6 +152,22 @@ lemma equiv₀_nisnevichToZariskiH (F : Sheaf (Opens.grothendieckTopology X) Add
     X.restrictEtaleFunctor isTerminalTop (isTerminalRestrictEtaleFunctorObjTop X) F x
   rw [nisnevichToZariskiH, constantSheafCompNisnevichToZariskiIso_inv_app]
   exact h
+
+/-- In degree zero, the pullback of cohomology from the Zariski site to the small Nisnevich site is
+injective on the restriction of a Nisnevich sheaf `G` to the Zariski site: restricting global
+sections along the unit of the adjunction and then along the counit at `G` is the identity
+(`Sheaf.H.pullback_sheafPullback_zero_injective`). This applies to the restrictions of the big-site
+sheaves `𝔾_a` and `𝔾_m`. -/
+theorem nisnevichToZariskiH_zero_injective (G : Sheaf X.smallNisnevichTopology AddCommGrpCat.{w}) :
+    Function.Injective (nisnevichToZariskiH X ((X.restrictEtaleFunctor.sheafPushforwardContinuous
+      AddCommGrpCat.{w} _ X.smallNisnevichTopology).obj G) 0) := by
+  have : PreservesFiniteLimits (X.restrictEtaleFunctor.sheafPullback AddCommGrpCat.{w}
+      (Opens.grothendieckTopology X) X.smallNisnevichTopology) :=
+    ‹PreservesFiniteLimits (nisnevichToZariski X _)›
+  have := (nisnevichToZariskiAdjunction X AddCommGrpCat.{w}).isRightAdjoint
+  rw [nisnevichToZariskiH, constantSheafCompNisnevichToZariskiIso_inv_app]
+  exact Sheaf.H.pullback_sheafPullback_zero_injective (K := X.smallNisnevichTopology)
+    X.restrictEtaleFunctor isTerminalTop (isTerminalRestrictEtaleFunctorObjTop X) G
 
 section Etale
 

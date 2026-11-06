@@ -42,6 +42,8 @@ finer topology `K` (`Sheaf.H.equiv₀_pullback_sheafInverseImage`).
 * `CategoryTheory.Sheaf.H.pullback_natTrans_apply`: naturality in the exact functor `pb`.
 * `CategoryTheory.Sheaf.H.equiv₀_pullback_sheafPullback`: for a morphism of sites, the pullback
   in degree zero is restriction of global sections along the unit of `u^* ⊣ u_*`.
+* `CategoryTheory.Sheaf.H.pullback_sheafPullback_zero_injective`: for a morphism of sites, the
+  pullback in degree zero is injective on direct images.
 * `CategoryTheory.Sheaf.H.equiv₀_pullback_sheafInverseImage`: for topologies `J ≤ K`, the pullback
   along the `K`-sheafification of `J`-sheaves in degree zero is restriction of global sections along
   the unit of the adjunction between inverse and direct images.
@@ -205,6 +207,28 @@ lemma equiv₀_pullback_sheafPullback {T : C} (hT : IsTerminal T) (huT : IsTermi
   rw [hM]
   -- Both sides evaluate the same morphism `ℤ ⟶ (u^* G)(u(T))` at `1`.
   rfl
+
+/-- For a morphism of sites `u` and a terminal object `T` of `C` with `u(T)` terminal, the pullback
+in degree zero is injective on the direct image `u_* G` of a `K`-sheaf `G`: restricting global
+sections along the unit of `u^* ⊣ u_*` and then along the counit at `G` is the identity. -/
+theorem pullback_sheafPullback_zero_injective {T : C} (hT : IsTerminal T)
+    (huT : IsTerminal (u.obj T)) (G : Sheaf K AddCommGrpCat.{w}) :
+    Function.Injective (pullback (u.sheafPullback AddCommGrpCat.{w} J K)
+      (u.sheafPullbackConstantSheafIso AddCommGrpCat.{w} J K (of (ULift ℤ))).inv
+      ((u.sheafPushforwardContinuous AddCommGrpCat.{w} J K).obj G) 0) := by
+  set R := u.sheafPushforwardContinuous AddCommGrpCat.{w} J K
+  set adj := u.sheafAdjunctionContinuous AddCommGrpCat.{w} J K
+  have key (s) : (R.map (adj.counit.app G)).hom.app (op T)
+      ((adj.unit.app (R.obj G)).hom.app (op T) s) = s := by
+    rw [← ConcreteCategory.comp_apply, ← NatTrans.comp_app,
+      ← ObjectProperty.FullSubcategory.comp_hom, adj.right_triangle_components]
+    rfl
+  intro x y hxy
+  apply (H.equiv₀ _ hT).injective
+  have h := congrArg (fun z ↦ (R.map (adj.counit.app G)).hom.app (op T) (H.equiv₀ _ huT z)) hxy
+  dsimp only [Functor.comp_obj] at h
+  rwa [equiv₀_pullback_sheafPullback u hT huT, equiv₀_pullback_sheafPullback u hT huT, key,
+    key] at h
 
 end CategoryTheory.Sheaf.H
 

@@ -140,6 +140,28 @@ example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}
               (fppfTopology_over_le_fpqcTopology_over X))).obj (Ga X)))) 0) :=
   etaleToNisnevichH_zero_bijective_of_etale X _
 
+-- In degree zero, the pullback of cohomology from the Zariski site to the small Nisnevich site is
+-- injective on the restriction of `𝔾_a` to the Zariski site.
+example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}]
+    [HasExt.{u + 1} (Sheaf (Opens.grothendieckTopology X) AddCommGrpCat.{u})]
+    [HasExt.{u + 1} (Sheaf X.smallNisnevichTopology AddCommGrpCat.{u})] :
+    Function.Injective (nisnevichToZariskiH X
+      ((X.restrictEtaleFunctor.sheafPushforwardContinuous AddCommGrpCat.{u}
+        (Opens.grothendieckTopology X) X.smallNisnevichTopology).obj
+        ((sheafDirectImageOfLE AddCommGrpCat.{u}
+          (smallNisnevichTopology_le_smallEtaleTopology X)).obj
+            ((Etale.forget X).sheafPushforwardContinuous AddCommGrpCat.{u} X.smallEtaleTopology
+              (etaleTopology.over X) |>.obj ((sheafDirectImageOfLE AddCommGrpCat.{u}
+                ((etaleTopology_over_le_fppfTopology_over X).trans
+                  (fppfTopology_over_le_fpqcTopology_over X))).obj (Ga X))))) 0) :=
+  nisnevichToZariskiH_zero_injective X
+    ((sheafDirectImageOfLE AddCommGrpCat.{u}
+      (smallNisnevichTopology_le_smallEtaleTopology X)).obj
+        ((Etale.forget X).sheafPushforwardContinuous AddCommGrpCat.{u} X.smallEtaleTopology
+          (etaleTopology.over X) |>.obj ((sheafDirectImageOfLE AddCommGrpCat.{u}
+            ((etaleTopology_over_le_fppfTopology_over X).trans
+              (fppfTopology_over_le_fpqcTopology_over X))).obj (Ga X))))
+
 -- The pullback of cohomology from the Zariski site to the small Nisnevich site, followed by the
 -- pullback to the small étale site, is the pullback from the Zariski site to the small étale site.
 example (X : Scheme.{u}) [HasSheafify X.smallNisnevichTopology AddCommGrpCat.{u}]

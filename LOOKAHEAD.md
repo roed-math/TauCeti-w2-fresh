@@ -56,7 +56,14 @@ case of the étale/fppf half of `quasiCoherent_topology_comparison` for `O` and 
 from the small Nisnevich to the small étale site on étale sheaves,
 `etaleToNisnevichH_zero_bijective_of_etale` (split 7), checked in the examples file on the
 restriction of `main`'s `Ga` to the small étale site: the degree-zero case of the Nisnevich/étale
-half of `quasiCoherent_topology_comparison` for `O`. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
+half of `quasiCoherent_topology_comparison` for `O`. Fourteenth session (2026-11-06): `main` is
+still at `385ec2ddd8dd` and #28094 (`6c29c999512d`) and #29365 (`440cc53de2c4`) are still open at
+unchanged heads, so the stub is unchanged. Added `Sheaf.H.pullback_sheafPullback_zero_injective`
+(split 5: for a morphism of sites, the degree-zero pullback is injective on direct images, by the
+triangle identity of `u^* ⊣ u_*`) and its corollary `nisnevichToZariskiH_zero_injective` (split 7:
+the degree-zero pullback from the Zariski to the Nisnevich site is injective on restrictions of
+Nisnevich sheaves), checked in the examples file on the restriction of `Ga` to the Zariski site:
+the injectivity half of the degree-zero Zariski/Nisnevich comparison for `O`. The README's §2.10 targets `quasiCoherent_topology_comparison`, `aX_inverseImage_obj` and `smoothGroup_fppf_etale_comparison` have no pinned form in `Suggested.lean`. Not yet proved: the fppf half of
 `aX_inverseImage_obj` (that `ε⁻¹` does not change `π_X⁻¹ F`), and the cohomology comparison
 theorems; see the end.
 
@@ -302,8 +309,10 @@ Needs first: splits 1, 2, 3 and 4. Uses no supplier. `Roadmap: SchemeAndStackFou
 
 Files:
 
-- `TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean` (existing on `main`, +90 lines; now
-  also imports split 1's `InverseImageOfLE`): `Sheaf.H.pullback_natTrans_apply` (the pullback is
+- `TauCeti/CategoryTheory/Sites/SheafCohomology/Pullback.lean` (existing on `main`, +114 lines; now
+  also imports split 1's `InverseImageOfLE`): `Sheaf.H.pullback_sheafPullback_zero_injective` (for a morphism of sites
+  `u`, the pullback is injective in degree zero on `u_* G`, from the triangle identity of
+  `u^* ⊣ u_*`), `Sheaf.H.pullback_natTrans_apply` (the pullback is
   natural in the exact functor: for `τ : pb ⟶ pb'`, the pullback along `pb'` with comparison
   `c ≫ τ ℤ` is the pullback along `pb` followed by `τ G`; three rewrites through Mathlib's
   `Ext.mapExactFunctor_comp_mk₀_natTransApp`) and `Sheaf.H.equiv₀_pullback_sheafInverseImage`
@@ -331,7 +340,7 @@ Files:
   is arbitrary, with `HasExt` and the exactness of `π_X⁻¹` as instance hypotheses (the latter an
   instance for `w = u + 1`).
 
-About 325 lines.
+About 350 lines.
 
 ### Split 6: `feat: the comparison morphisms between the small Zariski, Nisnevich and étale sites`
 
@@ -385,21 +394,22 @@ it carries the cohomology statements and the roadmap checks file.
 
 Files:
 
-- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Cohomology.lean` (195 lines, new): the `Additive`
+- `TauCeti/AlgebraicGeometry/Sites/Nisnevich/Cohomology.lean` (214 lines, new): the `Additive`
   instances for `etaleToNisnevich` and `nisnevichToZariski` on abelian sheaves,
   `etaleToNisnevichH X F n : Hⁿ(X_Nis, F) →+ Hⁿ(X_ét, F^ét)` with `equiv₀_etaleToNisnevichH`,
   `etaleToNisnevichH_zero_bijective` (on Nisnevich sheaves that are étale sheaves) and its
   corollary `etaleToNisnevichH_zero_bijective_of_etale` (on étale sheaves regarded as Nisnevich
   sheaves), `nisnevichToZariskiH X F n : Hⁿ(X_Zar, F) →+ Hⁿ(X_Nis, F^Nis)` with
   `equiv₀_nisnevichToZariskiH` (degree zero: restriction of global sections, at the terminal
-  objects `⊤` and `isTerminalRestrictEtaleFunctorObjTop`), the `IsLeftAdjoint`,
+  objects `⊤` and `isTerminalRestrictEtaleFunctorObjTop`) and `nisnevichToZariskiH_zero_injective`
+  (degree zero: injective on restrictions of Nisnevich sheaves to the Zariski site), the `IsLeftAdjoint`,
   `PreservesFiniteLimits` (from `nisnevichToZariskiCompEtaleToNisnevichIso`) and `Additive`
   instances for the pullback of abelian sheaves from the Zariski site to the small étale site, and
   `map_etaleToNisnevichH_nisnevichToZariskiH` (`comparison_comp` on cohomology: the composite of
   `nisnevichToZariskiH` and `etaleToNisnevichH`, transported along
   `nisnevichToZariskiCompEtaleToNisnevichIso`, is `Sheaf.H.pullback` along the morphism of sites
   from the étale to the Zariski site with its canonical constant-sheaf comparison).
-- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (157 lines, new): the roadmap checks
+- `TauCeti/Examples/AlgebraicGeometry/Sites/Comparison.lean` (179 lines, new): the roadmap checks
   `test_comparison_id` and `test_aX_constant` (`a_X⁻¹` of the constant sheaf `ℤ/2` is the constant
   fppf sheaf `ℤ/2`), the same for `ε⁻¹`, exactness of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on
   abelian sheaves, base change of `ε⁻¹`, `a_X⁻¹` and `etaleToNisnevich` on abelian sheaves, and
@@ -407,11 +417,12 @@ Files:
   hypotheses but `HasExt` discharged), `piXH_zero_bijective` for `AddCommGrpCat.{u + 1}`, `epsilonFppfEtaleH_zero_bijective_of_fpqc` for
   `main`'s `Ga X` and `Gm X` (importing `TauCeti.AlgebraicGeometry.Sites.Big.StructureSheaf`),
   `etaleToNisnevichH_zero_bijective_of_etale` for the restriction of `Ga X` to the small étale
-  site (through `(Etale.forget X).sheafPushforwardContinuous`), and
+  site (through `(Etale.forget X).sheafPushforwardContinuous`),
+  `nisnevichToZariskiH_zero_injective` for the restriction of `Ga X` to the Zariski site, and
   `map_etaleToNisnevichH_nisnevichToZariskiH` for
   `AddCommGrpCat.{u}`.
 
-About 320 lines.
+About 360 lines.
 
 ## What remains (status `partial`)
 
@@ -436,7 +447,9 @@ Still unproved from §2.10:
    is the sheaf property of `F^a` for the finer topologies (fpqc descent of quasi-coherent
    modules), through the `*_zero_bijective` lemmas, which reduce it to the sheaf property (done for
    `ε` on fpqc sheaves, hence on `F = O` through `main`'s `Ga`, in the tenth session, and for
-   `etaleToNisnevich` on étale sheaves, hence on the restriction of `Ga`, in the eleventh); in higher degrees it needs the vanishing of Čech
+   `etaleToNisnevich` on étale sheaves, hence on the restriction of `Ga`, in the eleventh; for `nisnevichToZariski` only injectivity on
+   restrictions of Nisnevich sheaves is on the branch, from the fourteenth: surjectivity needs that
+   the Nisnevich sheafification of a Zariski sheaf does not change its sections on opens); in higher degrees it needs the vanishing of Čech
    cohomology of `F^a` on affine fpqc coverings (Stacks 35.9.2) and the comparison of Čech and
    derived cohomology. A practical obstacle: `HasExt`
    for `Sheaf X.smallEtaleTopology AddCommGrpCat.{u}` and for the big fppf site currently times
