@@ -24,7 +24,8 @@ line bundles of multiples of the relative effective Cartier divisor `[0]` theref
 
 (`TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafMulIso`), compatible with the pole
 filtration
-(`TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom`).
+(`TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom`
+and `TauCeti.AlgebraicGeometry.EllipticCurveGeom.whiskerLeft_poleSheafMap_hom_poleSheafMulIso_hom`).
 These are the multiplication maps of the pole-filtration construction of a pointed Weierstrass
 equation: products of the coordinates `x` and `y`, chosen in pole orders two and three, lie in the
 higher pole sheaves, and their unique relation lies in pole order six.
@@ -32,8 +33,10 @@ higher pole sheaves, and their unique relation lies in pole order six.
 ## Main declarations
 
 * `TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafMulIso`: `ℒ_a ⊗ ℒ_b ≅ ℒ_(a + b)`;
-* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom`:
-  compatibility with the pole filtration.
+* `TauCeti.AlgebraicGeometry.EllipticCurveGeom.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom`
+  and
+  `TauCeti.AlgebraicGeometry.EllipticCurveGeom.whiskerLeft_poleSheafMap_hom_poleSheafMulIso_hom`:
+  compatibility with the pole filtration in each factor.
 
 ## References
 
@@ -98,6 +101,17 @@ theorem poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom {a a' : ℕ} (h : a �
   rw [poleSheafMap_hom_eq, poleSheafMap_hom_eq]
   exact Scheme.IdealSheafData.IsEffectiveCartier.whiskerRight_dualPowMulIsoOfEq_hom
     E.isRelativeEffectiveCartier_zeroDivisor.isEffectiveCartier E.poleSheaf_obj h b
+
+/-- **The multiplication of pole sheaves is compatible with the pole filtration in the second
+factor**: for `b ≤ b'`, multiplying `ℒ_a` by `ℒ_b` included into `ℒ_b'` is multiplying and
+then including `ℒ_(a + b)` into `ℒ_(a + b')`. -/
+@[reassoc]
+theorem whiskerLeft_poleSheafMap_hom_poleSheafMulIso_hom (a : ℕ) {b b' : ℕ} (h : b ≤ b') :
+    (E.poleSheaf a).obj ◁ (E.poleSheafMap h).hom ≫ (E.poleSheafMulIso a b').hom =
+      (E.poleSheafMulIso a b).hom ≫ (E.poleSheafMap (Nat.add_le_add_left h a)).hom := by
+  rw [poleSheafMap_hom_eq, poleSheafMap_hom_eq]
+  exact Scheme.IdealSheafData.IsEffectiveCartier.whiskerLeft_dualPowMulIsoOfEq_hom
+    E.isRelativeEffectiveCartier_zeroDivisor.isEffectiveCartier E.poleSheaf_obj a h
 
 end EllipticCurveGeom
 

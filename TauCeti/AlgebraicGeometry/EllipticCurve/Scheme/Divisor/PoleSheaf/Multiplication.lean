@@ -22,15 +22,17 @@ gives the **multiplication maps of the pole sheaves**
 `𝒪(a[0]) ⊗ 𝒪(b[0]) ≅ 𝒪((a + b)[0])`
 
 (`WeierstrassCurve.poleSheafMulIso`), compatible with the pole filtration
-(`WeierstrassCurve.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom`). These are the
+(`WeierstrassCurve.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom` and
+`WeierstrassCurve.whiskerLeft_poleSheafMap_hom_poleSheafMulIso_hom`). These are the
 multiplication maps through which the Weierstrass coordinates `x` and `y` and their relation in
 pole order six are produced.
 
 ## Main declarations
 
 * `WeierstrassCurve.poleSheafMulIso`: `𝒪(a[0]) ⊗ 𝒪(b[0]) ≅ 𝒪((a + b)[0])`;
-* `WeierstrassCurve.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom`: compatibility with the
-  pole filtration.
+* `WeierstrassCurve.poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom` and
+  `WeierstrassCurve.whiskerLeft_poleSheafMap_hom_poleSheafMulIso_hom`: compatibility with the
+  pole filtration in each factor.
 
 ## References
 
@@ -95,5 +97,16 @@ theorem poleSheafMap_hom_whiskerRight_poleSheafMulIso_hom {a a' : ℕ} (h : a �
   rw [poleSheafMap_hom_eq, poleSheafMap_hom_eq]
   exact Scheme.IdealSheafData.IsEffectiveCartier.whiskerRight_dualPowMulIsoOfEq_hom
     W.isRelativeEffectiveCartier_zeroSectionDivisor.isEffectiveCartier W.poleSheaf_obj h b
+
+/-- **The multiplication of pole sheaves is compatible with the pole filtration in the second
+factor**: for `b ≤ b'`, multiplying `𝒪(a[0])` by `𝒪(b[0])` included into `𝒪(b'[0])` is
+multiplying and then including `𝒪((a + b)[0])` into `𝒪((a + b')[0])`. -/
+@[reassoc]
+theorem whiskerLeft_poleSheafMap_hom_poleSheafMulIso_hom (a : ℕ) {b b' : ℕ} (h : b ≤ b') :
+    (W.poleSheaf a).obj ◁ (W.poleSheafMap h).hom ≫ (W.poleSheafMulIso a b').hom =
+      (W.poleSheafMulIso a b).hom ≫ (W.poleSheafMap (Nat.add_le_add_left h a)).hom := by
+  rw [poleSheafMap_hom_eq, poleSheafMap_hom_eq]
+  exact Scheme.IdealSheafData.IsEffectiveCartier.whiskerLeft_dualPowMulIsoOfEq_hom
+    W.isRelativeEffectiveCartier_zeroSectionDivisor.isEffectiveCartier W.poleSheaf_obj a h
 
 end WeierstrassCurve

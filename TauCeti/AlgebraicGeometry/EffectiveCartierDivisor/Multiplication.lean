@@ -29,7 +29,8 @@ multiplication is compatible with the inclusions `𝒪_X(aD) ⟶ 𝒪_X(a'D)` fo
 `I^a' ⊆ I^a`
 (`Scheme.IdealSheafData.IsEffectiveCartier.pre_sheafOfLE_whiskerRight_dualPowMulIso_hom`): a
 function with a pole of order at most `a` along `D`, viewed as one with a pole of order at most
-`a'`, has the same products.
+`a'`, has the same products. The same holds in the second factor
+(`Scheme.IdealSheafData.IsEffectiveCartier.whiskerLeft_pre_sheafOfLE_dualPowMulIso_hom`).
 
 ## Main declarations
 
@@ -37,10 +38,12 @@ function with a pole of order at most `a` along `D`, viewed as one with a pole o
 * `Scheme.IdealSheafData.IsEffectiveCartier.dualPowMulIso`: `𝒪_X(aD) ⊗ 𝒪_X(bD) ≅ 𝒪_X((a + b)D)`,
   with its evaluation formula
   `Scheme.IdealSheafData.IsEffectiveCartier.whiskerLeft_dualPowMulIso_hom_comp_ev`;
-* `Scheme.IdealSheafData.IsEffectiveCartier.pre_sheafOfLE_whiskerRight_dualPowMulIso_hom`:
-  compatibility with the inclusions `𝒪_X(aD) ⟶ 𝒪_X(a'D)`;
-* `Scheme.IdealSheafData.IsEffectiveCartier.dualPowMulIsoOfEq` and
-  `Scheme.IdealSheafData.IsEffectiveCartier.whiskerRight_dualPowMulIsoOfEq_hom`: the same, for a
+* `Scheme.IdealSheafData.IsEffectiveCartier.pre_sheafOfLE_whiskerRight_dualPowMulIso_hom` and
+  `Scheme.IdealSheafData.IsEffectiveCartier.whiskerLeft_pre_sheafOfLE_dualPowMulIso_hom`:
+  compatibility with the inclusions `𝒪_X(aD) ⟶ 𝒪_X(a'D)` in each factor;
+* `Scheme.IdealSheafData.IsEffectiveCartier.dualPowMulIsoOfEq`,
+  `Scheme.IdealSheafData.IsEffectiveCartier.whiskerRight_dualPowMulIsoOfEq_hom` and
+  `Scheme.IdealSheafData.IsEffectiveCartier.whiskerLeft_dualPowMulIsoOfEq_hom`: the same, for a
   family of modules identified with the `𝒪_X(nD)`.
 
 ## References
@@ -92,6 +95,24 @@ theorem whiskerLeft_sheafOfLE_powTensorIso_hom {a a' : ℕ} (h : a ≤ a') (b : 
   exact (tensorHom_comp_tensorHom_assoc _ _ _ _ _).trans
     ((congrArg (fun g ↦ (g ⊗ₘ _) ≫ _) (Category.id_comp _)).trans
       (congrArg (fun g ↦ (_ ⊗ₘ g) ≫ _) (sheafOfLE_sheafι _)))
+
+/-- The multiplication of ideal sheaves is compatible with their inclusions in the first factor:
+for `b ≤ b'`, `I^b' ⊗ I^a ⟶ I^b ⊗ I^a` followed by multiplication is multiplication followed by
+`I^(a + b') ⟶ I^(a + b)`. -/
+@[reassoc]
+theorem sheafOfLE_whiskerRight_powTensorIso_hom (a : ℕ) {b b' : ℕ} (h : b ≤ b') :
+    sheafOfLE (pow_le_pow_right_of_le_one' le_top h) ▷ (I ^ a).sheaf ≫ (powTensorIso hI a b).hom =
+      (powTensorIso hI a b').hom ≫
+        sheafOfLE (pow_le_pow_right_of_le_one' le_top (Nat.add_le_add_left h a)) := by
+  refine (cancel_mono (I ^ (a + b)).sheafι).mp ?_
+  refine ((Category.assoc _ _ _).trans ((congrArg (_ ≫ ·)
+    (powTensorIso_hom_sheafι hI a b)).trans ?_)).trans
+    ((Category.assoc _ _ _).trans ((congrArg (_ ≫ ·) (sheafOfLE_sheafι _)).trans
+      (powTensorIso_hom_sheafι hI a b'))).symm
+  rw [← tensorHom_id]
+  exact (tensorHom_comp_tensorHom_assoc _ _ _ _ _).trans
+    ((congrArg (fun g ↦ (_ ⊗ₘ g) ≫ _) (Category.id_comp _)).trans
+      (congrArg (fun g ↦ (g ⊗ₘ _) ≫ _) (sheafOfLE_sheafι _)))
 
 /-- **The multiplication of the line bundles of multiples of `D`**:
 `𝒪_X(aD) ⊗ 𝒪_X(bD) ≅ 𝒪_X((a + b)D)`, where `𝒪_X(nD) = 𝓗om(I^n, 𝒪_X)`. It is the dual of the
@@ -158,6 +179,40 @@ theorem pre_sheafOfLE_whiskerRight_dualPowMulIso_hom {a a' : ℕ} (h : a ≤ a')
   rw [associator_inv_naturality_middle_assoc, ← comp_whiskerRight_assoc,
     id_tensor_pre_app_comp_ev, comp_whiskerRight_assoc, associator_inv_naturality_left_assoc]
 
+/-- **The multiplication is compatible with the inclusions `𝒪_X(bD) ⟶ 𝒪_X(b'D)`** in the second
+factor: for `b ≤ b'`, multiplying `𝒪_X(aD)` by `𝒪_X(bD)` included into `𝒪_X(b'D)` is multiplying
+and then including `𝒪_X((a + b)D)` into `𝒪_X((a + b')D)`. -/
+@[reassoc]
+theorem whiskerLeft_pre_sheafOfLE_dualPowMulIso_hom (a : ℕ) {b b' : ℕ} (h : b ≤ b') :
+    _ ◁ (pre (sheafOfLE (pow_le_pow_right_of_le_one' le_top h))).app (𝟙_ _) ≫
+        (dualPowMulIso hI a b').hom =
+      (dualPowMulIso hI a b).hom ≫
+        (pre (sheafOfLE (pow_le_pow_right_of_le_one' le_top (Nat.add_le_add_left h a)))).app
+          (𝟙_ _) := by
+  have hι : (powTensorIso hI a b').inv ≫
+      sheafOfLE (pow_le_pow_right_of_le_one' le_top h) ▷ (I ^ a).sheaf =
+      sheafOfLE (pow_le_pow_right_of_le_one' le_top (Nat.add_le_add_left h a)) ≫
+        (powTensorIso hI a b).inv := by
+    rw [Iso.inv_comp_eq, ← Category.assoc, Iso.eq_comp_inv,
+      sheafOfLE_whiskerRight_powTensorIso_hom hI a h]
+  apply uncurry_injective
+  rw [uncurry_eq, uncurry_eq, MonoidalCategory.whiskerLeft_comp_assoc,
+    MonoidalCategory.whiskerLeft_comp_assoc, whiskerLeft_dualPowMulIso_hom_comp_ev,
+    id_tensor_pre_app_comp_ev, whisker_exchange_assoc, whisker_exchange_assoc,
+    whiskerLeft_dualPowMulIso_hom_comp_ev, ← comp_whiskerRight_assoc, ← hι,
+    comp_whiskerRight_assoc]
+  congr 1
+  -- The inclusion of `𝒪_X(bD)` moves past the inner evaluation of `I^a` against `𝒪_X(aD)` and
+  -- becomes the inclusion `I^b' ⊆ I^b` in the outer evaluation.
+  rw [associator_naturality_right_assoc, associator_naturality_left_assoc]
+  congr 1
+  rw [← whisker_exchange_assoc, ← whisker_exchange_assoc, ← whisker_exchange_assoc,
+    ← id_tensor_pre_app_comp_ev]
+  simp only [← MonoidalCategory.whiskerLeft_comp_assoc]
+  congr 2
+  rw [associator_inv_naturality_right_assoc, whisker_exchange_assoc]
+  exact congrArg (_ ≫ _ ≫ ·) (leftUnitor_naturality _)
+
 variable {L : ℕ → X.Modules} (hL : ∀ n, L n = (ihom (I ^ n).sheaf).obj (𝟙_ _))
 
 /-- The multiplication `𝒪_X(aD) ⊗ 𝒪_X(bD) ≅ 𝒪_X((a + b)D)`, transported to a family `L` of
@@ -184,6 +239,18 @@ theorem whiskerRight_dualPowMulIsoOfEq_hom {a a' : ℕ} (h : a ≤ a') (b : ℕ)
           (𝟙_ _) ≫ eqToHom (hL (a' + b)).symm := by
   obtain rfl : L = fun n ↦ (ihom (I ^ n).sheaf).obj (𝟙_ _) := funext hL
   simpa [dualPowMulIsoOfEq] using pre_sheafOfLE_whiskerRight_dualPowMulIso_hom hI h b
+
+/-- The transported multiplication `L a ⊗ L b ≅ L (a + b)` is compatible with the transported
+inclusions `L b ⟶ L b'` for `b ≤ b'`. -/
+@[reassoc]
+theorem whiskerLeft_dualPowMulIsoOfEq_hom (a : ℕ) {b b' : ℕ} (h : b ≤ b') :
+    L a ◁ (eqToHom (hL b) ≫ (pre (sheafOfLE (pow_le_pow_right_of_le_one' le_top h))).app (𝟙_ _) ≫
+        eqToHom (hL b').symm) ≫ (dualPowMulIsoOfEq hI hL a b').hom =
+      (dualPowMulIsoOfEq hI hL a b).hom ≫ eqToHom (hL (a + b)) ≫
+        (pre (sheafOfLE (pow_le_pow_right_of_le_one' le_top (Nat.add_le_add_left h a)))).app
+          (𝟙_ _) ≫ eqToHom (hL (a + b')).symm := by
+  obtain rfl : L = fun n ↦ (ihom (I ^ n).sheaf).obj (𝟙_ _) := funext hL
+  simpa [dualPowMulIsoOfEq] using whiskerLeft_pre_sheafOfLE_dualPowMulIso_hom hI a h
 
 end
 
