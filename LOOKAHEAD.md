@@ -16,8 +16,12 @@ reduction to split 5: `eq_neg_div_of_intCast_mem_span_snoc`. The round resuming 
 none of the files on this branch, and it added no multivariable zero or multiplicity estimate.
 The zero estimates `main` does have are the one-variable real exponential-polynomial ones in
 `Analysis/SpecialFunctions/Exp/ExponentialPolynomial.lean` (Rolle-type, used for
-Gelfond–Schneider), and they do not give the estimate on `𝔾ₐᵈ × 𝔾ₘ`. This round added no
-mathematics. `main` and pinned Mathlib still have
+Gelfond–Schneider), and they do not give the estimate on `𝔾ₐᵈ × 𝔾ₘ`. That round added no
+mathematics. The round resuming at `73c0d46518e` (13:20 UTC) found `main` still at
+`385ec2ddd8d` and PR #28644 still open. It added a second input of split 5, the count by which
+the multiplicative rank of the `α_j` enters the subgroup obstruction:
+`LinearMap.ncard_setOf_apply_eq_zero_abs_le_le` in the new general file
+`TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean`. `main` and pinned Mathlib still have
 no zero or multiplicity estimate, Philippon-type or otherwise, that split 4 could reuse. What
 remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
@@ -151,10 +155,11 @@ In the new file `Interpolation/Residual.lean`:
   4. The obstructions with `e₀ ∉ W'` or with trivial torus part use two more inputs, neither
      formalized yet:
      - the subgroup obstruction from the multiplicative rank of the `α_j`, whose kernel
-       `s ↦ α^s` has rank `≤ 1`. The rank bound itself needs no new lemma. View
-       `s ↦ α^s` as a `ℤ`-linear map into `Additive ℂˣ`. Then Mathlib's
-       `LinearMap.rank_range_add_rank_ker`, via the instance `IsDomain.hasRankNullity`, gives
-       `rank ker ≤ m − (m−1)`. What remains is to use the kernel against the obstruction;
+       `s ↦ α^s` has rank `≤ 1`. View `s ↦ α^s` as a `ℤ`-linear map into `Additive ℂˣ`.
+       This branch now proves (`BoxPoints.lean`, below) that its kernel has rank `≤ 1` and
+       meets the box `‖s‖∞ ≤ R` in at most `2R + 1` points. What remains is to feed this count,
+       through `AddMonoidHom.ncard_image_le_mul_ncard_image_sub_inter_ker` (split 3), into the
+       degree inequality of an obstruction with trivial torus part;
      - the reduction of a short rational coefficient relation by Liouville. Its first step,
        reading the rational `β_k` off the relation, is `eq_neg_div_of_intCast_mem_span_snoc`;
        the Liouville inequality applied to `α^s` remains.
@@ -201,8 +206,21 @@ In the new file `Interpolation/Residual.lean`:
 4. **feat: a multiplicity estimate on the additive group times the torus.** Needs none. Not on
    this branch.
 5. **feat: the rank of Waldschmidt's interpolation matrix.** Needs 1, 2, 3 and 4. Carries
-   `waldschmidtInterpolationRank` and completes the target. On this branch so far only its input
-   `eq_neg_div_of_intCast_mem_span_snoc` (`Data.lean`, +25); the rest is not on this branch.
+   `waldschmidtInterpolationRank` and completes the target. On this branch so far only two of
+   its inputs:
+   - `eq_neg_div_of_intCast_mem_span_snoc` (`Data.lean`, +25), the Liouville reduction's
+     rational coefficients;
+   - `TauCeti/LinearAlgebra/FreeModule/BoxPoints.lean` (new, 97 lines), the subgroup
+     obstruction's count:
+     - `Submodule.ncard_setOf_mem_abs_le_le_of_finrank_le_one`: a subgroup of `ℤ^m` of rank
+       `≤ 1` has at most `2R + 1` points with `‖s‖∞ ≤ R`;
+     - `LinearMap.finrank_ker_le_one`: rank-nullity over `ℤ`, a map out of `ℤ^m` with image of
+       rank `≥ m − 1` has kernel of rank `≤ 1`;
+     - `LinearMap.ncard_setOf_apply_eq_zero_abs_le_le`: such a map vanishes at `≤ 2R + 1`
+       points of the box.
+
+   The rest is not on this branch. If split 5 grows past 600 lines, `BoxPoints.lean` can be
+   opened on its own first, since it needs no other split.
 
 ## Self-audit notes (rubrics)
 
@@ -239,3 +257,9 @@ In the new file `Interpolation/Residual.lean`:
     rerun. Those runs used the `LintEnvDriver.lean` stand-in, not `scripts/lint-env.sh`, which
     needs `uvx`.
   - Lines are ≤ 100 characters.
+  - 2026-11-06, about 13:25 UTC, against `main` at `385ec2ddd8d`: `lake build` green,
+    `lookahead-check` ok, and `lake exe runLinter TauCeti.LinearAlgebra.FreeModule.BoxPoints`
+    passed. Before writing `BoxPoints.lean`, `main` and pinned Mathlib were grepped for a box
+    count of lattice points or a rank-one kernel bound; neither has one. Its declarations follow
+    the neighbouring `FreeModule/*.lean` files, which use Mathlib namespaces (`Submodule`,
+    `LinearMap`) rather than `TauCeti`.
