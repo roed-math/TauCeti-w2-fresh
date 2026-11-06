@@ -7,9 +7,13 @@ module
 
 public import Mathlib.AlgebraicGeometry.AlgebraicCycle.Basic
 public import Mathlib.AlgebraicGeometry.Morphisms.UniversallyOpen
+public import Mathlib.AlgebraicGeometry.Morphisms.SurjectiveOnStalks
 public import Mathlib.AlgebraicGeometry.Noetherian
+public import Mathlib.AlgebraicGeometry.ResidueField
 public import Mathlib.RingTheory.HopkinsLevitzki
 public import Mathlib.RingTheory.Length
+public import TauCeti.AlgebraicGeometry.Morphisms.PureRelativeDimension
+import TauCeti.Topology.KrullDimension.Basic
 import TauCeti.Topology.Sober
 
 /-!
@@ -34,9 +38,14 @@ zero otherwise.
 * `TauCeti.finite_maximal_mem_inter`: a closed subset of a quasi-sober `T0` space has finitely many
   generic points in a Noetherian open subset.
 
+* `TauCeti.AlgebraicGeometry.isIso_residueFieldMap_of_surjectiveOnStalks`: a morphism surjective
+  on stalks (for instance the inclusion of a fibre) induces isomorphisms of residue fields.
+
 The remaining declarations are in the namespace `TauCeti.AlgebraicGeometry.Chow`.
 
 * `maximal_mem_preimage_comp_iff`: generic points of the fibres of `f ≫ g` for flat `f`.
+* `height_preimage_singleton_eq`: for `f` of pure relative dimension `n`, a generic point of a
+  fibre has dimension `n` inside the fibre.
 * `fiberLength`: the length of the local ring of the fibre, `fiberLength_ne_top`: it is finite at
   generic points of fibres of a locally Noetherian scheme.
 * `cycleFlatPullback`: the flat pullback `AlgebraicCycle Y ℤ → AlgebraicCycle X ℤ`, additive.
@@ -93,6 +102,21 @@ theorem finite_maximal_mem_inter {X : Type*} [TopologicalSpace X] [QuasiSober X]
 
 end TauCeti
 
+namespace TauCeti.AlgebraicGeometry
+
+/-- A morphism surjective on stalks, such as the inclusion `f.fiberι y` of a fibre, induces
+isomorphisms of residue fields. -/
+instance isIso_residueFieldMap_of_surjectiveOnStalks {X Y : Scheme.{u}} (f : X ⟶ Y)
+    [SurjectiveOnStalks f] (x : X) : IsIso (f.residueFieldMap x) := by
+  rw [ConcreteCategory.isIso_iff_bijective]
+  refine ⟨(f.residueFieldMap x).hom.injective, fun a ↦ ?_⟩
+  obtain ⟨b, rfl⟩ := X.residue_surjective x a
+  obtain ⟨c, rfl⟩ := f.stalkMap_surjective x b
+  exact ⟨Y.residue (f x) c, by
+    rw [← CommRingCat.comp_apply, Scheme.residue_residueFieldMap, CommRingCat.comp_apply]⟩
+
+end TauCeti.AlgebraicGeometry
+
 namespace TauCeti.AlgebraicGeometry.Chow
 
 /-- For a flat morphism `f : X ⟶ Y`, the generic points of `f⁻¹(closure {y})` are the generic
@@ -124,6 +148,26 @@ theorem maximal_mem_preimage_comp_iff [Flat f] {Z : Scheme.{u}} (g : Y ⟶ Z) {x
   · rintro ⟨hxf, hxg⟩
     refine ⟨rfl, fun x' hx' (hx'x : x' ⤳ x) ↦ hxf.2 ?_ hx'x⟩
     exact ((hx'x.map f.continuous).antisymm (hxg.2 hx' (hx'x.map f.continuous))).eq
+
+/-- If `f` has pure relative dimension `n`, a generic point `x` of its fibre has dimension `n`
+inside the fibre `f ⁻¹' {f x}`, for the specialization order induced from `X`: its closure there is
+an irreducible component of the fibre. -/
+theorem height_preimage_singleton_eq {n : ℕ} [PureRelativeDimension n f] {x : X}
+    (hx : Maximal (· ∈ f ⁻¹' {f x}) x) : Order.height (⟨x, rfl⟩ : f ⁻¹' {f x}) = n := by
+  have : QuasiSober (f ⁻¹' {f x}) := (f.fiberHomeo (f x)).symm.isClosedEmbedding.quasiSober
+  have hgen : (⟨x, rfl⟩ : f ⁻¹' {f x}) ∈ genericPoints (f ⁻¹' {f x}) :=
+    TauCeti.mem_genericPoints_iff.mpr fun x' hx' ↦ by
+      have h : (x' : X) ⤳ x := (subtype_specializes_iff _ _).mp hx'
+      exact Subtype.ext (h.antisymm (hx.2 x'.2 h)).eq
+  have h := height_eq_topologicalKrullDim_closure_singleton (⟨x, rfl⟩ : f ⁻¹' {f x})
+  rw [isPureDimensional_iff.mp (PureRelativeDimension.isPureDimensional_preimage (d := n) (f := f)
+    (f x)) _ hgen] at h
+  -- The specialization order of the fibre is the order induced from `X`.
+  have hord : (inferInstance : Preorder (f ⁻¹' {f x})) = specializationPreorder _ :=
+    Preorder.ext fun a b ↦ (subtype_specializes_iff b a).symm
+  have h' : @Order.height _ (specializationPreorder _) (⟨x, rfl⟩ : f ⁻¹' {f x}) = n := by
+    exact_mod_cast h
+  rwa [← hord] at h'
 
 /-- The multiplicity of the flat pullback at a point `x`: the length of the local ring
 `𝒪_{X,x} ⧸ 𝔪_{f x} 𝒪_{X,x}` of the fibre `X_{f x}` at `x`. At a generic point `x` of `f⁻¹(V)`,
