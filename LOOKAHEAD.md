@@ -275,6 +275,16 @@ and near any point of `S`, a section of `π_*ℒ_n`, `n ≥ 2`, freely generates
 `π_*ℒ_(n-1)`. This is the choice of `x` and `y` on `E` that the old split 29 needed. Split 26 now
 also needs split 18.
 
+The thirty-third round left tip `fdb205458e96`. The thirty-fourth round (this one) again found
+`main` unchanged (`3a0189695d62`), so the merge was a no-op. Both suppliers' successor PRs (#28759,
+#28995) are still open, and the branch still uses neither, so there are still no stubs. It rebuilt
+the whole branch from a warm build directory (green, warnings as errors) and reran
+`lookahead-check` (ok). It added no declarations: the next piece, choosing `x` and `y` over one
+common basic open `D(g₂ g₃)`, needs bijectivity of `LocalizedModule.map` to pass from `.powers g` to
+`.powers (g * h)`, for which the pinned Mathlib has no lemma, and too little time was left after
+the rebuild to prove and check it. That transport lemma, then the relation in pole order six over
+`D(g)`, is the next piece; split 27's finiteness is the other open lane.
+
 ## Suppliers and stubs
 
 **No stubs were needed, and the branch has no `TauCeti/Lookahead/` module.** The proved part
@@ -1250,3 +1260,7 @@ In the thirty-third round, the full `lake build` (warnings as errors) and `looka
 `#lint in TauCeti` (15 linters) also passes, with 0 errors in 10414 declarations, on the import
 closure of the new `Geom/PoleSheaf/LocalCoordinates.lean`, run from a scratch file outside the
 repository.
+
+In the thirty-fourth round, the full `lake build` (warnings as errors, about eighteen minutes from
+the warm build directory) and `lookahead-check` pass; no Lean source changed, so `#lint` was not
+rerun.
