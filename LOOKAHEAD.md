@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"chow-flat-pullback","main":"3a0189695d62134a412200ef4237d0bbb2e95d75","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(AlgebraicGeometry/Chow/OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation sequence"},{"n":2,"after":[1],"title":"feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and the localisation sequence"},{"n":3,"after":[],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback of cycles with generic-length multiplicities"},{"n":4,"after":[2,3],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves rational equivalence"},{"n":5,"after":[1,2,3,4],"title":"feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback on Chow groups, functoriality and the base-change square"}]}-->
 
 # Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
 
-Built on `main` at `385ec2ddd8ddf8cc779b78c176308cb9c6b55499` (merged in by the seventh round). Status: **partial**. Splits 1 and
+Built on `main` at `3a0189695d62134a412200ef4237d0bbb2e95d75` (merged in by the sixteenth round). Status: **partial**. Splits 1 and
 2 (the localisation sequence `localization_exact`) are done. The round of 2026-11-06 found `main`
 unchanged and started split 3: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean` now defines the
 cycle-level flat pullback `cycleFlatPullback` with generic-length multiplicities and proves its
@@ -80,6 +80,22 @@ a point of `X ×_Y W` of dimension `k + n` not over the generic point of `W` lie
 dimension `k` of `W` and is generic in its `f`-fibre (so both sides of Stacks 42.20.1 are supported
 on the same points; the points over the generic point of `W` contribute `0` on both sides because
 `r` is a unit there).
+A sixteenth round on 2026-11-06 merged `main` at `3a0189695d6` (only `.github/` workflows
+changed; nothing on the Chow, cycle or order-of-vanishing files), found #29425 still open (head now
+`6ce093654c`) and #29451 still open (head now `6844b1fe1c`), so still no supplier declaration on
+`main`, and did step (α) of item 2(iii) together with the local half of (β), in `RatEquiv.lean`:
+`Scheme.ord_functionFieldMap_algebraMap_stalk` and its quotient form
+`Scheme.ord_functionFieldMap_div_algebraMap_stalk` (for an integral closed subscheme
+`ι : Z ⟶ X` with `ι η_Z = η` and `h : X ⟶ W` with `ι ≫ h` dominant, the order on `Z` at a
+codimension-one `z` of the pullback of `a / b ∈ K(W)` is `ord_{𝒪_{X,ι z} ⧸ 𝔮_η}(h^# a) -
+ord_{𝒪_{X,ι z} ⧸ 𝔮_η}(h^# b)`, the prime written exactly as in `ord_mul_fiberLength_eq_finsum`,
+via `main`'s `Scheme.Hom.functionFieldMap_algebraMap_stalk` and `Scheme.ord_algebraMap_stalk`),
+and `isDominant_subschemeι_pullback_snd` (for `f` flat and `η` the generic point of a component of
+`X ×_Y W`, the reduced closure of `η` dominates `W`, via `main`'s
+`subschemeι_genericPoint_vanishingIdeal_closure_singleton` and `isDominant_iff_genericPoint_eq`).
+So the members `W'` of the pulled-back family are the reduced closures in `X ×_Y W` (embedded into
+`X` by `ι ≫ pullback.fst f i`, a closed immersion), with function `φ r` along
+`ι ≫ pullback.snd f i`.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -228,7 +244,7 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 642 lines), no
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 719 lines), no
 `sorry`:
 
 - `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
@@ -343,6 +359,16 @@ flat local `A → B` with `B` Noetherian of dimension `≤ 1` and `a ∈ A⁰`,
 `ord_A(a) · ℓ_B(B ⧸ 𝔪_A B) = ∑ᶠ 𝔮 min B, ℓ_{B_𝔮}(B_𝔮) · ord_{B/𝔮}(a)` (the image of `a` is a
 non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
 
+`RatEquiv.lean` (sixteenth round) has the pullback of rational functions to the components:
+`Scheme.ord_functionFieldMap_algebraMap_stalk` (for a closed immersion `ι : Z ⟶ X` of a locally
+Noetherian integral `Z` with `ι η_Z = η`, `h : X ⟶ W` to an integral `W` with `ι ≫ h` dominant,
+`z : Z` of coheight `1` and a nonzero germ `a` at `h (ι z)`,
+`Z.ord ((ι ≫ h)^* a) z = (ord_{𝒪_{X,ι z} ⧸ 𝔮_η}(h^# a)).toNat`, with `𝔮_η` the comap of
+`𝔪_{X,η}` along `stalkSpecializes hη`, exactly the ideal of `ord_mul_fiberLength_eq_finsum`),
+`Scheme.ord_functionFieldMap_div_algebraMap_stalk` (the same for `a / b`, as a difference) and
+`isDominant_subschemeι_pullback_snd` (for `f` flat, `W` integral and `η` without proper
+generization in `X ×_Y W`, `(vanishingIdeal (closure {η})).subschemeι ≫ pullback.snd f i` is
+dominant).
 ## What remains
 
 1. (Optional, general dimension theory) an instance `PureRelativeDimension (m + n) (f ≫ g)` for
@@ -386,7 +412,13 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `X ×_Y W` is needed); (iii) the
    assembly into a `RatEquivFamily`. Its support bookkeeping is done by the fifteenth round
    (`height_snd_eq_and_maximal_of_height_eq`, `maximal_mem_preimage_singleton_of_height_eq`).
-   Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
+   (α) and the local half of (β) below are **done by the sixteenth round**
+   (`Scheme.ord_functionFieldMap_div_algebraMap_stalk`, `isDominant_subschemeι_pullback_snd`),
+   with the members taken as reduced closures inside `X ×_Y W` rather than inside `X`; what is
+   left of (β) is to write `r = a / b` (`IsFractionRing.div_surjective` for `𝒪_{W,w}`), subtract
+   two instances of `ord_mul_fiberLength_eq_finsum` for `pullback.snd f i`, and pick for each
+   generic point `x ⤳ y` the point of the reduced closure of `x` over `y` (its range is
+   `closure {x}`) and check it has coheight `1`. Plan for the rest: for a family `F` on `Y` (members `W_j`, functions `r_j`), the family `F'` on
    `X` is indexed by `Σ j, {η' : X ×_Y W_j // η' generic in a component}`, with member
    `W' = (IdealSheafData.vanishingIdeal ⟨closure {pullback.fst η'}, _⟩).subscheme` and function
    `(φ r_j) ^ fiberLength f (pullback.fst η')`, where `φ` is the function-field map of the dominant
@@ -468,7 +500,7 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
   stalks of closed subschemes, not Chow groups: at port time they belong with
   `ker_stalkMap_eq_comap_maximalIdeal` in a stalks-of-closed-immersions file (or next to
   `IdealSheafData.ideal_comap_of_le` in `TauCeti/AlgebraicGeometry/IdealSheaf/Affine.lean`).
-  `RatEquiv.lean` reaches 642 lines with them (fifteenth round), past 600, so the port should
+  `RatEquiv.lean` reaches 719 lines with them (sixteenth round), past 600, so the port should
   open these stalk lemmas, with the other `Scheme` stalk lemmas of `RatEquiv.lean`, as a
   prerequisite PR *feat(AlgebraicGeometry): stalks of closed subschemes and their base changes*.
 - `TauCeti.Ring.ord_algebraMap_of_flat` is general commutative algebra: at port time move it to
@@ -503,7 +535,7 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
    commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
    PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 642
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 719
    lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
    `ord_stalkMap`, `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`,
    `length_localization_stalkSpecializes`, `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
@@ -518,7 +550,9 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `fiberLength_comp_of_ker_le`, `fiberLength_eq_one_of_surjective`, `fiberLength_pullback_snd`,
    `Scheme.ringKrullDim_stalk_le_one`, `ringKrullDim_stalk_pullback_le_one`,
    `height_eq_height_genericPoint_add`, `height_eq_height_genericPoint_add_of_pullback`,
-   `height_snd_eq_and_maximal_of_height_eq` (fifteenth round), and
+   `height_snd_eq_and_maximal_of_height_eq` (fifteenth round),
+   `Scheme.ord_functionFieldMap_algebraMap_stalk`, `Scheme.ord_functionFieldMap_div_algebraMap_stalk`,
+   `isDominant_subschemeι_pullback_snd` (sixteenth round), and
    (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.

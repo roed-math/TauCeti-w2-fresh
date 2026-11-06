@@ -14,7 +14,9 @@ import TauCeti.Algebra.Module.Equiv.Length
 import TauCeti.RingTheory.OrderOfVanishing
 import TauCeti.AlgebraicGeometry.Scheme.StalkSpecializes
 import TauCeti.AlgebraicGeometry.IdealSheaf.Affine
+import TauCeti.AlgebraicGeometry.IdealSheaf.VanishingIdeal
 import TauCeti.AlgebraicGeometry.Morphisms.ClosedImmersion.Basic
+import TauCeti.AlgebraicGeometry.WeilDivisor.Scheme.Order
 import Mathlib.RingTheory.LocalRing.Length
 import Mathlib.RingTheory.TensorProduct.Quotient
 
@@ -43,6 +45,11 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
 * `TauCeti.AlgebraicGeometry.Scheme.ord_stalkMap_of_isClosedImmersion`: for an integral closed
   subscheme `Z`, orders of vanishing in `𝒪_{Z,z}` are orders in the quotient of `𝒪_{X,z}` by the
   prime of the generic point of `Z` (`Scheme.ker_stalkMap_eq_comap_maximalIdeal`);
+* `TauCeti.AlgebraicGeometry.Scheme.ord_functionFieldMap_div_algebraMap_stalk`: for such a `Z`
+  and `h : X ⟶ W` with `Z ⟶ W` dominant, the order on `Z` of the pullback of a rational function
+  `a / b` on `W` is a difference of orders in that quotient
+  (`Scheme.ord_functionFieldMap_algebraMap_stalk`); `Chow.isDominant_subschemeι_pullback_snd`:
+  the reduced components of `X ×_Y W` dominate `W` for `f` flat;
 * `TauCeti.AlgebraicGeometry.Chow.ord_mul_fiberLength_eq_finsum`: for `f` flat over an integral
   scheme, `ord(a) · fiberLength f y` is the sum over the components through `y`, with generic
   points `x`, of `fiberLength f x` times the order of `a` along the component;
@@ -222,6 +229,60 @@ theorem ord_stalkMap_of_isClosedImmersion {Z : Scheme.{u}} [IsIntegral Z] (i : Z
       RingHom.quotientKerEquivOfSurjective_apply_mk]
   rw [← hσ, Ring.ord_ringEquiv]
 
+/-- **Orders along an integral closed subscheme, through a dominant map.** Let `ι : Z ⟶ X` be a
+closed immersion of a locally Noetherian integral scheme, with generic point mapping to `η`, and
+`h : X ⟶ W` a morphism to an integral scheme with `ι ≫ h` dominant. At a codimension-one point
+`z` of `Z`, the order of the pullback to `K(Z)` of a nonzero germ `a` at `h (ι z)` is the order of
+`h^# a` in the quotient of `𝒪_{X,ι z}` by the prime of `η` (`ord_stalkMap_of_isClosedImmersion`).
+This is the factor `ord_{B ⧸ 𝔮}` of `Chow.ord_mul_fiberLength_eq_finsum` for a component `Z` of
+`X`. -/
+theorem ord_functionFieldMap_algebraMap_stalk {Z W : Scheme.{u}} [IsIntegral Z]
+    [IsLocallyNoetherian Z] [IsIntegral W] (ι : Z ⟶ X) [IsClosedImmersion ι] (h : X ⟶ W)
+    [IsDominant (ι ≫ h)] {z : Z} (hz : Order.coheight z = 1) {η : X}
+    (hgen : ι (genericPoint Z) = η) (hη : η ⤳ ι z) {a : W.presheaf.stalk (h (ι z))} (ha : a ≠ 0) :
+    Z.ord ((ι ≫ h).functionFieldMap.hom (algebraMap _ W.functionField a)) z =
+      (_root_.Ring.ord (X.presheaf.stalk (ι z) ⧸ (maximalIdeal (X.presheaf.stalk η)).comap
+          (X.presheaf.stalkSpecializes hη).hom)
+        (Ideal.Quotient.mk _ (h.stalkMap (ι z) a))).toNat := by
+  subst hgen
+  have hmap : (ι ≫ h).functionFieldMap.hom (algebraMap _ W.functionField a) =
+      algebraMap (Z.presheaf.stalk z) Z.functionField ((ι ≫ h).stalkMap z a) :=
+    (ι ≫ h).functionFieldMap_algebraMap_stalk z a
+  have hne : (ι ≫ h).stalkMap z a ≠ 0 := by
+    intro h0
+    rw [h0, map_zero] at hmap
+    exact ha ((map_eq_zero_iff _ (IsFractionRing.injective _ _)).mp
+      ((map_eq_zero_iff _ (RingHom.injective _)).mp hmap))
+  have hcomp : (ι ≫ h).stalkMap z a = ι.stalkMap z (h.stalkMap (ι z) a) := by
+    rw [Scheme.Hom.stalkMap_comp]
+    rfl
+  rw [hmap, ord_algebraMap_stalk hz hne, hcomp, ord_stalkMap_of_isClosedImmersion]
+
+/-- The quotient form of `ord_functionFieldMap_algebraMap_stalk`: a rational function `a / b` on
+`W`, with `a` and `b` nonzero germs at `h (ι z)`, pulls back to a rational function on `Z` whose
+order at `z` is the difference of the orders of `h^# a` and `h^# b` along `Z`. Every rational
+function on `W` has this form (`IsFractionRing.div_surjective`). -/
+theorem ord_functionFieldMap_div_algebraMap_stalk {Z W : Scheme.{u}} [IsIntegral Z]
+    [IsLocallyNoetherian Z] [IsIntegral W] (ι : Z ⟶ X) [IsClosedImmersion ι] (h : X ⟶ W)
+    [IsDominant (ι ≫ h)] {z : Z} (hz : Order.coheight z = 1) {η : X}
+    (hgen : ι (genericPoint Z) = η) (hη : η ⤳ ι z) {a b : W.presheaf.stalk (h (ι z))} (ha : a ≠ 0)
+    (hb : b ≠ 0) :
+    Z.ord ((ι ≫ h).functionFieldMap.hom
+        (algebraMap _ W.functionField a / algebraMap _ W.functionField b)) z =
+      (_root_.Ring.ord (X.presheaf.stalk (ι z) ⧸ (maximalIdeal (X.presheaf.stalk η)).comap
+          (X.presheaf.stalkSpecializes hη).hom)
+        (Ideal.Quotient.mk _ (h.stalkMap (ι z) a))).toNat -
+      (_root_.Ring.ord (X.presheaf.stalk (ι z) ⧸ (maximalIdeal (X.presheaf.stalk η)).comap
+          (X.presheaf.stalkSpecializes hη).hom)
+        (Ideal.Quotient.mk _ (h.stalkMap (ι z) b))).toNat := by
+  have hne {c : W.presheaf.stalk (h (ι z))} (hc : c ≠ 0) :
+      (ι ≫ h).functionFieldMap.hom (algebraMap _ W.functionField c) ≠ 0 :=
+    (map_ne_zero_iff _ (RingHom.injective _)).mpr
+      ((map_ne_zero_iff _ (IsFractionRing.injective _ _)).mpr hc)
+  rw [map_div₀, div_eq_mul_inv, Scheme.ord_mul (hne ha) (inv_ne_zero (hne hb)), Scheme.ord_inv,
+    ord_functionFieldMap_algebraMap_stalk ι h hz hgen hη ha,
+    ord_functionFieldMap_algebraMap_stalk ι h hz hgen hη hb, sub_eq_add_neg]
+
 /-- The minimal prime of `𝒪_{X,y}` attached to a generization `x` of `y` without proper
 generization (the generic point of an irreducible component through `y`). -/
 noncomputable def stalkMinimalPrime (y : X) (x : {x : X // x ⤳ y ∧ ∀ x' : X, x' ⤳ x → x ⤳ x'}) :
@@ -392,6 +453,22 @@ theorem apply_eq_genericPoint_of_forall_specializes [Flat f] [IsIntegral Y] {x :
     Flat.generalizingMap f ((genericPoint_spec Y).specializes (Set.mem_univ (f x)))
   exact ((((hx x' hx').map f.continuous).trans (specializes_of_eq hx'Y)).antisymm
     ((genericPoint_spec Y).specializes trivial)).eq
+
+open Limits in
+/-- **The components of `X ×_Y W` dominate `W`.** For `f` flat, `i : W ⟶ Y` with `W` integral
+and `η` the generic point of an irreducible component of `X ×_Y W`, the reduced closure of `η`
+maps dominantly to `W`: `η` lies over the generic point of `W`
+(`apply_eq_genericPoint_of_forall_specializes` for the flat base change). Rational functions on
+`W` pull back along this map to the components of `f⁻¹(W)`
+(`Scheme.ord_functionFieldMap_div_algebraMap_stalk`). -/
+theorem isDominant_subschemeι_pullback_snd [Flat f] {W : Scheme.{u}} [IsIntegral W] (i : W ⟶ Y)
+    {η : ↥(pullback f i)} (hη : ∀ x' : ↥(pullback f i), x' ⤳ η → η ⤳ x') :
+    IsDominant ((Scheme.IdealSheafData.vanishingIdeal ⟨closure {η}, isClosed_closure⟩).subschemeι ≫
+      pullback.snd f i) := by
+  rw [isDominant_iff_genericPoint_eq]
+  exact (congrArg (pullback.snd f i).base
+    (Scheme.IdealSheafData.subschemeι_genericPoint_vanishingIdeal_closure_singleton η)).trans
+    (apply_eq_genericPoint_of_forall_specializes (pullback.snd f i) hη)
 
 /-- Let `f : X ⟶ Y` be flat of pure relative dimension `n` between schemes locally of finite type
 over a field `K`, with `Y` integral. Every irreducible component of `X`, with generic point `x`,
