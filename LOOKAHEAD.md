@@ -16,7 +16,12 @@ PRs still open) completed the dimension shift (`height_eq_height_add`) and defin
 `afa08a3ed16`, #29425 still at head `d327f903b0`, #29451 still open) proved functoriality on
 cycles: `fiberLength_comp` (multiplicativity of fibre lengths, from Mathlib's
 `IsLocalRing.length_baseChange`), `cycleFlatPullback_comp` and `cyclesFlatPullback_comp`. Split 3
-is now complete.
+is now complete. A fifth round the same day (main still `afa08a3ed16`, #29425 still at head
+`d327f903b0`, #29451 still open at `ed4b4ac70d`) started split 4 with
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean`: the local computation of Fulton
+Proposition 1.7 / Stacks Lemma 42.20.1 (`Ring.ord_algebraMap_of_flat`, `ord_stalkMap`: a flat local
+map multiplies orders of vanishing by the fibre length) and the comparison of flat pullback with
+restriction to opens (`fiberLength_of_isOpenImmersion`, `cycleFlatPullback_of_isOpenImmersion`).
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -154,14 +159,34 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 102 lines), no
+`sorry`:
+
+- `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
+  `Ring.ord B (algebraMap A B a) = Ring.ord A a * length B (B ⧸ 𝔪_A B)` (`B ⧸ aB ≅ B ⊗ (A ⧸ aA)`
+  by `Algebra.TensorProduct.quotIdealMapEquivTensorQuot`, then `IsLocalRing.length_baseChange`);
+- `ord_stalkMap`: for `f` flat, `ord_{𝒪_{X,x}}(f^# a) = ord_{𝒪_{Y,f x}}(a) * fiberLength f x`;
+- `fiberLength_of_isOpenImmersion`: an open immersion has fibre length `1` everywhere;
+- `cycleFlatPullback_of_isOpenImmersion`: `cycleFlatPullback j = cycleRestrict j` for an open
+  immersion `j` (so restriction is the relative-dimension-`0` flat pullback, as the README says).
+
 ## What remains
 
 1. (Optional, general dimension theory) an instance `PureRelativeDimension (m + n) (f ≫ g)` for
    `f`, `g` flat and locally of finite type of pure relative dimensions `n`, `m` (the fibre dimension of a
    composite). `cyclesFlatPullback_comp` currently states it as an instance
    argument; `cycleFlatPullback_comp` on `AlgebraicCycle` needs no dimension hypothesis at all.
-2. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
-   Proposition 1.7 / Stacks 42.20, needs the norm formula from `chow-proper-pushforward`).
+2. (Split 4, started) Fulton Theorem 1.7: flat pullback preserves rational equivalence. Done: the
+   local length computation (`ord_stalkMap`) and the open-immersion comparison. Remaining: for
+   `W ⊆ Y` integral of dimension `k + 1` and `r ∈ R(W)^*`, write `f⁻¹(W) = ⋃ W'_i` with
+   multiplicities `m_i = fiberLength` at the generic points and show
+   `f^*[div r] = Σ m_i [div (r|W'_i)]` (Stacks Lemma 42.20.1). The missing algebra is the order
+   formula over minimal primes (Fulton, Appendix A.3, *Order functions*; Stacks Section 42.3):
+   for a one-dimensional Noetherian local ring `B` and a nonzerodivisor `b`, `ℓ_B(B ⧸ bB) = Σ_{𝔮 minimal} ℓ_{B_𝔮}(B_𝔮) · ord_{B/𝔮}(b)`, applied to
+   `B = 𝒪_{f⁻¹(W),x}` together with `ord_stalkMap`. Then `cyclesFlatPullback_mem_ratEquiv` follows
+   by summing over a `RatEquivFamily` (members `W'_i`, functions `r|W'_i`, local finiteness as in
+   `cycleFlatPullback`). This step needs no supplier: Fulton's proof via the norm formula is
+   avoidable with the Stacks route.
 3. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
    `flatPullback_properPushforward` (Stacks 42.15.1 on cycles, then descent), with the supplier's
    Chow-level pushforward stubbed.
@@ -191,6 +216,13 @@ no `sorry`:
 - The branch's former duplicate `TauCeti.AlgebraicGeometry.isIso_residueFieldMap_of_surjectiveOnStalks`
   was removed in favour of `main`'s `Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`
   (`TauCeti/AlgebraicGeometry/ResidueField.lean`).
+- `TauCeti.Ring.ord_algebraMap_of_flat` is general commutative algebra: at port time move it to
+  `TauCeti/RingTheory/OrderOfVanishing.lean` (left in the Chow file to avoid rebuilding everything
+  downstream of that module).
+- With `cycleFlatPullback_of_isOpenImmersion`, a reviewer may ask to define `cycleRestrict` as
+  `cycleFlatPullback j` (Reuse rubric). It is kept separate because `cycleRestrict` needs neither
+  flatness nor local Noetherianity and has a definitional `apply` lemma used throughout
+  `Localization.lean`; the comparison lemma records the agreement.
 - `Localization.lean` assumes `[IsLocallyNoetherian X] [IsLocallyNoetherian U]` as instances
   next to `LocallyOfFiniteType (X ↘ Spec (.of K))`, which implies both; the Chow groups need the
   instances to be stated. A reviewer may ask to derive them instead.
@@ -210,8 +242,11 @@ no `sorry`:
    in two: dimension shift
    (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
    flat pullback of cycles with generic-length multiplicities*.
-4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean`; adds
-   `cyclesFlatPullback_mem_ratEquiv`. After: 2, 3.
+4. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 102
+   lines); adds `Ring.ord_algebraMap_of_flat`, `ord_stalkMap`, `fiberLength_of_isOpenImmersion`,
+   `cycleFlatPullback_of_isOpenImmersion`, and (remaining) `cyclesFlatPullback_mem_ratEquiv`.
+   After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
+   rational equivalence*.
 5. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback/BaseChange.lean` (stubs of the supplier in
    `TauCeti/Lookahead/ChowFlatPullback/Stubs.lean` until it lands); adds `ChowGroup.flatPullback`,
    `flatPullback_comp`, `flatPullback_properPushforward`. After: 1, 2, 3, 4. Completes the target.
