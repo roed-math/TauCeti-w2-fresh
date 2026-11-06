@@ -45,13 +45,17 @@ theorem TauCeti.AlgebraicGeometry.AtWorstNodalOfRelativeDimensionOne.of_etale_co
 
 ## Split plan
 
-The whole proof is about 260 lines, so it is one pull request.
+The whole proof is about 320 lines, so it is one pull request.
 
 1. **feat: prestable models from a special fibre with only ordinary nodes** (after: none, but it
    needs the supplier's étale-locality theorem on `main`).
    - `TauCeti/AlgebraicGeometry/Curves/Node/Ordinary.lean` (new):
      `IsOrdinaryNodeOrSmoothAt` (étale-local ordinary double point or smooth point of a scheme over
      a field), `isOrdinaryNodeOrSmoothAt_nodeAlgebra` (witness: every point of the split node chart),
+     `isOrdinaryNodeOrSmoothAt_of_mem_smoothLocus` (points of the smooth locus of a syntomic curve;
+     the extension-free half of the converse),
+     `isOrdinaryNodeOrSmoothAt_pullback_fst_of_mem_smoothLocus` (the same after any field
+     extension),
      `AffineAtWorstNodalOfRelativeDimensionOne.comp_spec_map_of_etale` (nodality survives an étale
      change of affine base, from `Scheme.singularLocus_eq_of_formallyUnramified_base`),
      `IsOrdinaryNodeOrSmoothAt.exists_etale`,
@@ -59,7 +63,9 @@ The whole proof is about 260 lines, so it is one pull request.
      `AtWorstNodalOfRelativeDimensionOne.of_baseChange_isOrdinaryNodeOrSmoothAt` (after any field
      extension, e.g. an algebraic closure; uses fpqc descent on `main`),
      `AtWorstNodalOfRelativeDimensionOne.of_forall_exists_isSeparable` (pointwise finite separable
-     extensions).
+     extensions),
+     `AtWorstNodalOfRelativeDimensionOne.of_forall_notMem_smoothLocus_exists_isSeparable` (for a
+     syntomic curve, finite separable extensions are needed only at the singular points).
    - `TauCeti/AlgebraicGeometry/Curves/StableReduction/Model/NodalSpecialFiber.lean` (new): the
      exported theorems `TauCeti.Model.prestableFamily_toBase_of_specialFiber` and
      `TauCeti.Model.prestableFamily_toBase_of_specialFiber_of_isSeparable`.
@@ -84,8 +90,11 @@ with a finite separable extension chosen at each point. Design choices recorded 
 
 What remains:
 
-1. The **converse** that makes the two formulations *equivalent*: a nodal curve over a field
-   has, at each point, a finite separable extension over which the point is an ordinary node or
+1. The **converse** that makes the two formulations *equivalent*. Its smooth half is proved
+   (`isOrdinaryNodeOrSmoothAt_of_mem_smoothLocus`, no extension needed, and its base-change form;
+   consequently `of_forall_notMem_smoothLocus_exists_isSeparable` asks for separable extensions
+   only at singular points). What remains is the
+   singular half: a nodal curve over a field has, at each singular point, a finite separable extension over which the point is an ordinary node or
    smooth (and hence the algebraic-closure and the pointwise-separable hypotheses are equivalent,
    both being equivalent to the special fibre being prestable). This is the special-fibre case of
    the supplier's local normal form (étale `R ⊂ R'`, `U ⟶ Spec R'[u,v]/(uv - πⁿ)`), whose pinned

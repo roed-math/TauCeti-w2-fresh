@@ -9,6 +9,7 @@ public import TauCeti.AlgebraicGeometry.Curves.Node.Descent
 public import TauCeti.Lookahead.PrestableModelOfNodalSpecialFiber.Stubs
 import TauCeti.AlgebraicGeometry.Curves.Node.Locality
 import TauCeti.AlgebraicGeometry.Curves.SingularLocus.Base
+import TauCeti.AlgebraicGeometry.Morphisms.Smooth.PureRelativeDimension
 
 /-!
 # Curves with only ordinary nodes are nodal
@@ -31,6 +32,8 @@ some field extension `F ⟶ L`, for instance after passing to an algebraic closu
 
 ## Main results
 
+* `TauCeti.AlgebraicGeometry.isOrdinaryNodeOrSmoothAt_of_mem_smoothLocus`: points of the smooth
+  locus of a syntomic curve are smooth points.
 * `TauCeti.AlgebraicGeometry.AffineAtWorstNodalOfRelativeDimensionOne.comp_spec_map_of_etale`:
   nodality over an affine base is preserved by an étale change of base ring.
 * `TauCeti.AlgebraicGeometry.AtWorstNodalOfRelativeDimensionOne.of_isOrdinaryNodeOrSmoothAt`: a
@@ -39,6 +42,8 @@ some field extension `F ⟶ L`, for instance after passing to an algebraic closu
   conclusion when this holds after a field extension.
 * `AtWorstNodalOfRelativeDimensionOne.of_forall_exists_isSeparable`: the same conclusion when,
   at each point, this holds after a finite separable extension depending on the point.
+* `AtWorstNodalOfRelativeDimensionOne.of_forall_notMem_smoothLocus_exists_isSeparable`: for a
+  syntomic curve, it suffices to ask this at the points outside the smooth locus.
 
 ## References
 
@@ -74,6 +79,35 @@ point. -/
 theorem isOrdinaryNodeOrSmoothAt_nodeAlgebra (x : Spec (.of (NodeAlgebra F 0))) :
     IsOrdinaryNodeOrSmoothAt (Spec.map (CommRingCat.ofHom (algebraMap F (NodeAlgebra F 0)))) x :=
   .inr ⟨_, 𝟙 _, 𝟙 _, inferInstance, inferInstance, ⟨x, rfl⟩, by simp⟩
+
+/-- A point in the smooth locus of a syntomic curve over a field is a smooth point, hence an
+ordinary node or a smooth point. This is the half of the converse of the nodal criterion that
+needs no field extension. -/
+theorem isOrdinaryNodeOrSmoothAt_of_mem_smoothLocus (f : X ⟶ Spec (.of F))
+    [SyntomicOfRelativeDimension 1 f] {x : X} (hx : x ∈ f.smoothLocus) :
+    IsOrdinaryNodeOrSmoothAt f x := by
+  have : PureRelativeDimension 1 f := .of_syntomicOfRelativeDimension f
+  exact .inl ⟨f.smoothLocus, hx, inferInstance⟩
+
+/-- After any field extension `F ⟶ L`, a point of the base change lying over a point of the
+smooth locus is a smooth point, hence an ordinary node or a smooth point. -/
+theorem isOrdinaryNodeOrSmoothAt_pullback_fst_of_mem_smoothLocus (L : Type u) [Field L]
+    [Algebra F L] (f : X ⟶ Spec (.of F)) [SyntomicOfRelativeDimension 1 f]
+    {y : ↥(pullback (Spec.map (CommRingCat.ofHom (algebraMap F L))) f)}
+    (hy : pullback.snd _ f y ∈ f.smoothLocus) :
+    IsOrdinaryNodeOrSmoothAt (pullback.fst _ f) y := by
+  let g := Spec.map (CommRingCat.ofHom (algebraMap F L))
+  have h₁ : (pullbackSymmetry g f).hom y ∈ (pullback.snd f g).smoothLocus := by
+    refine Scheme.Hom.preimage_smoothLocus_le_smoothLocus_pullback_snd f g ?_
+    rw [Scheme.Hom.mem_preimage, ← Scheme.Hom.comp_apply, pullbackSymmetry_hom_comp_fst]
+    exact hy
+  have h₂ : y ∈ ((pullbackSymmetry g f).hom ≫ pullback.snd f g).smoothLocus := by
+    rw [← Scheme.Hom.preimage_smoothLocus_eq]
+    exact h₁
+  have h₃ : y ∈ (pullback.fst g f).smoothLocus := by
+    convert h₂ using 2
+    exact (pullbackSymmetry_hom_comp_snd g f).symm
+  exact isOrdinaryNodeOrSmoothAt_of_mem_smoothLocus _ h₃
 
 /-- Composing with an étale change of affine base `Spec S ⟶ Spec R` preserves the nodal-curve
 criterion: syntomicity of relative dimension one is preserved, and the singular subscheme relative
@@ -166,5 +200,26 @@ theorem AtWorstNodalOfRelativeDimensionOne.of_forall_exists_isSeparable (f : X �
       atWorstNodalOfRelativeDimensionOne_iff_of_isAffine _ (Iso.refl _), Iso.refl_hom,
       Category.comp_id]
     exact this.comp_spec_map_of_etale (R := F)
+
+/-- **The criterion with finite separable residue extensions at singular points.** A syntomic
+curve over a field `F` is at worst nodal if each point outside its smooth locus has, after some
+finite separable extension `F ⟶ L` depending on the point, a point above it in the base change
+that is an ordinary node or a smooth point. -/
+theorem AtWorstNodalOfRelativeDimensionOne.of_forall_notMem_smoothLocus_exists_isSeparable
+    (f : X ⟶ Spec (.of F)) [SyntomicOfRelativeDimension 1 f]
+    (h : ∀ x ∉ f.smoothLocus, ∃ (L : Type u) (_ : Field L) (_ : Algebra F L)
+      (_ : FiniteDimensional F L) (_ : Algebra.IsSeparable F L)
+      (y : ↥(pullback (Spec.map (CommRingCat.ofHom (algebraMap F L))) f)),
+      pullback.snd _ f y = x ∧ IsOrdinaryNodeOrSmoothAt (pullback.fst _ f) y) :
+    AtWorstNodalOfRelativeDimensionOne f := by
+  refine AtWorstNodalOfRelativeDimensionOne.of_forall_exists_isSeparable f fun x ↦ ?_
+  by_cases hx : x ∈ f.smoothLocus
+  · have : Surjective (Spec.map (CommRingCat.ofHom (algebraMap F F))) :=
+      ((flat_and_surjective_SpecMap_iff (CommRingCat.ofHom (algebraMap F F))).mpr
+        (RingHom.faithfullyFlat_algebraMap_iff.mpr inferInstance)).2
+    obtain ⟨y, hy⟩ := (pullback.snd (Spec.map (CommRingCat.ofHom (algebraMap F F))) f).surjective x
+    exact ⟨F, inferInstance, inferInstance, inferInstance, inferInstance, y, hy,
+      isOrdinaryNodeOrSmoothAt_pullback_fst_of_mem_smoothLocus F f (hy ▸ hx)⟩
+  · exact h x hx
 
 end TauCeti.AlgebraicGeometry
