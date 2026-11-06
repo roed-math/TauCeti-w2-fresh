@@ -2,7 +2,8 @@
 
 # Lookahead: `chow-flat-pullback` (SchemeAndStackFoundations, Layer 5, §5.2)
 
-Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. Status: **partial**. This round merged `main` forward from `72cbdfb14e3` without conflicts.
+Built on `main` at `afa08a3ed16fb167e35de371afb1eb03fbc5913a`. Status: **partial**. This round found `main` unchanged since the previous round and completed split 2
+(the localisation sequence `localization_exact`).
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -66,30 +67,35 @@ no `sorry`:
   `CH_k(X) →+ CH_k(U)` (flat pullback along `j`), surjective;
 - `ChowGroup.restrict_comp_pushforward`: `CH_k(Z) → CH_k(X) → CH_k(U)` composes to zero for a
   closed immersion onto the complement.
+- `TauCeti.AlgebraicGeometry.Scheme.Hom.range_imageι` (the scheme-theoretic image of a
+  quasi-compact `f` has the closure of `range f` as its points), `Scheme.Hom.isIntegral_image`
+  (instance: integral source ⇒ integral image), and
+  `Scheme.Hom.isIso_functionFieldMap_of_isOpenImmersion` (instance: a dominant open immersion of
+  irreducible schemes induces an isomorphism of function fields);
+- `RatEquivFamily.cycle_mem_cyclesOfDimension`: the cycle of a rational-equivalence family is a
+  `k`-cycle (codimension-one points of a `(k+1)`-dimensional integral `W` have dimension `k`);
+- `RatEquivFamily.closure`: a family on `U` extended to `X` by taking scheme-theoretic images of
+  `W ⟶ U ⟶ X` (a quasi-compact immersion, so `toImage` is a dominant open immersion by Mathlib),
+  the rational functions transported along the function-field isomorphism; local finiteness from
+  quasi-compactness of `j⁻¹ V` for affine `V`;
+- `RatEquivFamily.cycleRestrict_cycle_closure`: the closure family restricts to the family;
+- `ChowGroup.localization_exact`: `Function.Exact (pushforward i) (restrict j K k)` for a closed
+  immersion `i` onto the complement of `U`; with `ChowGroup.restrict_surjective` this is the
+  localisation sequence `CH_k(Z) → CH_k(X) → CH_k(U) → 0` (Fulton Proposition 1.8).
 
 ## What remains
 
-1. (Split 2, rest) `localization_exact`: the remaining inclusion
-   `ker (ChowGroup.restrict j K k) ≤ range (ChowGroup.pushforward i)`. If `α|U` is
-   `Σ div r_j` on a family `W_j` in `U`, take the closures `W̄_j` in `X` (reduced closed
-   subschemes, integral of the same dimension, with `W_j` open and dense in `W̄_j`, so the same
-   function field), check the closures form a locally finite family in the locally Noetherian `X`
-   (each point has a Noetherian neighbourhood meeting finitely many), and apply
-   `ker_cyclesRestrict_eq_range_cyclesPushforward` to `α − Σ div r̄_j`.
-   Concrete route found this round: take `W̄_j` to be Mathlib's scheme-theoretic image
-   `(W_j.i ≫ j).imageι` (`Mathlib/AlgebraicGeometry/IdealSheaf/Subscheme.lean`), a closed
-   immersion whose `toImage` is dominant once `W_j.i ≫ j` is quasi-compact. The pinned Mathlib
-   has neither (a) quasi-compactness of an open immersion into a locally Noetherian scheme, nor
-   (b) integrality of `f.image` for `f` quasi-compact with integral source, nor (c) that
-   `f.toImage` is an open immersion when `f` is an immersion. These three lemmas, with
-   `Scheme.ord_functionFieldMap` along `toImage`, give the closure family; they open split 2's
-   remaining work (or a small prerequisite split if they exceed its budget).
-2. (Split 3) `Chow.cyclesFlatPullback` for `f` flat with `PureRelativeDimension n f` (Tau Ceti's
+1. (Split 3) `Chow.cyclesFlatPullback` for `f` flat with `PureRelativeDimension n f` (Tau Ceti's
    carrier): `f^*[V] = Σ_ξ length(O_{f⁻¹V, ξ}) [ξ]` over generic points of `f⁻¹(V)`, its local
    finiteness, the dimension shift `k ↦ k + n`, and `(g f)^* = f^* g^*` on cycles.
-3. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
+   Suggested route: for flat `f`, `ξ` is a generic point of `f⁻¹(closure {y})` iff `f ξ = y` and
+   `ξ` is a generic point of its fibre (going down), so `(f^* α)(x) = e(x) · α(f x)` with
+   `e(x) = length 𝒪_{X_{f x}, x}` (finite exactly at generic points of fibres). Local finiteness
+   then reduces to local finiteness of the irreducible components of `f⁻¹(supp α)` in the locally
+   Noetherian `X`.
+2. (Split 4) Fulton Theorem 1.7: flat pullback preserves rational equivalence (via Fulton
    Proposition 1.7 / Stacks 42.20, needs the norm formula from `chow-proper-pushforward`).
-4. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
+3. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
    `flatPullback_properPushforward` (Stacks 42.15.1 on cycles, then descent), with the supplier's
    Chow-level pushforward stubbed.
 
@@ -100,6 +106,10 @@ no `sorry`:
   already has the `[X.Over (Spec (.of k))] [LocallyOfFiniteType (X ↘ Spec (.of k))]` variables),
   next to `topologicalKrullDim_closure_singleton_eq_toNat_trdeg_residueField`. They were left in
   the Chow file on this branch to avoid rebuilding everything downstream of that module.
+- The three `Scheme.Hom` lemmas on scheme-theoretic images in `Localization.lean` are general. At
+  port time move them to `TauCeti/AlgebraicGeometry/SchemeTheoreticImage/Basic.lean` (next to
+  `isReduced_image`, which `isIntegral_image` uses); they were left here to avoid rebuilding
+  everything downstream of that module. If they move, split 2 needs no new prerequisite split.
 - `Localization.lean` assumes `[IsLocallyNoetherian X] [IsLocallyNoetherian U]` as instances
   next to `LocallyOfFiniteType (X ↘ Spec (.of K))`, which implies both; the Chow groups need the
   instances to be stated. A reviewer may ask to derive them instead.
@@ -110,8 +120,8 @@ no `sorry`:
    declarations listed under *What is proved*. After: none. Subject: *feat(AlgebraicGeometry/Chow/
    OpenRestriction): restrict cycles to open subschemes and prove the cycle-level localisation
    sequence*.
-2. Files: `TauCeti/AlgebraicGeometry/Chow/Localization.lean` (on this branch, partial: everything
-   listed above for it; still to add `localization_exact`). After: 1. Subject:
+2. Files: `TauCeti/AlgebraicGeometry/Chow/Localization.lean` (this branch, done, 352 lines). Adds
+   every declaration listed for it above, ending with `ChowGroup.localization_exact`. After: 1. Subject:
    *feat(AlgebraicGeometry/Chow/Localization): restriction of Chow groups to open subschemes and
    the localisation sequence*.
 3. Files: `TauCeti/AlgebraicGeometry/Chow/FlatPullback.lean`; adds `cyclesFlatPullback`, its
