@@ -33,7 +33,9 @@ still open at `d327f903b0`, #29451 still open at `ed4b4ac70d`, so still no suppl
 `length (coker φ) - length (ker φ)` in short exact sequences. An eighth round on 2026-11-06 (main still `385ec2ddd8d`,
 #29425 still open at `d327f903b0`, #29451 still open at `ed4b4ac70d`) added
 `length_quotient_lsmul_submodule_eq` to the same file: the finite-colength invariance of
-`ℓ(M ⧸ aM)` that step 2(b) uses to discard the `B ⧸ 𝔪` pieces of a prime filtration.
+`ℓ(M ⧸ aM)` that step 2(b) uses to discard the `B ⧸ 𝔪` pieces of a prime filtration. A ninth round on 2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`,
+#29451 still open at `ed4b4ac70d`) added `length_quotient_lsmul_quotient_eq_ord` to the same file:
+the contribution `e(B ⧸ 𝔮, b)` of a prime-filtration piece is `ord_{B/𝔮}(b)`.
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -199,6 +201,10 @@ formula; namespace `TauCeti`), no `sorry`:
   `M ⧸ N` has finite length, then `ℓ(N ⧸ aN) = ℓ(M ⧸ aM)` (the snake-lemma additivity with
   `e(M ⧸ N, a) = 0`). `main`'s `length_quotient_lsmul_ideal_eq_ord` is its special case `M = A`,
   `N = I`; the port may re-derive it from the new lemma.
+- `length_quotient_lsmul_quotient_eq_ord` (ninth round): for an ideal `I` and `a : A`,
+  `ℓ_A((A ⧸ I) ⧸ a(A ⧸ I)) = Ring.ord (A ⧸ I) (mk a)` (restriction of scalars along
+  `A ↠ A ⧸ I` preserves length, by `Module.length_eq_of_surjective`). This is the
+  `e(B ⧸ 𝔮, b) = ord_{B/𝔮}(b)` step of 2(b) below; for a prime `𝔮 ∌ b` the kernel vanishes.
 
 ## What remains
 
@@ -233,7 +239,9 @@ formula; namespace `TauCeti`), no `sorry`:
    `IsNoetherianRing.induction_on_isQuotientEquivQuotientPrime`), applied to the
    one-dimensional local ring `B` and a nonzerodivisor `b`: the quotients `B ⧸ 𝔪` contribute `0`
    by (a), and the number of quotients `B ⧸ 𝔮` for minimal `𝔮` is `ℓ_{B_𝔮}(B_𝔮)` after localising the
-   filtration at `𝔮`. Each contributes `e(B ⧸ 𝔮, b) = ord_{B/𝔮}(b)`. With `e_B(B, b) = Ring.ord B b`
+   filtration at `𝔮`. Each contributes `e(B ⧸ 𝔮, b) = ord_{B/𝔮}(b)`. (that identity is
+   `length_quotient_lsmul_quotient_eq_ord`, ninth round; what is left of (b) is the filtration
+   induction and the count of the minimal-prime pieces). With `e_B(B, b) = Ring.ord B b`
    (the kernel vanishes) this is the formula.
 3. (Split 5) `Chow.flatPullback` on `ChowGroup`, functoriality, and
    `flatPullback_properPushforward` (Stacks 42.15.1 on cycles, then descent), with the supplier's
@@ -290,7 +298,7 @@ formula; namespace `TauCeti`), no `sorry`:
    in two: dimension shift
    (through `height_eq_height_add`) and the cycle-level pullback, the second after the first. After: none. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback):
    flat pullback of cycles with generic-length multiplicities*.
-4. Files: `TauCeti/RingTheory/Length.lean` (five general length lemmas, +160 lines, done; the
+4. Files: `TauCeti/RingTheory/Length.lean` (six general length lemmas, +179 lines, done; the
    port may open them as a small prerequisite PR *feat(RingTheory/Length): lengths in four- and
    six-term exact sequences*, which needs no other split) and
    `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 102

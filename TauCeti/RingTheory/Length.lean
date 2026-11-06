@@ -374,6 +374,25 @@ theorem length_quotient_lsmul_ideal_eq_ord (I : Ideal A) (hI : IsFiniteLength A 
   rw [hord]
   exact (WithTop.add_left_cancel hfin (hfilt.trans (add_comm _ _))).symm
 
+/-- **The length of `(A ⧸ I) ⧸ a(A ⧸ I)` is an order of vanishing.** For an ideal `I` and `a : A`,
+the `A`-length of the cokernel of multiplication by `a` on `A ⧸ I` is the order of vanishing of the
+image of `a` in the ring `A ⧸ I`. This is the term `e(A ⧸ 𝔮, a)` of the order formula over minimal
+primes (Stacks, Section 42.3) when `𝔮` is a prime not containing `a`: the kernel then vanishes.
+
+The cokernel is the quotient of `A ⧸ I` by the ideal spanned by the image of `a`, viewed over `A`,
+and lengths over `A` and over its quotient `A ⧸ I` agree (`Module.length_eq_of_surjective`). -/
+theorem length_quotient_lsmul_quotient_eq_ord (I : Ideal A) (a : A) :
+    Module.length A ((A ⧸ I) ⧸ LinearMap.range (LinearMap.lsmul A (A ⧸ I) a))
+      = Ring.ord (A ⧸ I) (Ideal.Quotient.mk I a) := by
+  have hspan : (Ideal.span {Ideal.Quotient.mk I a}).restrictScalars A
+      = LinearMap.range (LinearMap.lsmul A (A ⧸ I) a) := by
+    ext y
+    simp only [Submodule.restrictScalars_mem, Ideal.mem_span_singleton', LinearMap.mem_range,
+      LinearMap.lsmul_apply, Algebra.smul_def, Ideal.Quotient.algebraMap_eq]
+    exact ⟨fun ⟨c, hc⟩ => ⟨c, by rw [← hc, mul_comm]⟩, fun ⟨c, hc⟩ => ⟨c, by rw [← hc, mul_comm]⟩⟩
+  rw [Ring.ord, ← hspan, (Submodule.Quotient.restrictScalarsEquiv A _).length_eq]
+  exact Module.length_eq_of_surjective Ideal.Quotient.mk_surjective
+
 /-- **Additivity of the length index of an endomorphism** (Stacks, Section 42.2, for the
 endomorphisms induced by one ring element). Let `0 → N → M → P → 0` be exact, with endomorphisms
 `φN`, `φM`, `φP` commuting with it. The snake lemma's six-term exact sequence
