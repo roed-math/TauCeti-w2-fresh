@@ -40,7 +40,14 @@ the contribution `e(B ⧸ 𝔮, b)` of a prime-filtration piece is `ord_{B/𝔮}
 `ed4b4ac70d`) finished step 2(b): the new file `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean`
 proves the order formula over minimal primes (`Ring.ord_eq_finsum_minimalPrimes`) by the
 prime-filtration induction, and `RatEquiv.lean` gained its flat-local form
-`Ring.ord_mul_length_eq_finsum_minimalPrimes`, the algebraic core of Stacks Lemma 42.20.1.
+`Ring.ord_mul_length_eq_finsum_minimalPrimes`, the algebraic core of Stacks Lemma 42.20.1. An eleventh round on
+2026-11-06 (main still `385ec2ddd8d`, #29425 still open at `d327f903b0`, #29451 still open at
+`ed4b4ac70d`) started the geometric half of item 2 in `RatEquiv.lean`: `fiberLength` over a point
+with field stalk (`fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`)
+and the length of a stalk localized at a generization (`length_localization_stalkSpecializes`,
+via `main`'s `Scheme.isLocalization_stalkSpecializes` and `RingEquiv.length_self_eq`), and the
+minimal-prime/component correspondence for stalks
+(`Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff`).
 
 The target (README §5.2): flat pullback `f^* : CH_k(Y) → CH_{k+n}(X)` for `f` flat with all fibres
 of pure dimension `n`, `f^*[V] = [f⁻¹(V)]` with generic-length multiplicities, functoriality
@@ -178,7 +185,7 @@ no `sorry`:
   dimension `n`, and `[PureRelativeDimension (m + n) (f ≫ g)]` stated as an instance argument
   (Tau Ceti has no composition instance for `PureRelativeDimension`; see *What remains*).
 
-`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 128 lines), no
+`TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (split 4, in progress, 242 lines), no
 `sorry`:
 
 - `TauCeti.Ring.ord_algebraMap_of_flat`: for a flat local homomorphism `A → B`,
@@ -188,6 +195,19 @@ no `sorry`:
 - `fiberLength_of_isOpenImmersion`: an open immersion has fibre length `1` everywhere;
 - `cycleFlatPullback_of_isOpenImmersion`: `cycleFlatPullback j = cycleRestrict j` for an open
   immersion `j` (so restriction is the relative-dimension-`0` flat pullback, as the README says).
+- `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint` (eleventh round):
+  over a point whose local ring is a field, in particular the generic point of an integral `Y`,
+  `fiberLength f x = ℓ(𝒪_{X,x})` (the multiplicity of a component of `f⁻¹(W)` at its generic
+  point, for the base change `f⁻¹(W) → W`);
+- `length_localization_stalkSpecializes` (eleventh round): for `x ⤳ y`,
+  `ℓ((𝒪_{X,y})_𝔮) = ℓ(𝒪_{X,x})` where `𝔮` is the prime of `x` in `𝒪_{X,y}` (the weight
+  `ℓ(B_𝔮)` of `Ring.ord_mul_length_eq_finsum_minimalPrimes` read at a generic point).
+- `TauCeti.AlgebraicGeometry.Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
+  `Scheme.comap_stalkSpecializes_maximalIdeal_mono`,
+  `Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff` (eleventh round): every
+  prime of `𝒪_{X,y}` is the prime of a generization `x ⤳ y`, these primes are ordered as the
+  generizations are, and the prime of `x` is minimal iff `x` has no proper generization (`x` is
+  the generic point of an irreducible component through `y`).
 
 `TauCeti/RingTheory/Length.lean` (`main`'s file, extended by the seventh round for split 4's order
 formula; namespace `TauCeti`), no `sorry`:
@@ -254,7 +274,14 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `Ring.ord_mul_length_eq_finsum_minimalPrimes`; what remains of item 2 is geometric: identify,
    at a codimension-one point `x` of `f⁻¹(W)`, the minimal primes of `𝒪_{f⁻¹(W),x}` with the
    components `W'_i` through `x`, `ℓ(B_𝔮)` with `fiberLength` at their generic points, and
-   `B ⧸ 𝔮` with `𝒪_{W'_i,x}`, then assemble the `RatEquivFamily`.) Then `cyclesFlatPullback_mem_ratEquiv` follows
+   `B ⧸ 𝔮` with `𝒪_{W'_i,x}`, then assemble the `RatEquivFamily`. The eleventh round did the
+   length half of the second identification: `length_localization_stalkSpecializes` turns
+   `ℓ(B_𝔮)` into `ℓ(𝒪_{f⁻¹(W),η'})` at the generic point `η'` of the component, and
+   `fiberLength_of_apply_eq_genericPoint` turns that into `fiberLength` of the base change
+   `f⁻¹(W) → W`, and `Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff` is the
+   minimal-prime/component bijection at the level of a scheme's stalks. Still missing: the
+   comparison of `fiberLength` of the base change with `fiberLength f` at `η'`,
+   `B ⧸ 𝔮 ≅ 𝒪_{W'_i,x}`, and the assembly.) Then `cyclesFlatPullback_mem_ratEquiv` follows
    by summing over a `RatEquivFamily` (members `W'_i`, functions `r|W'_i`, local finiteness as in
    `cycleFlatPullback`). This step needs no supplier: Fulton's proof via the norm formula is
    avoidable with the Stacks route.
@@ -307,6 +334,13 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
 - The branch's former duplicate `TauCeti.AlgebraicGeometry.isIso_residueFieldMap_of_surjectiveOnStalks`
   was removed in favour of `main`'s `Scheme.Hom.isIso_residueFieldMap_of_surjectiveOnStalks`
   (`TauCeti/AlgebraicGeometry/ResidueField.lean`).
+- `length_localization_stalkSpecializes` is about stalks only: at port time move it to
+  `TauCeti/AlgebraicGeometry/Scheme/StalkSpecializes.lean` (next to
+  `isLocalization_stalkSpecializes`), left in `RatEquiv.lean` to avoid a rebuild. The same holds
+  for the three `TauCeti.AlgebraicGeometry.Scheme` lemmas on primes of stalks in `RatEquiv.lean`
+  (already in that namespace); `main`'s
+  `exists_comap_stalkSpecializes_maximalIdeal_eq_span_singleton` can then be shortened by
+  starting from `exists_comap_stalkSpecializes_maximalIdeal_eq`, whose proof repeats its first half.
 - `TauCeti.Ring.ord_algebraMap_of_flat` is general commutative algebra: at port time move it to
   `TauCeti/RingTheory/OrderOfVanishing.lean` (left in the Chow file to avoid rebuilding everything
   downstream of that module).
@@ -339,9 +373,13 @@ non-zero-divisor by Mathlib's `Module.Flat.isSMulRegular_of_nonZeroDivisors`).
    `TauCeti/RingTheory/OrderOfVanishing/MinimalPrimes.lean` (new, 215 lines, done; general
    commutative algebra, which the port may open with the `Length.lean` lemmas as that prerequisite
    PR, *feat(RingTheory/OrderOfVanishing): the order of vanishing over minimal primes*) and
-   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 128
+   `TauCeti/AlgebraicGeometry/Chow/FlatPullback/RatEquiv.lean` (this branch, started, 242
    lines); adds `Ring.ord_algebraMap_of_flat`, `Ring.ord_mul_length_eq_finsum_minimalPrimes`,
-   `ord_stalkMap`, `fiberLength_of_isOpenImmersion`,
+   `ord_stalkMap`, `fiberLength_of_maximalIdeal_eq_bot`, `fiberLength_of_apply_eq_genericPoint`,
+   `length_localization_stalkSpecializes`, `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`,
+   `Scheme.comap_stalkSpecializes_maximalIdeal_mono`,
+   `Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff`,
+   `fiberLength_of_isOpenImmersion`,
    `cycleFlatPullback_of_isOpenImmersion`, and (remaining) `cyclesFlatPullback_mem_ratEquiv`.
    After: 2, 3. Subject: *feat(AlgebraicGeometry/Chow/FlatPullback): flat pullback preserves
    rational equivalence*.

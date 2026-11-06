@@ -10,6 +10,8 @@ public import TauCeti.AlgebraicGeometry.Chow.FlatPullback
 public import TauCeti.AlgebraicGeometry.Chow.OpenRestriction
 public import TauCeti.RingTheory.OrderOfVanishing.MinimalPrimes
 import Mathlib.RingTheory.Flat.TorsionFree
+import TauCeti.Algebra.Module.Equiv.Length
+import TauCeti.AlgebraicGeometry.Scheme.StalkSpecializes
 import Mathlib.RingTheory.LocalRing.Length
 import Mathlib.RingTheory.TensorProduct.Quotient
 
@@ -29,8 +31,16 @@ flat local homomorphism `A → B` multiplies orders of vanishing by the length o
   dimension at most one and `a` is a non-zero-divisor, `ord_A(a) · ℓ_B(B ⧸ 𝔪_A B)` is the sum over
   the minimal primes `𝔮` of `B` of `ℓ_{B_𝔮}(B_𝔮) · ord_{B ⧸ 𝔮}(a)` (the local form of Stacks,
   Lemma 42.20.1);
+* `TauCeti.AlgebraicGeometry.Scheme.comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff`:
+  the minimal primes of `𝒪_{X,y}` are the primes of the generizations of `y` without proper
+  generization (every prime comes from a generization,
+  `Scheme.exists_comap_stalkSpecializes_maximalIdeal_eq`);
 * `TauCeti.AlgebraicGeometry.Chow.ord_stalkMap`: for `f : X ⟶ Y` flat and `x : X`, pulling a
   germ `a` at `f x` back to `x` multiplies its order of vanishing by `fiberLength f x`;
+* `TauCeti.AlgebraicGeometry.Chow.fiberLength_of_apply_eq_genericPoint`: over the generic point
+  of an integral scheme, `fiberLength f x` is the length of `𝒪_{X,x}`;
+* `TauCeti.AlgebraicGeometry.Chow.length_localization_stalkSpecializes`: for `x ⤳ y`, localizing
+  `𝒪_{X,y}` at the prime of `x` does not change the length of `𝒪_{X,x}`;
 * `TauCeti.AlgebraicGeometry.Chow.cycleFlatPullback_of_isOpenImmersion`: along an open immersion
   `j`, flat pullback of cycles is the restriction `cycleRestrict j` (the fibre lengths are `1`).
 -/
@@ -82,6 +92,72 @@ theorem ord_mul_length_eq_finsum_minimalPrimes [IsNoetherianRing B] [_root_.Ring
 
 end Ring
 
+namespace AlgebraicGeometry.Scheme
+
+open IsLocalRing
+
+variable {X : Scheme.{u}} {x y : X}
+
+/-- **Every prime of a stalk comes from a generization.** Every prime `𝔮` of `𝒪_{X,y}` is the
+prime lying under the maximal ideal of `𝒪_{X,x}` for some generization `x` of `y`: on an affine
+open `Spec R` containing `y`, take `x` to be the point of `R` under `𝔮`. -/
+theorem exists_comap_stalkSpecializes_maximalIdeal_eq (𝔮 : Ideal (X.presheaf.stalk y))
+    [𝔮.IsPrime] :
+    ∃ x : X, ∃ h : x ⤳ y,
+      (maximalIdeal (X.presheaf.stalk x)).comap (X.presheaf.stalkSpecializes h).hom = 𝔮 := by
+  obtain ⟨_, ⟨U, hU, rfl⟩, hyU, -⟩ :=
+    X.isBasis_affineOpens.exists_subset_of_mem_open (Set.mem_univ y) isOpen_univ
+  replace hU : IsAffineOpen U := hU
+  let := X.presheaf.algebra_section_stalk ⟨y, hyU⟩
+  have := hU.isLocalization_stalk ⟨y, hyU⟩
+  set P := hU.primeIdealOf ⟨y, hyU⟩
+  -- The prime `q` of `Γ(X, U)` under `𝔮`, contained in the prime `P` of `y`.
+  let q : Spec Γ(X, U) := ⟨𝔮.comap (algebraMap Γ(X, U) _), inferInstance⟩
+  have hqP : q.asIdeal ≤ P.asIdeal := by
+    rw [← IsLocalization.AtPrime.under_maximalIdeal (X.presheaf.stalk y) P.asIdeal]
+    exact Ideal.comap_mono (le_maximalIdeal (Ideal.IsPrime.ne_top ‹_›))
+  have hxy : hU.fromSpec q ⤳ y :=
+    (((PrimeSpectrum.le_iff_specializes q P).mp hqP).map hU.fromSpec.continuous).trans
+      (specializes_of_eq (hU.fromSpec_primeIdealOf ⟨y, hyU⟩))
+  have hprime : hU.primeIdealOf ⟨_, hxy.mem_open U.isOpen hyU⟩ = q :=
+    hU.fromSpec.isOpenEmbedding.injective (hU.fromSpec_primeIdealOf _)
+  refine ⟨_, hxy, ?_⟩
+  -- Both primes of the localization `𝒪_{X,y}` pull back to `q` on `Γ(X, U)`.
+  rw [← IsLocalization.map_under P.asIdeal.primeCompl (X.presheaf.stalk y)
+      ((maximalIdeal _).comap (X.presheaf.stalkSpecializes hxy).hom),
+    ← IsLocalization.map_under P.asIdeal.primeCompl (X.presheaf.stalk y) 𝔮]
+  congr 1
+  exact (comap_germ_comap_stalkSpecializes_maximalIdeal hU hyU hxy).trans (congrArg _ hprime)
+
+/-- The primes of `𝒪_{X,y}` attached to generizations of `y` are ordered as the generizations
+are: if `x ⤳ x'`, the prime of `x` is contained in the prime of `x'`. -/
+theorem comap_stalkSpecializes_maximalIdeal_mono {x' : X} (h : x ⤳ y)
+    (h' : x' ⤳ y) (hxx' : x ⤳ x') :
+    (maximalIdeal (X.presheaf.stalk x)).comap (X.presheaf.stalkSpecializes h).hom ≤
+      (maximalIdeal (X.presheaf.stalk x')).comap (X.presheaf.stalkSpecializes h').hom := by
+  have hcomp : X.presheaf.stalkSpecializes h = X.presheaf.stalkSpecializes h' ≫
+      X.presheaf.stalkSpecializes hxx' := (TopCat.Presheaf.stalkSpecializes_comp _ _ _).symm
+  rw [hcomp, CommRingCat.hom_comp, ← Ideal.comap_comap]
+  refine Ideal.comap_mono (le_maximalIdeal ?_)
+  exact (Ideal.comap_isPrime _ (maximalIdeal (X.presheaf.stalk x))).ne_top
+
+/-- **Minimal primes of a stalk.** For a generization `x` of `y`, the prime of `𝒪_{X,y}`
+attached to `x` is minimal exactly when `x` has no proper generization, that is, when `x` is the
+generic point of an irreducible component through `y`. -/
+theorem comap_stalkSpecializes_maximalIdeal_mem_minimalPrimes_iff (h : x ⤳ y) :
+    (maximalIdeal (X.presheaf.stalk x)).comap (X.presheaf.stalkSpecializes h).hom ∈
+        minimalPrimes (X.presheaf.stalk y) ↔ ∀ x' : X, x' ⤳ x → x ⤳ x' := by
+  refine ⟨fun hmin x' hx' ↦ ?_, fun H ↦ ⟨⟨inferInstance, bot_le⟩, fun 𝔮 h𝔮 hle ↦ ?_⟩⟩
+  · refine specializes_of_comap_stalkSpecializes_maximalIdeal_le h (hx'.trans h) ?_
+    exact hmin.2 ⟨inferInstance, bot_le⟩
+      (comap_stalkSpecializes_maximalIdeal_mono (hx'.trans h) h hx')
+  · have := h𝔮.1
+    obtain ⟨x', hx', rfl⟩ := exists_comap_stalkSpecializes_maximalIdeal_eq 𝔮
+    exact comap_stalkSpecializes_maximalIdeal_mono h hx'
+      (H x' (specializes_of_comap_stalkSpecializes_maximalIdeal_le hx' h hle))
+
+end AlgebraicGeometry.Scheme
+
 namespace AlgebraicGeometry.Chow
 
 variable {X Y : Scheme.{u}} (f : X ⟶ Y)
@@ -98,6 +174,44 @@ theorem ord_stalkMap [Flat f] (x : X) (a : Y.presheaf.stalk (f x)) :
   have : IsLocalHom (algebraMap (Y.presheaf.stalk (f x)) (X.presheaf.stalk x)) :=
     inferInstanceAs (IsLocalHom (f.stalkMap x).hom)
   exact Ring.ord_algebraMap_of_flat a
+
+/-- Over a point whose local ring is a field (for instance the generic point of an integral
+scheme), the closed fibre of `𝒪_{f x} → 𝒪_{X,x}` is all of `𝒪_{X,x}`, so `fiberLength f x` is the
+length of the local ring `𝒪_{X,x}`. This identifies the multiplicity of a component `W'` of
+`f⁻¹(W)` in `f^*[W]` with the length of `𝒪_{f⁻¹(W),η'}` at its generic point `η'`. -/
+theorem fiberLength_of_maximalIdeal_eq_bot {x : X}
+    (h : IsLocalRing.maximalIdeal (Y.presheaf.stalk (f x)) = ⊥) :
+    fiberLength f x = Module.length (X.presheaf.stalk x) (X.presheaf.stalk x) := by
+  rw [fiberLength, h, Ideal.map_bot]
+  exact (Submodule.quotEquivOfEqBot _ rfl).length_eq
+
+/-- Over the generic point of an integral scheme, `fiberLength f x` is the length of `𝒪_{X,x}`
+(the local ring at the generic point is the function field). -/
+theorem fiberLength_of_apply_eq_genericPoint [IsIntegral Y] {x : X} (hx : f x = genericPoint Y) :
+    fiberLength f x = Module.length (X.presheaf.stalk x) (X.presheaf.stalk x) := by
+  refine fiberLength_of_maximalIdeal_eq_bot f ?_
+  have : ∀ y : Y, y = genericPoint Y → IsLocalRing.maximalIdeal (Y.presheaf.stalk y) = ⊥ := by
+    rintro y rfl
+    exact IsLocalRing.maximalIdeal_eq_bot (R := Y.functionField)
+  exact this _ hx
+
+/-- **Lengths of stalks at generizations.** For a specialization `x ⤳ y`, the length of the
+localization of `𝒪_{X,y}` at the prime of `x` is the length of `𝒪_{X,x}`
+(`Scheme.isLocalization_stalkSpecializes`). For a minimal prime `𝔮` of `𝒪_{X,y}` this computes the
+weight `ℓ(B_𝔮)` of `Ring.ord_mul_length_eq_finsum_minimalPrimes` as a length at the generic point
+of a component through `y`. -/
+theorem length_localization_stalkSpecializes {x y : X} (h : x ⤳ y) :
+    Module.length
+        (Localization.AtPrime ((IsLocalRing.maximalIdeal (X.presheaf.stalk x)).comap
+          (X.presheaf.stalkSpecializes h).hom))
+        (Localization.AtPrime ((IsLocalRing.maximalIdeal (X.presheaf.stalk x)).comap
+          (X.presheaf.stalkSpecializes h).hom)) =
+      Module.length (X.presheaf.stalk x) (X.presheaf.stalk x) := by
+  let := (X.presheaf.stalkSpecializes h).hom.toAlgebra
+  have := Scheme.isLocalization_stalkSpecializes h
+  exact (IsLocalization.algEquiv (Ideal.primeCompl ((IsLocalRing.maximalIdeal
+    (X.presheaf.stalk x)).comap (X.presheaf.stalkSpecializes h).hom)) _
+      (X.presheaf.stalk x)).toRingEquiv.length_self_eq
 
 /-- The fibre length of an open immersion is `1`: its stalk maps are isomorphisms, so the
 fibre's local ring at `x` is the residue field `κ(x)`. -/
