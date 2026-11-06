@@ -7,11 +7,12 @@ interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 
 §9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`.
 
 Earlier rounds added the material of splits 1–3: the counting half of the induction on proper
-subspaces, and the translation between index subspaces and grid-point subspaces. Five later
+subspaces, and the translation between index subspaces and grid-point subspaces. Six later
 rounds on 2026-11-06 (resuming at `107089e3b11`, `a38b52feaed`, `4d992c71939`,
-`08abe8146a9` and `8a07eab50a8`, the last at 09:22 UTC) found `main` unmoved, so each merge was empty, and supplier PR #28644 still open at head `583a153b95f` with
-nothing the rank argument consumes. They added no mathematics; the branch still builds and passes
-`lookahead-check`. `main` and pinned Mathlib still have no zero or multiplicity estimate,
+`08abe8146a9`, `8a07eab50a8` and `1e5efa090b8`, the last at 09:37 UTC) found `main` unmoved at
+`afa08a3ed16`, so each merge was empty, and supplier PR #28644 still open at head `583a153b95f`
+with nothing the rank argument consumes. They added no mathematics; the branch still builds and
+passes `lookahead-check`. `main` and pinned Mathlib still have no zero or multiplicity estimate,
 Philippon-type or otherwise, that split 4 could reuse. What remains is the multiplicity estimate
 of split 4, which does not fit in one round, and the assembly in split 5.
 
