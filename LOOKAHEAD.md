@@ -1114,7 +1114,7 @@ of the README's action on `x`, `y` and the invariant differential before adding 
 
 ## Verification
 
-`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`, and in the twenty-fifth through twenty-eighth rounds on `385ec2ddd8dd`) and
+`lake exe cache get`, `lake build` (green, warnings as errors; rerun in the nineteenth through twenty-fourth rounds on `afa08a3ed16f`, and in the twenty-fifth through twenty-ninth rounds on `385ec2ddd8dd`) and
 `/opt/round/lookahead-check` all pass. In the twenty-eighth round, `#lint in TauCeti` (15 linters) passes, with 0 errors in
 10314 declarations, on the import closure of `Geom/PoleSheaf/LocallyFree.lean` and
 `Geom/PositiveDegree/BaseChange.lean`, run from a scratch file outside the repository. In the eighteenth round, the new proofs build with
@@ -1139,3 +1139,5 @@ closure of the modules that round changed (`Geom/PositiveDegree/DirectImage.lean
 `Geom/PositiveDegree/BaseChange.lean`, `Geom/PoleSheaf/DirectImage.lean`,
 `Geom/PoleSheaf/BaseChange.lean` and `Geom/PoleSheaf/LocallyFree.lean`). They were run from a
 scratch file because `uvx` is not available for `scripts/lint-env.sh`.
+
+In the twenty-ninth round, `main` had not moved, so the branch is unchanged apart from this note. The round re-verified the build (a full `lake build`, 9 minutes) and `lookahead-check`. No new split was started: each of splits 25–29 needs a new construction (spreading out line bundles, the sheaf-level cokernel, or the choice of `x` and `y`), and none would fit in the time the round had left.
