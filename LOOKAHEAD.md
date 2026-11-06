@@ -1,17 +1,23 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"waldschmidt-interpolation-rank","main":"afa08a3ed16fb167e35de371afb1eb03fbc5913a","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: subspaces spanned by Waldschmidt's grid points"},{"n":2,"after":[1],"title":"feat: the rank of Waldschmidt's interpolation matrix and the zero estimate"},{"n":3,"after":[1],"title":"feat: the residual subspace of Waldschmidt's rank argument"},{"n":4,"after":[],"title":"feat: a multiplicity estimate on the additive group times the torus"},{"n":5,"after":[1,2,3,4],"title":"feat: the rank of Waldschmidt's interpolation matrix"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"waldschmidt-interpolation-rank","main":"385ec2ddd8ddf8cc779b78c176308cb9c6b55499","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: subspaces spanned by Waldschmidt's grid points"},{"n":2,"after":[1],"title":"feat: the rank of Waldschmidt's interpolation matrix and the zero estimate"},{"n":3,"after":[1],"title":"feat: the residual subspace of Waldschmidt's rank argument"},{"n":4,"after":[],"title":"feat: a multiplicity estimate on the additive group times the torus"},{"n":5,"after":[1,2,3,4],"title":"feat: the rank of Waldschmidt's interpolation matrix"}]}-->
 
 # Lookahead: `waldschmidt-interpolation-rank` (partial)
 
 Target: DiophantineApproximationAndTranscendence §3.6, "Rank and multiplicity for the
 interpolation matrix" (`waldschmidtInterpolationRank`; W00 §9.2.3, Proposition 9.16, Lemma 9.17;
-§9.3.2, Steps 1–2). Built on `main` at `afa08a3ed16`.
+§9.3.2, Steps 1–2). Built on `main` at `385ec2ddd8d`.
 
 Earlier rounds added the material of splits 1–3: the counting half of the induction on proper
 subspaces, and the translation between index subspaces and grid-point subspaces. Six rounds on
 2026-11-06 (the last at 09:37 UTC) found `main` unmoved at `afa08a3ed16` and added no
 mathematics. The round resuming at `5bb61a91a0b` (09:55 UTC) again found `main` at `afa08a3ed16`
 and supplier PR #28644 still open at head `583a153b95f`. It added one input of the Liouville
-reduction to split 5: `eq_neg_div_of_intCast_mem_span_snoc`. `main` and pinned Mathlib still have
+reduction to split 5: `eq_neg_div_of_intCast_mem_span_snoc`. The round resuming at `87f036711ab`
+(11:40 UTC) merged `main` at `385ec2ddd8d`. Supplier PR #28644 is still open. That merge touched
+none of the files on this branch, and it added no multivariable zero or multiplicity estimate.
+The zero estimates `main` does have are the one-variable real exponential-polynomial ones in
+`Analysis/SpecialFunctions/Exp/ExponentialPolynomial.lean` (Rolle-type, used for
+Gelfond–Schneider), and they do not give the estimate on `𝔾ₐᵈ × 𝔾ₘ`. This round added no
+mathematics. `main` and pinned Mathlib still have
 no zero or multiplicity estimate, Philippon-type or otherwise, that split 4 could reuse. What
 remains is the multiplicity estimate of split 4, which does not fit in one round, and the
 assembly in split 5.
