@@ -7,6 +7,7 @@ module
 
 public import TauCeti.NumberTheory.ModularForms.SiegelFunction.Basic
 import Mathlib.LinearAlgebra.Matrix.FixedDetMatrices
+import TauCeti.Analysis.Complex.UpperHalfPlane.MoebiusAction
 import TauCeti.LinearAlgebra.Matrix.SpecialLinearGroup.Basic
 import TauCeti.LinearAlgebra.Matrix.SpecialLinearGroup.ModularGroup
 import TauCeti.NumberTheory.ModularForms.JacobiTheta.QTheta
@@ -38,6 +39,7 @@ for deciding when a product of Siegel functions of level `N` is a modular functi
 ## Main results
 
 * `TauCeti.ModularForm.siegelFunction_apply_neg_one_div`: `g_r(-1/τ) = -i g_{(r₂, -r₁)}(τ)`.
+* `TauCeti.ModularForm.siegelFunction_neg`: `g_{-r} = -g_r`, the action of `S² = -1`.
 * `TauCeti.ModularForm.exists_siegelFunction_smul_eq_mul`: for every `γ ∈ SL₂(ℤ)` there is a
   twelfth root of unity `ε` with `g_r(γ τ) = ε g_{r γ}(τ)` for all `r` and `τ`.
 
@@ -83,6 +85,20 @@ theorem siegelFunction_apply_neg_one_div (r : Fin 2 → ℝ) {τ : ℂ} (hτ : 0
     ring
   linear_combination (I * qTheta (cexp (2 * π * I * τ))
     (cexp (2 * π * I * (r 1 * τ + ((-r 0 : ℝ) : ℂ))))) * he
+
+/-- **Negating the index**: `g_{-r} = -g_r` on the upper half-plane. This is the action of
+`S² = -1`, which fixes every `τ`. -/
+theorem siegelFunction_neg (r : Fin 2 → ℝ) {τ : ℂ} (hτ : 0 < τ.im) :
+    siegelFunction (-r) τ = -siegelFunction r τ := by
+  have hσ := im_neg_one_div_pos hτ
+  have h₁ := siegelFunction_apply_neg_one_div r hσ
+  have h₂ := siegelFunction_apply_neg_one_div ![r 1, -r 0] hτ
+  have hr : ![(![r 1, -r 0] : Fin 2 → ℝ) 1, -(![r 1, -r 0] : Fin 2 → ℝ) 0] = -r := by
+    ext i; fin_cases i <;> simp
+  rw [hr] at h₂
+  rw [show -1 / (-1 / τ) = τ by field_simp] at h₁
+  rw [h₁, h₂]
+  linear_combination siegelFunction (-r) τ * I_sq
 
 /-- **The transformation of Siegel functions under `SL₂(ℤ)`.** For every `γ ∈ SL₂(ℤ)` there is a
 twelfth root of unity `ε` such that `g_r(γ τ) = ε g_{r γ}(τ)` for every `r ∈ ℝ²` and every `τ` in

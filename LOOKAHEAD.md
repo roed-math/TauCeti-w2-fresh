@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"siegel-function","main":"1b8cb46b5f15ee7b88a66ea05471a460ba2c58d7","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: finite products of Siegel functions and their SL₂(ℤ) transformation"},{"n":2,"after":[1],"title":"feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion"},{"n":3,"after":[1,2],"title":"feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over ℤ[j]"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"siegel-function","main":"08a51bc861c1164cec8967d78702731083676e5d","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: finite products of Siegel functions and their SL₂(ℤ) transformation"},{"n":2,"after":[1],"title":"feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion"},{"n":3,"after":[1,2],"title":"feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over ℤ[j]"}]}-->
 
 # Lookahead: `siegel-function` (ImaginaryQuadraticClassNumber H3.2)
 
-Built on `main` at `1b8cb46b5f1`. Status: **partial**.
+Built on `main` at `08a51bc861c`. Status: **partial**.
 
 ## What `main` already has
 
@@ -61,16 +61,27 @@ uses them yet.
    `exists_siegelProduct_smul_eq_mul`, `siegelProduct_smul_of_dvd_sum` (the roadmap's
    "inverse/product and finite-support exponent-family APIs"). Does not need the supplier.
 2. **feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion** — after: 1.
-   Started on the branch. File `TauCeti/NumberTheory/ModularForms/SiegelFunction/Level.lean`
-   (new, imports only `SiegelFunction.Basic`; does not need the supplier). Proved so far:
+   Started on the branch; does not need the supplier. Files
+   `TauCeti/NumberTheory/ModularForms/SiegelFunction/Level.lean` (new, imports
+   `SiegelFunction.Transform` and `Analysis.Complex.UpperHalfPlane.MoebiusAction`) and
+   `TauCeti/NumberTheory/ModularForms/SiegelFunction/Transform.lean` (existing; adds
+   `siegelFunction_neg`, `g_{-r} = -g_r`, the action of `S² = -1`, next to the `S` law).
+   Proved in `Level.lean` so far:
    `siegelFunction_apply_add_natCast` (`g_r(τ + n) = e^{π i n/6} g_{(r₁, n r₁ + r₂)}(τ)`),
    `siegelFunction_apply_add_natCast_of_mul_eq` (if `N r₁ = a ∈ ℤ`, the exact phase
-   `e^{π i N/6} (-1)^a e^{π i a r₁}` of `g_r` under `T^N ∈ Γ(N)`) and
+   `e^{π i N/6} (-1)^a e^{π i a r₁}` of `g_r` under `T^N ∈ Γ(N)`),
    `siegelFunction_pow_apply_add_natCast_of_mul_eq` (`g_r^{12N/gcd(6,N)}` is `T^N`-invariant when
-   `N r₁ ∈ ℤ`). Still to add here: the explicit
-   root of unity of `g_r ∘ γ` for general `γ ∈ Γ(N)` and `r ∈ N⁻¹ℤ²` (Kubert–Lang K 1–K 3), the
-   quadratic congruence criterion for `∏ g_r^{m(r)}` to be `Γ(N)`-invariant, and
-   `g_r^{12N/gcd(6,N)}` invariant under all of `Γ(N)` (only `T^N` is done).
+   `N r₁ ∈ ℤ`), and the lower-triangular counterparts
+   `siegelFunction_apply_div_natCast_mul_add_one`
+   (`g_r(τ/(nτ + 1)) = e^{-π i n/6} g_{(r₁ + n r₂, r₂)}(τ)`, via `Lⁿ = S T⁻ⁿ S⁻¹`),
+   `siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq` (if `N r₂ = b ∈ ℤ`, the exact phase
+   `e^{-π i N/6} (-1)^b e^{-π i b r₂}` under `L^N = [[1, 0], [N, 1]] ∈ Γ(N)`) and
+   `siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq` (`g_r^{12N/gcd(6,N)}` is
+   `L^N`-invariant when `N r₂ ∈ ℤ`). Still to add here: the explicit root of unity of `g_r ∘ γ` for
+   general `γ ∈ Γ(N)` and `r ∈ N⁻¹ℤ²` (Kubert–Lang K 1–K 3; `T^N` and `L^N` do not generate
+   `Γ(N)` for `N ≥ 3`, so this needs the general Klein-form phase, not just the two generators
+   done so far), the quadratic congruence criterion for `∏ g_r^{m(r)}` to be `Γ(N)`-invariant, and
+   `g_r^{12N/gcd(6,N)}` invariant under all of `Γ(N)`.
 3. **feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over
    ℤ[j]** — after: 1, 2. Not yet on the branch. Places the products of split 2 in
    `modularFunctionField N` (q-expansion with coefficients in `ℚ(ζ_N)`), proves the diagonal
@@ -81,7 +92,10 @@ uses them yet.
 
 ## What remains
 
-Splits 2 and 3 above: the exact `Γ(N)` transformation phases beyond the translation `T^N`, the congruence criterion, the power
+Splits 2 and 3 above: the exact `Γ(N)` transformation phases beyond the translations `T^N` and
+`L^N`, the congruence criterion, the power
 `12N/gcd(6,N)`, membership in `F_N`, the diagonal cyclotomic action and integrality over `ℤ[j]`
 for general level (level 2 is on `main`). The second round added the `T^N` phase to split 2; the third round added the
-`T^N`-invariance of `g_r^{12N/gcd(6,N)}` and ran out of time there.
+`T^N`-invariance of `g_r^{12N/gcd(6,N)}`; the fourth round (on `main` at `08a51bc861c`, where
+the supplier PR #29233 is still open, so both stubs stay) added `siegelFunction_neg` and the exact
+phase and power invariance under the lower translation `L^N`.
