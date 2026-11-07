@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"f0b1b42af130787dfc7846cb7c80c2a0de15d569","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"c18a380a7fd75861e1fdba099d6e967b160acfcf","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
 # Lookahead: `galois-conjugate-newform` (ModularForms, Layer 8G)
 
-Built on `main` at `f0b1b42af130`. Status: **partial** (see *What remains*).
+Built on `main` at `c18a380a7fd7`. Status: **partial** (see *What remains*).
 
 ## Stubbed declarations (`TauCeti/Lookahead/GaloisConjugateNewform/Stubs.lean`)
 
@@ -74,3 +74,23 @@ Session of 2026-11-07: merged `main` at `f0b1b42af130`; nothing under `Newforms/
 the supplier has no open PR. `main` has the bad-prime operators at the level
 (`HeckeSlash/BadPrime/`, `AtkinLehner/Newform.lean`), but no newspace Hecke algebra containing
 them, so the gap above is unchanged.
+
+Session of 2026-11-07 (second): merged `main` at `c18a380a7fd7`. Nothing under `Newforms/` changed since
+`f0b1b42af130` and the supplier still has no open PR, so the gap is unchanged. Concrete route
+for the remaining step, all of whose inputs except the last are on `main`:
+1. On `cuspFormsNew N k`, `Tₚ` at every prime restricts to an endomorphism
+   (`TauCeti.heckeTCuspNat_mem_cuspFormsNew`, `Newforms/BadPrime/Stability.lean`), and each
+   newform is an eigenvector with eigenvalue `aₚ`
+   (`HeckeRing.GL2.Newform.heckeTCuspNat_eq_qExpansion_coeff_smul`, `Newforms/FullEigenform.lean`).
+   So the full newspace Hecke algebra over `ℚ` (all `Tₚ` and the diamonds) and its newform
+   characters can be built exactly as `Hecke/Algebra.lean` and `Hecke/Rational.lean` build the
+   good one, with values in `CoefficientField f`.
+2. Its theorem "every `ℚ`-algebra character into `ℂ` is a newform character" is the supplier's
+   pinned theorem for the finite Hecke algebra over `ℚ`. It does not follow from the good-prime
+   form already stubbed: a `ℚ`-character of the full algebra extends to its `⊗ ℂ`, which need
+   not factor through the complex span, so the `U_p` values are not forced. Stub it for the full
+   algebra (or take it from the supplier once landed).
+3. Then `σ ∘ χ_f` on the full algebra is a newform character; restricting to the good algebra
+   identifies that newform with `galoisConj f σ` by `heckeTDiamondCuspNewRationalCharacter_injective`,
+   and evaluating at `U_p` gives `aₚ(f^σ) = σ(aₚ(f))` for `p ∣ N`. Then `a_{p^r} = aₚ^r` and
+   multiplicativity give every `n`.
