@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"57cfc63ad4ea735fa8532c4eb95647b2495c6384","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"5f8b5c6fc72ef02143a5bd96d1b787615f8312df","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
 
 # Lookahead: `yu-auxiliary-construction` (DiophantineApproximationAndTranscendence, §3.7)
 
-Built on `main` at `57cfc63ad4e` (merged in round 4). Status: **partial**.
+Built on `main` at `5f8b5c6fc72` (merged in round 5). Status: **partial**.
 
 ## Target
 
@@ -85,6 +85,12 @@ split 2. Carries the constants (2.27)–(2.29) with the Yu 1994 replacements, in
 ones. This split needs the supplier stubs.
 
 ## What remains
+
+Round 5 (2026-11-07, on `main` `5f8b5c6fc72`): merged current `main`; split 1 builds unchanged.
+PR #28709 (`yu-local-estimates`) is still OPEN, so split 3 must still stub its declarations.
+No new mathematics: Yu 1990 and Yu 1994 are still not available offline, and the roadmap prose does
+not state the index ranges (2.53)-(2.54), the conditions (2.55) or the constants (2.27)-(2.29), so
+split 2 cannot be written without a lookalike. The next round needs those papers.
 
 Round 4 (2026-11-07, on `main` `57cfc63ad4e`): merged current `main`; split 1 still builds
 unchanged. PR #28709 (`yu-local-estimates`) is still OPEN, so its declarations are not on `main`
