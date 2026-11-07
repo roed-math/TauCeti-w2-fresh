@@ -20,6 +20,8 @@ under `τ ↦ τ + N`, the first of the explicit `Γ(N)` transformation phases o
   `g_r(τ + n) = e^{π i n / 6} g_{(r₁, n r₁ + r₂)}(τ)`, the transformation under `T^n`.
 * `TauCeti.ModularForm.siegelFunction_apply_add_natCast_of_mul_eq`: if `N r₁ = a ∈ ℤ`, then
   `g_r(τ + N) = e^{π i N / 6} (-1)^a e^{π i a r₁} g_r(τ)`.
+* `TauCeti.ModularForm.siegelFunction_pow_apply_add_natCast_of_mul_eq`: if `N r₁ ∈ ℤ`, then
+  `g_r^{12N / gcd(6, N)}` is invariant under `τ ↦ τ + N`.
 
 ## References
 
@@ -75,5 +77,32 @@ theorem siegelFunction_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : ℕ}
   push_cast at he ⊢
   rw [he]
   ring
+
+/-- **The power `12N / gcd(6, N)` under `T^N`.** If `N r₁` is an integer, then
+`g_r^{12N / gcd(6, N)}` is invariant under the translation `τ ↦ τ + N` of `Γ(N)`. -/
+theorem siegelFunction_pow_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : ℕ} {a : ℤ}
+    (ha : N * r 0 = a) {τ : ℂ} (hτ : 0 < τ.im) :
+    siegelFunction r (τ + N) ^ (12 * N / Nat.gcd 6 N) =
+      siegelFunction r τ ^ (12 * N / Nat.gcd 6 N) := by
+  set g := Nat.gcd 6 N
+  have hg : 0 < g := Nat.gcd_pos_of_pos_left _ (by norm_num)
+  obtain ⟨k, hk⟩ : g ∣ N := Nat.gcd_dvd_right 6 N
+  obtain ⟨l, hl⟩ : g ∣ 6 := Nat.gcd_dvd_left 6 N
+  have hm : 12 * N / g = 12 * k := by
+    rw [hk, mul_left_comm, Nat.mul_div_cancel_left _ hg]
+  have hneg : (-1 : ℂ) ^ a = cexp (a * (π * I)) := by
+    rw [Complex.exp_int_mul, Complex.exp_pi_mul_I]
+  have hk' : (N : ℂ) = g * k := by exact_mod_cast hk
+  have hl' : (6 : ℂ) = g * l := by exact_mod_cast hl
+  have ha' : (N : ℂ) * (r 0 : ℂ) = a := by exact_mod_cast ha
+  have key : (6 * k * a * r 0 : ℂ) = l * a ^ 2 := by
+    linear_combination (k * a * r 0 : ℂ) * hl' - (l * a * r 0 : ℂ) * hk' + (l * a : ℂ) * ha'
+  rw [siegelFunction_apply_add_natCast_of_mul_eq r ha hτ, hm, mul_pow, hneg, ← Complex.exp_add,
+    ← Complex.exp_add, ← Complex.exp_nat_mul]
+  convert one_mul _
+  rw [Complex.exp_eq_one_iff]
+  refine ⟨k * N + 6 * k * a + l * a ^ 2, ?_⟩
+  push_cast
+  linear_combination (2 * π * I) * key
 
 end TauCeti.ModularForm
