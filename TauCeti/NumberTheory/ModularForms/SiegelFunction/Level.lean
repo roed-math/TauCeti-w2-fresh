@@ -87,12 +87,10 @@ theorem siegelFunction_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : ℕ}
   rw [he]
   ring
 
-/-- **The power `12N / gcd(6, N)` under `T^N`.** If `N r₁` is an integer, then
-`g_r^{12N / gcd(6, N)}` is invariant under the translation `τ ↦ τ + N` of `Γ(N)`. -/
-theorem siegelFunction_pow_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : ℕ} {a : ℤ}
-    (ha : N * r 0 = a) {τ : ℂ} (hτ : 0 < τ.im) :
-    siegelFunction r (τ + N) ^ (12 * N / Nat.gcd 6 N) =
-      siegelFunction r τ ^ (12 * N / Nat.gcd 6 N) := by
+/-- The phase `e^{π i N / 6} (-1)^a e^{π i a x}` of the `Γ(N)` translations, for `N x = a ∈ ℤ`, is
+a root of unity of order dividing `12N / gcd(6, N)`. -/
+private theorem translationPhase_pow_eq_one {N : ℕ} {x : ℝ} {a : ℤ} (ha : N * x = a) :
+    (cexp (π * I * N / 6) * (-1) ^ a * cexp (π * I * a * x)) ^ (12 * N / Nat.gcd 6 N) = 1 := by
   set g := Nat.gcd 6 N
   have hg : 0 < g := Nat.gcd_pos_of_pos_left _ (by norm_num)
   obtain ⟨k, hk⟩ : g ∣ N := Nat.gcd_dvd_right 6 N
@@ -103,16 +101,23 @@ theorem siegelFunction_pow_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : 
     rw [Complex.exp_int_mul, Complex.exp_pi_mul_I]
   have hk' : (N : ℂ) = g * k := by exact_mod_cast hk
   have hl' : (6 : ℂ) = g * l := by exact_mod_cast hl
-  have ha' : (N : ℂ) * (r 0 : ℂ) = a := by exact_mod_cast ha
-  have key : (6 * k * a * r 0 : ℂ) = l * a ^ 2 := by
-    linear_combination (k * a * r 0 : ℂ) * hl' - (l * a * r 0 : ℂ) * hk' + (l * a : ℂ) * ha'
-  rw [siegelFunction_apply_add_natCast_of_mul_eq r ha hτ, hm, mul_pow, hneg, ← Complex.exp_add,
-    ← Complex.exp_add, ← Complex.exp_nat_mul]
-  convert one_mul _
-  rw [Complex.exp_eq_one_iff]
+  have ha' : (N : ℂ) * (x : ℂ) = a := by exact_mod_cast ha
+  have key : (6 * k * a * x : ℂ) = l * a ^ 2 := by
+    linear_combination (k * a * x : ℂ) * hl' - (l * a * x : ℂ) * hk' + (l * a : ℂ) * ha'
+  rw [hm, hneg, ← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_nat_mul,
+    Complex.exp_eq_one_iff]
   refine ⟨k * N + 6 * k * a + l * a ^ 2, ?_⟩
   push_cast
   linear_combination (2 * π * I) * key
+
+/-- **The power `12N / gcd(6, N)` under `T^N`.** If `N r₁` is an integer, then
+`g_r^{12N / gcd(6, N)}` is invariant under the translation `τ ↦ τ + N` of `Γ(N)`. -/
+theorem siegelFunction_pow_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : ℕ} {a : ℤ}
+    (ha : N * r 0 = a) {τ : ℂ} (hτ : 0 < τ.im) :
+    siegelFunction r (τ + N) ^ (12 * N / Nat.gcd 6 N) =
+      siegelFunction r τ ^ (12 * N / Nat.gcd 6 N) := by
+  rw [siegelFunction_apply_add_natCast_of_mul_eq r ha hτ, mul_pow,
+    translationPhase_pow_eq_one ha, one_mul]
 
 /-- **The lower translation `τ ↦ τ / (n τ + 1)`**:
 `g_r(τ / (n τ + 1)) = e^{-π i n / 6} g_{r Lⁿ}(τ)`, where `r Lⁿ = (r₁ + n r₂, r₂)` is the row
@@ -166,25 +171,10 @@ theorem siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq (r : Fin 2 �
     {b : ℤ} (hb : N * r 1 = b) {τ : ℂ} (hτ : 0 < τ.im) :
     siegelFunction r (τ / (N * τ + 1)) ^ (12 * N / Nat.gcd 6 N) =
       siegelFunction r τ ^ (12 * N / Nat.gcd 6 N) := by
-  set g := Nat.gcd 6 N
-  have hg : 0 < g := Nat.gcd_pos_of_pos_left _ (by norm_num)
-  obtain ⟨k, hk⟩ : g ∣ N := Nat.gcd_dvd_right 6 N
-  obtain ⟨l, hl⟩ : g ∣ 6 := Nat.gcd_dvd_left 6 N
-  have hm : 12 * N / g = 12 * k := by
-    rw [hk, mul_left_comm, Nat.mul_div_cancel_left _ hg]
-  have hneg : (-1 : ℂ) ^ b = cexp (b * (π * I)) := by
-    rw [Complex.exp_int_mul, Complex.exp_pi_mul_I]
-  have hk' : (N : ℂ) = g * k := by exact_mod_cast hk
-  have hl' : (6 : ℂ) = g * l := by exact_mod_cast hl
-  have hb' : (N : ℂ) * (r 1 : ℂ) = b := by exact_mod_cast hb
-  have key : (6 * k * b * r 1 : ℂ) = l * b ^ 2 := by
-    linear_combination (k * b * r 1 : ℂ) * hl' - (l * b * r 1 : ℂ) * hk' + (l * b : ℂ) * hb'
-  rw [siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq r hb hτ, hm, mul_pow, hneg,
-    ← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_nat_mul]
-  convert one_mul _
-  rw [Complex.exp_eq_one_iff]
-  refine ⟨-(k * N) + 6 * k * b - l * b ^ 2, ?_⟩
-  push_cast
-  linear_combination (-2 * π * I) * key
+  have hinv : cexp (-(π * I * N / 6)) * (-1) ^ b * cexp (-(π * I * b * r 1)) =
+      (cexp (π * I * N / 6) * (-1) ^ b * cexp (π * I * b * r 1))⁻¹ := by
+    rw [mul_inv, mul_inv, ← Complex.exp_neg, ← Complex.exp_neg, ← inv_zpow, inv_neg, inv_one]
+  rw [siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq r hb hτ, hinv, mul_pow, inv_pow,
+    translationPhase_pow_eq_one hb, inv_one, one_mul]
 
 end TauCeti.ModularForm
