@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"2f06c0d69fd88750b4be67237a9cd8e6d83b12aa","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"57cfc63ad4ea735fa8532c4eb95647b2495c6384","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
 
 # Lookahead: `yu-auxiliary-construction` (DiophantineApproximationAndTranscendence, §3.7)
 
-Built on `main` at `2f06c0d69fd88750b4be67237a9cd8e6d83b12aa`. Status: **partial**.
+Built on `main` at `57cfc63ad4e` (merged in round 4). Status: **partial**.
 
 ## Target
 
@@ -85,6 +85,13 @@ split 2. Carries the constants (2.27)–(2.29) with the Yu 1994 replacements, in
 ones. This split needs the supplier stubs.
 
 ## What remains
+
+Round 4 (2026-11-07, on `main` `57cfc63ad4e`): merged current `main`; split 1 still builds
+unchanged. PR #28709 (`yu-local-estimates`) is still OPEN, so its declarations are not on `main`
+and split 3 must still stub them. No new mathematics was added this round: split 2 needs the index
+ranges (2.53)-(2.55) of Yu 1990 Lemma 2.1, and the paper was still not available offline. Writing
+an auxiliary array with guessed ranges would be a lookalike carrying the target's name, which the
+round rules forbid.
 
 Round 3 (2026-11-07, on `main` `2f06c0d69fd8`): merged `main`, and added the support-class
 separation lemmas `sum_filter_mul_prod_pow_div_eq_zero` and
