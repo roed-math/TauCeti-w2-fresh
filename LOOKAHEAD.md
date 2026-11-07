@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"08a51bc861c1164cec8967d78702731083676e5d","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): reduced monomials in independent q-th roots are linearly independent"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"f0b1b42af130787dfc7846cb7c80c2a0de15d569","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
 
 # Lookahead: `yu-auxiliary-construction` (DiophantineApproximationAndTranscendence, §3.7)
 
-Built on `main` at `08a51bc861c1164cec8967d78702731083676e5d`. Status: **partial**.
+Built on `main` at `f0b1b42af130787dfc7846cb7c80c2a0de15d569`. Status: **partial**.
 
 ## Target
 
@@ -26,10 +26,11 @@ successor) actually states, from `gh pr diff`.
 ## Splits
 
 ### Split 1 (proved here) — after: none
-`feat(FieldTheory/Kummer): reduced monomials in independent q-th roots are linearly independent`
+`feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials`
 
-File: `TauCeti/FieldTheory/Kummer/Monomial.lean` (new, ~130 lines). Declarations, all in
-`namespace TauCeti`:
+Files (both new, ~240 lines together), all declarations in `namespace TauCeti`:
+
+`TauCeti/FieldTheory/Kummer/Monomial.lean` (~130 lines, previous round):
 
 * `prod_pow_mem_span_prod_pow_mod`: if `β j ^ q ∈ K` for all `j`, every monomial `∏ β j ^ e j` is a
   `K`-multiple of the reduced monomial with exponents `e j % q`.
@@ -40,10 +41,24 @@ File: `TauCeti/FieldTheory/Kummer/Monomial.lean` (new, ~130 lines). Declarations
 * `linearIndependent_prod_pow_of_finrank_intermediateFieldAdjoin_eq`: the same for `K(β)` inside a
   field `L`.
 
+`TauCeti/FieldTheory/Kummer/Independent.lean` (~115 lines, this round): the Kummer-independent
+hypothesis of the target in the form the auxiliary construction consumes it.
+
+* `isFiniteRelIndex_range_powMonoidHom_closure` (instance): in a commutative group, `q`-th powers
+  have finite index in a finitely generated subgroup (quotient is f.g. and `q`-torsion, via
+  Mathlib's `CommGroup.finite_of_fg_isMulTorsion`).
+* `exists_mem_adjoin_range_pow_eq_of_mem_closure`: every element of `⟨α₁, …, αₙ⟩` has a `q`-th
+  root in `K(β)` when `βⱼ ^ q = αⱼ`.
+* `adjoin_range_eq_kummerField`: with `K` containing the `q`-th roots of unity,
+  `K(β) = kummerField E q (closure (range α))`.
+* `finrank_adjoin_range_eq_relIndex`: `[K(β) : K]` is the order of the image of `⟨α⟩` in
+  `Kˣ ⧸ (Kˣ)^q` (from `TauCeti.finrank_kummerField` on `main`).
+* `linearIndependent_prod_pow_of_relIndex_eq`: if that order is `qⁿ` (independent classes), the
+  reduced monomials `∏ βⱼ ^ rⱼ` are linearly independent over `K`.
+
 This is the algebraic engine of the step "Kummer conjugates separate support classes" in the
-extrapolation: combined with `TauCeti.finrank_kummerField` (on `main`, degree = order of the image
-of the generated subgroup in Kˣ/(Kˣ)^q), independence of the classes gives degree qⁿ and hence the
-separation of support classes λ mod q.
+extrapolation: an identity `∑_r c_r ∏ βⱼ ^ rⱼ = 0` with `c_r ∈ K` forces every `c_r = 0`, which is
+how the support classes λ mod q are separated.
 
 ### Split 2 (remaining) — after: 1
 `feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1`
@@ -66,6 +81,10 @@ ones. This split needs the supplier stubs.
 
 ## What remains
 
-Splits 2 and 3 in full. Neither the Yu 1990 nor the Yu 1994 paper was available offline this round,
-so the exact index ranges (2.53)–(2.55) and constants (2.27)–(2.29) could not be transcribed; the
-next round needs the papers (numdam links in the README references) before writing split 2.
+Split 1 is complete (round 2 added `Independent.lean`: the Kummer-independent hypothesis
+"independent classes in Kˣ/(Kˣ)^q, ζ_q ∈ K" now yields `[K(β) : K] = qⁿ` and the independence of
+reduced monomials directly, with no finiteness side condition). Splits 2 and 3 remain in full.
+Neither the Yu 1990 nor the Yu 1994 paper was available offline in either round, so the exact
+index ranges (2.53)–(2.55) and constants (2.27)–(2.29) could not be transcribed; the next round needs
+the papers (numdam links in the README references) before writing split 2. PR #28709
+(`yu-local-estimates`, partial) was still open on 2026-11-07; split 3 must stub what it states.
