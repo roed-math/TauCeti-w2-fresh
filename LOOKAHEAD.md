@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"ace60277c4c5ba2166795686bca1af4052290145","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"08a51bc861c1164cec8967d78702731083676e5d","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
 # Lookahead: `galois-conjugate-newform` (ModularForms, Layer 8G)
 
-Built on `main` at `ace60277c4c5`. Status: **partial** (see *What remains*).
+Built on `main` at `08a51bc861c1`. Status: **partial** (see *What remains*).
 
 ## Stubbed declarations (`TauCeti/Lookahead/GaloisConjugateNewform/Stubs.lean`)
 
