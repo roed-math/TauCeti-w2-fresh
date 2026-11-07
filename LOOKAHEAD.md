@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"siegel-function","main":"2f06c0d69fd88750b4be67237a9cd8e6d83b12aa","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: finite products of Siegel functions and their SL₂(ℤ) transformation"},{"n":2,"after":[1],"title":"feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion"},{"n":3,"after":[1,2],"title":"feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over ℤ[j]"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"siegel-function","main":"57cfc63ad4ea735fa8532c4eb95647b2495c6384","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: finite products of Siegel functions and their SL₂(ℤ) transformation"},{"n":2,"after":[1],"title":"feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion"},{"n":3,"after":[1,2],"title":"feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over ℤ[j]"}]}-->
 
 # Lookahead: `siegel-function` (ImaginaryQuadraticClassNumber H3.2)
 
-Built on `main` at `2f06c0d69fd`. Status: **partial**.
+Built on `main` at `57cfc63ad4e`. Status: **partial**.
 
 ## What `main` already has
 
@@ -61,36 +61,37 @@ uses them yet.
    `exists_siegelProduct_smul_eq_mul`, `siegelProduct_smul_of_dvd_sum` (the roadmap's
    "inverse/product and finite-support exponent-family APIs"). Does not need the supplier.
 2. **feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion** — after: 1.
-   Started on the branch; does not need the supplier. Files
+   Proved on the branch; does not need the supplier. Files
    `TauCeti/NumberTheory/ModularForms/SiegelFunction/Level.lean` (new, imports
-   `SiegelFunction.Transform` and `Analysis.Complex.UpperHalfPlane.MoebiusAction`) and
+   `SiegelFunction.Product`, Mathlib's `CongruenceSubgroups` and `MoebiusAction`) and
    `TauCeti/NumberTheory/ModularForms/SiegelFunction/Transform.lean` (existing; adds
    `siegelFunction_neg`, `g_{-r} = -g_r`, the action of `S² = -1`, next to the `S` law).
-   Proved in `Level.lean` so far:
-   `siegelFunction_apply_add_natCast` (`g_r(τ + n) = e^{π i n/6} g_{(r₁, n r₁ + r₂)}(τ)`),
-   `siegelFunction_apply_add_natCast_of_mul_eq` (if `N r₁ = a ∈ ℤ`, the exact phase
-   `e^{π i N/6} (-1)^a e^{π i a r₁}` of `g_r` under `T^N ∈ Γ(N)`),
-   `siegelFunction_pow_apply_add_natCast_of_mul_eq` (`g_r^{12N/gcd(6,N)}` is `T^N`-invariant when
-   `N r₁ ∈ ℤ`), and the lower-triangular counterparts
-   `siegelFunction_apply_div_natCast_mul_add_one`
-   (`g_r(τ/(nτ + 1)) = e^{-π i n/6} g_{(r₁ + n r₂, r₂)}(τ)`, via `Lⁿ = S T⁻ⁿ S⁻¹`),
-   `siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq` (if `N r₂ = b ∈ ℤ`, the exact phase
-   `e^{-π i N/6} (-1)^b e^{-π i b r₂}` under `L^N = [[1, 0], [N, 1]] ∈ Γ(N)`) and
-   `siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq` (`g_r^{12N/gcd(6,N)}` is
-   `L^N`-invariant when `N r₂ ∈ ℤ`), both power laws resting on the private helper
-   `translationPhase_pow_eq_one` (the `T^N` phase is a `12N/gcd(6,N)`-th root of unity; the `L^N`
-   phase is its inverse). For products, `siegelProduct_apply_add_natCast_of_dvd` and
-   `siegelProduct_apply_div_natCast_mul_add_one_of_dvd` prove the Kubert–Lang congruence criterion
-   for `T^N` and `L^N`: if `N r₁ = a_r` (resp. `N r₂ = b_r`) on the support, `12 ∣ ∑ m(r)` and
-   `gcd(2, N) N ∣ ∑ m(r) a_r²` (resp. `∑ m(r) b_r²`), then `∏ g_r^{m(r)}` is invariant; both rest
-   on the private `prod_translationPhase_zpow_eq_one` (the product of the phases is `1`, via
-   `∑ m a ≡ ∑ m a² (mod 2)`). `Level.lean` now imports `SiegelFunction.Product` (split 1). Still to
-   add here: the explicit root of unity of `g_r ∘ γ` for
-   general `γ ∈ Γ(N)` and `r ∈ N⁻¹ℤ²` (Kubert–Lang K 1–K 3; `T^N` and `L^N` do not generate
-   `Γ(N)` for `N ≥ 3`, so this needs the general Klein-form phase, not just the two generators
-   done so far), the full quadratic congruence criterion for `∏ g_r^{m(r)}` to be `Γ(N)`-invariant
-   (including the mixed condition `N ∣ ∑ m(r) a_r b_r`), and
-   `g_r^{12N/gcd(6,N)}` invariant under all of `Γ(N)`.
+   **Proved in full on the branch** (`Level.lean`, 515 lines):
+   - translations: `siegelFunction_apply_add_natCast` (`g_r(τ + n) = e^{π i n/6} g_{(r₁, n r₁ + r₂)}(τ)`),
+     `siegelFunction_apply_add_natCast_of_mul_eq` (exact `T^N` phase
+     `e^{π i N/6} (-1)^a e^{π i a r₁}` when `N r₁ = a`),
+     `siegelFunction_pow_apply_add_natCast_of_mul_eq`, and the lower-triangular counterparts
+     `siegelFunction_apply_div_natCast_mul_add_one`,
+     `siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq`,
+     `siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq` (private helper
+     `translationPhase_pow_eq_one`);
+   - the `T^N` / `L^N` halves of the product criterion (only one quadratic condition each):
+     `siegelProduct_apply_add_natCast_of_dvd`, `siegelProduct_apply_div_natCast_mul_add_one_of_dvd`
+     (private `prod_translationPhase_zpow_eq_one`);
+   - **general `γ ∈ Γ(N)`** (round 7): the private `exists_siegelFunction_smul_eq_of_mem_Gamma`
+     (writing `γ = 1 + N[[u, w], [v, z]]`, there is a twelfth root of unity `ε` depending only on
+     `γ` with `g_r(γτ) = ε (-1)^{s₁s₂+s₁+s₂} e^{-π i (s₁ r₂ - s₂ r₁)} g_r(τ)`,
+     `(s₁, s₂) = r γ - r = (a u + b v, a w + b z)`, plus the determinant relation
+     `u + z + N(uz - vw) = 0`), the private `integralTranslationPhase_pow_eq_one`,
+     **`siegelFunction_pow_smul_of_mem_Gamma`** (`g_r^{12N/gcd(6,N)}` is `Γ(N)`-invariant when
+     `N r ∈ ℤ²`: the roadmap's "power 12N/gcd[6,N]"), the private
+     `prod_congruencePhase_zpow_eq_one` (the parity bookkeeping, reduced to a `decide` over
+     `ZMod 2` in the two cases `N` even / odd), and **`siegelProduct_smul_of_mem_Gamma`**, the full
+     Kubert–Lang congruence criterion: `12 ∣ ∑ m(r)`, `gcd(2,N) N ∣ ∑ m(r) a_r²`,
+     `gcd(2,N) N ∣ ∑ m(r) b_r²`, `N ∣ ∑ m(r) a_r b_r` imply `∏ g_r^{m(r)}` is `Γ(N)`-invariant.
+   Split 2 is therefore complete; at the port, consider whether reviewers want the two
+   `T^N` / `L^N` product statements kept (they need only one quadratic condition each, so they
+   are not literally special cases of the general criterion).
 3. **feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over
    ℤ[j]** — after: 1, 2. Not yet on the branch. Places the products of split 2 in
    `modularFunctionField N` (q-expansion with coefficients in `ℚ(ζ_N)`), proves the diagonal
@@ -101,15 +102,11 @@ uses them yet.
 
 ## What remains
 
-Splits 2 and 3 above: the exact `Γ(N)` transformation phases beyond the translations `T^N` and
-`L^N`, the congruence criterion, the power
-`12N/gcd(6,N)`, membership in `F_N`, the diagonal cyclotomic action and integrality over `ℤ[j]`
-for general level (level 2 is on `main`). The second round added the `T^N` phase to split 2; the third round added the
-`T^N`-invariance of `g_r^{12N/gcd(6,N)}`; the fourth round (on `main` at `08a51bc861c`, where
-the supplier PR #29233 is still open, so both stubs stay) added `siegelFunction_neg` and the exact
-phase and power invariance under the lower translation `L^N`.
-The fifth round (on `main` at `f0b1b42af13`; #29233 still open, so both stubs stay) merged `main`
-and factored the duplicated root-of-unity arithmetic of the two power laws into
-`translationPhase_pow_eq_one`.
-The sixth round (on `main` at the commit in the header; #29233 still open, so both stubs stay)
-added the `T^N` and `L^N` halves of the congruence criterion for Siegel products.
+Split 3 only: membership of the `Γ(N)`-invariant Siegel products of split 2 in
+`modularFunctionField N` (meromorphy at the cusps from the q-order asymptotics on `main`, and the
+q-expansion coefficients in `ℚ(ζ_N)`), the diagonal `diag(1, d)` cyclotomic action
+`g_r ↦ g_{(r₁, d r₂)}`, and integrality over `ℤ[j]` for general level via the stubbed
+`modularFunctionField_inf_fixedField_eq_closure`. Rounds 1–6 built splits 1–2 up to the
+`T^N` / `L^N` halves of the criterion; round 7 (on `main` at `57cfc63ad4e`; supplier PR #29233
+still open, so both stubs stay) proved the general `Γ(N)` phase, the power `12N/gcd(6,N)` on all
+of `Γ(N)` and the full congruence criterion, completing split 2.
