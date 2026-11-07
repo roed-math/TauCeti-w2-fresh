@@ -18,7 +18,8 @@ Instead, the character of `f` on the rational newspace Hecke algebra takes value
 its composite with `σ` is another character of that algebra, and every character of the algebra
 is the character of a newform; strong multiplicity one makes that newform unique.
 
-The conjugate has nebentypus `σ ∘ χ_f` and good Hecke eigenvalues `σ(a_p(f))`. When `σ` fixes
+The conjugate has nebentypus `σ ∘ χ_f` and good Hecke eigenvalues `σ(a_p(f))`, so by the Hecke
+recurrences `aₙ(f^σ) = σ(aₙ(f))` at every positive index `n` coprime to the level. When `σ` fixes
 the character field `ℚ(χ_f)`, the conjugate is also the newform realizing the conjugate character
 of the Hecke algebra of `S_k(N, χ_f)ⁿᵉʷ` over `ℚ(χ_f)`, which contains every `Tₙ`, so then
 `aₙ(f^σ) = σ(aₙ(f))` at every positive index `n`.
@@ -37,6 +38,8 @@ of the Hecke algebra of `S_k(N, χ_f)ⁿᵉʷ` over `ℚ(χ_f)`, which contains 
   good Hecke eigenvalues `σ(a_p(f))`.
 * `TauCeti.Newform.χ_galoisConj`: `χ_{f^σ} = σ ∘ χ_f`.
 * `TauCeti.Newform.qExpansion_coeff_galoisConj_prime`: `a_p(f^σ) = σ(a_p(f))` at good primes.
+* `TauCeti.Newform.qExpansion_coeff_galoisConj_of_coprime`: `aₙ(f^σ) = σ(aₙ(f))` at every
+  positive index coprime to the level.
 * `TauCeti.Newform.qExpansion_coeff_galoisConj_of_forall_char`: `aₙ(f^σ) = σ(aₙ(f))` at every
   positive index, for `σ` fixing `ℚ(χ_f)`.
 
@@ -145,6 +148,65 @@ theorem qExpansion_coeff_galoisConj_prime {p : ℕ} (hp : p.Prime) (hpN : Nat.Co
     (qExpansion 1 (galoisConj hk f σ).toCuspForm).coeff p =
       σ ⟨(qExpansion 1 f.toCuspForm).coeff p, coeff_mem_CoefficientField f ⟨p, hp.pos⟩⟩ := by
   rw [← eigenvalue_eq_qExpansion_coeff _ hp hpN, eigenvalue_galoisConj hk f σ hp hpN]
+
+/-- The induction behind `qExpansion_coeff_galoisConj_of_coprime`, over the prime powers and
+coprime products of good indices, stated for any element of `K_f` lifting `aₙ(f)` so that the
+membership proofs do not get in the way. -/
+private theorem qExpansion_coeff_galoisConj_of_coprime_aux (n : ℕ) (hn₀ : 0 < n)
+    (hn : Nat.Coprime n N) (x : CoefficientField f)
+    (hx : (x : ℂ) = (qExpansion 1 f.toCuspForm).coeff n) :
+    (qExpansion 1 (galoisConj hk f σ).toCuspForm).coeff n = σ x := by
+  have h₁ : ∀ x : CoefficientField f, (x : ℂ) = (qExpansion 1 f.toCuspForm).coeff 1 →
+      (qExpansion 1 (galoisConj hk f σ).toCuspForm).coeff 1 = σ x := fun x hx ↦ by
+    rw [(galoisConj hk f σ).isNorm, show x = 1 from Subtype.ext (hx.trans f.isNorm), map_one]
+  induction n using Nat.recOnPosPrimePosCoprime generalizing x with
+  | zero => exact absurd hn₀ (lt_irrefl 0)
+  | one => exact h₁ x hx
+  | prime_pow p r hp hr =>
+    have hpN : Nat.Coprime p N := Nat.Coprime.coprime_dvd_left (dvd_pow_self p hr.ne') hn
+    clear hn₀ hn hr
+    induction r using Nat.twoStepInduction generalizing x with
+    | zero => exact h₁ x (by simpa using hx)
+    | one =>
+      rw [pow_one] at hx ⊢
+      rw [qExpansion_coeff_galoisConj_prime hk f σ hp hpN]
+      exact congrArg σ (Subtype.ext hx.symm)
+    | more r ih₀ ih₁ =>
+      set u := ZMod.unitOfCoprime p hpN
+      let a (m : ℕ) : CoefficientField f :=
+        ⟨_, coeff_mem_CoefficientField f ⟨p ^ m, pow_pos hp.pos m⟩⟩
+      let ap : CoefficientField f := ⟨_, coeff_mem_CoefficientField f ⟨p, hp.pos⟩⟩
+      have hrec := (galoisConj hk f σ).toEigenformAwayFromLevel.qExpansion_coeff_prime_pow_add_two
+        (galoisConj hk f σ).isNorm (p := ⟨p, hp.pos⟩) hp hpN r
+      have hrecf := f.toEigenformAwayFromLevel.qExpansion_coeff_prime_pow_add_two f.isNorm
+        (p := ⟨p, hp.pos⟩) hp hpN r
+      have hx' : x = ap * a (r + 1) -
+          ⟨f.χ u, char_mem_CoefficientField f u⟩ * (p : CoefficientField f) ^ (k - 1) * a r :=
+        Subtype.ext (hx.trans hrecf)
+      simp only [PNat.mk_coe] at hrec
+      rw [hrec, ih₀ (a r) rfl, ih₁ (a (r + 1)) rfl, qExpansion_coeff_galoisConj_prime hk f σ hp hpN,
+        hx', map_sub, map_mul, map_mul, map_mul, map_zpow₀, map_natCast]
+      exact congrArg₂ (· - ·) rfl
+        (congrArg₂ (· * ·) (congrArg₂ (· * ·) (χ_galoisConj hk f σ u) rfl) rfl)
+  | coprime a b ha hb hab iha ihb =>
+    have haN := Nat.Coprime.coprime_mul_right hn
+    have hbN := Nat.Coprime.coprime_mul_left hn
+    have hrec := (galoisConj hk f σ).toEigenformAwayFromLevel.qExpansion_coeff_mul
+      (galoisConj hk f σ).isNorm (m := ⟨a, by omega⟩) (n := ⟨b, by omega⟩) hab haN hbN
+    have hrecf := f.toEigenformAwayFromLevel.qExpansion_coeff_mul f.isNorm
+      (m := ⟨a, by omega⟩) (n := ⟨b, by omega⟩) hab haN hbN
+    let xa : CoefficientField f := ⟨_, coeff_mem_CoefficientField f ⟨a, by omega⟩⟩
+    let xb : CoefficientField f := ⟨_, coeff_mem_CoefficientField f ⟨b, by omega⟩⟩
+    simp only [PNat.mk_coe] at hrec
+    rw [hrec, iha (by omega) haN xa rfl, ihb (by omega) hbN xb rfl, ← map_mul]
+    exact congrArg σ (Subtype.ext (hx.trans hrecf).symm)
+
+/-- **The good Fourier coefficients of the Galois conjugate**: `aₙ(f^σ) = σ(aₙ(f))` at every
+positive index `n` coprime to the level. -/
+theorem qExpansion_coeff_galoisConj_of_coprime (n : ℕ+) (hn : Nat.Coprime (n : ℕ) N) :
+    (qExpansion 1 (galoisConj hk f σ).toCuspForm).coeff n =
+      σ ⟨(qExpansion 1 f.toCuspForm).coeff n, coeff_mem_CoefficientField f n⟩ :=
+  qExpansion_coeff_galoisConj_of_coprime_aux hk f σ n n.pos hn _ rfl
 
 /-- **Uniqueness of the Galois conjugate**: `f^σ` is the only newform with nebentypus `σ ∘ χ_f`
 and good Hecke eigenvalues `σ(a_p(f))`. -/

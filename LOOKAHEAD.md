@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"4e97a69715ff64e710f3e9d69e5fdc67ea1d23aa","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"ace60277c4c5ba2166795686bca1af4052290145","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
 # Lookahead: `galois-conjugate-newform` (ModularForms, Layer 8G)
 
-Built on `main` at `4e97a69715ff`. Status: **partial** (see *What remains*).
+Built on `main` at `ace60277c4c5`. Status: **partial** (see *What remains*).
 
 ## Stubbed declarations (`TauCeti/Lookahead/GaloisConjugateNewform/Stubs.lean`)
 
@@ -49,6 +49,9 @@ that theorem is stubbed, in its two README forms.
    `Newform.galoisConj`, `Newform.heckeTDiamondCuspNewRationalCharacter_galoisConj`,
    `Newform.χ_galoisConj` (`χ_{f^σ} = σ ∘ χ_f`), `Newform.eigenvalue_galoisConj`,
    `Newform.qExpansion_coeff_galoisConj_prime` (`a_p(f^σ) = σ(a_p(f))`, `p ∤ N`),
+   `Newform.qExpansion_coeff_galoisConj_of_coprime` (`aₙ(f^σ) = σ(aₙ(f))` for every positive
+   `n` coprime to `N`, by the good prime-power recurrence and multiplicativity; private helper
+   `qExpansion_coeff_galoisConj_of_coprime_aux`),
    `Newform.eq_galoisConj_iff` (uniqueness), and
    `Newform.qExpansion_coeff_galoisConj_of_forall_char` (`aₙ(f^σ) = σ(aₙ(f))` for every `n`
    when `σ` fixes `ℚ(χ_f)`). The port replaces the stub import with the supplier's module.
@@ -56,11 +59,10 @@ that theorem is stubbed, in its two README forms.
 ## What remains
 
 `f^σ` is defined for every embedding `σ : CoefficientField f →ₐ[ℚ] ℂ` (weight `k ≥ 2`).
-`χ_{f^σ} = σ ∘ χ_f` is proved, and so is uniqueness. `aₙ(f^σ) = σ(aₙ(f))` is proved at good
-primes for every `σ`, and at every `n` for `σ` fixing `ℚ(χ_f)`. Still open: `aₙ(f^σ) = σ(aₙ(f))`
-for arbitrary `σ` at indices `n` coprime to `N` but composite (follows from the Hecke recurrences
-at good prime powers and multiplicativity, using `χ_galoisConj`), and at indices sharing a factor
-with `N` (the `U_p` eigenvalues). The latter needs a ℚ-algebra that contains **all** `Tₙ` and the
+`χ_{f^σ} = σ ∘ χ_f` is proved, and so is uniqueness. `aₙ(f^σ) = σ(aₙ(f))` is proved at every
+positive `n` coprime to `N` for every `σ` (this round), and at every `n` for `σ` fixing `ℚ(χ_f)`.
+Still open: `aₙ(f^σ) = σ(aₙ(f))` for arbitrary `σ` at indices sharing a factor with `N` (the
+`U_p` eigenvalues; the rest follows by multiplicativity and `a_{p^r} = a_p^r` for `p ∣ N`). It needs a ℚ-algebra that contains **all** `Tₙ` and the
 diamonds on the newspace summed over the character orbit. The supplier's README names it, but `main`'s
 `heckeTDiamondCuspNewRationalAlgebra` holds only good `Tₚ` and diamonds. It cannot come from
 the `ℚ(χ)` form alone because `σ` moves `χ`. The next round should either stub that ℚ-algebra
