@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"automorphy-sheaf","main":"2b5dd6bd4220e96206255421178d4f5b51d963a0","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: local sections of the automorphy sheaf from coefficients at elliptic points and cusps"},{"n":2,"after":[1],"title":"feat: the weight-k automorphy presheaf on the compactified quotient as an O-module"},{"n":3,"after":[1,2],"title":"feat: the weight-k automorphy sheaf on X(Γ) is invertible"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"automorphy-sheaf","main":"2f06c0d69fd88750b4be67237a9cd8e6d83b12aa","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: local sections of the automorphy sheaf from coefficients at elliptic points and cusps"},{"n":2,"after":[1],"title":"feat: the weight-k automorphy presheaf on the compactified quotient as an O-module"},{"n":3,"after":[1,2],"title":"feat: the weight-k automorphy sheaf on X(Γ) is invertible"}]}-->
 
 # Lookahead: `automorphy-sheaf` (ModularForms, Layer 10C) — partial
 
@@ -6,7 +6,7 @@ Target: the induced invertible sheaf on the coarse compact curve `X(Γ)`, built 
 descent — invariant sections in the linearizing coordinate at an elliptic point, sections in the
 width parameter (errata order convention) at a regular or irregular cusp.
 
-Built on `main` at `2b5dd6bd4220e96206255421178d4f5b51d963a0`.
+Built on `main` at `2f06c0d69fd88750b4be67237a9cd8e6d83b12aa`.
 
 ## Stubs
 
@@ -72,3 +72,10 @@ coefficient. This split adds the converse and the round trip, so that the local 
 
 * Splits 2 and 3, which consume the suppliers' structure sheaf `𝒪_X` and the inter-chart frame
   comparisons. Neither supplier PR states them yet, so they were not stubbed this round.
+
+## Round log
+
+* 2026-11-07: merged `main` at `2f06c0d69fd8`. The build is green and `lookahead-check` passes. I
+  re-read both supplier PRs: #29133 (head `12250f710b72`) and #29154 are unchanged since
+  2026-11-06 and still state neither `𝒪_X` nor the chart-overlap frame comparisons. So there is
+  still nothing to stub, and splits 2 and 3 remain open.
