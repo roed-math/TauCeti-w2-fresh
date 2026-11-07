@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"automorphy-sheaf","main":"fc8b2141367a5c22e198bac6d15a6af86a24a39b","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: local sections of the automorphy sheaf from coefficients at elliptic points and cusps"},{"n":2,"after":[1],"title":"feat: the weight-k automorphy presheaf on the compactified quotient as an O-module"},{"n":3,"after":[1,2],"title":"feat: the weight-k automorphy sheaf on X(Γ) is invertible"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"automorphy-sheaf","main":"e7068108eef137a393590a3e2a09f9b2dbb8b9e4","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: local sections of the automorphy sheaf from coefficients at elliptic points and cusps"},{"n":2,"after":[1],"title":"feat: the weight-k automorphy presheaf on the compactified quotient as an O-module"},{"n":3,"after":[1,2],"title":"feat: the weight-k automorphy sheaf on X(Γ) is invertible"}]}-->
 
 # Lookahead: `automorphy-sheaf` (ModularForms, Layer 10C) — partial
 
@@ -6,7 +6,7 @@ Target: the induced invertible sheaf on the coarse compact curve `X(Γ)`, built 
 descent — invariant sections in the linearizing coordinate at an elliptic point, sections in the
 width parameter (errata order convention) at a regular or irregular cusp.
 
-Built on `main` at `fc8b2141367a5c22e198bac6d15a6af86a24a39b`.
+Built on `main` at `e7068108eef137a393590a3e2a09f9b2dbb8b9e4`.
 
 ## Stubs
 
@@ -23,9 +23,14 @@ the proof consumes.
 * `riemann-surface-structure-sheaf-h1` (open PR #29154): its diff adds Čech-degree-one material in
   `TauCeti/Topology/Sheaves/Cech/DegreeOne.lean`, `Cech/LocallyZero.lean` and `Sheaves/Cartan.lean`
   (`subsingleton_H'_one_of_isZero_cechCohomology`, `isZero_cechCohomology_zero_obj_of_locally_eq_zero`).
-  The structure sheaf `𝒪_X` of a compact Riemann surface, the module category in which split 2
-  states the automorphy sheaf, is pinned only in README prose (Layer 10B [i]). `Suggested.lean`
-  pins no Lean signature for it, so it is not stubbed here.
+  Correction (fourth round): split 2 does **not** need this supplier for `𝒪_X`. `main` already
+  has the holomorphic structure sheaf `TauCeti.holomorphicStructureSheaf I X` (sheaf of
+  commutative rings) and `TauCeti.holomorphicStructureSheafModules I X` (its `ModuleCat ℂ`
+  form) in `TauCeti/Geometry/Manifold/Complex/StructureSheaf/Basic.lean`. It also has the complex
+  manifold structure on `Γ.CompactifiedQuotient` (`instChartedSpace`, `instIsManifold` in
+  `TauCeti/Analysis/Complex/Fuchsian/Compactification/Manifold.lean`). Earlier rounds missed
+  both. The supplier's Čech `H¹` is not consumed by the construction of the sheaf itself, so
+  nothing from #29154 is stubbed.
 
 `ModularForms/Suggested.lean` pins no declaration for `automorphy-sheaf` itself: it contains only
 the cross-roadmap `#check`s and the concrete dimension `example`s.
@@ -60,8 +65,8 @@ coefficient. This split adds the converse and the round trip, so that the local 
    `[1]`. Defines the presheaf of local sections on opens of `X(Γ)`: on an open `U`, the functions
    on the preimage in `ℍ` satisfying the weight-`k` law, holomorphic there and bounded (resp.
    meromorphic with the floor-corrected order) at cusps in `U`. It shows this is a sheaf of
-   `𝒪_{X(Γ)}`-modules. Needs `𝒪_X` from `riemann-surface-structure-sheaf-h1` (#29154 or its
-   successor). To be stubbed once that PR states it.
+   `𝒪_{X(Γ)}`-modules over `holomorphicStructureSheaf 𝓘(ℂ) Γ.CompactifiedQuotient`, which is
+   already on `main`. It needs no supplier, so it can be written and opened now.
 3. **feat: the weight-k automorphy sheaf on X(Γ) is invertible** — after `[1, 2]`. Uses split 1 at
    every elliptic point and cusp, and the frame `(τ - conj z)^(-k)`-free trivialization at regular
    interior points, to show the sheaf of split 2 is locally free of rank one. The chart-overlap
@@ -70,8 +75,12 @@ coefficient. This split adds the converse and the round trip, so that the local 
 
 ## What remains
 
-* Splits 2 and 3, which consume the suppliers' structure sheaf `𝒪_X` and the inter-chart frame
-  comparisons. Neither supplier PR states them yet, so they were not stubbed this round.
+* Split 2 (the presheaf of weight-`k` sections on opens of `X(Γ)` and its sheaf and
+  `𝒪_{X(Γ)}`-module structure). Its inputs are all on `main`: the structure sheaf, the manifold
+  structure on `Γ.CompactifiedQuotient`, and split 1.
+* Split 3 (local freeness of rank one). It consumes the chart-overlap frame comparisons of
+  `automorphy-sheaf-transition-functions`. #29133 does not state them yet, so they are not
+  stubbed.
 
 ## Round log
 
@@ -87,3 +96,9 @@ coefficient. This split adds the converse and the round trip, so that the local 
   (head `12250f710b72`) and #29154 (head `529d0b65eb2e`) are still unchanged since 2026-11-06, and
   `main` still has no structure sheaf of a Riemann surface. So there is still nothing to stub, and
   splits 2 and 3 remain open.
+* 2026-11-07 (fourth round): merged `main` at `e7068108eef`. #29133 (head `12250f710b72`) and
+  #29154 (head `529d0b65eb2e`) are still unchanged since 2026-11-06. I corrected the record:
+  `main` has the holomorphic structure sheaf (`holomorphicStructureSheaf`,
+  `holomorphicStructureSheafModules`) and the complex manifold structure on
+  `Γ.CompactifiedQuotient`, so split 2 is not blocked on any supplier. The round was too short to
+  write split 2, so the next round should start there.
