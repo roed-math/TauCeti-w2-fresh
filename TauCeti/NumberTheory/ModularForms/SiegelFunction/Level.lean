@@ -5,7 +5,7 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import TauCeti.NumberTheory.ModularForms.SiegelFunction.Transform
+public import TauCeti.NumberTheory.ModularForms.SiegelFunction.Product
 import TauCeti.Analysis.Complex.UpperHalfPlane.MoebiusAction
 
 /-!
@@ -15,7 +15,10 @@ The upper and lower translations `T^N = [[1, N], [0, 1]]` and `L^N = [[1, 0], [N
 principal congruence subgroup `Γ(N)`. This file computes the exact roots of unity by which a Siegel
 function `g_r` changes under `τ ↦ τ + N` (when `N r₁ ∈ ℤ`) and under `τ ↦ τ / (N τ + 1)` (when
 `N r₂ ∈ ℤ`), the first of the explicit `Γ(N)` transformation phases of Kubert–Lang, and deduces
-that `g_r^{12N / gcd(6, N)}` is invariant under both.
+that `g_r^{12N / gcd(6, N)}` is invariant under both. For finite products `∏ g_r^{m(r)}` it proves
+the corresponding half of the Kubert–Lang congruence criterion: if `12 ∣ ∑ m(r)` and
+`gcd(2, N) N ∣ ∑ m(r) (N r₁)²` (resp. `∑ m(r) (N r₂)²`), the product is invariant under `T^N`
+(resp. `L^N`).
 
 ## Main results
 
@@ -31,6 +34,9 @@ that `g_r^{12N / gcd(6, N)}` is invariant under both.
   then `g_r(τ / (N τ + 1)) = e^{-π i N / 6} (-1)^b e^{-π i b r₂} g_r(τ)`.
 * `TauCeti.ModularForm.siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq`: if `N r₂ ∈ ℤ`,
   then `g_r^{12N / gcd(6, N)}` is invariant under `τ ↦ τ / (N τ + 1)`.
+* `TauCeti.ModularForm.siegelProduct_apply_add_natCast_of_dvd`,
+  `TauCeti.ModularForm.siegelProduct_apply_div_natCast_mul_add_one_of_dvd`: the congruence
+  criterion for a Siegel product `∏ g_r^{m(r)}` to be invariant under `T^N` and under `L^N`.
 
 ## References
 
@@ -119,6 +125,77 @@ theorem siegelFunction_pow_apply_add_natCast_of_mul_eq (r : Fin 2 → ℝ) {N : 
   rw [siegelFunction_apply_add_natCast_of_mul_eq r ha hτ, mul_pow,
     translationPhase_pow_eq_one ha, one_mul]
 
+/-- The product over a finite exponent family `m` of the translation phases
+`e^{π i N / 6} (-1)^{a_r} e^{π i a_r x_r}`, for `N x_r = a_r ∈ ℤ`, is `1` under the congruence
+conditions of Kubert–Lang: `12 ∣ ∑ m(r)` and `gcd(2, N) N ∣ ∑ m(r) a_r²`. -/
+private theorem prod_translationPhase_zpow_eq_one {N : ℕ} (hN : N ≠ 0) {m : (Fin 2 → ℝ) →₀ ℤ}
+    (x : (Fin 2 → ℝ) → ℝ) (a : (Fin 2 → ℝ) → ℤ) (ha : ∀ r ∈ m.support, N * x r = a r)
+    (h12 : (12 : ℤ) ∣ m.sum fun _ k ↦ k)
+    (hsq : (Nat.gcd 2 N * N : ℤ) ∣ m.sum fun r k ↦ k * a r ^ 2) :
+    ∏ r ∈ m.support, (cexp (π * I * N / 6) * (-1) ^ a r * cexp (π * I * a r * x r)) ^ m r = 1 := by
+  obtain ⟨s, hs⟩ := h12
+  obtain ⟨t, ht⟩ := hsq
+  simp only [Finsupp.sum] at hs ht
+  -- `∑ m(r) a_r ≡ ∑ m(r) a_r² = gcd(2, N) N t (mod 2)`, and `gcd(2, N) t (N + 1)` is even.
+  obtain ⟨u, hu⟩ : (2 : ℤ) ∣ (∑ r ∈ m.support, m r * a r) + Nat.gcd 2 N * t := by
+    have h₁ : (2 : ℤ) ∣ (∑ r ∈ m.support, m r * a r ^ 2) - ∑ r ∈ m.support, m r * a r := by
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.dvd_sum fun r _ ↦ ?_
+      rw [show m r * a r ^ 2 - m r * a r = m r * (a r * (a r - 1)) by ring]
+      exact (Int.even_mul_pred_self (a r)).two_dvd.mul_left _
+    have h₂ : (2 : ℤ) ∣ Nat.gcd 2 N * t * (N + 1) := by
+      rcases Nat.even_or_odd N with he | ho
+      · rw [Nat.gcd_eq_left he.two_dvd]
+        exact ((dvd_refl _).mul_right _).mul_right _
+      · exact (by exact_mod_cast ho.add_one.two_dvd : (2 : ℤ) ∣ N + 1).mul_left _
+    rw [ht] at h₁
+    convert dvd_sub h₂ h₁ using 1
+    ring
+  have hQ : ∑ r ∈ m.support, (m r : ℂ) * a r * x r = Nat.gcd 2 N * t := by
+    refine mul_left_cancel₀ (Nat.cast_ne_zero.mpr hN) ?_
+    have hsum : ∑ r ∈ m.support, (N : ℂ) * ((m r : ℂ) * a r * x r) =
+        ((∑ r ∈ m.support, m r * a r ^ 2 : ℤ) : ℂ) := by
+      push_cast
+      refine Finset.sum_congr rfl fun r hr ↦ ?_
+      have h : (N : ℂ) * (x r : ℂ) = a r := by exact_mod_cast ha r hr
+      linear_combination (m r * a r : ℂ) * h
+    rw [Finset.mul_sum, hsum, ht]
+    push_cast
+    ring
+  have hphase : ∀ r : Fin 2 → ℝ,
+      (cexp (π * I * N / 6) * (-1) ^ a r * cexp (π * I * a r * x r)) ^ m r =
+        cexp (m r * (π * I * N / 6 + a r * (π * I) + π * I * a r * x r)) := fun r ↦ by
+    rw [Complex.exp_int_mul, Complex.exp_add, Complex.exp_add, Complex.exp_int_mul (π * I),
+      Complex.exp_pi_mul_I]
+  have hexp : ∑ r ∈ m.support, (m r : ℂ) * (π * I * N / 6 + a r * (π * I) + π * I * a r * x r) =
+      π * I * N / 6 * ∑ r ∈ m.support, (m r : ℂ) + π * I * ∑ r ∈ m.support, (m r : ℂ) * a r +
+        π * I * ∑ r ∈ m.support, (m r : ℂ) * a r * x r := by
+    simp only [Finset.mul_sum, ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun r _ ↦ by ring
+  have hs' : ∑ r ∈ m.support, (m r : ℂ) = 12 * s := by exact_mod_cast hs
+  have hu' : ∑ r ∈ m.support, (m r : ℂ) * a r + Nat.gcd 2 N * t = 2 * u := by exact_mod_cast hu
+  simp_rw [hphase]
+  rw [← Complex.exp_sum, Complex.exp_eq_one_iff, hexp, hs', hQ]
+  refine ⟨N * s + u, ?_⟩
+  push_cast
+  linear_combination (π * I) * hu'
+
+/-- **The congruence criterion under `T^N`.** Let `m` be a finite exponent family supported on
+vectors `r` with `N r₁ = a_r ∈ ℤ`. If `12 ∣ ∑ m(r)` and `gcd(2, N) N ∣ ∑ m(r) a_r²`, then the Siegel
+product `∏ g_r^{m(r)}` is invariant under the translation `τ ↦ τ + N` of `Γ(N)`. -/
+theorem siegelProduct_apply_add_natCast_of_dvd {N : ℕ} {m : (Fin 2 → ℝ) →₀ ℤ}
+    (a : (Fin 2 → ℝ) → ℤ) (ha : ∀ r ∈ m.support, N * r 0 = a r)
+    (h12 : (12 : ℤ) ∣ m.sum fun _ k ↦ k)
+    (hsq : (Nat.gcd 2 N * N : ℤ) ∣ m.sum fun r k ↦ k * a r ^ 2) {τ : ℂ} (hτ : 0 < τ.im) :
+    siegelProduct m (τ + N) = siegelProduct m τ := by
+  rcases eq_or_ne N 0 with rfl | hN
+  · simp
+  rw [siegelProduct_def, siegelProduct_def, Finsupp.prod, Finsupp.prod,
+    Finset.prod_congr rfl fun r hr ↦ by
+      rw [siegelFunction_apply_add_natCast_of_mul_eq r (ha r hr) hτ, mul_zpow],
+    Finset.prod_mul_distrib, prod_translationPhase_zpow_eq_one hN (fun r ↦ r 0) a ha h12 hsq,
+    one_mul]
+
 /-- **The lower translation `τ ↦ τ / (n τ + 1)`**:
 `g_r(τ / (n τ + 1)) = e^{-π i n / 6} g_{r Lⁿ}(τ)`, where `r Lⁿ = (r₁ + n r₂, r₂)` is the row
 vector `r` multiplied on the right by `Lⁿ = [[1, 0], [n, 1]] = S T⁻ⁿ S⁻¹`. -/
@@ -176,5 +253,26 @@ theorem siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq (r : Fin 2 �
     rw [mul_inv, mul_inv, ← Complex.exp_neg, ← Complex.exp_neg, ← inv_zpow, inv_neg, inv_one]
   rw [siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq r hb hτ, hinv, mul_pow, inv_pow,
     translationPhase_pow_eq_one hb, inv_one, one_mul]
+
+/-- **The congruence criterion under `L^N`.** Let `m` be a finite exponent family supported on
+vectors `r` with `N r₂ = b_r ∈ ℤ`. If `12 ∣ ∑ m(r)` and `gcd(2, N) N ∣ ∑ m(r) b_r²`, then the Siegel
+product `∏ g_r^{m(r)}` is invariant under the lower translation `τ ↦ τ / (N τ + 1)` of `Γ(N)`. -/
+theorem siegelProduct_apply_div_natCast_mul_add_one_of_dvd {N : ℕ} {m : (Fin 2 → ℝ) →₀ ℤ}
+    (b : (Fin 2 → ℝ) → ℤ) (hb : ∀ r ∈ m.support, N * r 1 = b r)
+    (h12 : (12 : ℤ) ∣ m.sum fun _ k ↦ k)
+    (hsq : (Nat.gcd 2 N * N : ℤ) ∣ m.sum fun r k ↦ k * b r ^ 2) {τ : ℂ} (hτ : 0 < τ.im) :
+    siegelProduct m (τ / (N * τ + 1)) = siegelProduct m τ := by
+  rcases eq_or_ne N 0 with rfl | hN
+  · simp
+  have hinv : ∀ r : Fin 2 → ℝ,
+      cexp (-(π * I * N / 6)) * (-1) ^ b r * cexp (-(π * I * b r * r 1)) =
+        (cexp (π * I * N / 6) * (-1) ^ b r * cexp (π * I * b r * r 1))⁻¹ := fun r ↦ by
+    rw [mul_inv, mul_inv, ← Complex.exp_neg, ← Complex.exp_neg, ← inv_zpow, inv_neg, inv_one]
+  rw [siegelProduct_def, siegelProduct_def, Finsupp.prod, Finsupp.prod,
+    Finset.prod_congr rfl fun r hr ↦ by
+      rw [siegelFunction_apply_div_natCast_mul_add_one_of_mul_eq r (hb r hr) hτ, hinv, mul_zpow,
+        inv_zpow],
+    Finset.prod_mul_distrib, Finset.prod_inv_distrib,
+    prod_translationPhase_zpow_eq_one hN (fun r ↦ r 1) b hb h12 hsq, inv_one, one_mul]
 
 end TauCeti.ModularForm

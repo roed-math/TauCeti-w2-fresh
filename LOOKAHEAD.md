@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"siegel-function","main":"f0b1b42af130787dfc7846cb7c80c2a0de15d569","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: finite products of Siegel functions and their SL₂(ℤ) transformation"},{"n":2,"after":[1],"title":"feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion"},{"n":3,"after":[1,2],"title":"feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over ℤ[j]"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ImaginaryQuadraticClassNumber","slug":"siegel-function","main":"2f06c0d69fd88750b4be67237a9cd8e6d83b12aa","status":"partial","suppliers":["modular-function-field"],"splits":[{"n":1,"after":[],"title":"feat: finite products of Siegel functions and their SL₂(ℤ) transformation"},{"n":2,"after":[1],"title":"feat: the exact Siegel transformation on Γ(N) and the level-N congruence criterion"},{"n":3,"after":[1,2],"title":"feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over ℤ[j]"}]}-->
 
 # Lookahead: `siegel-function` (ImaginaryQuadraticClassNumber H3.2)
 
-Built on `main` at `f0b1b42af13`. Status: **partial**.
+Built on `main` at `2f06c0d69fd`. Status: **partial**.
 
 ## What `main` already has
 
@@ -79,10 +79,17 @@ uses them yet.
    `siegelFunction_pow_apply_div_natCast_mul_add_one_of_mul_eq` (`g_r^{12N/gcd(6,N)}` is
    `L^N`-invariant when `N r₂ ∈ ℤ`), both power laws resting on the private helper
    `translationPhase_pow_eq_one` (the `T^N` phase is a `12N/gcd(6,N)`-th root of unity; the `L^N`
-   phase is its inverse). Still to add here: the explicit root of unity of `g_r ∘ γ` for
+   phase is its inverse). For products, `siegelProduct_apply_add_natCast_of_dvd` and
+   `siegelProduct_apply_div_natCast_mul_add_one_of_dvd` prove the Kubert–Lang congruence criterion
+   for `T^N` and `L^N`: if `N r₁ = a_r` (resp. `N r₂ = b_r`) on the support, `12 ∣ ∑ m(r)` and
+   `gcd(2, N) N ∣ ∑ m(r) a_r²` (resp. `∑ m(r) b_r²`), then `∏ g_r^{m(r)}` is invariant; both rest
+   on the private `prod_translationPhase_zpow_eq_one` (the product of the phases is `1`, via
+   `∑ m a ≡ ∑ m a² (mod 2)`). `Level.lean` now imports `SiegelFunction.Product` (split 1). Still to
+   add here: the explicit root of unity of `g_r ∘ γ` for
    general `γ ∈ Γ(N)` and `r ∈ N⁻¹ℤ²` (Kubert–Lang K 1–K 3; `T^N` and `L^N` do not generate
    `Γ(N)` for `N ≥ 3`, so this needs the general Klein-form phase, not just the two generators
-   done so far), the quadratic congruence criterion for `∏ g_r^{m(r)}` to be `Γ(N)`-invariant, and
+   done so far), the full quadratic congruence criterion for `∏ g_r^{m(r)}` to be `Γ(N)`-invariant
+   (including the mixed condition `N ∣ ∑ m(r) a_r b_r`), and
    `g_r^{12N/gcd(6,N)}` invariant under all of `Γ(N)`.
 3. **feat: Siegel functions as level-N modular functions, cyclotomic action and integrality over
    ℤ[j]** — after: 1, 2. Not yet on the branch. Places the products of split 2 in
@@ -104,3 +111,5 @@ phase and power invariance under the lower translation `L^N`.
 The fifth round (on `main` at `f0b1b42af13`; #29233 still open, so both stubs stay) merged `main`
 and factored the duplicated root-of-unity arithmetic of the two power laws into
 `translationPhase_pow_eq_one`.
+The sixth round (on `main` at the commit in the header; #29233 still open, so both stubs stay)
+added the `T^N` and `L^N` halves of the congruence criterion for Siegel products.
