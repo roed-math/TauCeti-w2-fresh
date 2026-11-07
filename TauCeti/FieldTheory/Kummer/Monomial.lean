@@ -31,6 +31,8 @@ algebraic relation `∑_r c_r ∏ βⱼ ^ rⱼ = 0` with `c_r ∈ K` forces ever
 * `TauCeti.linearIndependent_prod_pow_of_finrank_adjoin_eq`,
   `TauCeti.linearIndependent_prod_pow_of_finrank_intermediateFieldAdjoin_eq`: if the degree is
   `qⁿ`, the reduced monomials are linearly independent over `K`.
+* `TauCeti.sum_filter_mul_prod_pow_div_eq_zero`: a vanishing `K`-linear combination of monomials
+  vanishes on each residue class of exponents modulo `q`.
 
 ## References
 
@@ -122,5 +124,37 @@ theorem linearIndependent_prod_pow_of_finrank_intermediateFieldAdjoin_eq {L : Ty
   rintro _ ⟨j, rfl⟩
   obtain ⟨a, ha⟩ := hβ j
   exact IsAlgebraic.of_pow (Nat.pos_of_ne_zero hq) (ha ▸ isAlgebraic_algebraMap a)
+
+/-- **Kummer conjugates separate support classes.** Let `aⱼ = βⱼ ^ q` with `aⱼ ∈ K`, and suppose the
+reduced monomials `∏ βⱼ ^ rⱼ`, `0 ≤ rⱼ < q`, are linearly independent over `K`. If a `K`-linear
+combination `∑_e c_e ∏ βⱼ ^ eⱼ` of arbitrary monomials vanishes, then so does each of its parts
+supported on one residue class `e ≡ r (mod q)`, after the factor `∏ βⱼ ^ rⱼ` is removed:
+`∑_{e ≡ r} c_e ∏ aⱼ ^ (eⱼ / q) = 0`. -/
+theorem sum_filter_mul_prod_pow_div_eq_zero (hq : q ≠ 0) {a : Fin n → K}
+    (ha : ∀ j, algebraMap K A (a j) = β j ^ q)
+    (hli : LinearIndependent K fun r : Fin n → Fin q ↦ ∏ j, β j ^ (r j : ℕ))
+    {s : Finset (Fin n → ℕ)} {c : (Fin n → ℕ) → K}
+    (hsum : ∑ e ∈ s, c e • ∏ j, β j ^ e j = 0) (r : Fin n → Fin q) :
+    ∑ e ∈ s with ∀ j, e j % q = r j, c e * ∏ j, a j ^ (e j / q) = 0 := by
+  have hq' := Nat.pos_of_ne_zero hq
+  let red : (Fin n → ℕ) → Fin n → Fin q := fun e j ↦ ⟨e j % q, Nat.mod_lt _ hq'⟩
+  have hterm (e : Fin n → ℕ) : c e • ∏ j, β j ^ e j =
+      (c e * ∏ j, a j ^ (e j / q)) • ∏ j, β j ^ (red e j : ℕ) := by
+    rw [mul_smul, Algebra.smul_def (∏ j, a j ^ (e j / q)), map_prod, ← Finset.prod_mul_distrib]
+    congr 1
+    refine Finset.prod_congr rfl fun j _ ↦ ?_
+    rw [map_pow, ha, ← pow_mul, ← pow_add, Nat.div_add_mod]
+  have hfilter : ∀ r : Fin n → Fin q,
+      {e ∈ s | ∀ j, e j % q = r j} = {e ∈ s | red e = r} := fun r ↦
+    Finset.filter_congr fun e _ ↦ by simp [red, funext_iff, Fin.ext_iff]
+  have key : ∑ r', (∑ e ∈ s with red e = r', c e * ∏ j, a j ^ (e j / q)) •
+      ∏ j, β j ^ (r' j : ℕ) = 0 := by
+    rw [← hsum, Finset.sum_congr rfl fun e _ ↦ hterm e, ← Finset.sum_fiberwise s red]
+    refine Finset.sum_congr rfl fun r' _ ↦ ?_
+    rw [Finset.sum_smul]
+    refine Finset.sum_congr rfl fun e he ↦ ?_
+    rw [(Finset.mem_filter.1 he).2]
+  rw [hfilter]
+  exact Fintype.linearIndependent_iff.1 hli _ key r
 
 end TauCeti

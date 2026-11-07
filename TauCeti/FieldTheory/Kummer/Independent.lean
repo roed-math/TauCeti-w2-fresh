@@ -31,6 +31,8 @@ reduced monomials is how Kummer conjugates separate the support classes modulo `
 * `TauCeti.finrank_adjoin_range_eq_relIndex`: `[K(β) : K] = [⟨α⟩ : ⟨α⟩ ∩ (Kˣ)^q]`.
 * `TauCeti.linearIndependent_prod_pow_of_relIndex_eq`: if that index is `qⁿ`, the reduced
   monomials in the `βⱼ` are linearly independent over `K`.
+* `TauCeti.sum_filter_mul_prod_pow_div_eq_zero_of_relIndex_eq`: hence a vanishing `K`-linear
+  combination of monomials in the `βⱼ` vanishes on each residue class of exponents modulo `q`.
 
 ## References
 
@@ -112,5 +114,19 @@ theorem linearIndependent_prod_pow_of_relIndex_eq (hβ : ∀ j, β j ^ q = algeb
     LinearIndependent K fun r : Fin n → Fin q ↦ ∏ j, β j ^ (r j : ℕ) :=
   linearIndependent_prod_pow_of_finrank_intermediateFieldAdjoin_eq (NeZero.ne q)
     (fun j ↦ ⟨α j, (hβ j).symm⟩) ((finrank_adjoin_range_eq_relIndex hβ).trans hidx)
+
+/-- **Kummer conjugates separate support classes, Kummer-independent case.** If `K` contains the
+`q`-th roots of unity, `βⱼ ^ q = αⱼ`, the classes of `α₁, …, αₙ` in `Kˣ ⧸ (Kˣ)^q` generate a
+subgroup of order `qⁿ`, and `∑_e c_e ∏ βⱼ ^ eⱼ = 0` with `c_e ∈ K`, then for every residue class
+`r` modulo `q` the part supported on `e ≡ r` vanishes: `∑_{e ≡ r} c_e ∏ αⱼ ^ (eⱼ / q) = 0`. -/
+theorem sum_filter_mul_prod_pow_div_eq_zero_of_relIndex_eq
+    (hβ : ∀ j, β j ^ q = algebraMap K E (α j))
+    (hidx : (powMonoidHom q : Kˣ →* Kˣ).range.relIndex (Subgroup.closure (Set.range α)) =
+      q ^ n)
+    {s : Finset (Fin n → ℕ)} {c : (Fin n → ℕ) → K} (hsum : ∑ e ∈ s, c e • ∏ j, β j ^ e j = 0)
+    (r : Fin n → Fin q) :
+    ∑ e ∈ s with ∀ j, e j % q = r j, c e * ∏ j, (α j : K) ^ (e j / q) = 0 :=
+  sum_filter_mul_prod_pow_div_eq_zero (NeZero.ne q) (fun j ↦ (hβ j).symm)
+    (linearIndependent_prod_pow_of_relIndex_eq hβ hidx) hsum r
 
 end TauCeti

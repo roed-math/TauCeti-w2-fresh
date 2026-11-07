@@ -1,8 +1,8 @@
-<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"f0b1b42af130787dfc7846cb7c80c2a0de15d569","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
+<!--tauceti-lookahead:v1 {"area":"DiophantineApproximationAndTranscendence","slug":"yu-auxiliary-construction","main":"2f06c0d69fd88750b4be67237a9cd8e6d83b12aa","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials"},{"n":2,"after":[1],"title":"feat(NumberTheory/Transcendental/Yu): the auxiliary coefficient array of Yu 1990 Lemma 2.1"},{"n":3,"after":[1,2],"title":"feat(NumberTheory/Transcendental/Yu): Yu's quantitative extrapolation (Proposition 2.1, Theorems 2.1-2.2)"}]}-->
 
 # Lookahead: `yu-auxiliary-construction` (DiophantineApproximationAndTranscendence, §3.7)
 
-Built on `main` at `f0b1b42af130787dfc7846cb7c80c2a0de15d569`. Status: **partial**.
+Built on `main` at `2f06c0d69fd88750b4be67237a9cd8e6d83b12aa`. Status: **partial**.
 
 ## Target
 
@@ -28,7 +28,7 @@ successor) actually states, from `gh pr diff`.
 ### Split 1 (proved here) — after: none
 `feat(FieldTheory/Kummer): q-th roots of Kummer-independent generators have degree q^n and independent monomials`
 
-Files (both new, ~240 lines together), all declarations in `namespace TauCeti`:
+Files (both new, ~275 lines together: `Monomial.lean` 160, `Independent.lean` 131), all declarations in `namespace TauCeti`:
 
 `TauCeti/FieldTheory/Kummer/Monomial.lean` (~130 lines, previous round):
 
@@ -40,6 +40,9 @@ Files (both new, ~240 lines together), all declarations in `namespace TauCeti`:
   `∏ β j ^ r j`, `r : Fin n → Fin q`, are `K`-linearly independent.
 * `linearIndependent_prod_pow_of_finrank_intermediateFieldAdjoin_eq`: the same for `K(β)` inside a
   field `L`.
+* `sum_filter_mul_prod_pow_div_eq_zero` (round 3): if the reduced monomials are independent and
+  `∑_e c_e ∏ βⱼ ^ eⱼ = 0` (`c_e ∈ K`, arbitrary exponents `e ∈ s`), then for each residue class
+  `r` mod `q`, `∑_{e ∈ s, e ≡ r} c_e ∏ aⱼ ^ (eⱼ / q) = 0` where `aⱼ = βⱼ ^ q ∈ K`.
 
 `TauCeti/FieldTheory/Kummer/Independent.lean` (~115 lines, this round): the Kummer-independent
 hypothesis of the target in the form the auxiliary construction consumes it.
@@ -55,6 +58,8 @@ hypothesis of the target in the form the auxiliary construction consumes it.
   `Kˣ ⧸ (Kˣ)^q` (from `TauCeti.finrank_kummerField` on `main`).
 * `linearIndependent_prod_pow_of_relIndex_eq`: if that order is `qⁿ` (independent classes), the
   reduced monomials `∏ βⱼ ^ rⱼ` are linearly independent over `K`.
+* `sum_filter_mul_prod_pow_div_eq_zero_of_relIndex_eq` (round 3): the support-class separation
+  above directly under the Kummer-independent hypothesis.
 
 This is the algebraic engine of the step "Kummer conjugates separate support classes" in the
 extrapolation: an identity `∑_r c_r ∏ βⱼ ^ rⱼ = 0` with `c_r ∈ K` forces every `c_r = 0`, which is
@@ -80,6 +85,20 @@ split 2. Carries the constants (2.27)–(2.29) with the Yu 1994 replacements, in
 ones. This split needs the supplier stubs.
 
 ## What remains
+
+Round 3 (2026-11-07, on `main` `2f06c0d69fd8`): merged `main`, and added the support-class
+separation lemmas `sum_filter_mul_prod_pow_div_eq_zero` and
+`sum_filter_mul_prod_pow_div_eq_zero_of_relIndex_eq` to split 1. These are the exact form in
+which the extrapolation's q-fold refinement of λ-supports consumes Kummer independence: a vanishing
+`K`-combination of monomials in the roots splits into one vanishing combination per class of
+exponents modulo `q`, with the class factor removed. PR #28709 (`yu-local-estimates`) is still
+open; its diff states `fwdDiff_iter_pow_apply_zero`, `fwdDiff_iter_pow_eq_sum`,
+`norm_fwdDiff_iter_pow_mul_pow_le`, `fwdDiff_descPochhammer_succ_eval`,
+`fwdDiff_iter_descPochhammer_eval`, `pow_eq_sum_stirlingSecond_mul_descPochhammer_eval`,
+`PowerSeries.IsRestricted.hasSum_fwdDiff_iter_evalAt`,
+`PowerSeries.IsRestricted.norm_fwdDiff_iter_evalAt_mul_pow_le` and
+`PowerSeries.IsRestricted.norm_evalAt_add_nsmul_le_max` — the finite-difference bounds that split 3
+will stub (none is consumed by split 1, so there is still no stub file).
 
 Split 1 is complete (round 2 added `Independent.lean`: the Kummer-independent hypothesis
 "independent classes in Kˣ/(Kˣ)^q, ζ_q ∈ K" now yields `[K(β) : K] = qⁿ` and the independence of
