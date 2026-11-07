@@ -1,4 +1,4 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"automorphy-sheaf","main":"5f8b5c6fc72ef02143a5bd96d1b787615f8312df","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: local sections of the automorphy sheaf from coefficients at elliptic points and cusps"},{"n":2,"after":[1],"title":"feat: the weight-k automorphy presheaf on the compactified quotient as an O-module"},{"n":3,"after":[1,2],"title":"feat: the weight-k automorphy sheaf on X(Γ) is invertible"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"automorphy-sheaf","main":"fc8b2141367a5c22e198bac6d15a6af86a24a39b","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: local sections of the automorphy sheaf from coefficients at elliptic points and cusps"},{"n":2,"after":[1],"title":"feat: the weight-k automorphy presheaf on the compactified quotient as an O-module"},{"n":3,"after":[1,2],"title":"feat: the weight-k automorphy sheaf on X(Γ) is invertible"}]}-->
 
 # Lookahead: `automorphy-sheaf` (ModularForms, Layer 10C) — partial
 
@@ -6,7 +6,7 @@ Target: the induced invertible sheaf on the coarse compact curve `X(Γ)`, built 
 descent — invariant sections in the linearizing coordinate at an elliptic point, sections in the
 width parameter (errata order convention) at a regular or irregular cusp.
 
-Built on `main` at `5f8b5c6fc72ef02143a5bd96d1b787615f8312df`.
+Built on `main` at `fc8b2141367a5c22e198bac6d15a6af86a24a39b`.
 
 ## Stubs
 
@@ -83,3 +83,7 @@ coefficient. This split adds the converse and the round trip, so that the local 
   supplier PRs: #29133 (head `12250f710b72`) and #29154 (head `529d0b65eb2e`) are still unchanged
   since 2026-11-06. Neither states `𝒪_X` or the chart-overlap frame comparisons, so there is still
   nothing to stub, and splits 2 and 3 remain open.
+* 2026-11-07 (third round): merged `main` at `fc8b2141367`. I re-checked both supplier PRs: #29133
+  (head `12250f710b72`) and #29154 (head `529d0b65eb2e`) are still unchanged since 2026-11-06, and
+  `main` still has no structure sheaf of a Riemann surface. So there is still nothing to stub, and
+  splits 2 and 3 remain open.
