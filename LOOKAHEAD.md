@@ -1,7 +1,7 @@
-<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"08a51bc861c1164cec8967d78702731083676e5d","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
+<!--tauceti-lookahead:v1 {"area":"ModularForms","slug":"galois-conjugate-newform","main":"f0b1b42af130787dfc7846cb7c80c2a0de15d569","status":"partial","suppliers":["newspace-hecke-algebra-over-character-field"],"splits":[{"n":1,"after":[],"title":"feat(ModularForms/Newforms): the Galois conjugate of a newform"}]}-->
 # Lookahead: `galois-conjugate-newform` (ModularForms, Layer 8G)
 
-Built on `main` at `08a51bc861c1`. Status: **partial** (see *What remains*).
+Built on `main` at `f0b1b42af130`. Status: **partial** (see *What remains*).
 
 ## Stubbed declarations (`TauCeti/Lookahead/GaloisConjugateNewform/Stubs.lean`)
 
@@ -69,3 +69,8 @@ the `ℚ(χ)` form alone because `σ` moves `χ`. The next round should either s
 (with all `Tₙ`) together with its "characters are exactly the newforms" theorem, or wait for the
 supplier to land it. Then it should define `galoisConj` through that algebra and prove the
 coefficient identity at every `n`.
+
+Session of 2026-11-07: merged `main` at `f0b1b42af130`; nothing under `Newforms/` changed, and
+the supplier has no open PR. `main` has the bad-prime operators at the level
+(`HeckeSlash/BadPrime/`, `AtkinLehner/Newform.lean`), but no newspace Hecke algebra containing
+them, so the gap above is unchanged.
