@@ -1,52 +1,43 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"d2083f0f1dd2136d02467ba36efbbe1af612e89c","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,6],"title":"feat: open immersions are inherited from a finite stage"},{"n":8,"after":[2,3,6],"title":"feat: smooth and étale morphisms are inherited from a finite stage"},{"n":9,"after":[3,6,7,8],"title":"feat: closed immersions, finite, smooth and étale morphisms over a member, and separatedness, are inherited from a finite stage"},{"n":10,"after":[],"title":"feat: gluing two schemes along an open subscheme"},{"n":11,"after":[1,3,5,6,7,10],"title":"feat: descent of schemes of finite presentation along cofiltered limits"},{"n":12,"after":[3,5,6,7,8,9,11],"title":"feat: flatness and properness are inherited from a finite stage"},{"n":13,"after":[],"title":"feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely generated subring"},{"n":14,"after":[13],"title":"feat: quasi-affine models of a quasi-compact open as opens of the spectrum of a fibre product"},{"n":15,"after":[],"title":"feat: global sections with affine basic opens descend along cofiltered limits of schemes"},{"n":16,"after":[],"title":"feat: the cofiltered category of finitely generated subrings along a system of rings"},{"n":17,"after":[14,16],"title":"feat: affine models of a scheme near a quasi-compact open"},{"n":18,"after":[10],"title":"feat: morphisms between gluings of two schemes along opens"},{"n":19,"after":[3,4,10,18],"title":"feat: cofiltered limits of schemes commute with gluing along opens"},{"n":20,"after":[2,3,4,10,13,14,15,16,17,18,19],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":21,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"d2083f0f1dd2136d02467ba36efbbe1af612e89c","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,6],"title":"feat: open immersions are inherited from a finite stage"},{"n":8,"after":[2,3,6],"title":"feat: smooth and étale morphisms are inherited from a finite stage"},{"n":9,"after":[3,6,7,8],"title":"feat: closed immersions, finite, smooth and étale morphisms over a member, and separatedness, are inherited from a finite stage"},{"n":10,"after":[],"title":"feat: gluing two schemes along an open subscheme"},{"n":11,"after":[1,3,5,6,7,10],"title":"feat: descent of schemes of finite presentation along cofiltered limits"},{"n":12,"after":[3,6,9],"title":"feat: finite-stage criteria for surjectivity and proper covers"},{"n":13,"after":[3,5,6,8,11],"title":"feat: flatness is inherited from a finite stage"},{"n":14,"after":[3,6,9,11,12],"title":"feat: properness is inherited from a finite stage"},{"n":15,"after":[],"title":"feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely generated subring"},{"n":16,"after":[15],"title":"feat: quasi-affine models of a quasi-compact open as opens of the spectrum of a fibre product"},{"n":17,"after":[],"title":"feat: global sections with affine basic opens descend along cofiltered limits of schemes"},{"n":18,"after":[],"title":"feat: the cofiltered category of finitely generated subrings along a system of rings"},{"n":19,"after":[16,18],"title":"feat: affine models of a scheme near a quasi-compact open"},{"n":20,"after":[10],"title":"feat: morphisms between gluings of two schemes along opens"},{"n":21,"after":[3,4,10,20],"title":"feat: cofiltered limits of schemes commute with gluing along opens"},{"n":22,"after":[2,3,4,10,15,16,17,18,19,20,21],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":23,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
 # Lookahead: `noetherian-approximation` (SchemeAndStackFoundations §0.9)
 
-Built on `main` at `d2083f0f1dd` (merged in the 2026-11-08 20:23 UTC session with no conflicts; the branch builds and passes `lookahead-check` unchanged). Status: **partial**:
-`affine_transition_limits` and `noetherian_approximation` are proved, and of
-`finite_presentation_limits` only the properties flat and proper remain (split 12). An earlier session
-proved absolute Noetherian approximation (Stacks 01ZA) in full, by splits 19–21, without the
-`qcoh-extension` supplier: the stub has been removed (see below), so `"suppliers"` is empty and
-no remaining split waits on another list item.
+Status: **partial**. Resumed from `e911ca04a043` and merged `origin/main`; the merge was already
+up to date, at `d2083f0f1dd2136d02467ba36efbbe1af612e89c`.
+`affine_transition_limits` and absolute `noetherian_approximation` are proved.
+For `finite_presentation_limits`, object and morphism descent and six of the eight requested
+properties are proved. General flatness and properness remain (splits 13–14).
+This session adds finite-stage constructible-set criteria, full surjectivity descent, and three
+properness descent criteria with explicit geometric hypotheses (split 12).
 
-The roadmap pins no Lean forms for §0.9 in `Suggested.lean`; the target is specified by the
-README only (`affine_transition_limits`, `noetherian_approximation`,
-`finite_presentation_limits`).
+The definitive target is SchemeAndStackFoundations/README.md §0.9. `Suggested.lean` pins no Lean
+forms for `affine_transition_limits`, `noetherian_approximation`, `finite_presentation_limits`
+or `qcoh_extension`; these are README-only specifications. This branch targets the three
+limit/approximation clauses selected by the operator, not the other §0.9 applications.
 
 ## Stubbed declarations
 
-None. The branch no longer has a stub module: `TauCeti/Lookahead/NoetherianApproximation/Stubs.lean`
-was deleted in an earlier session because no proved declaration consumes it. Absolute Noetherian
-approximation is proved by the fibre-product route of splits 13–20 (models of `U ∩ W` as opens of
-`Spec C` for finitely generated `C ⊆ Γ(W) ×_{Γ(U ∩ W)} Γ(Vⱼ)`, glued to the models of `U`), not by
-the earlier-planned route that extended finite-type ideal sheaves across `U ⊆ X`. That earlier
-route was the only consumer of the `qcoh-extension` stub, and the remaining split 12 (flat,
-proper) does not use it either. For the record, the deleted stub was the following.
+None. No proved declaration consumes `qcoh-extension`, so there is no stub module and the
+machine-readable supplier list is empty. The earlier branch had already removed its unused
+stub: the absolute approximation proof uses finitely generated subrings of fibre products
+(splits 15–22) rather than extending ideal sheaves. This session preserves that proof.
 
-`qcoh-extension` (SchemeAndStackFoundations §0.4, open PR #27979; partial #26972):
-`Suggested.lean` pins no Lean signature for it (`grep qcoh Suggested.lean` is empty). The README
-states it in prose: "a finite-type quasi-coherent submodule of `j^*G` is `j^*G'` for a finite-type
-quasi-coherent submodule `G' ⊆ G` (Lemma 28.23.2 (01PF))". Parts (1) and (2) of 01PE are on
-`main` (PR #22951) as `AlgebraicGeometry.Scheme.Modules.exists_isQuasicoherent_restrict_iso` and
-`exists_mono_restrict_iso_of_isQuasicoherent`. PR #27979's diff adds the affine input of 01PF
-(`exists_isFiniteType_mono_isIso_restrict` and related lemmas), not 01PF itself. The stub followed
-`main`'s form of 01PE (2), adding finite-type hypotheses and conclusion and qcqs of `X`:
-
-```lean
-theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_restrict_iso
-    [QuasiCompact j] [CompactSpace X] [QuasiSeparatedSpace X] {G : X.Modules}
-    [G.IsQuasicoherent] {F : U.Modules} [F.IsQuasicoherent] [F.IsFiniteType]
-    (i : F ⟶ G.restrict j) [Mono i] :
-    ∃ (G' : X.Modules) (_ : G'.IsQuasicoherent) (_ : G'.IsFiniteType) (i' : G' ⟶ G) (_ : Mono i')
-      (e : G'.restrict j ≅ F), (Scheme.Modules.restrictFunctor j).map i' = e.hom ≫ i
-```
-
-If a future route for split 12 needs 01PF, restore this stub.
-
-The `qcoh-extension` supplier is now in flight as PR #30873 ("feat: extend finitely presented
-modules along quasi-compact open immersions", open on 2026-11-08). Since no declaration on this
-branch consumes it, it is still not stubbed and the target does not wait on it.
+The supplier's §0.4 README section and the full diff of open PR #30873 were checked. The PR
+provides `AlgebraicGeometry.Scheme.Modules.exists_isFinitePresentation_restrict_iso`,
+`exists_isFinitePresentation_restrictFunctor_map_eq` and their affine/extension prerequisites.
+None is imported or assumed here. Therefore there are no stub signatures or signature
+differences to report, and no substitution is needed when the supplier lands.
+The already-merged partial suppliers are left as on main.
 
 ## Splits
+
+This is a port plan, not permission to open a stacked PR. Every PR is based on main after its
+listed prerequisites merge; independent splits may run concurrently. Every description must
+include the standalone attribution line `Roadmap: SchemeAndStackFoundations` and identify
+README.md §0.9. Split 23 is held until all of 1–22 merge, carries the exported absolute
+approximation theorem, and is the only split that completes the selected target. Splits 13–14
+are unproved plans; their final sizes and any additional prerequisite subdivisions cannot be
+fixed before those proofs exist. The already-proved small terminal split is kept separate so
+that no earlier PR claims completion.
 
 1. **feat: separation, affineness and underlying space of limits of schemes with affine
    transition maps** (after: none) — *proved*. File
@@ -70,7 +61,7 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
      `CategoryTheory.Functor.pullbackOver`, `CategoryTheory.Limits.Cone.pullbackOver`,
      `CategoryTheory.Limits.IsLimit.pullbackOver` and their `_map_fst/_map_snd`,
      `_π_app_fst/_π_app_snd` lemmas;
-   - `TauCeti/AlgebraicGeometry/Limits/BaseChange.lean` (50 lines): instances passing affine
+   - `TauCeti/AlgebraicGeometry/Limits/BaseChange.lean` (50 lines in this split; 85 final): instances passing affine
      transition maps, quasi-compactness and quasi-separation to `D.pullbackOver r`;
    - `TauCeti/AlgebraicGeometry/Limits/FinitePresentation.lean` (230 lines):
      `exists_map_comp_eq_of_isLimit`, `exists_π_app_comp_eq_of_isLimit` (01ZC over `ℤ`),
@@ -126,8 +117,7 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
      (01ZO): for `Y` of finite type, quasi-compact and quasi-separated over `Sᵢ`, if
      `Y ×_{Sᵢ} S ⟶ S` is a closed immersion (finite), so is `Y ×_{Sᵢ} Sⱼ ⟶ Sⱼ` for some `j`.
    About 520 lines; may be opened as two PRs (affine case, then the two reductions) if reviewers ask.
-7. **feat: open immersions are inherited from a finite stage** (after: 3, 6) — *proved* (this
-   session). Files:
+7. **feat: open immersions are inherited from a finite stage** (after: 3, 6) — *proved* (inherited). Files:
    - `TauCeti/CategoryTheory/MorphismProperty/Limits.lean` (existing file, +17 lines; hence after
      split 6, which also extends it): `CategoryTheory.MorphismProperty.pullback_map_pullback_map_iff`
      (the base change of `g : X ⟶ Y` over `Z` along `f' ≫ f` versus along `f'` after `f`);
@@ -165,7 +155,8 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
      `g : X ⟶ Y` over `Z` along `f` is the base change of `g` along `T ×_Z Y ⟶ Y`) and
      `CategoryTheory.MorphismProperty.diagonal_pullback_fst_iff` (the diagonal of a base change of
      `q` is the base change of the diagonal of `q`);
-   - `TauCeti/AlgebraicGeometry/Limits/Morphisms.lean` (167 lines):
+   - `TauCeti/AlgebraicGeometry/Limits/Morphisms.lean` (140 lines final), together with
+     35 added lines in `TauCeti/AlgebraicGeometry/Limits/BaseChange.lean`:
      `exists_pullbackMap_of_pullbackOver` (for a morphism `g : X ⟶ Y` over a member `Sᵢ`, the base
      changes of `g` to the limit and to the `Sⱼ` are the base changes of one morphism over the member
      `Sᵢ ×_{Sᵢ} Y` of the limit `Y ×_{Sᵢ} S = lim (Y ×_{Sᵢ} Sⱼ)` of split 3's
@@ -177,7 +168,8 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
      (open immersions 0EUU and isomorphisms 081E are already in morphism form, splits 7 and 3); and
      `exists_isSeparated_pullback_fst_of_isLimit` (for `Y` qcqs over `Sᵢ`, separatedness of
      `Y ×_{Sᵢ} S ⟶ S` is inherited by some `Y ×_{Sᵢ} Sⱼ ⟶ Sⱼ`, by applying 01ZP to the diagonal;
-     one ingredient of 081F). About 195 lines.
+     one ingredient of 081F). The generic reduction lives in `BaseChange.lean`;
+     `Surjective.lean` therefore does not import the smooth/étale results. About 200 lines.
 10. **feat: gluing two schemes along an open subscheme** (after: none) — *proved* (2026-11-05).
     File `TauCeti/AlgebraicGeometry/Gluing/Pushout.lean` (412 lines), namespace
     `TauCeti.AlgebraicGeometry.Scheme` (two lemmas in Mathlib's `AlgebraicGeometry.IsZariskiLocalAtSource`
@@ -207,15 +199,54 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
     quasi-compact and quasi-separated is `IsPullback a f p (c.π.app i)` for some `p : Y ⟶ Sᵢ` locally
     of finite presentation, quasi-compact and quasi-separated — the object half of 01ZM, completing
     the first clause of `finite_presentation_limits`. Split 1 supplies `quasiSeparatedSpace_of_isLimit`.
-12. **feat: flatness and properness are inherited from a finite stage** (after: 3, 5, 6, 7, 8, 9, 11)
-    — *remaining*. Flat (04AI): Mathlib has no descent of flatness along filtered colimits of rings,
-    so this needs the ring theory of Stacks 10.168 (00R6/05LY: a flat finitely presented algebra over a
-    filtered colimit is flat at a finite stage); then the affine case globalises by split 6's
-    `exists_pullback_fst_of_isLimit_of_isZariskiLocalAtTarget` and split 8's
-    `exists_pullback_fst_of_isLimit_of_isZariskiLocalAtSource`. Proper (081F): separatedness is split
-    9, so universal closedness remains, which Stacks reaches through Chow's lemma. Morphism forms
-    follow from split 9's `exists_pullbackMap_of_pullbackOver`. Likely two PRs.
-13. **feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely
+12. **feat: finite-stage criteria for surjectivity and proper covers** (after: 3, 6, 9)
+    — *proved in this session*, 332 lines. All declarations are in
+    `TauCeti.AlgebraicGeometry.Scheme`.
+    - `TauCeti/AlgebraicGeometry/Limits/Constructible.lean` (109 lines):
+      `exists_map_preimage_eq_empty_of_isConstructible`,
+      `exists_map_preimage_subset_map_preimage_of_isConstructible`,
+      `exists_map_preimage_eq_map_preimage_of_isConstructible`.
+      Emptiness, inclusion and equality of constructible subsets of a qcqs member, after
+      pullback to the limit, are detected at a finite stage. The proof uses the finite-union
+      decomposition into differences of affine opens and Mathlib's open-inclusion criterion.
+    - `TauCeti/AlgebraicGeometry/Limits/Surjective.lean` (67 lines):
+      `exists_surjective_pullback_fst_of_isLimit`,
+      `exists_surjective_pullbackMap_of_isLimit`. A quasi-compact locally finitely presented
+      morphism that becomes surjective over the limit is surjective at a finite stage, by
+      Chevalley's theorem and the constructible criterion. The first theorem needs qcqs only
+      for the distinguished member; the second needs qcqs members and a qcqs target over it.
+    - `TauCeti/AlgebraicGeometry/Limits/Proper.lean` (156 lines):
+      `exists_isProper_pullback_fst_of_isLimit_of_isImmersion` proves properness descent for
+      a quasi-compact scheme admitting an immersion into a proper scheme over a member;
+      `exists_isProper_pullback_fst_of_isLimit_of_isProper_surjective` proves it when the
+      source has a proper surjective cover admitting such an immersion;
+      `exists_isProper_pullback_fst_of_isLimit_of_surjective` descends properness of a
+      separated finitely presented model receiving, over the limit, a surjective morphism
+      from the base change of a proper finitely presented model. This last theorem consumes
+      both surjectivity descent and descent of morphisms. These are conditional criteria,
+      not the unconditional properness clause of the target: the cover-existence step is
+      still missing.
+13. **feat: flatness is inherited from a finite stage** (after: 3, 5, 6, 8, 11)
+    — *remaining*. Planned files: `TauCeti/RingTheory/Flat/FilteredColimit.lean` and
+    `TauCeti/AlgebraicGeometry/Limits/Flat.lean`. First prove Stacks 10.168 (00R6/05LY):
+    a finitely presented algebra over a filtered colimit that is flat comes from a flat
+    algebra at a finite stage. Then add the affine and general scheme statements
+    `exists_flat_pullback_fst_of_isLimit` and `exists_flat_pullbackMap_of_isLimit` (04AI),
+    using the local-at-source and local-at-target reductions of splits 6 and 8.
+    No Lean placeholder or extra hypothesis for the missing ring theorem is present.
+    Aim for 200–600 lines per PR; the ring argument must be split further if it exceeds that.
+14. **feat: properness is inherited from a finite stage** (after: 3, 6, 9, 11, 12)
+    — *remaining*. Extend `TauCeti/AlgebraicGeometry/Limits/Proper.lean` with the unconditional
+    `exists_isProper_pullback_fst_of_isLimit` and `exists_isProper_pullbackMap_of_isLimit`
+    (081F). Split 12 now proves all steps after choosing a proper surjective cover that
+    immerses into a proper ambient scheme. Construct that cover (the form of Chow's lemma
+    used in Stacks 32.12.1/0202), without assuming or stubbing it, or find another proof of
+    universal closedness. Neither pinned Mathlib nor main supplies its existence.
+    No extra supplier is assumed. Avoid a dependency on final split 23: one possible route
+    reduces to affine bases, uses splits 2 and 11 to descend to a Noetherian model, and proves
+    Noetherian Chow there before spreading out the cover. The cover construction needs separate prerequisite PRs
+    if it exceeds 600 lines; the final application of split 12 should stay within that size.
+15. **feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely
     generated subring** (after: none) — *proved* (2026-11-05). File
     `TauCeti/AlgebraicGeometry/Limits/QuasiAffine.lean` (206 lines), namespace
     `TauCeti.AlgebraicGeometry`, imports only Mathlib:
@@ -232,19 +263,19 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
     `A = ℤ[s]` this is the first clause of 01Z7, and cofinality of such `A` is its "moreover".
     It also takes a finite set `F₀ ⊆ R` with each `D(f)`, `f ∈ F₀`, inside the image of `W`, and
     makes the image of `W` in `Spec A` contain `D_A(f)` for every `f ∈ F₀` (added this session;
-    split 14 uses it to compute the image of a model in `Spec A`). The
+    split 16 uses it to compute the image of a model in `Spec A`). The
     proof covers `range ι` by finitely many `D(f)`, so injectivity of `W ⟶ Spec A` follows from
     `D_R(f)` being the preimage of `D_A(f)`, and it is locally an open immersion by
     `IsOpenImmersion.of_isLocalization`.
-14. **feat: quasi-affine models of a quasi-compact open as opens of the spectrum of a fibre
-    product** (after: 13) — *proved* (2026-11-05). Files:
+16. **feat: quasi-affine models of a quasi-compact open as opens of the spectrum of a fibre
+    product** (after: 15) — *proved* (2026-11-05). Files:
     - `TauCeti/RingTheory/Localization/Away/Pullback.lean` (82 lines), namespace `TauCeti`:
       `isLocalization_away_eqLocus_of_bijective_awayMap` (for `f : R →+* C`, `h : A →+* C` and
       `x = (g, b)` in the fibre product `R ×_C A` = Mathlib's `RingHom.eqLocus` underlying
       `CommRingCat.pullbackCone f h`, if `R_g → C_{f g}` is bijective then `A_b` is the localization
       of `R ×_C A` away from `x`); pure commutative algebra, imports only Mathlib.
     - `TauCeti/AlgebraicGeometry/Limits/SpecFiberProduct.lean` (330 lines), namespace
-      `TauCeti.AlgebraicGeometry.Scheme`, imports split 13's `Limits/QuasiAffine.lean`:
+      `TauCeti.AlgebraicGeometry.Scheme`, imports split 15's `Limits/QuasiAffine.lean`:
       `bijective_awayMap_presheaf_map_of_basicOpen_le` (for qc opens `V ≤ W`, `W` qs, and `D(r) ⊆ V`,
       the restriction `Γ(X, W)_r → Γ(X, V)_{r|V}` is bijective, by the qcqs lemma),
       `isLocalization_away_eqLocus_of_basicOpen_le` (the two combined),
@@ -262,22 +293,22 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
       **`exists_finset_isPullback_toSpecΓ_comp_SpecMap`** (with `Y` also locally of finite type
       over `ℤ` and finitely many `b k`: a finite `s ⊆ P = Γ(X, ⊤) ×_{Γ(X, V)} Γ(Y, ⊤)` such that for
       every subring `A ⊇ s` of `P`, `Y` is open in `Spec A` with preimage `V` in `X`, **and its
-      image is the union of the basic opens of the elements `(g k, b k)` of `A`**; split 13's
+      image is the union of the basic opens of the elements `(g k, b k)` of `A`**; split 15's
       01Z7 applied to `Y ⊆ Spec P`). This is the single-stage step of Stacks 01Z9. The image
-      clause (added this session) is what makes split 20's transition maps affine: without it, the
+      clause (added this session) is what makes split 22's transition maps affine: without it, the
       preimage of `Vⱼ ⊆ Spec C` in `Spec C'` contains `Vⱼ'` but need not equal it, and then the
       preimage of `Uⱼ` in `X_{j',C'}` is not `Uⱼ'`.
-15. **feat: global sections with affine basic opens descend along cofiltered limits of schemes**
+17. **feat: global sections with affine basic opens descend along cofiltered limits of schemes**
     (after: none) — *proved* (2026-11-05). File `TauCeti/AlgebraicGeometry/Limits/GlobalSections.lean`
     (96 lines), namespace `TauCeti.AlgebraicGeometry.Scheme`, imports only Mathlib:
     `exists_appTop_π_eq_and_isAffineOpen_basicOpen` (for `c` a limit of a cofiltered diagram of
     qcqs schemes with affine transition maps, a global section `r` of `c.pt` with `D(r)` affine is
     `(c.π.app i).appTop t` for some `t` on a member with `D(t)` affine) and
     `exists_appTop_π_eq_and_iSup_basicOpen_eq_top` (finitely many such `s k` with `D(s k)` covering
-    `c.pt` come from one member, with affine `D(t k)` covering it). This supplies split 14's
+    `c.pt` come from one member, with affine `D(t k)` covering it). This supplies split 16's
     hypotheses `hb`, `hY` for a member of a cofiltered system of models of `V`.
-16. **feat: the cofiltered category of finitely generated subrings along a system of rings**
-    (after: none) — *proved* (this session). File
+18. **feat: the cofiltered category of finitely generated subrings along a system of rings**
+    (after: none) — *proved* (inherited). File
     `TauCeti/Algebra/Category/Ring/FGSubringPair.lean` (199 lines), namespace
     `TauCeti.CommRingCat`, imports only Mathlib: for `F : Iᵒᵖ ⥤ CommRingCat` (one universe `u`) and
     finite `s j ⊆ F j`, the structure `FGSubringPair F s` of pairs `(idx, sub)` of an index and a
@@ -289,9 +320,8 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
     with `ring_map`; `cocone` (a cocone on `F` induces one on `ring F s`) with
     `cocone_ι_app_apply`; and `isColimitCocone` (if every element of `t.pt` comes from some `F j`
     and every element of `F j` mapping to `0` vanishes in a later `F j'`, the induced cocone is a
-    colimit). Item (a) of the earlier plan for the extension step (split 20).
-17. **feat: affine models of a scheme near a quasi-compact open** (after: 14, 16) — *proved* (this
-    session). Files:
+    colimit). Item (a) of the earlier plan for the extension step (split 22).
+19. **feat: affine models of a scheme near a quasi-compact open** (after: 16, 18) — *proved* (inherited). Files:
     - `TauCeti/AlgebraicGeometry/Limits/FiberProductSystem.lean` (162 lines), namespace
       `TauCeti.AlgebraicGeometry.Scheme`: for an open `V ⊆ X` and a cone
       `π : (Functor.const I).obj V ⟶ D`, `fiberProductCone π j` (Mathlib's `CommRingCat.pullbackCone`
@@ -302,22 +332,21 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
       **`isColimitFiberProductCocone`** (for `π` a limit of a cofiltered diagram of qcqs schemes with
       affine transition maps, `Γ(X, ⊤)` is the colimit of the finitely generated subrings of the
       `P j` containing `s j`; from Mathlib's `exists_appTop_π_eq_of_isLimit` and
-      `exists_appTop_map_eq_zero_of_isLimit` through split 16's `isColimitCocone`) and
+      `exists_appTop_map_eq_zero_of_isLimit` through split 18's `isColimitCocone`) and
       **`isLimitSpecFiberProductCocone`** (`Spec Γ(X, ⊤)` is the cofiltered limit of their
       spectra). Item (b) of the earlier plan.
     - `TauCeti/AlgebraicGeometry/Limits/AffineModels.lean` (162 lines), same namespace, imports
-      split 14's `SpecFiberProduct.lean`: `fiberProductElem` (the element `(g k, b j k)` of `P j`)
+      split 16's `SpecFiberProduct.lean`: `fiberProductElem` (the element `(g k, b j k)` of `P j`)
       with its `fst`/`snd` simp lemmas and `fiberProductMap_fiberProductElem`; `toSpecFGSubring`
       (`D j ⟶ Spec C`) with `toSpecFGSubring_naturality` (for `(j', C') ⟶ (j, C)`,
       `D j' ⟶ Spec C' ⟶ Spec C = D j' ⟶ D j ⟶ Spec C`); **`exists_finset_isPullback_fgSubringPair`**
       (finite `s j ∋ (g k, b j k)` such that for every pair `(j, C)`, `D j ⟶ Spec C` is an open
       immersion, `V` is its preimage in `X` (an `IsPullback`), and its image is
-      `⨆ k, D((g k, b j k))`; split 14 at every `j`); and **`preimage_opensRange_fgSubringPair`**
+      `⨆ k, D((g k, b j k))`; split 16 at every `j`); and **`preimage_opensRange_fgSubringPair`**
       (with the `b j k` compatible with the transition maps, along `(j', C') ⟶ (j, C)` the preimage
       of the image of `D j` is the image of `D j'`).
     About 320 lines.
-18. **feat: morphisms between gluings of two schemes along opens** (after: 10) — *proved* (this
-    session). File `TauCeti/AlgebraicGeometry/Gluing/PushoutMap.lean` (150 lines), namespace
+20. **feat: morphisms between gluings of two schemes along opens** (after: 10) — *proved* (inherited). File `TauCeti/AlgebraicGeometry/Gluing/PushoutMap.lean` (150 lines), namespace
     `TauCeti.AlgebraicGeometry.Scheme`, imports split 10's `Gluing/Pushout.lean`: for gluings
     `U ∪_W V` and `U' ∪_{W'} V'` along open immersions and `u : U' ⟶ U`, `v : V' ⟶ V` compatible
     with `w : W' ⟶ W`, `isPullback_pushout_inl_map` (if `W'` is the preimage of `W` in `V'`, the
@@ -327,9 +356,9 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
     functors `Λ ⥤ Scheme` with open-immersion components, `pushoutFunctor α β` (the gluings, with
     `pushout.map` on morphisms, by Mathlib's `pushout.map_id`/`map_comp`) with
     `pushout_inl_pushoutFunctor_map`/`_inr_` and `pushoutFunctor_map_of_isZariskiLocalAtTarget`
-    (split 20 applies it to `IsAffineHom` for the transition maps of `(j, C) ↦ Uⱼ ∪_{Vⱼ} Spec C`).
-19. **feat: cofiltered limits of schemes commute with gluing along opens** (after: 3, 4, 10, 18)
-    — *proved* (this session). About 230 lines. Files:
+    (split 22 applies it to `IsAffineHom` for the transition maps of `(j, C) ↦ Uⱼ ∪_{Vⱼ} Spec C`).
+21. **feat: cofiltered limits of schemes commute with gluing along opens** (after: 3, 4, 10, 20)
+    — *proved* (inherited). About 230 lines. Files:
     - `TauCeti/CategoryTheory/Limits/Shapes/Pullback/Cofiltered.lean` (existing file from split 3,
       +32 lines): `CategoryTheory.Limits.IsLimit.isPullback_of_isPullback_naturality`. For a
       natural transformation `α : F ⟶ G` of cofiltered diagrams with pullback naturality squares
@@ -339,10 +368,10 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
       `CategoryTheory.IsPullback.opensRange_snd`, the range of the base change of an open immersion
       `f` along `g` is `g ⁻¹ᵁ f.opensRange`.
     - `TauCeti/AlgebraicGeometry/Limits/Pushout.lean` (new, 182 lines), namespace
-      `TauCeti.AlgebraicGeometry.Scheme`, imports split 18's `Gluing/PushoutMap.lean`, split 4's
+      `TauCeti.AlgebraicGeometry.Scheme`, imports split 20's `Gluing/PushoutMap.lean`, split 4's
       `Limits/Existence.lean` and `Restrict.lean`. Declarations:
       - `pushoutFunctorCone`: for `X` covered by `U`, `W` and cones `U ⟶ Uf`, `W ⟶ Sf` compatible
-        along `U ⊓ W ⟶ Vf`, the cone with point `X` on split 18's `pushoutFunctor α β`.
+        along `U ⊓ W ⟶ Vf`, the cone with point `X` on split 20's `pushoutFunctor α β`.
       - `ι_pushoutFunctorCone_π_app_left`/`_right` (simp, reassoc).
       - `pushoutFunctorInl`, `pushoutFunctorInr` (natural transformations `Uf ⟶ pushoutFunctor`,
         `Sf ⟶ pushoutFunctor`) and their open-immersion instances.
@@ -354,13 +383,13 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
         gluings. The limit exists by split 4. Over the images of `Uf a₀` and `Sf a₀`, the
         comparison map is an open immersion by the first lemma above, with preimages `U` and `W`
         by split 10's `preimage_opensRange_eq_of_isPullback`.
-20. **feat: extending finite-presentation models across a quasi-compact open** (after: 2, 3, 4,
-    10, 13, 14, 15, 16, 17, 18, 19) — *proved* (this session). About 310 lines. Files:
-    - `TauCeti/Algebra/Category/Ring/FGSubringPair.lean` (existing file from split 16, +17 lines):
+22. **feat: extending finite-presentation models across a quasi-compact open** (after: 2, 3, 4,
+    10, 15, 16, 17, 18, 19, 20, 21) — *proved* (inherited). About 310 lines. Files:
+    - `TauCeti/Algebra/Category/Ring/FGSubringPair.lean` (existing file from split 18, +17 lines):
       `FGSubringPair.proj : FGSubringPair F s ⥤ I` (simps) and the instance `initial_proj`
       (initial when `I` is cofiltered).
-    - `TauCeti/AlgebraicGeometry/Limits/ModelExtension.lean` (new, 295 lines), namespace
-      `TauCeti.AlgebraicGeometry.Scheme`, imports splits 2, 15, 17 and 19. Declarations:
+    - `TauCeti/AlgebraicGeometry/Limits/ModelExtension.lean` (new, 301 lines), namespace
+      `TauCeti.AlgebraicGeometry.Scheme`, imports splits 2, 17, 19 and 21. Declarations:
       - `isCompact_ι_preimage`: `U ∩ W` is quasi-compact in `W` when `U`, `W` are quasi-compact
         in a quasi-separated scheme.
       - `exists_finite_iSup_basicOpen_eq`: a quasi-compact open of an affine scheme is a finite
@@ -368,56 +397,112 @@ branch consumes it, it is still not stubbed and the target does not wait on it.
       - `isPullback_opensDiagramι`: the naturality squares of Mathlib's `opensDiagramι` are
         pullbacks.
       - `exists_isLimit_pushout_fgSubringPair`: given models `Vf ⟶ Uf` of `U ∩ W` with compatible
-        affine basic covers. Split 17 gives the pairs `(j, C)`, `Spec C` as the limit `W` (split 17's
-        `isLimitSpecFiberProductCocone`) and the open immersions `Vⱼ ⟶ Spec C`. Then split 19's
+        affine basic covers. Split 19 gives the pairs `(j, C)`, `Spec C` as the limit `W` (split 19's
+        `isLimitSpecFiberProductCocone`) and the open immersions `Vⱼ ⟶ Spec C`. Then split 21's
         `isLimitPushoutFunctorCone` makes `Y` the limit of `Uⱼ ∪_{Vⱼ} Spec C`. These schemes are
         qcqs and of finite presentation over `ℤ` (split 10, split 2's
-        `locallyOfFinitePresentation_terminal_from_Spec`), with affine transition maps (split 18).
+        `locallyOfFinitePresentation_terminal_from_Spec`), with affine transition maps (split 20).
       - **`exists_isLimit_finitePresentation_of_sup_eq_top`** (01ZA induction step): `Y` qcqs,
         `U ⊔ W = ⊤`, `W` affine, `U` a cofiltered limit of qcqs schemes of finite presentation over
         `ℤ` with affine transition maps; then so is `Y`. Mathlib's `exists_preimage_eq` descends
-        `U ∩ W` to `V₀` at a stage `i₀`. Split 15 descends the restrictions of a finite basic
+        `U ∩ W` to `V₀` at a stage `i₀`. Split 17 descends the restrictions of a finite basic
         cover of `U ∩ W ⊆ W` to a stage `j₁` over `i₀`, and the rest of the proof works over
         `Over j₁`.
-21. **feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes**
-    (after: 1–20) — *proved* (this session), except that it must wait for split 12 to complete the
+23. **feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes**
+    (after: 1–22) — *proved* (inherited), except that it must wait for splits 13–14 to complete the
     target. File `TauCeti/AlgebraicGeometry/Limits/AbsoluteNoetherianApproximation.lean` (new,
     109 lines), namespace `TauCeti.AlgebraicGeometry.Scheme`. It has a private predicate
-    `IsApproximable` with `of_iso`, `of_isAffine` (split 2) and `of_sup_eq_top` (split 20), and
+    `IsApproximable` with `of_iso`, `of_isAffine` (split 2) and `of_sup_eq_top` (split 22), and
     **`exists_isLimit_finitePresentation`** (`noetherian_approximation`, 01ZA): every qcqs scheme
     is the limit of a cofiltered diagram, with affine transition maps, of qcqs schemes of finite
     presentation over `ℤ`. The proof is a `Finset.induction_on` over a finite affine cover. This
-    file depends only on splits 2 and 20 (and so on 19 and its prerequisites). It is the target's
-    exported theorem, so it is listed after all of 1–20, split 12 included, as the split that
+    file depends only on splits 2 and 22 (and so on 21 and its prerequisites). It is the target's
+    exported theorem, so it is listed after all of 1–22, splits 13–14 included, as the split that
     completes the target. Line count: 109, under the 200-line guideline. Since the split
-    completes the target, it is not merged into split 20.
+    completes the target, it is not merged into split 22.
 
 ## What remains
 
-Proved: `affine_transition_limits` (splits 1, 4 with Mathlib's `Scheme.compactSpace_of_isLimit`
-and `isAffineHom_π_app`); **`noetherian_approximation` in full** (splits 2, 13–21: Stacks 01Z7,
-01Z9, 07RN, 01ZA, final theorem `TauCeti.AlgebraicGeometry.Scheme.exists_isLimit_finitePresentation`);
-and for `finite_presentation_limits`:
-- descent of schemes of finite presentation (01ZM: objects by split 11, morphisms by split 3);
-- inheritance from a finite stage of isomorphisms (081E), closed immersions (01ZP), finite
-  morphisms (01ZO), open immersions (0EUU), smooth (0C0C) and étale (07RP) morphisms, and
-  separatedness;
-- the descent of quasi-compact opens of base changes (01Z4).
+Proved: affine-transition limits (existence, affine projections, topology, quasi-compactness,
+separation); absolute Noetherian approximation (01ZA), with
+`TauCeti.AlgebraicGeometry.Scheme.exists_isLimit_finitePresentation`; descent of finitely
+presented schemes and morphisms (01ZM); finite-stage inheritance of isomorphisms, closed and
+open immersions, finite, smooth and étale morphisms, and separatedness. Split 12 additionally
+proves surjectivity descent and the properness criteria described above.
 
-Remaining: only split 12. In `finite_presentation_limits`, the properties **flat** (04AI) and
-**proper** (081F) have to be inherited from a finite stage.
-- Flat needs the ring theory of Stacks 10.168 (00R6/05LY: a flat finitely presented algebra
-  over a filtered colimit of rings is flat at a finite stage), which Mathlib lacks.
-- For proper, separatedness is split 9 and finite presentation is split 11, so only universal
-  closedness is missing. Stacks gets it through Chow's lemma.
-- The globalisation to schemes is already in place (splits 6, 8, 9). No supplier is needed.
-Once split 12 lands, split 21 completes the target.
+Still required for the selected target:
 
-The 2026-11-05 12:23 UTC session only merged `main` and re-verified the branch. It checked the
-pinned Mathlib again: there is still no flatness-descent lemma (only `Algebra.Smooth`/`Algebra.Etale`
-`exists_subalgebra_fg`) and no Chow's lemma. Split 12 is therefore unchanged and still the next step.
+- **Flatness (04AI):** prove filtered-colimit descent for flat finitely presented algebras
+  (00R6/05LY), then apply the existing two locality reductions and the morphism reduction.
+- **Properness (081F):** supply a proper surjective cover of the separated model admitting an
+  immersion into a proper ambient model (0202), then apply split 12. The existing conditional
+  criteria do not establish that arbitrary finite-type separated schemes have these covers.
+  In particular no theorem here assumes a cover and presents itself as unconditional descent.
 
-The 2026-11-08 20:23 UTC session merged `main` at `d2083f0f1dd` (no conflicts) and re-verified the
-branch (`lake build` green, `lookahead-check` passes). The pinned Mathlib still has no
-flatness-descent lemma for finitely presented algebras over filtered colimits and no Chow's lemma,
-so split 12 is unchanged and still the next step.
+The pinned Mathlib and main were searched for both missing inputs. Neither is available.
+The qcoh-extension supplier does not provide either missing theorem, and no new supplier is
+stubbed or silently assumed. Constructing the necessary geometry is future mathematical work,
+not an author-round stub substitution.
+
+## Audit and verification
+
+The self-audit checked correctness, scope, reuse, generality, API, naming, placement,
+documentation, proof quality and attribution. It caused these changes:
+
+- Extracted `exists_pullbackMap_of_pullbackOver` unchanged from `Morphisms.lean` into its
+  canonical home `BaseChange.lean`; this removes a smooth/étale dependency from surjectivity.
+- Kept every properness hypothesis visible in theorem names and documentation; no general
+  properness claim is made from an assumed Chow cover. Reused Mathlib's closed-immersion
+  criterion, properness cancellation, Chevalley theorem and universal-closedness cancellation.
+- Required qcqs only for the distinguished member in the constructible and structure-morphism
+  surjectivity criteria. The empty scheme is covered by including the empty affine open in
+  the basis. No nonempty-scheme hypothesis is introduced.
+- Credited the Stacks proof in `Proper.lean` (081F) and the topological limit criterion in
+  `Constructible.lean` (081A). Added no compatibility aliases or new definitions.
+
+All eight new theorems are proved without stubs. The generic reduction is a relocation, with
+one canonical declaration and all uses resolving through its new home. Verification on 2026-11-08 succeeded: `lake exe cache get` (9111 cached files),
+`lake build` (70156 jobs), and `/opt/round/lookahead-check` (`lookahead-check: ok`).
+No axioms outside the permitted set were found; there are no supplier placeholders.
+
+## File inventory
+
+These are all Lean files differing from main, with final whole-file line counts. Existing
+files may have only small additions; the split descriptions give ownership of shared files.
+
+| File | Lines |
+| --- | ---: |
+| `TauCeti/Algebra/Category/Ring/FGSubringPair.lean` | 216 |
+| `TauCeti/Algebra/Category/Ring/FinitePresentation.lean` | 69 |
+| `TauCeti/Algebra/Category/Ring/Pushout.lean` | 73 |
+| `TauCeti/AlgebraicGeometry/Gluing/Pushout.lean` | 412 |
+| `TauCeti/AlgebraicGeometry/Gluing/PushoutMap.lean` | 150 |
+| `TauCeti/AlgebraicGeometry/Limits/AbsoluteNoetherianApproximation.lean` | 109 |
+| `TauCeti/AlgebraicGeometry/Limits/AffineDescent.lean` | 83 |
+| `TauCeti/AlgebraicGeometry/Limits/AffineModels.lean` | 162 |
+| `TauCeti/AlgebraicGeometry/Limits/AffineProperties.lean` | 292 |
+| `TauCeti/AlgebraicGeometry/Limits/AffineTransition.lean` | 198 |
+| `TauCeti/AlgebraicGeometry/Limits/BaseChange.lean` | 85 |
+| `TauCeti/AlgebraicGeometry/Limits/Constructible.lean` | 109 |
+| `TauCeti/AlgebraicGeometry/Limits/Descent.lean` | 305 |
+| `TauCeti/AlgebraicGeometry/Limits/Existence.lean` | 307 |
+| `TauCeti/AlgebraicGeometry/Limits/FiberProductSystem.lean` | 162 |
+| `TauCeti/AlgebraicGeometry/Limits/FinitePresentation.lean` | 230 |
+| `TauCeti/AlgebraicGeometry/Limits/GlobalSections.lean` | 96 |
+| `TauCeti/AlgebraicGeometry/Limits/ModelExtension.lean` | 301 |
+| `TauCeti/AlgebraicGeometry/Limits/Morphisms.lean` | 140 |
+| `TauCeti/AlgebraicGeometry/Limits/NoetherianApproximation.lean` | 105 |
+| `TauCeti/AlgebraicGeometry/Limits/OpenImmersion.lean` | 191 |
+| `TauCeti/AlgebraicGeometry/Limits/Proper.lean` | 156 |
+| `TauCeti/AlgebraicGeometry/Limits/Pushout.lean` | 182 |
+| `TauCeti/AlgebraicGeometry/Limits/QuasiAffine.lean` | 206 |
+| `TauCeti/AlgebraicGeometry/Limits/Smooth.lean` | 287 |
+| `TauCeti/AlgebraicGeometry/Limits/SpecFiberProduct.lean` | 330 |
+| `TauCeti/AlgebraicGeometry/Limits/Surjective.lean` | 67 |
+| `TauCeti/AlgebraicGeometry/Limits/ZariskiLocal.lean` | 142 |
+| `TauCeti/AlgebraicGeometry/Restrict.lean` | 175 |
+| `TauCeti/CategoryTheory/Limits/ConcreteCategory/Filtered.lean` | 51 |
+| `TauCeti/CategoryTheory/Limits/Shapes/Pullback/Cofiltered.lean` | 155 |
+| `TauCeti/CategoryTheory/MorphismProperty/Limits.lean` | 143 |
+| `TauCeti/RingTheory/Localization/Away/Pullback.lean` | 82 |
+| `LOOKAHEAD.md` | 508 |
