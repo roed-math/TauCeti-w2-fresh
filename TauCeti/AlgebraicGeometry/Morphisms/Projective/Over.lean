@@ -7,7 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.Modules.FinitePresentation
 public import TauCeti.AlgebraicGeometry.Modules.SymmetricPower.Affine
-public import TauCeti.AlgebraicGeometry.Morphisms.Projective
+public import TauCeti.AlgebraicGeometry.Morphisms.Projective.Basic
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ClosedImmersion
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.ProjectiveOver
 public import TauCeti.AlgebraicGeometry.RelativeProj.BaseChange

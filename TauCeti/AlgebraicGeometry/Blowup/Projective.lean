@@ -6,7 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Blowup.IdealSheaf
-public import TauCeti.AlgebraicGeometry.Morphisms.Projective
+public import TauCeti.AlgebraicGeometry.Morphisms.Projective.Basic
 import TauCeti.AlgebraicGeometry.Blowup.ExceptionalDivisor
 
 /-!

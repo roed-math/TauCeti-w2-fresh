@@ -120,6 +120,7 @@ theorem isAmple_twistingSheaf [CompactSpace (Proj 𝒜)] {n : ℕ} (hn : 0 < n) 
     exact isAffineOpen_basicOpen 𝒜 _
       (by simpa using SetLike.pow_mem_graded n (hf i)) hn
 
+include hf hcover in
 /-- **Every open of `Proj A` is a union of standard opens of positive degree.** If the standard
 opens of degree-one elements cover `Proj A`, every point `x` of an open `U` lies in a standard open
 `D₊(g) ⊆ U` of a homogeneous element `g` of positive degree: if `x ∈ D₊(a) ⊆ U` and `x ∈ D₊(f)` with
@@ -179,16 +180,6 @@ theorem isAmple_pullback_twistingSheaf_one {Z : Scheme.{u}} [CompactSpace Z] (j 
       have h := ((isAffineOpen_basicOpen 𝒜 (g : A) g.2 hd).preimage_of_isOpenImmersion
         j.coborderRange.ι (by simpa using hgU)).preimage j.liftCoborder
       rwa [← Scheme.Hom.comp_preimage, j.liftCoborder_ι] at h
-
-/-- **`𝒪(1)` is ample on a quasi-compact `Proj`.** If the standard opens of degree-one elements
-cover `Proj A` and `Proj A` is quasi-compact, then `𝒪(1)` is ample: this is the case of the
-identity immersion in `AlgebraicGeometry.Proj.isAmple_pullback_twistingSheaf_one`. -/
-theorem isAmple_twistingSheaf_one [CompactSpace (Proj 𝒜)] :
-    (TauCeti.AlgebraicGeometry.LineBundleClass.mk
-      ⟨twistingSheaf 𝒜 1, isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover 1⟩).IsAmple := by
-  simpa only [TauCeti.AlgebraicGeometry.LineBundleClass.pullback_id] using
-    isAmple_pullback_twistingSheaf_one f hf hcover (𝟙 (Proj 𝒜))
-
 
 end AlgebraicGeometry.Proj
 

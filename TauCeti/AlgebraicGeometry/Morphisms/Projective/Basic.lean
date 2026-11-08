@@ -89,7 +89,8 @@ one. -/
 noncomputable abbrev _root_.CategoryTheory.CommMon.relativeProjTwistingSheafOne
     (A : CommMon (GradedObject ℕ S.Modules)) [∀ n, (A.X n).IsQuasicoherent]
     (hA : A.IsGeneratedInDegreeOne) : InvertibleSheaf A.relativeProj :=
-  ⟨A.relativeProjTwistingSheaf 1, A.isInvertible_relativeProjTwistingSheaf hA 1⟩
+  ⟨A.relativeProjTwistingSheaf 1,
+    A.isInvertible_relativeProjTwistingSheaf (A.isGeneratedInDegreeOne_iff.mp hA) 1⟩
 
 namespace InvertibleSheaf
 

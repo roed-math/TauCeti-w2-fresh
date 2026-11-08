@@ -6,7 +6,7 @@ Authors: The Tau Ceti contributors
 module
 
 public import TauCeti.AlgebraicGeometry.Modules.AffineGlobalSections
-public import TauCeti.AlgebraicGeometry.RelativeProj.Functor
+public import TauCeti.AlgebraicGeometry.RelativeProj.Map
 public import TauCeti.AlgebraicGeometry.RelativeProj.SymmetricAlgebra
 public import TauCeti.RingTheory.GradedAlgebra.DegreeOne
 
@@ -59,29 +59,6 @@ section General
 
 variable {X : Scheme.{u}} {A B : CommMon (GradedObject ℕ X.Modules)}
 
-/-- The degree-`n` component of the image of a section under the map induced by a morphism of
-graded algebras is the image of its degree-`n` component. -/
-private lemma gradedSectionsMap_apply_apply (φ : A ⟶ B) (U : X.Opens) (x : ⨁ n, Γ(A.X n, U))
-    (n : ℕ) : CommMon.gradedSectionsMap φ U x n = (φ.hom.hom n).app U (x n) := by
-  -- The sections are typed through `A.toMon.X`, which `rw` and `simp` do not identify with
-  -- `A.X`, so the cases are closed by terms.
-  induction x using DirectSum.induction_on with
-  | zero =>
-    simp only [map_zero, DirectSum.zero_apply]
-    exact (map_zero _).symm
-  | of i y =>
-    rw [CommMon.gradedSectionsMap_of]
-    by_cases hi : i = n
-    · subst hi
-      exact (DirectSum.of_eq_same _ _).trans (congrArg ((φ.hom.hom i).app U)
-        (DirectSum.of_eq_same (β := fun n ↦ Γ(A.X n, U)) i y).symm)
-    · exact (DirectSum.of_eq_of_ne _ _ _ (Ne.symm hi)).trans ((congrArg ((φ.hom.hom n).app U)
-        (DirectSum.of_eq_of_ne (β := fun n ↦ Γ(A.X n, U)) i n y (Ne.symm hi))).trans
-          (map_zero _)).symm
-  | add x y hx hy =>
-    rw [map_add, DirectSum.add_apply, DirectSum.add_apply, hx, hy]
-    exact (map_add _ _ _).symm
-
 /-- **Surjectivity in degree one propagates to positive degrees**: if `B` is generated in degree
 one and `φ : A ⟶ B` is surjective on sections over an affine open `U` in degree one, then it is
 surjective on sections over `U` in every degree `n > 0`. The sections of positive degree of `B` lie
@@ -105,7 +82,7 @@ theorem _root_.CategoryTheory.CommMon.surjective_app_of_isGeneratedInDegreeOne (
   refine ⟨w n, ?_⟩
   have := congrArg (· n) hw
   simp only [f, AlgHom.toRingHom_eq_coe, RingHom.coe_coe] at this
-  rw [gradedSectionsMap_apply_apply] at this
+  rw [CommMon.gradedSectionsMap_apply] at this
   exact this.trans (DirectSum.of_eq_same _ _)
 
 /-- A morphism of graded algebras surjective in degree one onto an algebra generated in degree one
@@ -127,8 +104,9 @@ theorem _root_.CategoryTheory.CommMon.isClosedImmersion_relativeProjMap_of_isGen
     (φ : A ⟶ B) (hB : B.IsGeneratedInDegreeOne)
     (h₁ : ∀ U : X.Opens, IsAffineOpen U → Function.Surjective ((φ.hom.hom 1).app U))
     (hφ : CommMon.IrrelevantLeMap φ) : IsClosedImmersion (CommMon.relativeProjMap φ hφ) :=
-  CommMon.isClosedImmersion_relativeProjMap φ hφ fun _ hU ↦
-    CommMon.surjective_app_of_isGeneratedInDegreeOne φ hB hU (h₁ _ hU)
+  CommMon.isClosedImmersion_relativeProjMap φ fun U hU n hn ↦
+    CommMon.gradedSectionsGrading_subset_range_gradedSectionsGradedHom φ
+      (CommMon.surjective_app_of_isGeneratedInDegreeOne φ hB hU (h₁ U hU)) n hn
 
 end General
 

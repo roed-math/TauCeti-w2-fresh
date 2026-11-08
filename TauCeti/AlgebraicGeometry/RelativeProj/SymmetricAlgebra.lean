@@ -7,6 +7,7 @@ module
 
 public import TauCeti.AlgebraicGeometry.Modules.FinitePresentation
 public import TauCeti.AlgebraicGeometry.Modules.Quasicoherent.GradedAlgebra.SymmetricAlgebra.Adjunction
+public import TauCeti.AlgebraicGeometry.RelativeProj.Affine
 public import TauCeti.AlgebraicGeometry.RelativeProj.Proper
 public import TauCeti.AlgebraicGeometry.RelativeProj.TwistingSheaf
 public import TauCeti.LinearAlgebra.SymmetricAlgebra.Grading

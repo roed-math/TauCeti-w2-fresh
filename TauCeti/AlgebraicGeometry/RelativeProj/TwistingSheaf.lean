@@ -226,7 +226,9 @@ one: over every affine open `U` of `X`, the ring `⨁ n, Γ(Aₙ, U)` is generat
 part `Γ(A₁, U)` as an algebra over its degree-zero part `Γ(A₀, U)`. -/
 @[stacks 01O4 "first part"]
 theorem _root_.CategoryTheory.CommMon.isInvertible_relativeProjTwistingSheaf
-    (h : A.IsGeneratedInDegreeOne) (n : ℤ) :
+    (h : ∀ U : X.Opens, IsAffineOpen U →
+      Algebra.adjoin (A.gradedSectionsGrading U 0)
+        (A.gradedSectionsGrading U 1 : Set (⨁ n, Γ(A.X n, U))) = ⊤) (n : ℤ) :
     AlgebraicGeometry.SheafOfModules.isInvertible A.relativeProj (A.relativeProjTwistingSheaf n) :=
   A.isInvertible_relativeProjTwistingSheaf_of_iSup_eq_top (fun U hU ↦
     Proj.iSup_basicOpen_eq_top' _ _ (fun f ↦ ⟨1, f.2⟩) (by simpa using h U hU)) n
