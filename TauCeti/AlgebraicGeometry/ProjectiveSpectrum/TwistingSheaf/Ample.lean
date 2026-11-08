@@ -5,119 +5,121 @@ Authors: The Tau Ceti contributors
 -/
 module
 
-public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
+public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.LocalTriviality
 public import TauCeti.AlgebraicGeometry.LineBundle.Ample
+public import TauCeti.AlgebraicGeometry.LineBundle.GlobalGeneration.Basic
+public import Mathlib.AlgebraicGeometry.Morphisms.Immersion
 public import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.TwistingSheaf.TensorProduct
+import TauCeti.AlgebraicGeometry.ProjectiveSpectrum.Basic
 
 /-!
-# Ampleness of `𝒪(1)` on `Proj`
+# Positivity of twisting sheaves
 
-Let `A` be a graded ring such that the standard opens `D₊(f)` of the elements `f` of degree one
-cover `Proj A`, so that the twisting sheaves `𝒪(n)` are invertible. For `r` of degree `d`, the
-global section `r / 1` of `𝒪(d)` vanishes nowhere exactly on `D₊(r)`. Every open `U` of `Proj A`
-is a union of such standard opens `D₊(g) ⊆ U` with `g` of positive degree, and the open sets
-`D₊(g)` are affine. So `𝒪(1)` pulls back to an ample line bundle along every immersion
-`Z ⟶ Proj A` from a quasi-compact scheme. In particular `𝒪(1)` is ample as soon as `Proj A` is
-quasi-compact. On `Proj A` this needs no extension of sections from nonvanishing loci: the
-sections `g / 1` are already global.
+When degree-one standard opens cover `Proj A`, the nonvanishing locus of the section of
+`𝒪(n)` associated to a homogeneous element `r ∈ Aₙ` is exactly `D₊(r)`. Consequently all
+nonnegative twists are globally generated, and every positive twist is ample if `Proj A`
+is quasi-compact. In particular these conclusions apply to the projective spectrum of the
+symmetric algebra of a finite module, over any commutative ring.
 
-## Main results
-
-* `AlgebraicGeometry.Proj.nonvanishingLocus_toTwistingSheaf`: the nonvanishing locus of the global
-  section `r / 1` of `𝒪(d)` is `D₊(r)`.
-* `AlgebraicGeometry.Proj.exists_mem_basicOpen_le`: the standard opens of homogeneous elements of
-  positive degree form a basis of the topology of `Proj A`.
-* `AlgebraicGeometry.Proj.isAmple_pullback_twistingSheaf_one`: `𝒪(1)` pulls back to an ample line
-  bundle along an immersion from a quasi-compact scheme.
-* `AlgebraicGeometry.Proj.isAmple_twistingSheaf_one`: `𝒪(1)` is ample on a quasi-compact `Proj A`,
-  and so is every `𝒪(n)` with `n > 0` (`AlgebraicGeometry.Proj.isAmple_twistingSheaf`).
+This connects the local-fraction construction of twisting sheaves to positivity of line
+bundles. The standard affine opens are the affine nonvanishing loci needed for ampleness,
+which underlies generation and vanishing after sufficiently positive twisting.
 
 ## References
 
-* R. Hartshorne, *Algebraic Geometry*, Section II.7, Example 7.1.1 and Proposition 7.10.
+* R. Hartshorne, *Algebraic Geometry*, Chapter II, Sections 5 and 7.
+* The Stacks Project, Tags 01MM and 01PS.
 -/
 
 public section
 
-open CategoryTheory TopologicalSpace
+noncomputable section
+
+open CategoryTheory AlgebraicGeometry TopologicalSpace
 
 namespace AlgebraicGeometry.Proj
 
 universe u
 
 variable {A : Type u} {σ : Type*} [CommRing A] [SetLike σ A] [AddSubgroupClass σ A]
-variable {𝒜 : ℕ → σ} [GradedRing 𝒜]
-variable {ι : Type u} (f : ι → A) (hf : ∀ i, f i ∈ 𝒜 1)
+  {𝒜 : ℕ → σ} [GradedRing 𝒜]
+  {ι : Type u} (f : ι → A) (hf : ∀ i, f i ∈ 𝒜 1)
   (hcover : ⨆ i, basicOpen 𝒜 (f i) = ⊤)
 
-/-- **The nonvanishing locus of a section `r / 1` of `𝒪(d)` is its standard open.** If the
-standard opens of degree-one elements cover `Proj A`, then for `r` of degree `d` the global section
-`r / 1` of `𝒪(d)` vanishes nowhere exactly on `D₊(r)`. At a point `x` of `D₊(f)`, with `f` of degree
-one, the standard basis section `fᵈ / 1` of `𝒪(d)` generates the stalk. If `r / 1` generates it too,
-then `fᵈ / 1` is a multiple of `r / 1`, so `r` cannot lie in `x`. Conversely, on `D₊(r) ∩ D₊(f)` the
-section `fᵈ / 1` is the multiple `(fᵈ / r) • (r / 1)`. -/
-theorem nonvanishingLocus_toTwistingSheaf {n : ℤ} {d : ℕ} (hd : (d : ℤ) = n) (r : 𝒜 d) :
-    haveI := isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover n
-    (twistingSheaf 𝒜 n).nonvanishingLocus (toTwistingSheaf 𝒜 hd ⊤ r) =
-      basicOpen 𝒜 (r : A) := by
-  have := isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover n
-  have hfd (i : ι) : f i ^ d ∈ 𝒜 d := by simpa using SetLike.pow_mem_graded d (hf i)
-  -- The standard basis section `fⁿ` of `𝒪(n)` vanishes nowhere on its domain.
-  have hchart (i : ι) {W : (Proj 𝒜).Opens} (hW : W ≤ basicOpen 𝒜 (f i)) :
-      W ≤ (twistingSheaf 𝒜 n).nonvanishingLocus
-        (twistingSheaf.chartGenerator n (f i) (hf i) W hW) :=
-    (Scheme.Modules.le_nonvanishingLocus_iff _ (𝟙 W)).mpr fun W' j ↦ by
-      rw [Category.comp_id, twistingSheaf.res_chartGenerator]
-      convert (twistingSheaf.chartSectionsLinearEquiv n (f i) (hf i) W'
-        (j.le.trans hW)).bijective using 1
-      exact funext fun a ↦ (twistingSheaf.chartSectionsLinearEquiv_apply _ _ _ _ _ a).symm
-  refine le_antisymm (fun x hx ↦ ?_) (fun x hx ↦ ?_)
-  · obtain ⟨i, hxi⟩ := Opens.mem_iSup.mp (hcover.ge (Opens.mem_top x))
-    -- Over `W = X_{r/1} ∩ D₊(f i)`, the section `f iᵈ / 1` is a multiple `a • r / 1`.
-    let W := (twistingSheaf 𝒜 n).nonvanishingLocus (toTwistingSheaf 𝒜 hd ⊤ r) ⊓
-      basicOpen 𝒜 (f i)
-    have hW := (Scheme.Modules.le_nonvanishingLocus_iff _ (homOfLE le_top)).mp
-      (inf_le_left : W ≤ _) W (𝟙 W)
-    obtain ⟨a, ha⟩ := hW.2 (toTwistingSheaf 𝒜 hd W ⟨f i ^ d, hfd i⟩)
-    -- The localization at the prime `x`, in which the values of sections of `𝒪(n)` lie.
-    have := x.isPrime
-    let P := x.asHomogeneousIdeal.toIdeal
-    have hax : (a.1 ⟨x, hx, hxi⟩).val * algebraMap A (Localization.AtPrime P) r =
-        algebraMap A (Localization.AtPrime P) (f i ^ d) := by
-      rw [← Localization.mk_one_eq_algebraMap, ← Localization.mk_one_eq_algebraMap]
-      exact congrArg (fun s ↦ s.1 ⟨x, hx, hxi⟩) ha
-    -- The image of `f iᵈ` is a unit of the localization at `x`, so the image of `r` is one too.
-    have hunit := (IsLocalization.AtPrime.isUnit_to_map_iff (Localization.AtPrime P) P
-      (f i ^ d)).mpr fun h ↦ hxi (x.isPrime.mem_of_pow_mem d h)
-    rw [← hax] at hunit
-    exact (IsLocalization.AtPrime.isUnit_to_map_iff (Localization.AtPrime P) P r).mp
-      (isUnit_of_mul_isUnit_right hunit)
-  · obtain ⟨i, hxi⟩ := Opens.mem_iSup.mp (hcover.ge (Opens.mem_top x))
-    let W := basicOpen 𝒜 (r : A) ⊓ basicOpen 𝒜 (f i)
-    -- On `W`, the regular function `f iᵈ / r` times `r / 1` is the standard basis section.
-    let a : Γ(Proj 𝒜, W) := (sectionsLinearEquivTwistingSheafZero 𝒜 W).symm
-      (twistingSheaf.const (n := 0) (i := d) (j := d) (by simp) (f i ^ d) r (hfd i) r.2 W
-        inf_le_left)
-    have haval (y : W) : (a.1 y).val = Localization.mk (f i ^ d) ⟨r, (inf_le_left : W ≤ _) y.2⟩ :=
-      sectionsLinearEquivTwistingSheafZero_symm_apply_val _ _ y
-    have ha : a • (twistingSheaf 𝒜 n).presheaf.map (homOfLE le_top : W ⟶ ⊤).op
-        (toTwistingSheaf 𝒜 hd ⊤ r) =
-          twistingSheaf.chartGenerator n (f i) (hf i) W inf_le_right := by
-      refine twistingSheaf.ext fun (y : W) ↦ ?_
-      have := y.1.isPrime
-      refine (twistingSheaf.smul_apply a _ y).trans ?_
-      rw [haval, res_toTwistingSheaf, toTwistingSheaf_apply_apply,
-        twistingSheaf.chartGenerator_apply, Localization.mk_mul]
-      refine Localization.mk_eq_mk_iff.mpr (Localization.r_of_eq ?_)
-      subst hd
-      simp only [Submonoid.coe_mul, Submonoid.coe_one, Int.toNat_natCast,
-        show (-(d : ℤ)).toNat = 0 by omega, pow_zero]
-      ring
-    have h := hchart i (inf_le_right : W ≤ _) (⟨hx, hxi⟩ : x ∈ W)
-    rw [← ha, Scheme.Modules.nonvanishingLocus_smul, Scheme.Modules.nonvanishingLocus_map] at h
-    exact h.2.2
+namespace twistingSheaf
 
-include hf hcover in
+/-- A standard basis section of a twisting sheaf vanishes nowhere on its chart. -/
+@[simp]
+theorem nonvanishingLocus_chartGenerator (n : ℤ)
+    [TauCeti.SheafOfModules.IsInvertible (R := (Proj 𝒜).ringCatSheaf) (twistingSheaf 𝒜 n)]
+    {g : A} (hg : g ∈ 𝒜 1)
+    (U : (Proj 𝒜).Opens) (hU : U ≤ basicOpen 𝒜 g) :
+    (twistingSheaf 𝒜 n).nonvanishingLocus (chartGenerator n g hg U hU) = U := by
+  apply le_antisymm (Scheme.Modules.nonvanishingLocus_le _)
+  rw [Scheme.Modules.le_nonvanishingLocus_iff _ (𝟙 U)]
+  intro W j
+  simpa only [Category.comp_id, res_chartGenerator, ← chartSectionsLinearEquiv_apply] using
+    (chartSectionsLinearEquiv n g hg W (j.le.trans hU)).bijective
+
+include hcover hf in
+/-- A homogeneous section of `𝒪(n)` is nonvanishing exactly on the corresponding standard
+open `D₊(r)`, including for degree zero. The covering family is an explicit argument,
+so this lemma is intended for rewriting rather than the simp set. -/
+theorem nonvanishingLocus_toTwistingSheaf (n : ℕ) (r : 𝒜 n) :
+    haveI := isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover (n : ℤ)
+    (twistingSheaf 𝒜 (n : ℤ)).nonvanishingLocus (toTwistingSheaf 𝒜 rfl ⊤ r) =
+      basicOpen 𝒜 (r : A) := by
+  have := isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover (n : ℤ)
+  have hlocal (i : ι) :
+      basicOpen 𝒜 (f i) ⊓
+          (twistingSheaf 𝒜 (n : ℤ)).nonvanishingLocus (toTwistingSheaf 𝒜 rfl ⊤ r) =
+        basicOpen 𝒜 (f i) ⊓ basicOpen 𝒜 (r : A) := by
+    rw [← Scheme.Modules.nonvanishingLocus_map (basicOpen 𝒜 (f i)).leTop,
+      res_toTwistingSheaf, toTwistingSheaf_eq_smul_chartGenerator n r (hf i)]
+    rw [Scheme.Modules.nonvanishingLocus_smul, nonvanishingLocus_chartGenerator,
+      basicOpen_awayToSection_mk, basicOpen_mul]
+    exact inf_eq_left.mpr inf_le_left
+  ext x
+  obtain ⟨i, hi⟩ := Opens.mem_iSup.mp (hcover.symm ▸ Opens.mem_top x)
+  have hi' : x ∈ (basicOpen 𝒜 (f i) : Set (Proj 𝒜)) := hi
+  have h := congrArg (fun U : (Proj 𝒜).Opens ↦ x ∈ (U : Set (Proj 𝒜))) (hlocal i)
+  simpa only [Opens.coe_inf, Set.mem_inter_iff, hi', true_and] using (iff_of_eq h)
+
+end twistingSheaf
+
+/-- If degree-one standard opens cover `Proj A`, every nonnegative twist is globally
+generated. No quasi-compactness or Noetherian hypothesis is needed. -/
+theorem isGloballyGenerated_twistingSheaf (n : ℕ) :
+    TauCeti.AlgebraicGeometry.InvertibleSheaf.IsGloballyGenerated
+      ⟨twistingSheaf 𝒜 (n : ℤ),
+        isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover n⟩ := by
+  have := isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover (n : ℤ)
+  rw [TauCeti.AlgebraicGeometry.InvertibleSheaf.isGloballyGenerated_iff]
+  intro x
+  obtain ⟨i, hi⟩ := Opens.mem_iSup.mp (hcover.symm ▸ Opens.mem_top x)
+  refine ⟨toTwistingSheaf 𝒜 rfl ⊤
+    ⟨f i ^ n, by simpa using SetLike.pow_mem_graded n (hf i)⟩, ?_⟩
+  rw [twistingSheaf.nonvanishingLocus_toTwistingSheaf f hf hcover]
+  exact fun h ↦ hi (x.isPrime.mem_of_pow_mem n h)
+
+/-- On a quasi-compact `Proj` covered by degree-one standard opens, every positive twist
+is ample. This applies without a Noetherian or domain hypothesis. -/
+theorem isAmple_twistingSheaf [CompactSpace (Proj 𝒜)] {n : ℕ} (hn : 0 < n) :
+    (TauCeti.AlgebraicGeometry.LineBundleClass.mk
+      ⟨twistingSheaf 𝒜 (n : ℤ),
+        isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover n⟩).IsAmple := by
+  have := isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover (n : ℤ)
+  refine ⟨inferInstance, fun x ↦ ?_⟩
+  obtain ⟨i, hi⟩ := Opens.mem_iSup.mp (hcover.symm ▸ Opens.mem_top x)
+  refine ⟨1, Nat.one_pos, ⟨twistingSheaf 𝒜 (n : ℤ), inferInstance⟩,
+    (pow_one _).symm, toTwistingSheaf 𝒜 rfl ⊤
+      ⟨f i ^ n, by simpa using SetLike.pow_mem_graded n (hf i)⟩, ?_, ?_⟩
+  · rw [twistingSheaf.nonvanishingLocus_toTwistingSheaf f hf hcover]
+    exact fun h ↦ hi (x.isPrime.mem_of_pow_mem n h)
+  · rw [twistingSheaf.nonvanishingLocus_toTwistingSheaf f hf hcover]
+    exact isAffineOpen_basicOpen 𝒜 _
+      (by simpa using SetLike.pow_mem_graded n (hf i)) hn
+
 /-- **Every open of `Proj A` is a union of standard opens of positive degree.** If the standard
 opens of degree-one elements cover `Proj A`, every point `x` of an open `U` lies in a standard open
 `D₊(g) ⊆ U` of a homogeneous element `g` of positive degree: if `x ∈ D₊(a) ⊆ U` and `x ∈ D₊(f)` with
@@ -166,7 +168,7 @@ theorem isAmple_pullback_twistingSheaf_one {Z : Scheme.{u}} [CompactSpace Z] (j 
         ((TauCeti.AlgebraicGeometry.InvertibleSheaf.pullback j).obj O).obj.nonvanishingLocus s =
           j ⁻¹ᵁ basicOpen 𝒜 (g : A) :=
       (Scheme.Modules.nonvanishingLocus_pullbackSections (M := O.obj) j _).trans
-        (congrArg (j ⁻¹ᵁ ·) (nonvanishingLocus_toTwistingSheaf f hf hcover rfl g))
+        (congrArg (j ⁻¹ᵁ ·) (twistingSheaf.nonvanishingLocus_toTwistingSheaf f hf hcover d g))
     refine ⟨d, hd, (TauCeti.AlgebraicGeometry.InvertibleSheaf.pullback j).obj O, ?_, s,
       hs ▸ hzg, hs ▸ ?_⟩
     · rw [← TauCeti.AlgebraicGeometry.LineBundleClass.pullback_mk,
@@ -187,13 +189,19 @@ theorem isAmple_twistingSheaf_one [CompactSpace (Proj 𝒜)] :
   simpa only [TauCeti.AlgebraicGeometry.LineBundleClass.pullback_id] using
     isAmple_pullback_twistingSheaf_one f hf hcover (𝟙 (Proj 𝒜))
 
-/-- **`𝒪(n)` is ample on a quasi-compact `Proj` for `n > 0`**, as the class of `𝒪(n)` is the
-`n`-th power of the class of the ample `𝒪(1)`. -/
-theorem isAmple_twistingSheaf [CompactSpace (Proj 𝒜)] {n : ℕ} (hn : 0 < n) :
-    (TauCeti.AlgebraicGeometry.LineBundleClass.mk
-      ⟨twistingSheaf 𝒜 n, isInvertible_twistingSheaf_of_iSup_eq_top f hf hcover n⟩).IsAmple := by
-  rw [lineBundleClass_twistingSheaf_eq_zpow f hf hcover, zpow_natCast,
-    TauCeti.AlgebraicGeometry.LineBundleClass.isAmple_pow_iff hn]
-  exact isAmple_twistingSheaf_one f hf hcover
 
 end AlgebraicGeometry.Proj
+
+namespace TauCeti.SymmetricAlgebra
+
+variable (R M : Type u) [CommRing R] [AddCommMonoid M] [Module R M] [Module.Finite R M]
+
+/-- Positive twisting sheaves on the projective spectrum of the symmetric algebra of a
+finite module are ample, even when the module is not free. -/
+theorem isAmple_twistingSheaf {n : ℕ} (hn : 0 < n) :
+    (AlgebraicGeometry.LineBundleClass.mk
+      ⟨Proj.twistingSheaf (homogeneousSubmodule R M) (n : ℤ), inferInstance⟩).IsAmple :=
+  Proj.isAmple_twistingSheaf (_root_.SymmetricAlgebra.ι R M)
+    (ι_mem_homogeneousSubmodule R M) (iSup_basicOpen_ι_eq_top R M id (by simp)) hn
+
+end TauCeti.SymmetricAlgebra
