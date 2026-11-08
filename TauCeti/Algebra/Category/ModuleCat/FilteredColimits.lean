@@ -7,7 +7,7 @@ module
 
 public import Mathlib.Algebra.Category.ModuleCat.Colimits
 public import Mathlib.CategoryTheory.Limits.FunctorCategory.Basic
-import Mathlib.Algebra.Category.ModuleCat.FilteredColimits
+public import Mathlib.Algebra.Category.ModuleCat.FilteredColimits
 import Mathlib.CategoryTheory.Limits.ConcreteCategory.WithAlgebraicStructures
 
 /-!
@@ -137,3 +137,26 @@ theorem injective_of_stages {D₁ D₂ : J ⥤ ModuleCat.{u} R ⥤ ModuleCat.{u}
   rw [hx', map_zero]
 
 end TauCeti.ModuleCat
+
+namespace ModuleCat
+
+universe u v
+
+/-- Forgetting modules preserves filtered colimits also when the module universe is larger
+than the ring universe. -/
+instance forget_preservesFilteredColimits_max (R : Type v) [Ring R] :
+    PreservesFilteredColimits (CategoryTheory.forget (ModuleCat.{max u v} R)) where
+  preserves_filtered_colimits J _ _ := by
+    let : PreservesColimitsOfShape J
+        (CategoryTheory.forget₂ (ModuleCat.{max u v} R) AddCommGrpCat.{max u v}) :=
+      { preservesColimit := fun {F} ↦
+          preservesColimit_of_preserves_colimit_cocone
+            (ModuleCat.FilteredColimits.colimitCoconeIsColimit F)
+            (AddCommGrpCat.FilteredColimits.colimitCoconeIsColimit
+              (F ⋙ CategoryTheory.forget₂ (ModuleCat.{max u v} R)
+                AddCommGrpCat.{max u v})) }
+    exact Limits.comp_preservesColimitsOfShape
+      (CategoryTheory.forget₂ (ModuleCat.{max u v} R) AddCommGrpCat.{max u v})
+      (CategoryTheory.forget AddCommGrpCat.{max u v})
+
+end ModuleCat

@@ -92,7 +92,7 @@ lemma cohomologyWithSupportOneEquiv_globalSectionsSmul [IsAffine X] (r : Γ(X, �
   rw [cohomologyWithSupportOneEquiv_mk, cohomologyWithSupportOneEquiv_mk, h,
     smul_cohomologyWithSupport, cohomologyWithSupportMap_apply,
     CategoryTheory.Sheaf.relativeH'.δ_apply, CategoryTheory.Sheaf.relativeH'.δ_apply,
-    CategoryTheory.Sheaf.H'AddEquivExt_cohomologyPresheafFunctor_map_app]
+    CategoryTheory.Sheaf.cohomologyPresheafFunctor_map_app_apply]
   exact (Abelian.Ext.comp_assoc_of_third_deg_zero _ _ _ _).symm
 
 /-- If both `X` and the complement `X ∖ Z` are affine, a quasi-coherent sheaf has no cohomology

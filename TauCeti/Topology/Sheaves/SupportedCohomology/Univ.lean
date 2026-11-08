@@ -78,7 +78,7 @@ lemma supportedHTopEquiv_naturality {G : Sheaf (Opens.grothendieckTopology X) Ad
       ((Sheaf.cohomologyPresheafFunctor _ n).map f).app (op W) (supportedHTopEquiv F W n x) := by
   apply (G.H'AddEquivExt n W).injective
   rw [supportedHTopEquiv_apply, supportedHTopEquiv_apply,
-    Sheaf.H'AddEquivExt_cohomologyPresheafFunctor_map_app, Sheaf.relativeH'.H'AddEquivExt_toH',
+    Sheaf.cohomologyPresheafFunctor_map_app_apply, Sheaf.relativeH'.H'AddEquivExt_toH',
     Sheaf.relativeH'.H'AddEquivExt_toH', Abelian.Ext.comp_assoc_of_third_deg_zero]
 
 /-- With supports in the whole space, the map `H_Xⁿ(W, F) ⟶ Hⁿ(W, F)` of the support sequence is

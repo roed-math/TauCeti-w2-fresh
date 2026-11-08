@@ -29,7 +29,8 @@ naturally both in the object of the site and in the coefficient sheaf.
   functor, the same identification `CategoryTheory.Sheaf.H'AddEquivExt` as an additive
   equivalence, and `CategoryTheory.Sheaf.cohomologyPresheaf_map_apply`, identifying the
   restriction maps of the cohomology presheaf with precomposition by the induced maps of free
-  abelian sheaves;
+  abelian sheaves, and `CategoryTheory.Sheaf.cohomologyPresheafFunctor_map_app_apply`, identifying
+  the maps induced by morphisms of coefficient sheaves with postcomposition;
 * `TauCeti.CategoryTheory.freeYonedaSheafSectionsEquiv`, the additive equivalence between
   morphisms from that sheaf to `F` and sections of `F` over `U`, and
   `TauCeti.CategoryTheory.freeYonedaSheafCorepresentableBy`, the same universal property phrased
@@ -173,9 +174,9 @@ lemma _root_.CategoryTheory.Sheaf.cohomologyPresheaf_map_apply
         (zero_add n) :=
   (rfl)
 
-/-- The coefficient maps of Mathlib's cohomology presheaf are postcomposition with the induced
-morphism of sheaves, transported along `CategoryTheory.Sheaf.H'AddEquivExt`. -/
-lemma _root_.CategoryTheory.Sheaf.H'AddEquivExt_cohomologyPresheafFunctor_map_app
+/-- The maps of Mathlib's cohomology presheaves induced by a morphism `f : F ⟶ G` of coefficient
+sheaves are postcomposition with `f`. -/
+lemma _root_.CategoryTheory.Sheaf.cohomologyPresheafFunctor_map_app_apply
     {F G : _root_.CategoryTheory.Sheaf J AddCommGrpCat.{v}} (f : F ⟶ G) (n : ℕ) (U : C)
     (x : F.H' n U) :
     G.H'AddEquivExt n U
