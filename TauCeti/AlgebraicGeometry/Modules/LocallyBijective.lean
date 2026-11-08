@@ -34,6 +34,8 @@ construction on a quasi-coherent module, such as its symmetric powers.
 * `AlgebraicGeometry.IsAffineOpen.bijective_app_of_isLocalizedModule`: a locally bijective morphism
   from a presheaf of modules whose restrictions to basic opens are localizations into a
   quasi-coherent module is bijective on sections over affine opens.
+* `AlgebraicGeometry.IsAffineOpen.bijective_sheafificationAdjunction_unit_app`: the special case of
+  the sheafification unit of a presheaf of modules with quasi-coherent sheafification.
 
 ## References
 
@@ -101,5 +103,30 @@ theorem bijective_app_of_isLocalizedModule (hU : IsAffineOpen U) [M.IsQuasicoher
     refine ((PresheafOfModules.Hom.app' φ (op U)).hom.map_smul _ a).trans ?_
     rw [pow_add, mul_smul]
     exact sub_eq_zero.1 ((smul_sub _ _ _).symm.trans hm)
+
+/-- **Sections of a quasi-coherent sheafification over affine opens.** Let `P` be a presheaf of
+`𝒪_X`-modules whose sheafification is quasi-coherent, and let `U` be an affine open such that the
+restrictions of `P` from `U` to the basic opens `D(f) ⊆ U` are localizations at the powers of `f`.
+Then the sheafification unit of `P` is bijective on sections over `U`. -/
+theorem bijective_sheafificationAdjunction_unit_app (hU : IsAffineOpen U)
+    [((PresheafOfModules.sheafification (𝟙 X.ringCatSheaf.obj)).obj P).IsQuasicoherent]
+    (hP : ∀ f : Γ(X, U),
+      IsLocalizedModule (.powers f) (P.map (homOfLE (X.basicOpen_le f)).op).hom) :
+    Function.Bijective
+      (((PresheafOfModules.sheafificationAdjunction (𝟙 X.ringCatSheaf.obj)).unit.app P).app
+        (op U)) := by
+  let η : P ⟶ ((PresheafOfModules.sheafification (𝟙 X.ringCatSheaf.obj)).obj P).val :=
+    (PresheafOfModules.sheafificationAdjunction (𝟙 X.ringCatSheaf.obj)).unit.app P
+  have : Presheaf.IsLocallyInjective (Opens.grothendieckTopology X)
+      ((PresheafOfModules.toPresheaf (X.presheaf ⋙ forget₂ CommRingCat RingCat)).map η) :=
+    (PresheafOfModules.toPresheaf_map_sheafificationAdjunction_unit_app
+      (𝟙 X.ringCatSheaf.obj) P).symm ▸
+      Presheaf.isLocallyInjective_toSheafify' (J := Opens.grothendieckTopology X) P.presheaf
+  have : Presheaf.IsLocallySurjective (Opens.grothendieckTopology X)
+      ((PresheafOfModules.toPresheaf (X.presheaf ⋙ forget₂ CommRingCat RingCat)).map η) :=
+    (PresheafOfModules.toPresheaf_map_sheafificationAdjunction_unit_app
+      (𝟙 X.ringCatSheaf.obj) P).symm ▸
+      Presheaf.isLocallySurjective_toSheafify' (J := Opens.grothendieckTopology X) P.presheaf
+  exact hU.bijective_app_of_isLocalizedModule η hP
 
 end AlgebraicGeometry.IsAffineOpen

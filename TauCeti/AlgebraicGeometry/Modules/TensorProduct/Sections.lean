@@ -19,11 +19,12 @@ of the tensor product `M ⊗ N` over `U` are the tensor product of the `Γ(X, U)
 `Γ(M, U) ⊗[Γ(X, U)] Γ(N, U) ≃ Γ(M ⊗ N, U)`.
 
 The map is the tensor map of the lax monoidal sections functor
-`AlgebraicGeometry.Scheme.Modules.sectionsFunctor U`, that is, the sheafification unit at `U` of
-the sectionwise tensor product `V ↦ Γ(M, V) ⊗[Γ(X, V)] Γ(N, V)`. It is an instance of
-`AlgebraicGeometry.IsAffineOpen.bijective_app_of_isLocalizedModule`: tensor products commute with
-base change, so the restrictions of the sectionwise tensor product from `U` to its basic opens are
-localizations.
+`AlgebraicGeometry.Scheme.Modules.sectionsFunctor U`, which agrees with the sheafification unit at
+`U` of the sectionwise tensor product `V ↦ Γ(M, V) ⊗[Γ(X, V)] Γ(N, V)` up to the comparison
+isomorphisms (`AlgebraicGeometry.Scheme.Modules.sectionsFunctor_μ`). Bijectivity of the unit is an
+instance of `AlgebraicGeometry.IsAffineOpen.bijective_sheafificationAdjunction_unit_app`: tensor
+products commute with base change, so the restrictions of the sectionwise tensor product from `U`
+to its basic opens are localizations.
 
 ## Main declarations
 
@@ -98,30 +99,19 @@ theorem isLocalizedModule_tensorObj_map_basicOpen (hU : IsAffineOpen U) (f : Γ(
   exact key ▸ IsLocalizedModule.of_linearEquiv (.powers f) _ e (hf := h)
 
 /-- **Sections of tensor products over affine opens.** For quasi-coherent `M` and `N` and an
-affine open `U`, the sheafification unit `Γ(M, U) ⊗[Γ(X, U)] Γ(N, U) → Γ(M ⊗ N, U)` of the
-sectionwise tensor product is bijective. -/
+affine open `U`, the sheafification unit
+`Γ(M, U) ⊗[Γ(X, U)] Γ(N, U) → Γ(sheafification (M ⊗ N), U)` of the sectionwise tensor product is
+bijective. -/
 theorem bijective_tensorObj_unit_app (hU : IsAffineOpen U) :
     Function.Bijective
       (((PresheafOfModules.sheafificationAdjunction (𝟙 X.ringCatSheaf.obj)).unit.app
         (M.val ⊗ N.val)).app (op U)) := by
-  let P : PresheafOfModulesOfCommRing X.presheaf := M.val ⊗ N.val
-  let S : X.Modules := (PresheafOfModules.sheafification (𝟙 X.ringCatSheaf.obj)).obj P
+  let S : X.Modules :=
+    (PresheafOfModules.sheafification (𝟙 X.ringCatSheaf.obj)).obj (M.val ⊗ N.val)
   have hMN : (M ⊗ N).IsQuasicoherent := inferInstance
   have : S.IsQuasicoherent := (SheafOfModules.isQuasicoherent X.ringCatSheaf).prop_of_iso
     (SheafOfModules.tensorUnderlyingIso (R := X.sheaf) M N) hMN
-  let η : P ⟶ S.val :=
-    (PresheafOfModules.sheafificationAdjunction (𝟙 X.ringCatSheaf.obj)).unit.app P
-  have : Presheaf.IsLocallyInjective (Opens.grothendieckTopology X)
-      ((PresheafOfModules.toPresheaf (X.presheaf ⋙ forget₂ CommRingCat RingCat)).map η) :=
-    (PresheafOfModules.toPresheaf_map_sheafificationAdjunction_unit_app
-      (𝟙 X.ringCatSheaf.obj) P).symm ▸
-      Presheaf.isLocallyInjective_toSheafify' (J := Opens.grothendieckTopology X) P.presheaf
-  have : Presheaf.IsLocallySurjective (Opens.grothendieckTopology X)
-      ((PresheafOfModules.toPresheaf (X.presheaf ⋙ forget₂ CommRingCat RingCat)).map η) :=
-    (PresheafOfModules.toPresheaf_map_sheafificationAdjunction_unit_app
-      (𝟙 X.ringCatSheaf.obj) P).symm ▸
-      Presheaf.isLocallySurjective_toSheafify' (J := Opens.grothendieckTopology X) P.presheaf
-  exact hU.bijective_app_of_isLocalizedModule (M := S) η fun f ↦
+  exact hU.bijective_sheafificationAdjunction_unit_app fun f ↦
     isLocalizedModule_tensorObj_map_basicOpen M N hU f
 
 /-- **Sections of tensor products over affine opens.** For quasi-coherent `M` and `N` and an
@@ -129,17 +119,9 @@ affine open `U`, the tensor map `Γ(M, U) ⊗[Γ(X, U)] Γ(N, U) → Γ(M ⊗ N,
 functor is bijective. -/
 theorem bijective_μ_sectionsFunctor (hU : IsAffineOpen U) :
     Function.Bijective (Functor.LaxMonoidal.μ (sectionsFunctor U) M N) := by
-  let F : X.Modules ⥤ PresheafOfModulesOfCommRing.{u} X.presheaf :=
-    _root_.SheafOfModules.forget _
-  let _ : F.LaxMonoidal := TauCeti.SheafOfModules.forgetLaxMonoidal X.sheaf
-  -- The sections functor is `F` followed by evaluation at `U`, whose tensor map is the identity.
-  change Function.Bijective ((Functor.LaxMonoidal.μ F M N).app (op U))
-  -- `forget_μ` is stated for sheaves of modules over `ringCatSheaf X.sheaf`, which `rw` does not
-  -- match against `X.Modules`, so it is first instantiated at the goal's `μ`.
-  rw [show Functor.LaxMonoidal.μ F M N = _ from TauCeti.SheafOfModules.forget_μ (R := X.sheaf) M N,
-    PresheafOfModules.comp_app]
-  -- `forget_μ` is stated with `sheafificationForgetAdjunction`, whose unit agrees with that of
-  -- Mathlib's sheafification adjunction up to the comparison `leftAdjointUniq`.
+  rw [sectionsFunctor_μ]
+  -- `sectionsFunctor_μ` is stated with `sheafificationForgetAdjunction`, whose unit agrees with
+  -- that of Mathlib's sheafification adjunction up to the comparison `leftAdjointUniq`.
   have h := congrArg (fun φ ↦ φ.app (op U)) (Adjunction.unit_leftAdjointUniq_hom_app
     (PresheafOfModules.sheafificationAdjunction (𝟙 X.ringCatSheaf.obj))
     (TauCeti.SheafOfModules.sheafificationForgetAdjunction X.sheaf) (M.val ⊗ N.val))
