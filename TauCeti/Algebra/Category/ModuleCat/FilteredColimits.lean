@@ -20,6 +20,9 @@ between such values that are induced stage by stage by natural maps inherit exac
 vanishing of composites and injectivity from the stages. This is how exactness properties of a
 system of functors, such as `Ext(R ⧸ Iⁿ, -)`, pass to its colimit, such as local cohomology.
 
+The forgetful functor also preserves filtered colimits when the module universe is larger than
+the ring universe (`ModuleCat.forget_preservesFilteredColimits_max`).
+
 ## Main results
 
 * `TauCeti.ModuleCat.exists_colimit_ι_app_eq`: every element of `(colimit D).obj X` comes from a
@@ -140,7 +143,7 @@ end TauCeti.ModuleCat
 
 namespace ModuleCat
 
-universe u v
+universe v
 
 /-- Forgetting modules preserves filtered colimits also when the module universe is larger
 than the ring universe. -/
