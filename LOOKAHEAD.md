@@ -1,9 +1,9 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"d0b6fe9d754d0f7ecd76905a71d276bdf47efe00","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,6],"title":"feat: open immersions are inherited from a finite stage"},{"n":8,"after":[2,3,6],"title":"feat: smooth and étale morphisms are inherited from a finite stage"},{"n":9,"after":[3,6,7,8],"title":"feat: closed immersions, finite, smooth and étale morphisms over a member, and separatedness, are inherited from a finite stage"},{"n":10,"after":[],"title":"feat: gluing two schemes along an open subscheme"},{"n":11,"after":[1,3,5,6,7,10],"title":"feat: descent of schemes of finite presentation along cofiltered limits"},{"n":12,"after":[3,5,6,7,8,9,11],"title":"feat: flatness and properness are inherited from a finite stage"},{"n":13,"after":[],"title":"feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely generated subring"},{"n":14,"after":[13],"title":"feat: quasi-affine models of a quasi-compact open as opens of the spectrum of a fibre product"},{"n":15,"after":[],"title":"feat: global sections with affine basic opens descend along cofiltered limits of schemes"},{"n":16,"after":[],"title":"feat: the cofiltered category of finitely generated subrings along a system of rings"},{"n":17,"after":[14,16],"title":"feat: affine models of a scheme near a quasi-compact open"},{"n":18,"after":[10],"title":"feat: morphisms between gluings of two schemes along opens"},{"n":19,"after":[3,4,10,18],"title":"feat: cofiltered limits of schemes commute with gluing along opens"},{"n":20,"after":[2,3,4,10,13,14,15,16,17,18,19],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":21,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"noetherian-approximation","main":"d2083f0f1dd2136d02467ba36efbbe1af612e89c","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: separation, affineness and underlying space of limits of schemes with affine transition maps"},{"n":2,"after":[],"title":"feat: Noetherian approximation of affine schemes"},{"n":3,"after":[],"title":"feat: descent of morphisms and isomorphisms of finitely presented schemes along cofiltered limits"},{"n":4,"after":[3],"title":"feat: existence of cofiltered limits of schemes with affine transition maps"},{"n":5,"after":[],"title":"feat: descent of finitely presented affine schemes along cofiltered limits"},{"n":6,"after":[3,5],"title":"feat: closed immersions and finite morphisms are inherited from a finite stage"},{"n":7,"after":[3,6],"title":"feat: open immersions are inherited from a finite stage"},{"n":8,"after":[2,3,6],"title":"feat: smooth and étale morphisms are inherited from a finite stage"},{"n":9,"after":[3,6,7,8],"title":"feat: closed immersions, finite, smooth and étale morphisms over a member, and separatedness, are inherited from a finite stage"},{"n":10,"after":[],"title":"feat: gluing two schemes along an open subscheme"},{"n":11,"after":[1,3,5,6,7,10],"title":"feat: descent of schemes of finite presentation along cofiltered limits"},{"n":12,"after":[3,5,6,7,8,9,11],"title":"feat: flatness and properness are inherited from a finite stage"},{"n":13,"after":[],"title":"feat: quasi-compact opens of finite type over ℤ in an affine scheme come from a finitely generated subring"},{"n":14,"after":[13],"title":"feat: quasi-affine models of a quasi-compact open as opens of the spectrum of a fibre product"},{"n":15,"after":[],"title":"feat: global sections with affine basic opens descend along cofiltered limits of schemes"},{"n":16,"after":[],"title":"feat: the cofiltered category of finitely generated subrings along a system of rings"},{"n":17,"after":[14,16],"title":"feat: affine models of a scheme near a quasi-compact open"},{"n":18,"after":[10],"title":"feat: morphisms between gluings of two schemes along opens"},{"n":19,"after":[3,4,10,18],"title":"feat: cofiltered limits of schemes commute with gluing along opens"},{"n":20,"after":[2,3,4,10,13,14,15,16,17,18,19],"title":"feat: extending finite-presentation models across a quasi-compact open"},{"n":21,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"title":"feat: absolute Noetherian approximation of quasi-compact quasi-separated schemes"}]}-->
 # Lookahead: `noetherian-approximation` (SchemeAndStackFoundations §0.9)
 
-Built on `main` at `d0b6fe9d754` (merged in the 2026-11-05 12:23 UTC session with no conflicts; the merge brought in only CI/infrastructure changes, and the branch builds and passes `lookahead-check` unchanged). Status: **partial**:
+Built on `main` at `d2083f0f1dd` (merged in the 2026-11-08 20:23 UTC session with no conflicts; the branch builds and passes `lookahead-check` unchanged). Status: **partial**:
 `affine_transition_limits` and `noetherian_approximation` are proved, and of
-`finite_presentation_limits` only the properties flat and proper remain (split 12). The previous session
+`finite_presentation_limits` only the properties flat and proper remain (split 12). An earlier session
 proved absolute Noetherian approximation (Stacks 01ZA) in full, by splits 19–21, without the
 `qcoh-extension` supplier: the stub has been removed (see below), so `"suppliers"` is empty and
 no remaining split waits on another list item.
@@ -15,7 +15,7 @@ README only (`affine_transition_limits`, `noetherian_approximation`,
 ## Stubbed declarations
 
 None. The branch no longer has a stub module: `TauCeti/Lookahead/NoetherianApproximation/Stubs.lean`
-was deleted this session because no proved declaration consumes it. Absolute Noetherian
+was deleted in an earlier session because no proved declaration consumes it. Absolute Noetherian
 approximation is proved by the fibre-product route of splits 13–20 (models of `U ∩ W` as opens of
 `Spec C` for finitely generated `C ⊆ Γ(W) ×_{Γ(U ∩ W)} Γ(Vⱼ)`, glued to the models of `U`), not by
 the earlier-planned route that extended finite-type ideal sheaves across `U ⊆ X`. That earlier
@@ -41,6 +41,10 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.exists_isFiniteType_mono_restric
 ```
 
 If a future route for split 12 needs 01PF, restore this stub.
+
+The `qcoh-extension` supplier is now in flight as PR #30873 ("feat: extend finitely presented
+modules along quasi-compact open immersions", open on 2026-11-08). Since no declaration on this
+branch consumes it, it is still not stubbed and the target does not wait on it.
 
 ## Splits
 
@@ -412,3 +416,8 @@ Once split 12 lands, split 21 completes the target.
 The 2026-11-05 12:23 UTC session only merged `main` and re-verified the branch. It checked the
 pinned Mathlib again: there is still no flatness-descent lemma (only `Algebra.Smooth`/`Algebra.Etale`
 `exists_subalgebra_fg`) and no Chow's lemma. Split 12 is therefore unchanged and still the next step.
+
+The 2026-11-08 20:23 UTC session merged `main` at `d2083f0f1dd` (no conflicts) and re-verified the
+branch (`lake build` green, `lookahead-check` passes). The pinned Mathlib still has no
+flatness-descent lemma for finitely presented algebras over filtered colimits and no Chow's lemma,
+so split 12 is unchanged and still the next step.
