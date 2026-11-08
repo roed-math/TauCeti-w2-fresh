@@ -1,15 +1,17 @@
-<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"d2083f0f1dd2136d02467ba36efbbe1af612e89c","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is power torsion"},{"n":2,"after":[],"title":"feat: scheme cohomology with supports and its full-support comparison"},{"n":3,"after":[2],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology detects depth"},{"n":5,"after":[4],"title":"feat: compare projective-resolution and derived-category Ext"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: the long exact sequence of native local cohomology"},{"n":8,"after":[7],"title":"feat: native local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change and excision for native local cohomology"},{"n":11,"after":[2],"title":"feat: affine cohomology with supports and the affine-line origin"},{"n":12,"after":[1,6,11],"title":"feat: local cohomology of a DVR and a non-Noetherian nil ideal"},{"n":13,"after":[2],"title":"feat: supported cohomology of the sheaf associated to a module"},{"n":14,"after":[7,8,13],"title":"feat: the comparison map from native to geometric local cohomology"},{"n":15,"after":[14],"title":"feat: native and geometric local cohomology agree over Noetherian rings"},{"n":16,"after":[2],"title":"feat: local cohomology sheaves of modules on a scheme"},{"n":17,"after":[16],"title":"feat: the derived supported-section adjunction for a closed subspace"},{"n":18,"after":[17],"title":"feat: the derived localization triangle and excision for supports"},{"n":19,"after":[3,10,15],"title":"feat: flat base change respects the geometric local-cohomology comparison"},{"n":20,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19],"title":"feat: the local-to-global spectral sequence for cohomology with supports"}]}-->
+<!--tauceti-lookahead:v1 {"area":"SchemeAndStackFoundations","slug":"cohomology-with-support","main":"fa7523a49c12af26664417a956326c2608b7824f","status":"partial","suppliers":[],"splits":[{"n":1,"after":[],"title":"feat: degree zero of local cohomology is power torsion"},{"n":2,"after":[],"title":"feat: scheme cohomology with supports and its full-support comparison"},{"n":3,"after":[2],"title":"feat: pullback of cohomology with supports"},{"n":4,"after":[1],"title":"feat: local cohomology detects depth"},{"n":5,"after":[4],"title":"feat: compare projective-resolution and derived-category Ext"},{"n":6,"after":[5],"title":"feat: degree-one local cohomology along a nonzerodivisor"},{"n":7,"after":[1,5],"title":"feat: the long exact sequence of native local cohomology"},{"n":8,"after":[7],"title":"feat: native local cohomology computes derived power torsion"},{"n":9,"after":[],"title":"feat: flat base change of Ext over a Noetherian ring"},{"n":10,"after":[7,9],"title":"feat: flat base change and excision for native local cohomology"},{"n":11,"after":[2],"title":"feat: affine cohomology with supports and the affine-line origin"},{"n":12,"after":[1,6,11],"title":"feat: local cohomology of a DVR and a non-Noetherian nil ideal"},{"n":13,"after":[2],"title":"feat: supported cohomology of the sheaf associated to a module"},{"n":14,"after":[7,8,13],"title":"feat: the comparison map from native to geometric local cohomology"},{"n":15,"after":[14],"title":"feat: native and geometric local cohomology agree over Noetherian rings"},{"n":16,"after":[2],"title":"feat: local cohomology sheaves of modules on a scheme"},{"n":17,"after":[16],"title":"feat: compare derived supported sections with local cohomology sheaves"},{"n":18,"after":[17],"title":"feat: the derived supported-section adjunction for a closed subspace"},{"n":19,"after":[18],"title":"feat: the derived localization triangle and excision for supports"},{"n":20,"after":[3,10,15],"title":"feat: flat base change respects the geometric local-cohomology comparison"},{"n":21,"after":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],"title":"feat: the local-to-global spectral sequence for cohomology with supports"}]}-->
 
 # Lookahead: `cohomology-with-support` (SchemeAndStackFoundations §2.7)
 
-Built on `main` at `d2083f0f1dd2136d02467ba36efbbe1af612e89c` (session 21).
-Status: **partial**. Session 21 resumed `51a22c18210d`, merged `origin/main`, and
-constructed the supported subsheaf and its right derived local cohomology sheaves
-as genuine `𝒪_X`-modules. The current port plan has 20 splits; the sheaf construction belongs to split 16.
+Built on `main` at `fa7523a49c12af26664417a956326c2608b7824f` (session 22).
+Status: **partial**. Session 22 resumed `eaae8e361c0a`, merged `origin/main`, and
+identified the underlying abelian local cohomology sheaves in every degree with
+sheafified supported relative-Ext cohomology. The current port plan has 21 splits;
+the module-sheaf construction belongs to split 16 and the all-degree comparisons
+to split 17.
 The historical session notes below retain the previous plan's numbering. Use the
 current split plan, rather than those historical numbers, when preparing branches.
 
-The object-level and degree-zero sheaf constructions are proved. The derived
+The module-sheaf constructions and the all-degree abelian sheaf comparison are proved. The derived
 adjunction, local-to-global spectral sequence, derived localization triangle and
 compatibility of flat base change with the geometric comparison are still outstanding.
 The new sheaves are on `X`, supported in `Z`; transport to the ringed closed subspace
@@ -966,7 +968,7 @@ at `W = ⊤`, and rebuilt on it if the two agree, so that it does not duplicate 
 
 ### Session 21: scheme-module local cohomology sheaves
 
-`TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf.lean` constructs the sheaf
+`TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf/Basic.lean` constructs the sheaf
 of sections supported in `Z` using Mathlib's `PresheafOfModules.Submodule`.
 The local scalar action comes directly from the semilinearity of restriction in
 `M`, so it does not require local functions to extend to global functions.
@@ -1005,6 +1007,54 @@ functor object formula and natural inclusion, and documented the on-`X`
 convention. The status remains partial because object-level right derived functors
 do not supply the missing derived-category adjunction or spectral sequence.
 
+## Session 22: all-degree local cohomology sheaf comparison
+
+No supplier stub is added: the pinned finite-bound declaration is already on main,
+and PR #33170 has the same head and diff described above. Its new module-presheaf
+API is not consumed.
+
+- `TauCeti/CategoryTheory/Abelian/RightDerived/Adapted.lean` proves
+  `rightDerivedCompObjIsoOfAdapted`, its naturality under maps of injective
+  resolutions, `rightDerivedCompIsoOfAdapted`, its component formula and
+  independence from the injective resolution. An exact comparison functor need
+  only send injectives into an adapted class; preserving injectives is not assumed.
+  The proof reuses `Functor.rightDerivedObjIsoOfResolution` and its naturality.
+- `TauCeti/Topology/Sheaves/LocalCohomology/Derived.lean` constructs
+  `supportedResolutionClass` and proves its additivity, restriction compatibility,
+  surjectivity, degree-zero injectivity and positive-degree boundary criterion.
+  `homologyIsoSupportedHPresheaf` compares the supported-section complex of an
+  injective resolution with the supported cohomology presheaf, including all open
+  restriction maps. Its homology-projection formula characterizes the comparison.
+  Exact sheafification then gives `rightDerivedSupportedSectionsIsoSheaf` in
+  every degree. This follows the existing `Sheaf.H'.homologyIsoCohomologyPresheaf`
+  cycle construction, using relative free abelian sheaves and Mathlib's
+  `InjectiveResolution.extMk` API.
+- `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf/Comparison.lean` proves the
+  natural comparison `localCohomologySheafForgetIso` between module-derived and
+  abelian-derived supported sections, using the flasque adapted class.
+  `toSheafLocalCohomologySheafIso` composes it with the sheafification comparison,
+  identifying the underlying abelian sheaf with `Sheaf.supportedHSheaf` in all degrees.
+- `Sheaf.supportedHRestrict_apply` in the existing
+  `Topology/Sheaves/SupportedCohomology.lean` supplies the characteristic formula
+  for restriction as precomposition with a relative free-sheaf map. The new proof
+  uses this API instead of exposing the definition's body.
+
+Rubric audit: the comparison does not assume that forgetting scalars preserves
+injectivity. It uses the existing flasque acyclic-resolution theorem, and is valid
+without Noetherianity or quasi-coherence. General adapted-resolution infrastructure
+lives in its own categorical module. The sheaf modules are grouped under `Support/Sheaf/Basic` and `Support/Sheaf/Comparison`,
+with every import updated and the obsolete flat module path removed. The supported-cycle construction has explicit
+introduction, restriction, boundary and homology-projection API; only implementation
+helpers are private. The sheafification statement is kept distinct from a derived
+adjunction and from a spectral sequence. No declarations are added under supplier
+names, and no compatibility aliases or forwarding modules are retained.
+
+The all-degree comparison with `supportedHSheaf` is constructed on objects and
+respects the open restriction maps before sheafification. Naturality of the
+module-derived/abelian-derived comparison is proved. The explicit coefficient-map
+naturality and degree-zero normalization of the composed sheafification comparison
+remain API follow-up for split 17; they are not silently asserted here.
+
 ## What remains
 
 - `cohomologyWithSupport_pullback` is done (session 6, splits 3 and 12), including its
@@ -1028,22 +1078,23 @@ do not supply the missing derived-category adjunction or spectral sequence.
   should intertwine `localCohomologyBaseChangeIso` with the flat pullback along
   `Spec B → Spec A`.
 - `localCohomologySheaf Z F q` as an `𝒪_X`-module on `X` is done in session 21.
-  Remaining: identify its underlying abelian sheaf in every degree with
-  `Sheaf.supportedHSheaf` (only degree zero is currently compared), and transport
-  it to the ringed closed subspace for `rHZ_adjunction`.
+  Its underlying abelian sheaf is now identified in every degree with
+  `Sheaf.supportedHSheaf` (session 22). Remaining: coefficient naturality and
+  degree-zero normalization of that composed comparison, and transport to the
+  ringed closed subspace for `rHZ_adjunction`.
 - `Γ(X, ⊤)`-linearity is done for the structure sheaf on `V(r)`
   (`cohomologyWithSupportBasicOpenOneLinearEquiv`) and, as a compatibility lemma, for any
   quasi-coherent `M` (`cohomologyWithSupportOneEquiv_globalSectionsSmul`). Session 15 added the
   `A`-linear `cohomologyWithSupportSpecOneLinearEquiv` on `Spec A`, so the DVR comparison check
   is `R`-linear. Session 18 made the affine-line identification `k[t]`-linear; session 9's DVR `AddEquiv` is
   still additive (its `R`-linear form is `test_depth_dvr`).
-- Final split 20. Done in session 15: every README check (`Checks.lean`, see session 15),
+- Final split 21. Done in session 15: every README check (`Checks.lean`, see session 15),
   including `localCohomology_module_comparison_dvr` through the general comparison. Remaining:
   - (optional) check that the comparison isomorphism itself matches the two degree-one
     computations along a nonzerodivisor (`localCohomologyOneLinearEquiv` and
     `cohomologyWithSupportSpecOneLinearEquiv`), not only that both sides are `K ⧸ R`;
   - the clause "compatibly with the geometric comparison" of `localCohomology_flat_baseChange`;
-  - the all-degree sheaf comparison, `rHZ_adjunction` and `localToGlobal`;
+  - the remaining comparison API, `rHZ_adjunction` and `localToGlobal`;
   - `supports_localization_triangle` as an actual distinguished triangle on derived
     categories (the existing group-level long exact sequence is not this triangle),
     with scheme-level excision and its compatibility with the derived functors.
@@ -1108,18 +1159,21 @@ that split. Independent splits may be opened concurrently. No PR is opened in th
    Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/Comparison.lean`.
    Declarations and scope: All-degree bijectivity, localCohomologyIsoCohomologyWithSupport, localCohomology_module_comparison, and rightDerivedPowerTorsionIsoCohomologyWithSupport. 167 lines; this is the small, single-topic comparison step.
 16. **feat: local cohomology sheaves of modules on a scheme**. Must merge first: 2.
-   Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf.lean`.
-   Declarations and scope: All session-21 declarations: the supported subsheaf, inclusion and universal lift, the left exact functor, localCohomologySheaf, degree zero, injective acyclicity and support of every stalk. 267 lines currently. Still add the all-degree comparison with the abelian supportedHSheaf; budget the completed split at about 300–600 lines.
-17. **feat: the derived supported-section adjunction for a closed subspace**. Must merge first: 16.
+   Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf/Basic.lean`.
+   Declarations and scope: All session-21 declarations: the supported subsheaf, inclusion and universal lift, the left exact functor, localCohomologySheaf, degree zero, injective acyclicity and support of every stalk. 267 lines. The all-degree comparison is split 17.
+17. **feat: compare derived supported sections with local cohomology sheaves**. Must merge first: 16.
+   Files: `TauCeti/CategoryTheory/Abelian/RightDerived/Adapted.lean`, `TauCeti/Topology/Sheaves/LocalCohomology/Derived.lean`, `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf/Comparison.lean`, and the new restriction formula in `TauCeti/Topology/Sheaves/SupportedCohomology.lean`.
+   Declarations and scope: The adapted-resolution comparison and independence/naturality API; supportedResolutionClass and its cycle/boundary API; homologyIsoSupportedHPresheaf, rightDerivedSupportedSectionsIsoSheaf, localCohomologySheafForgetIso and toSheafLocalCohomologySheafIso. About 554 lines. Before opening this split, finish the coefficient-map and degree-zero normalization API of the composed sheafification comparison; the object-level isomorphisms themselves are proved.
+18. **feat: the derived supported-section adjunction for a closed subspace**. Must merge first: 17.
    Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/Derived.lean`.
    Declarations and scope: UNPROVED: transport to the ringed closed subspace (Z, i⁻¹𝒪_X), construct RH_Z and derive rHZ_adjunction on the derived categories specified in the README, with degreewise comparison to localCohomologySheaf. A bounded-below intermediate construction alone does not complete this split. Planned 300–600 lines; prerequisite work, never assume the adjunction as data.
-18. **feat: the derived localization triangle and excision for supports**. Must merge first: 17.
+19. **feat: the derived localization triangle and excision for supports**. Must merge first: 18.
    Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/Localization.lean`.
    Declarations and scope: UNPROVED: supports_localization_triangle as an actual distinguished triangle, its comparison with the existing long exact sequence, and the open-neighbourhood excision isomorphism. Planned 200–600 lines.
-19. **feat: flat base change respects the geometric local-cohomology comparison**. Must merge first: 3, 10, 15.
+20. **feat: flat base change respects the geometric local-cohomology comparison**. Must merge first: 3, 10, 15.
    Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/BaseChange.lean`.
    Declarations and scope: UNPROVED: the compatibility square between localCohomologyBaseChangeIso, the geometric comparison for A and B, and scheme pullback along Spec B → Spec A. Planned 200–600 lines.
-20. **feat: the local-to-global spectral sequence for cohomology with supports**. Must merge first: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19.
+21. **feat: the local-to-global spectral sequence for cohomology with supports**. Must merge first: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20.
    Files: `TauCeti/AlgebraicGeometry/Cohomology/Support/LocalToGlobal.lean`, `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Checks.lean`.
    Declarations and scope: PARTIAL: the 148-line Checks.lean exists. UNPROVED: construct and prove the convergent spectral sequence localToGlobal, with its boundedness hypotheses, edge maps and naturality, and finish the integration checks of the preceding splits. Planned 300–600 lines. This last split exports localToGlobal and is the only split completing the whole target.
 
@@ -1144,10 +1198,12 @@ Counts are full source-file lengths, including unchanged portions of modified ma
 | `TauCeti/AlgebraicGeometry/Cohomology/Support/Comparison.lean` | 167 |
 | `TauCeti/AlgebraicGeometry/Cohomology/Support/LocalCohomology.lean` | 351 |
 | `TauCeti/AlgebraicGeometry/Cohomology/Support/Pullback.lean` | 164 |
-| `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf.lean` | 267 |
+| `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf/Basic.lean` | 267 |
+| `TauCeti/AlgebraicGeometry/Cohomology/Support/Sheaf/Comparison.lean` | 87 |
 | `TauCeti/AlgebraicGeometry/Cohomology/Support/Tilde.lean` | 238 |
 | `TauCeti/AlgebraicGeometry/Modules/GlobalSections.lean` | 462 |
 | `TauCeti/CategoryTheory/Abelian/LeftDerived.lean` | 305 |
+| `TauCeti/CategoryTheory/Abelian/RightDerived/Adapted.lean` | 147 |
 | `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative.lean` | 508 |
 | `TauCeti/CategoryTheory/Sites/SheafCohomology/Relative/Pullback.lean` | 213 |
 | `TauCeti/Examples/Algebra/Homology/LocalCohomology.lean` | 170 |
@@ -1155,6 +1211,7 @@ Counts are full source-file lengths, including unchanged portions of modified ma
 | `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Checks.lean` | 148 |
 | `TauCeti/Examples/AlgebraicGeometry/Cohomology/Support/Comparison.lean` | 181 |
 | `TauCeti/RingTheory/Flat/PowerTorsion.lean` | 196 |
-| `TauCeti/Topology/Sheaves/SupportedCohomology.lean` | 613 |
+| `TauCeti/Topology/Sheaves/LocalCohomology/Derived.lean` | 310 |
+| `TauCeti/Topology/Sheaves/SupportedCohomology.lean` | 623 |
 | `TauCeti/Topology/Sheaves/SupportedCohomology/Pullback.lean` | 106 |
 | `TauCeti/Topology/Sheaves/SupportedCohomology/Univ.lean` | 94 |

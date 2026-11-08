@@ -166,6 +166,16 @@ def supportedHRestrict (S : Closeds X) {W' W : Opens X} (h : W' ≤ W) (n : ℕ)
   relativeH'.map F (S.complInclusion W) (S.complInclusion W')
     (homOfLE (inf_le_inf_right S.compl h)) (homOfLE h) rfl n
 
+/-- Restriction of supported cohomology is precomposition with the map of
+relative free sheaves representing restriction of supported sections. -/
+lemma supportedHRestrict_apply (S : Closeds X) {W' W : Opens X} (h : W' ≤ W) (n : ℕ)
+    (x : F.supportedH S W n) :
+    F.supportedHRestrict S h n x =
+      (Ext.mk₀ (TauCeti.CategoryTheory.relativeFreeYonedaSheafMap _
+        (S.complInclusion W') (S.complInclusion W)
+        (homOfLE (inf_le_inf_right S.compl h)) (homOfLE h) rfl)).comp x (zero_add n) :=
+  relativeH'.map_apply F _ _ _ _ _ x
+
 @[simp]
 lemma supportedHRestrict_self (S : Closeds X) (W : Opens X) {n : ℕ} (x : F.supportedH S W n) :
     F.supportedHRestrict S (le_refl W) n x = x :=
