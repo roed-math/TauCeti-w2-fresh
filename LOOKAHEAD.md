@@ -11,6 +11,16 @@ properties are proved. General flatness and properness remain (splits 13–14).
 This session adds finite-stage constructible-set criteria, full surjectivity descent, and three
 properness descent criteria with explicit geometric hypotheses (split 12).
 
+Session of 2026-11-08 (23:17 UTC): `origin/main` had not moved past `fa7523a49c12`; the branch was
+rebuilt (`lake build` green) and `lookahead-check` passes, with no Lean changes. The pinned Mathlib
+was searched again for split 13 ingredients. It has `Module.Flat.projective_of_finitePresentation`,
+the equational criterion and the local-ring results of `RingTheory/LocalRing/Module.lean`.
+It has no openness of the flat locus, no local flatness criterion for modules over a non-local
+base or over an `R`-algebra `S`, and no descent of flatness along filtered colimits (Stacks 00R6,
+via Algebra §10.128–10.168). Split 13 therefore still needs those ring-theoretic prerequisites as
+their own PRs before `Limits/Flat.lean`. Split 14 still needs the Chow cover. Neither can be
+replaced by a stub, because no listed supplier pins them.
+
 The definitive target is SchemeAndStackFoundations/README.md §0.9. `Suggested.lean` pins no Lean
 forms for `affine_transition_limits`, `noetherian_approximation`, `finite_presentation_limits`
 or `qcoh_extension`; these are README-only specifications. This branch targets the three
