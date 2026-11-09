@@ -19,8 +19,9 @@ public import TauCeti.AlgebraicGeometry.Modules.FiniteType
 An `R`-module is finitely presented if and only if its associated sheaf on `Spec R` is finitely
 presented. More generally, the sections of a finitely presented sheaf over any affine open are
 a finitely presented module over its ring of functions. On an affine scheme, the sheaf admits
-a global presentation with finitely many generators and relations. The sheaf associated with a
-finite module is of finite type, as a quotient of the sheaf associated with a finite free module.
+a global presentation with finitely many generators and relations. Likewise, an `R`-module is
+finite if and only if its associated sheaf is of finite type; the sheaf associated with a finite
+module is a quotient of the sheaf associated with a finite free module.
 
 The forward implication uses Mathlib's `presentationTilde`, whose generating and relation
 families are precisely those of the module presentation. For the converse, finite local sheaf
@@ -350,6 +351,21 @@ theorem _root_.AlgebraicGeometry.Scheme.Modules.finite_moduleSpecΓ
   have : Module.Finite R Γ(Spec R, ⊤) :=
     Module.Finite.equiv (LinearEquiv.ofBijective _ hbij)
   exact Module.Finite.trans (R := R) Γ(Spec R, ⊤) Γ(M, ⊤)
+
+/-- A module is finite if and only if its associated sheaf on the spectrum is of finite type. -/
+@[simp]
+theorem _root_.ModuleCat.isFiniteType_tilde_iff (M : ModuleCat.{u} R) :
+    (tilde M).IsFiniteType ↔ Module.Finite R M := by
+  constructor
+  · intro h
+    let := h
+    have hΓ : Module.Finite R (moduleSpecΓFunctor.obj (tilde M)) :=
+      Scheme.Modules.finite_moduleSpecΓ (tilde M)
+    exact @Module.Finite.equiv _ _ _ _ _ _ _ _ hΓ
+      ((tilde.toTildeΓNatIso (R := R)).app M).symm.toLinearEquiv
+  · intro h
+    let := h
+    exact inferInstance
 
 open _root_.AlgebraicGeometry.Scheme.Modules
 
