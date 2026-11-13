@@ -18,31 +18,27 @@ import TauCeti.RingTheory.OrderOfVanishing
 # The order of a norm
 
 Let `A` be a Noetherian domain of Krull dimension at most one with fraction field `K`, and let `B`
-be a domain that is a finite `A`-algebra, with fraction field `L`. For a nonzero `b : B`, this
-file computes the order of the norm `N_{L/K}(b)` in two steps (Fulton, *Intersection Theory*,
-Appendix A.3):
+be a domain that is a finite `A`-algebra, with fraction field `L`. This file computes the order of
+the norm `N_{L/K}(r)` of a nonzero `r : L` (Fulton, *Intersection Theory*, Appendix A.3).
 
-* `TauCeti.ordFrac_norm_eq_coe_of_length_eq`: the order of `N_{L/K}(b)` is the `A`-length of
-  `B ⧸ bB`. The norm need not lie in `A`, since `A` need not be integrally closed, so its order is
-  Mathlib's `Ring.ordFrac A` on `K`. This is Fulton's determinant lemma (Appendix A.2)
+## Main results
+
+* `TauCeti.ordFrac_norm_eq_coe_of_length_eq`: for nonzero `b : B`, the order of `N_{L/K}(b)` is the
+  `A`-length of `B ⧸ bB`. The norm need not lie in `A`, since `A` need not be integrally closed, so
+  its order is Mathlib's `Ring.ordFrac A` on `K`. This is Fulton's determinant lemma (Appendix A.2)
   (`LinearMap.ordFrac_det_eq_coe_of_length_eq`) for multiplication by `b` on the lattice `B ⊆ L`,
-  which spans `L` over `K` because `B` is integral over `A`
-  (`TauCeti.span_range_algebraMap_eq_top`).
-* `TauCeti.length_quotient_span_singleton_eq_finsum_ord`: for `A` local, that length is
-  `Σ_m ord_{B_m}(b) [κ(B_m) : κ(A)]` over the maximal ideals `m` of `B`.
-  `TauCeti.length_quotient_span_singleton_eq_finsum` decomposes the `A`-length over the
-  localizations `C_q` of `C = B ⧸ bB`, using `MaximalSpectrum.toPiLocalizationEquiv` and
-  `IsLocalRing.length_restrictScalars` over `C_q`. The length identities
-  `TauCeti.length_localization_quotient_span_singleton` and
-  `Ideal.length_residueField_localization_quotient` rewrite these local lengths in terms of
-  `B_m`, where `m` is the preimage of `q`.
+  which spans `L` over `K` (`TauCeti.span_range_algebraMap_eq_top`).
+* `TauCeti.ordFrac_norm_eq_finprod`: for `A` local and `r ≠ 0` in `L`,
+  `ord_A N_{L/K}(r) = Σ_m [B ⧸ m : κ(A)] ord_{R m}(r)`, written multiplicatively in `ℤᵐ⁰`, with the
+  orders taken in arbitrary localizations `R m` of `B` at its maximal ideals (such as the local
+  rings of a scheme at the points of a fibre) and the residue degree read as the `A`-length of
+  `B ⧸ m`. This is the coefficient identity behind the pushforward of principal divisors along
+  finite maps (Fulton, Proposition 1.4(b)).
 
-Together they give `ord_A N_{L/K}(b) = Σ_m [κ(B_m) : κ(A)] ord_{B_m}(b)`, the coefficient identity
-behind the pushforward of principal divisors along finite maps (Fulton, Proposition 1.4(b)).
-`TauCeti.ordFrac_norm_eq_finprod` states it for every nonzero `r` in `L`, multiplicatively in
-`ℤᵐ⁰`, with the orders taken in arbitrary localizations `R m` of `B` at its maximal ideals (such as
-the local rings of a scheme at the points of a fibre) and the residue degree read as the `A`-length
-of `B ⧸ m`. The orders are transported from `B_m` to `R m` by `TauCeti.Ring.ord_ringEquiv`.
+For `r = b ∈ B` the second result combines the first with the decomposition of the length of
+`B ⧸ bB` into local orders, `TauCeti.length_quotient_span_singleton_eq_finsum_ord`, and with
+`TauCeti.ordFrac_algebraMap_eq_ofAdd_ord`, which transports the orders from `B_m` to `R m`. The
+general case follows by writing `r` as a quotient of elements of `B`.
 -/
 
 public section
@@ -67,10 +63,10 @@ theorem ordFrac_norm_eq_coe_of_length_eq {b : B} (hb : b ≠ 0) {n : ℕ}
   let f : B →ₗ[A] L := (IsScalarTower.toAlgHom A B L).toLinearMap
   have hf : Function.Injective f := by simpa [f] using IsFractionRing.injective B L
   let M : Submodule A L := LinearMap.range f
-  have hspan : Submodule.span K (M : Set L) = ⊤ := by
-    rw [← span_range_algebraMap_eq_top K (A := A) (B := B), LinearMap.coe_range,
-      AlgHom.coe_toLinearMap, IsScalarTower.coe_toAlgHom']
   have : Module.Finite K L := IsFractionRing.finiteDimensional_of_finite A B K L
+  have hspan : Submodule.span K (M : Set L) = ⊤ := by
+    rw [← span_range_algebraMap_eq_top K (B := B), LinearMap.coe_range,
+      AlgHom.coe_toLinearMap, IsScalarTower.coe_toAlgHom']
   -- Multiplication by `b` on `L` preserves the lattice.
   let φ : L →ₗ[K] L := Algebra.lmul K L (algebraMap B L b)
   have hφM : ∀ x ∈ M, φ x ∈ M := by
@@ -100,42 +96,53 @@ theorem ordFrac_norm_eq_coe_of_length_eq {b : B} (hb : b ≠ 0) {n : ℕ}
 
 section Fraction
 
-variable {A K B L : Type*} [CommRing A] [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A]
-  [IsLocalRing A] [Field K] [Algebra A K] [IsFractionRing A K] [CommRing B] [IsDomain B]
-  [Algebra A B] [Module.Finite A B] [Field L] [Algebra B L] [IsFractionRing B L] [Algebra K L]
-  [Algebra A L] [IsScalarTower A K L] [IsScalarTower A B L]
-  (R : MaximalSpectrum B → Type*) [∀ m, CommRing (R m)] [∀ m, IsDomain (R m)]
-  [∀ m, IsNoetherianRing (R m)] [∀ m, Ring.KrullDimLE 1 (R m)] [∀ m, Algebra B (R m)]
-  [∀ m, IsLocalization.AtPrime (R m) m.asIdeal] [∀ m, Algebra (R m) L]
+variable [IsLocalRing A] (R : MaximalSpectrum B → Type*) [∀ m, CommRing (R m)]
+  [∀ m, IsDomain (R m)] [∀ m, IsNoetherianRing (R m)] [∀ m, Ring.KrullDimLE 1 (R m)]
+  [∀ m, Algebra B (R m)] [∀ m, IsLocalization.AtPrime (R m) m.asIdeal] [∀ m, Algebra (R m) L]
   [∀ m, IsScalarTower B (R m) L] [∀ m, IsFractionRing (R m) L]
 
-/-- **The order of a norm, multiplicative form** (Fulton, *Intersection Theory*, Appendix A.3).
-Let `A` be a local Noetherian domain of dimension at most one with fraction field `K`, `B` a domain
-finite over `A` with fraction field `L`, and `R m` a localization of `B` at each maximal ideal
-`m`. For `b ≠ 0` in `B`, `ord_A N_{L/K}(b) = Σ_m [B ⧸ m : κ(A)] ord_{R m}(b)`, written
-multiplicatively in `ℤᵐ⁰`, with the residue degree read as the `A`-length of `B ⧸ m`. -/
-theorem ordFrac_norm_algebraMap_eq_finprod {b : B} (hb : b ≠ 0) :
+omit [IsFractionRing B L] in
+/-- The order of `b ∈ B` is trivial at every maximal ideal of `B` not containing `b`. -/
+private theorem mulSupport_ordFrac_pow_subset (b : B) (d : MaximalSpectrum B → ℕ) :
+    Function.mulSupport (fun m ↦ Ring.ordFrac (R m) (algebraMap B L b) ^ d m) ⊆
+      {m | b ∈ m.asIdeal} := by
+  intro m hm
+  by_contra hbm
+  refine hm ?_
+  dsimp only
+  rw [IsScalarTower.algebraMap_apply B (R m) L, Ring.ordFrac_of_isUnit (K := L)
+    ((IsLocalization.AtPrime.isUnit_to_map_iff (R m) m.asIdeal b).2 hbm), one_pow]
+
+/-- **The order of a norm, multiplicative form**, for `r = b ∈ B`; see
+`TauCeti.ordFrac_norm_eq_finprod`. -/
+private theorem ordFrac_norm_algebraMap_eq_finprod {b : B} (hb : b ≠ 0) :
     Ring.ordFrac A (Algebra.norm K (algebraMap B L b)) =
       ∏ᶠ m, Ring.ordFrac (R m) (algebraMap B L b) ^ (Module.length A (B ⧸ m.asIdeal)).toNat := by
   classical
-  set S := (finite_setOf_mem_maximalSpectrum A hb).toFinset
+  have : IsDomain B := (FaithfulSMul.algebraMap_injective B L).isDomain
+  have hb' : Ideal.span {b} ≠ ⊥ := Ideal.span_singleton_eq_bot.not.2 hb
+  have := isArtinianRing_quotient_of_ne_bot A hb'
+  have hfinS : {m : MaximalSpectrum B | b ∈ m.asIdeal}.Finite :=
+    (Ideal.finite_setOfPred_le_asIdeal _).subset fun _ hm ↦ (Ideal.span_singleton_le_iff_mem _).2 hm
+  set S := hfinS.toFinset
   have hfin : Module.length A (B ⧸ Ideal.span {b}) ≠ ⊤ :=
-    Module.length_ne_top_iff.2 (isFiniteLength_quotient_span_singleton hb)
+    Module.length_ne_top_iff.2 (isFiniteLength_quotient_of_ne_bot hb')
   -- The local lengths of `B ⧸ bB` vanish away from the maximal ideals containing `b`.
-  have hlen := length_quotient_span_singleton_eq_finsum_ord (A := A) hb
+  have hlen := length_quotient_span_singleton_eq_finsum_ord (A := A) b
   rw [finsum_eq_sum_of_support_subset _ (s := S) (by
     simpa only [S, Set.Finite.coe_toFinset] using
       ((Function.support_mul_subset_left _ _).trans (support_ord_subset b)))] at hlen
   have hS : ∀ m ∈ S, Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b) *
       Module.length A (IsLocalRing.ResidueField (Localization.AtPrime m.asIdeal)) ≠ ⊤ :=
     ENat.sum_ne_top.1 (hlen ▸ hfin)
+  have hord (m : MaximalSpectrum B) := ordFrac_algebraMap_eq_ofAdd_ord (L := L) (R m) m.asIdeal hb
   rw [ordFrac_norm_eq_coe_of_length_eq (K := K) (L := L) hb (ENat.natCast_toNat hfin).symm,
     finprod_eq_prod_of_mulSupport_subset _ (s := S) (by
       simp only [S, Set.Finite.coe_toFinset]; exact mulSupport_ordFrac_pow_subset R b _),
     hlen, ENat.toNat_sum hS]
-  simp only [ordFrac_algebraMap_eq_ofAdd_ord R _ hb, ENat.toNat_mul,
-    MaximalSpectrum.length_residueField_localization_eq, ← WithZero.coe_pow, ← ofAdd_nsmul,
-    Nat.cast_sum, Nat.cast_mul, nsmul_eq_mul, mul_comm, ofAdd_sum]
+  simp only [hord, ENat.toNat_mul, Ideal.length_residueField_localization_eq,
+    ← WithZero.coe_pow, ← ofAdd_nsmul, Nat.cast_sum, Nat.cast_mul, nsmul_eq_mul, mul_comm,
+    ofAdd_sum]
   exact map_prod (WithZero.coeMonoidHom (α := Multiplicative ℤ)) _ _
 
 /-- **The order of a norm** (Fulton, *Intersection Theory*, Appendix A.3). Let `A` be a local
@@ -147,13 +154,16 @@ the pushforward of principal divisors along finite maps (Fulton, Proposition 1.4
 theorem ordFrac_norm_eq_finprod {r : L} (hr : r ≠ 0) :
     Ring.ordFrac A (Algebra.norm K r) =
       ∏ᶠ m, Ring.ordFrac (R m) r ^ (Module.length A (B ⧸ m.asIdeal)).toNat := by
+  have : IsDomain B := (FaithfulSMul.algebraMap_injective B L).isDomain
   obtain ⟨b, c, hc, rfl⟩ := IsFractionRing.div_surjective (A := B) r
   have hc0 : c ≠ 0 := nonZeroDivisors.ne_zero hc
   have hb0 : b ≠ 0 := by rintro rfl; simp at hr
   set d : MaximalSpectrum B → ℕ := fun m ↦ (Module.length A (B ⧸ m.asIdeal)).toNat
   have hfin (x : B) (hx : x ≠ 0) :
-      Function.HasFiniteMulSupport fun m ↦ Ring.ordFrac (R m) (algebraMap B L x) ^ d m :=
-    (finite_setOf_mem_maximalSpectrum A hx).subset (mulSupport_ordFrac_pow_subset R x d)
+      Function.HasFiniteMulSupport fun m ↦ Ring.ordFrac (R m) (algebraMap B L x) ^ d m := by
+    have := isArtinianRing_quotient_of_ne_bot A (Ideal.span_singleton_eq_bot.not.2 hx)
+    exact ((Ideal.finite_setOfPred_le_asIdeal (Ideal.span {x})).subset fun _ hm ↦
+      (Ideal.span_singleton_le_iff_mem _).2 hm).subset (mulSupport_ordFrac_pow_subset R x d)
   have : Module.Finite K L := IsFractionRing.finiteDimensional_of_finite A B K L
   simp_rw [div_eq_mul_inv, map_mul, Algebra.norm_inv, map_inv₀, mul_pow, inv_pow]
   rw [finprod_mul_distrib (hfin b hb0) ?_, finprod_inv_distrib,

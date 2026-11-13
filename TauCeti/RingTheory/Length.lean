@@ -85,8 +85,18 @@ applies to the quotients appearing here without any further appeal to defeq.
   `I.isFiniteLength_quotient_of_isMaximal_radical`.
 * `Ideal.isFiniteLength_quotient_smul_top_of_isMaximal_radical`: `M ⧸ I M` has finite length for
   a finite module `M` over a noetherian ring when the radical of `I` is maximal.
+* `TauCeti.isFiniteLength_quotient_of_ne_bot` and `TauCeti.isArtinianRing_quotient_of_ne_bot`:
+  for a domain `B` finite over a noetherian domain `A` of dimension at most one and a nonzero ideal
+  `I` of `B`, the quotient `B ⧸ I` has finite `A`-length and is an Artinian ring.
+* `TauCeti.length_eq_finsum_localization_mul_residueField`: the `A`-length of an Artinian ring `C`
+  integral over a local ring `A` is `Σ_q length_{C_q} C_q * length_A κ(C_q)` (Fulton, Appendix
+  A.3).
 * `Ideal.length_localizedModule_quotient_eq_one`: for a prime `𝔭`, the localization of `A ⧸ 𝔭`
   at `𝔭` has length one over `A_𝔭`, being its residue field.
+* `Ideal.length_residueField_localization_quotient`: for a prime `q` of `R ⧸ I`, the residue
+  fields of `(R ⧸ I)_q` and of `R` at the preimage of `q` have the same `A`-length.
+* `Ideal.length_residueField_localization_eq`: for a maximal ideal `m` of `B`, the residue field
+  of `B_m` and `B ⧸ m` have the same `A`-length.
 * `TauCeti.isFiniteLength_quotient_maximalIdeal_pow`: `A ⧸ 𝔪 ⁿ` has finite length for every `n`
   over a noetherian local ring.
 * `Submodule.eq_of_le_of_length_eq`: a submodule contained in another of the same finite length
@@ -309,48 +319,34 @@ theorem isFiniteLength_of_nonZeroDivisor_mem_annihilator [IsNoetherianRing A]
 
 end CommRing
 
-/-- For a domain `B` finite over a Noetherian domain `A` of dimension at most one, `B ⧸ bB` has
-finite `A`-length for `b ≠ 0`. -/
-theorem isFiniteLength_quotient_span_singleton {A B : Type*} [CommRing A] [IsDomain A]
+/-- For a domain `B` finite over a Noetherian domain `A` of dimension at most one, `B ⧸ I` has
+finite `A`-length for every nonzero ideal `I` of `B`. -/
+theorem isFiniteLength_quotient_of_ne_bot {A B : Type*} [CommRing A] [IsDomain A]
     [IsNoetherianRing A] [Ring.KrullDimLE 1 A] [CommRing B] [IsDomain B] [Algebra A B]
-    [Module.Finite A B] {b : B} (hb : b ≠ 0) :
-    IsFiniteLength A (B ⧸ Ideal.span {b}) := by
-  obtain ⟨a, ha, ha0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot
-    (Ideal.under_ne_bot_of_integral_mem hb (Ideal.mem_span_singleton_self b)
-      (Algebra.IsIntegral.isIntegral (R := A) b))
+    [Module.Finite A B] {I : Ideal B} (hI : I ≠ ⊥) : IsFiniteLength A (B ⧸ I) := by
+  obtain ⟨a, ha, ha0⟩ := Submodule.exists_mem_ne_zero_of_ne_bot (Ideal.under_ne_bot A hI)
   refine isFiniteLength_of_nonZeroDivisor_mem_annihilator (x := a) ?_
     (mem_nonZeroDivisors_of_ne_zero ha0)
-  rw [Module.mem_annihilator]
-  intro y
-  obtain ⟨y, rfl⟩ := Ideal.Quotient.mk_surjective y
-  rw [Algebra.smul_def, ← Ideal.Quotient.mk_algebraMap, ← map_mul, Ideal.Quotient.eq_zero_iff_mem]
-  exact Ideal.mul_mem_right _ _ ha
+  rwa [← Module.comap_annihilator (R := B), Ideal.annihilator_quotient]
 
 /-- For a domain `B` finite over a Noetherian domain `A` of dimension at most one, the quotient
-`B ⧸ bB` is Artinian for nonzero `b`. -/
-theorem isArtinianRing_quotient_span_singleton (A : Type*) {B : Type*} [CommRing A] [IsDomain A]
+`B ⧸ I` is Artinian for every nonzero ideal `I` of `B`. -/
+theorem isArtinianRing_quotient_of_ne_bot (A : Type*) {B : Type*} [CommRing A] [IsDomain A]
     [IsNoetherianRing A] [Ring.KrullDimLE 1 A] [CommRing B] [IsDomain B] [Algebra A B]
-    [Module.Finite A B] {b : B} (hb : b ≠ 0) : IsArtinianRing (B ⧸ Ideal.span {b}) := by
-  have : IsArtinian A (B ⧸ Ideal.span {b}) :=
-    (isFiniteLength_iff_isNoetherian_isArtinian.1 (isFiniteLength_quotient_span_singleton hb)).2
+    [Module.Finite A B] {I : Ideal B} (hI : I ≠ ⊥) : IsArtinianRing (B ⧸ I) := by
+  have : IsArtinian A (B ⧸ I) :=
+    (isFiniteLength_iff_isNoetherian_isArtinian.1 (isFiniteLength_quotient_of_ne_bot hI)).2
   exact isArtinian_of_tower A inferInstance
 
-section LocalLengthDecomposition
-
-variable {A B : Type*} [CommRing A] [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A]
-  [CommRing B] [IsDomain B] [Algebra A B] [Module.Finite A B]
-
-/-- **The length of `B ⧸ bB` is a sum of local lengths** (Fulton, *Intersection Theory*,
-Appendix A.3, second step). For a local Noetherian domain `A` of dimension at most one, a domain
-`B` finite over `A`, and `b ≠ 0`, write `C = B ⧸ bB`. Then
+/-- **The length of an Artinian algebra is a sum of local lengths** (Fulton, *Intersection
+Theory*, Appendix A.3, second step). For an Artinian ring `C` integral over a local ring `A`,
 `length_A C = Σ_q length_{C_q} C_q * length_A κ(C_q)`, summed over the maximal ideals `q` of `C`. -/
-theorem length_quotient_span_singleton_eq_finsum [IsLocalRing A] {b : B} (hb : b ≠ 0) :
-    Module.length A (B ⧸ Ideal.span {b}) =
-      ∑ᶠ q : MaximalSpectrum (B ⧸ Ideal.span {b}),
+theorem length_eq_finsum_localization_mul_residueField {A C : Type*} [CommRing A] [IsLocalRing A]
+    [CommRing C] [IsArtinianRing C] [Algebra A C] [Algebra.IsIntegral A C] :
+    Module.length A C =
+      ∑ᶠ q : MaximalSpectrum C,
         Module.length (Localization.AtPrime q.asIdeal) (Localization.AtPrime q.asIdeal) *
           Module.length A (IsLocalRing.ResidueField (Localization.AtPrime q.asIdeal)) := by
-  set C := B ⧸ Ideal.span {b}
-  have : IsArtinianRing C := isArtinianRing_quotient_span_singleton A hb
   have := Fintype.ofFinite (MaximalSpectrum C)
   rw [((MaximalSpectrum.toPiLocalizationEquiv C).toLinearEquiv.restrictScalars A).length_eq,
     Module.length_pi_of_fintype, finsum_eq_sum_of_fintype]
@@ -367,8 +363,6 @@ theorem length_quotient_span_singleton_eq_finsum [IsLocalRing A] {b : B} (hb : b
     (Localization.AtPrime q.asIdeal), Module.length_eq_of_surjective
       (M := IsLocalRing.ResidueField (Localization.AtPrime q.asIdeal))
       (IsLocalRing.residue_surjective (R := A))]
-
-end LocalLengthDecomposition
 
 section LocalRing
 
@@ -489,12 +483,13 @@ theorem length_residueField_localization_quotient {A R : Type*} [CommRing A]
 
 /-- For an `A`-algebra `B` and a maximal ideal `m` of `B`, the residue field of `B_m` and
 `B ⧸ m` have the same `A`-length. -/
-theorem _root_.MaximalSpectrum.length_residueField_localization_eq {A B : Type*} [CommRing A]
-    [CommRing B] [Algebra A B] (m : MaximalSpectrum B) :
-    Module.length A (IsLocalRing.ResidueField (Localization.AtPrime m.asIdeal)) =
-      Module.length A (B ⧸ m.asIdeal) := by
-  exact ((AlgEquiv.ofBijective (IsScalarTower.toAlgHom A (B ⧸ m.asIdeal) m.asIdeal.ResidueField)
-    m.asIdeal.bijective_algebraMap_quotient_residueField).toLinearEquiv).length_eq.symm
+@[simp]
+theorem length_residueField_localization_eq {A B : Type*} [CommRing A] [CommRing B] [Algebra A B]
+    (m : Ideal B) [m.IsMaximal] :
+    Module.length A (IsLocalRing.ResidueField (Localization.AtPrime m)) =
+      Module.length A (B ⧸ m) :=
+  ((AlgEquiv.ofBijective (IsScalarTower.toAlgHom A (B ⧸ m) m.ResidueField)
+    m.bijective_algebraMap_quotient_residueField).toLinearEquiv).length_eq.symm
 
 end Localization
 

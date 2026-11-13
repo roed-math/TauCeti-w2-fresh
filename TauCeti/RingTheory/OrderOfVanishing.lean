@@ -7,14 +7,14 @@ module
 
 public import Mathlib.RingTheory.OrderOfVanishing.Noetherian
 public import Mathlib.RingTheory.Spectrum.Maximal.Defs
-import Mathlib.Algebra.FiniteSupport.Basic
 import Mathlib.Algebra.GroupWithZero.Indicator
-import Mathlib.RingTheory.RingHom.Surjective
+import Mathlib.RingTheory.Localization.Ideal
+import TauCeti.Algebra.Module.Equiv.Length
 import TauCeti.RingTheory.Ideal.Quotient.Semilocal
 import TauCeti.RingTheory.Length
 
 /-!
-# Invariance and vanishing of the order of vanishing
+# Invariance, vanishing and localization of the order of vanishing
 
 For a Noetherian domain `R` of Krull dimension at most one with fraction field `K`, Mathlib's
 `Ring.ordFrac R : K →*₀ ℤᵐ⁰` extends the order of vanishing `Ring.ord R x = length (R ⧸ (x))` to the
@@ -24,6 +24,11 @@ element of `R` is trivial exactly when that element is a unit: `R ⧸ (x)` is th
 when `(x)` is the unit ideal. Mathlib has the forward direction, `Ring.ordFrac_of_isUnit`; the
 converse is what reads "`f` has order zero at a codimension-one point" as "`f` is a unit at that
 point".
+
+It also expresses the length of `B ⧸ bB`, for `B` integral over a local ring `A`, as a sum of
+local orders of `b` at the maximal ideals of `B` weighted by residue degrees (Fulton, *Intersection
+Theory*, Appendix A.3). Here `(B ⧸ bB)_q` is identified with `B_m ⧸ b B_m` through Mathlib's
+localization of a quotient, and the orders are moved to any localization of `B` at `m`.
 
 ## Main results
 
@@ -35,7 +40,16 @@ point".
   orders;
 * `TauCeti.Ring.isUnit_iff_ordFrac_one`: `x` is a unit exactly when `Ring.ordFrac R x = 1`; this
   extends Mathlib's `Ring.isUnit_iff_ordFrac_one_of_isDiscreteValuationRing` to Noetherian domains
-  of dimension at most one.
+  of dimension at most one;
+* `TauCeti.length_localization_quotient_span_singleton`: the localization `(R ⧸ bR)_q` has length
+  `ord_{R_m} b` over itself, where `m` is the prime of `R` under `q`;
+* `TauCeti.support_ord_subset`: the local order of `b` vanishes at the maximal ideals not
+  containing `b`;
+* `TauCeti.length_quotient_span_singleton_eq_finsum_ord`: for `B` integral over a local ring `A`
+  with `B ⧸ bB` Artinian, `length_A (B ⧸ bB) = Σ_m ord_{B_m}(b) [κ(B_m) : κ(A)]` over the maximal
+  ideals `m` of `B` (Fulton, *Intersection Theory*, Appendix A.3);
+* `TauCeti.ordFrac_algebraMap_eq_ofAdd_ord`: the order of `b : B` in any localization `R` of `B`
+  at a prime `p` with fraction field `L` is its order in `B_p`.
 -/
 
 public section
@@ -137,32 +151,17 @@ theorem length_localization_quotient_span_singleton {R : Type*} [CommRing R] (b 
     Module.length (Localization.AtPrime q) (Localization.AtPrime q) =
       Ring.ord (Localization.AtPrime (q.comap (Ideal.Quotient.mk (Ideal.span {b}))))
         (algebraMap R _ b) := by
-  -- The localization `ψ : R_m → (R ⧸ bR)_q` of `R → R ⧸ bR` is surjective with kernel `b R_m`.
-  let ψ := Localization.localRingHom _ q (Ideal.Quotient.mk (Ideal.span {b})) rfl
-  have hψ : Function.Surjective ψ :=
-    RingHom.surjective_localRingHom_of_surjective _ Ideal.Quotient.mk_surjective q
-  have hker : RingHom.ker ψ = Ideal.span {algebraMap R _ b} := by
-    have hmap : ψ = IsLocalization.map
-        (M := (q.comap (Ideal.Quotient.mk (Ideal.span {b}))).primeCompl) (T := q.primeCompl)
-        (Localization.AtPrime q) (Ideal.Quotient.mk (Ideal.span {b}))
-        (Localization.le_comap_primeCompl_iff.mpr le_rfl) := by
-      apply Localization.localRingHom_unique
-      exact IsLocalization.map_eq _
-    rw [hmap]
-    refine (IsLocalization.ker_map (Localization.AtPrime q) (Ideal.Quotient.mk (Ideal.span {b}))
-      (Ideal.map_primeCompl_comap_of_surjective _ Ideal.Quotient.mk_surjective q)).trans ?_
-    rw [Ideal.mk_ker, Ideal.map_span, Set.image_singleton]
-  let _ : Algebra (Localization.AtPrime (q.comap (Ideal.Quotient.mk (Ideal.span {b}))))
-      (Localization.AtPrime q) := ψ.toAlgebra
-  let e : (Localization.AtPrime (q.comap (Ideal.Quotient.mk (Ideal.span {b}))) ⧸ RingHom.ker ψ)
-      ≃ₐ[Localization.AtPrime (q.comap (Ideal.Quotient.mk (Ideal.span {b})))]
-      Localization.AtPrime q :=
-    AlgEquiv.ofRingEquiv (f := RingHom.quotientKerEquivOfSurjective hψ) (by
-      simp [RingHom.algebraMap_toAlgebra])
-  rw [← Module.length_eq_of_surjective
-      (S := Localization.AtPrime (q.comap (Ideal.Quotient.mk (Ideal.span {b})))) hψ,
-    ← e.toLinearEquiv.length_eq,
-    (Ideal.quotientEquivAlgOfEq _ hker).toLinearEquiv.length_eq, Ring.ord]
+  set Rm := Localization.AtPrime (q.comap (Ideal.Quotient.mk (Ideal.span {b})))
+  -- `(R ⧸ bR)_q` is the quotient of `R_m` by the extension of `bR`.
+  have : IsLocalization q.primeCompl (Rm ⧸ (Ideal.span {b}).map (algebraMap R Rm)) := by
+    rw [← q.map_primeCompl_comap_of_surjective _ Ideal.Quotient.mk_surjective]
+    exact (inferInstance : IsLocalization (Algebra.algebraMapSubmonoid (R ⧸ Ideal.span {b})
+      (q.comap (Ideal.Quotient.mk (Ideal.span {b}))).primeCompl)
+      (Rm ⧸ (Ideal.span {b}).map (algebraMap R Rm)))
+  rw [(IsLocalization.algEquiv q.primeCompl (Localization.AtPrime q)
+      (Rm ⧸ (Ideal.span {b}).map (algebraMap R Rm))).toRingEquiv.length_self_eq,
+    ← Module.length_eq_of_surjective (S := Rm) Ideal.Quotient.mk_surjective, Ideal.map_span,
+    Set.image_singleton, Ring.ord]
 
 /-- The local order of `b` vanishes outside the maximal ideals containing `b`. -/
 theorem support_ord_subset {B : Type*} [CommRing B] (b : B) :
@@ -173,18 +172,15 @@ theorem support_ord_subset {B : Type*} [CommRing B] (b : B) :
   by_contra hbm
   exact hm (Ring.ord_of_isUnit ((IsLocalization.AtPrime.isUnit_to_map_iff _ _ b).2 hbm))
 
-section LocalLengthDecomposition
-
-variable {A B : Type*} [CommRing A] [IsDomain A] [IsNoetherianRing A] [Ring.KrullDimLE 1 A]
-  [CommRing B] [IsDomain B] [Algebra A B] [Module.Finite A B]
-
 /-- **The length of `B ⧸ bB` as a sum of local orders** (Fulton, *Intersection Theory*,
-Appendix A.3). Let `A` be a local Noetherian domain of dimension at most one and `B` a domain
-finite over `A`. For `b ≠ 0`,
-`length_A (B ⧸ bB) = Σ_m ord_{B_m}(b) [κ(B_m) : κ(A)]`, the sum over the maximal ideals `m` of `B`
-(only those containing `b` contribute), with the residue degree `[κ(B_m) : κ(A)]` read as the
-`A`-length of `κ(B_m)`. -/
-theorem length_quotient_span_singleton_eq_finsum_ord [IsLocalRing A] {b : B} (hb : b ≠ 0) :
+Appendix A.3). Let `B` be integral over a local ring `A`, and let `b : B` with `B ⧸ bB` Artinian
+(for instance `b ≠ 0`, when `B` is a domain finite over a Noetherian domain `A` of dimension at
+most one). Then `length_A (B ⧸ bB) = Σ_m ord_{B_m}(b) [κ(B_m) : κ(A)]`, the sum over the maximal
+ideals `m` of `B` (only those containing `b` contribute), with the residue degree
+`[κ(B_m) : κ(A)]` read as the `A`-length of `κ(B_m)`. -/
+theorem length_quotient_span_singleton_eq_finsum_ord {A B : Type*} [CommRing A] [IsLocalRing A]
+    [CommRing B] [Algebra A B] [Algebra.IsIntegral A B] (b : B)
+    [IsArtinianRing (B ⧸ Ideal.span {b})] :
     Module.length A (B ⧸ Ideal.span {b}) =
       ∑ᶠ m : MaximalSpectrum B, Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b) *
         Module.length A (IsLocalRing.ResidueField (Localization.AtPrime m.asIdeal)) := by
@@ -201,57 +197,35 @@ theorem length_quotient_span_singleton_eq_finsum_ord [IsLocalRing A] {b : B} (hb
   have hsupp : Function.support G ⊆ Set.range c := by
     intro m hm
     have hbm : b ∈ m.asIdeal := support_ord_subset b (Function.support_mul_subset_left _ _ hm)
-    obtain ⟨q, hq⟩ := exists_maximalSpectrum_comap_mk_eq hbm
+    obtain ⟨q, hq⟩ := exists_maximalSpectrum_comap_mk_eq ((Ideal.span_singleton_le_iff_mem _).2 hbm)
     exact ⟨q, MaximalSpectrum.ext hq⟩
   have hG : ∑ᶠ m, G m = ∑ᶠ q, G (c q) := by
     rw [← finsum_mem_range hc, finsum_mem_def, Set.indicator_eq_self.2 hsupp]
-  rw [length_quotient_span_singleton_eq_finsum hb, hG]
+  rw [length_eq_finsum_localization_mul_residueField, hG]
   refine finsum_congr fun q ↦ ?_
   rw [length_localization_quotient_span_singleton, Ideal.length_residueField_localization_quotient]
 
-end LocalLengthDecomposition
-
-section Localization
-
-variable {B L : Type*} [CommRing B] [Field L] [Algebra B L] [IsFractionRing B L]
-  (R : MaximalSpectrum B → Type*) [∀ m, CommRing (R m)] [∀ m, IsDomain (R m)]
-  [∀ m, IsNoetherianRing (R m)] [∀ m, Ring.KrullDimLE 1 (R m)] [∀ m, Algebra B (R m)]
-  [∀ m, IsLocalization.AtPrime (R m) m.asIdeal] [∀ m, Algebra (R m) L]
-  [∀ m, IsScalarTower B (R m) L] [∀ m, IsFractionRing (R m) L]
-
-/-- For nonzero `b : B`, its order in a localization `R m` of `B` at a maximal ideal `m`,
-computed on the fraction field `L`, is its order in `B_m`. Here `R m` is a Noetherian domain of
-Krull dimension at most one. -/
-theorem ordFrac_algebraMap_eq_ofAdd_ord (m : MaximalSpectrum B) {b : B} (hb : b ≠ 0) :
-    Ring.ordFrac (R m) (algebraMap B L b) = Multiplicative.ofAdd
-      ((Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b)).toNat : ℤ) := by
-  let e : Localization.AtPrime m.asIdeal ≃ₐ[B] R m :=
-    IsLocalization.algEquiv m.asIdeal.primeCompl _ _
-  have hy : algebraMap B (R m) b ≠ 0 := fun h ↦ hb <| IsFractionRing.injective B L <| by
-    rw [IsScalarTower.algebraMap_apply B (R m) L, h, map_zero, map_zero]
+/-- For nonzero `b : B`, its order in a localization `R` of `B` at a prime `p`, computed on the
+fraction field `L`, is its order in `B_p`. Here `R` is a Noetherian domain of Krull dimension at
+most one. -/
+theorem ordFrac_algebraMap_eq_ofAdd_ord {B L : Type*} [CommRing B] [Field L] [Algebra B L]
+    [FaithfulSMul B L] (R : Type*) [CommRing R] [IsDomain R] [IsNoetherianRing R]
+    [Ring.KrullDimLE 1 R] [Algebra B R] (p : Ideal B) [p.IsPrime] [IsLocalization.AtPrime R p]
+    [Algebra R L] [IsScalarTower B R L] [IsFractionRing R L] {b : B} (hb : b ≠ 0) :
+    Ring.ordFrac R (algebraMap B L b) = Multiplicative.ofAdd
+      ((Ring.ord (Localization.AtPrime p) (algebraMap B _ b)).toNat : ℤ) := by
+  let e : Localization.AtPrime p ≃ₐ[B] R := IsLocalization.algEquiv p.primeCompl _ _
+  have hy : algebraMap B R b ≠ 0 := fun h ↦ (FaithfulSMul.algebraMap_eq_zero_iff B L).not.2 hb <| by
+    rw [IsScalarTower.algebraMap_apply B R L, h, map_zero]
   have hy' := mem_nonZeroDivisors_of_ne_zero hy
-  have he : Ring.ord (R m) (algebraMap B (R m) b) =
-      Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b) := by
+  have he : Ring.ord R (algebraMap B R b) =
+      Ring.ord (Localization.AtPrime p) (algebraMap B _ b) := by
     rw [← e.commutes]
     exact Ring.ord_ringEquiv e.toRingEquiv _
-  have hn : Ring.ord (R m) (algebraMap B (R m) b) =
-      ((Ring.ord (Localization.AtPrime m.asIdeal) (algebraMap B _ b)).toNat : ℕ∞) := by
+  have hn : Ring.ord R (algebraMap B R b) =
+      ((Ring.ord (Localization.AtPrime p) (algebraMap B _ b)).toNat : ℕ∞) := by
     rw [← he, ENat.natCast_toNat (Ring.ord_ne_top hy')]
-  rw [IsScalarTower.algebraMap_apply B (R m) L, Ring.ordFrac_eq_ord (R m) hy,
-    Ring.ordMonoidWithZeroHom_eq_coe (R m) hy' hn]
-
-omit [IsFractionRing B L] in
-/-- The order of `b ∈ B` is trivial at every maximal ideal of `B` not containing `b`. -/
-theorem mulSupport_ordFrac_pow_subset (b : B) (d : MaximalSpectrum B → ℕ) :
-    Function.mulSupport (fun m ↦ Ring.ordFrac (R m) (algebraMap B L b) ^ d m) ⊆
-      {m | b ∈ m.asIdeal} := by
-  intro m hm
-  by_contra hbm
-  refine hm ?_
-  dsimp only
-  rw [IsScalarTower.algebraMap_apply B (R m) L, Ring.ordFrac_of_isUnit (K := L)
-    ((IsLocalization.AtPrime.isUnit_to_map_iff (R m) m.asIdeal b).2 hbm), one_pow]
-
-end Localization
+  rw [IsScalarTower.algebraMap_apply B R L, Ring.ordFrac_eq_ord R hy,
+    Ring.ordMonoidWithZeroHom_eq_coe R hy' hn]
 
 end TauCeti

@@ -5,9 +5,10 @@ Authors: The Tau Ceti contributors
 -/
 module
 
+public import Mathlib.RingTheory.Algebraic.Defs
 public import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
 public import Mathlib.RingTheory.Localization.FractionRing
-import Mathlib.RingTheory.Algebraic.Integral
+import TauCeti.FieldTheory.IntermediateField.Adjoin.EqTop
 
 /-!
 # Finite-dimensionality of a fraction field over an intermediate field
@@ -20,6 +21,8 @@ the statement here is about abstract fraction fields and an arbitrary intermedia
 ## Main results
 
 * `TauCeti.IsFractionRing.finiteDimensional_of_finite`: `L` is finite-dimensional over `K`.
+* `TauCeti.span_range_algebraMap_eq_top`: a fraction field `L` of `B` is spanned by the image of
+  `B` over any field over which `L` is algebraic.
 
 ## Implementation notes
 
@@ -37,26 +40,14 @@ public section
 
 namespace TauCeti
 
-/-- For `B` integral over `A`, the fraction field `L` of `B` is spanned by `B` over any field `K`
-between `A` and `L`. -/
-theorem span_range_algebraMap_eq_top {A B L : Type*} (K : Type*) [CommRing A] [Field K]
-    [Algebra A K] [CommRing B] [Algebra A B] [Field L] [Algebra B L] [IsFractionRing B L]
-    [Algebra K L] [Algebra A L] [IsScalarTower A K L] [IsScalarTower A B L]
-    [Algebra.IsIntegral A B] :
-    Submodule.span K (Set.range (algebraMap B L)) = ⊤ := by
-  let S : Subalgebra K L := Algebra.adjoin K (Set.range (algebraMap B L))
-  have hS : Subalgebra.toSubmodule S = Submodule.span K (Set.range (algebraMap B L)) := by
-    rw [Algebra.adjoin_eq_span, ← MonoidHom.coe_mrange, Submonoid.closure_eq]
-  rw [← hS, eq_top_iff]
-  intro x _
-  obtain ⟨β, γ, -, rfl⟩ := IsFractionRing.div_surjective (A := B) x
-  have hγS : algebraMap B L γ ∈ S := Algebra.subset_adjoin ⟨γ, rfl⟩
-  have hγK : IsAlgebraic K (algebraMap B L γ) :=
-    (((Algebra.IsIntegral.isIntegral (R := A) γ).map (IsScalarTower.toAlgHom A B L)).tower_top
-      (A := K)).isAlgebraic
-  rw [div_eq_mul_inv]
-  exact S.mul_mem (Algebra.subset_adjoin ⟨β, rfl⟩)
-    (Subalgebra.inv_mem_of_algebraic S (x := ⟨_, hγS⟩) hγK)
+/-- The fraction field `L` of `B` is spanned by `B` over any field `K` over which `L` is
+algebraic. -/
+theorem span_range_algebraMap_eq_top {B L : Type*} (K : Type*) [CommRing B] [Field K] [Field L]
+    [Algebra B L] [IsFractionRing B L] [Algebra K L] [Algebra.IsAlgebraic K L] :
+    Submodule.span K (Set.range (algebraMap B L)) = ⊤ :=
+  IntermediateField.span_range_eq_top_of_adjoin_range_eq_top <| by
+    simpa using IntermediateField.adjoin_image_eq_top_of_algebra_adjoin_eq_top (K := K) (L := L)
+      (Algebra.adjoin_univ ℤ B)
 
 /-- A fraction field `L` of a ring `S` that is finite as an `R`-module is finite-dimensional
 over any intermediate field `K`, that is, any field with `R → K → L`.
