@@ -14,7 +14,10 @@ public import TauCeti.CategoryTheory.Monoidal.Functor
 # Monoid objects
 
 This file provides general-purpose facts about monoid objects, their monomorphisms, and their
-commutativity.
+commutativity. It also compares candidate unit and multiplication morphisms with monoid structures
+after a functor: `Functor.map_one_mul`, `Functor.map_mul_one` and `Functor.map_mul_assoc` reflect
+the axioms, while `Functor.monObjObjOfMap` constructs the image structure following Mathlib's
+`Functor.monObjObj`. `NatTrans.isMonHom_app` compares structures induced by the same data.
 
 ## Main declarations
 
@@ -207,3 +210,86 @@ theorem isMonHom_homEquiv_iff {M : C} {N : D} [MonObj M] [MonObj N] (φ : F.obj 
   exact ⟨fun h ↦ ⟨h.one_hom, h.mul_hom⟩, fun h ↦ ⟨h.1, h.2⟩⟩
 
 end CategoryTheory.Adjunction
+
+namespace CategoryTheory.Functor
+
+open MonoidalCategory MonObj OplaxMonoidal LaxMonoidal
+
+universe v₁ v₂ u₁ u₂
+
+variable {C : Type u₁} [Category.{v₁} C] {D : Type u₂} [Category.{v₂} D]
+
+section Monoidal
+
+variable [MonoidalCategory C] [MonoidalCategory D] (F : C ⥤ D)
+
+section OplaxMonoidal
+
+variable [F.OplaxMonoidal] {X : C} [MonObj (F.obj X)] {one : 𝟙_ C ⟶ X} {mul : X ⊗ X ⟶ X}
+
+/-- If `one` and `mul` lift the unit and the multiplication of `F.obj X`, then the left unit
+axiom holds for them after applying `F`. -/
+theorem map_one_mul (h_one : F.map one = OplaxMonoidal.η F ≫ η[F.obj X])
+    (h_mul : F.map mul = δ F X X ≫ μ[F.obj X]) :
+    F.map (one ▷ X ≫ mul) = F.map (λ_ X).hom := by
+  simp [h_one, h_mul, ← δ_natural_left_assoc]
+
+/-- If `one` and `mul` lift the unit and the multiplication of `F.obj X`, then the right unit
+axiom holds for them after applying `F`. -/
+theorem map_mul_one (h_one : F.map one = OplaxMonoidal.η F ≫ η[F.obj X])
+    (h_mul : F.map mul = δ F X X ≫ μ[F.obj X]) :
+    F.map (X ◁ one ≫ mul) = F.map (ρ_ X).hom := by
+  simp [h_one, h_mul, ← δ_natural_right_assoc]
+
+/-- If `mul` lifts the multiplication of `F.obj X`, then the associativity axiom holds for it
+after applying `F`. -/
+theorem map_mul_assoc (h_mul : F.map mul = δ F X X ≫ μ[F.obj X]) :
+    F.map (mul ▷ X ≫ mul) = F.map ((α_ X X X).hom ≫ X ◁ mul ≫ mul) := by
+  simp [h_mul, ← δ_natural_left_assoc, ← δ_natural_right_assoc]
+
+end OplaxMonoidal
+
+variable [F.LaxMonoidal] {X : C} (one : 𝟙_ C ⟶ X) (mul : X ⊗ X ⟶ X)
+
+/-- The monoid object structure on `F.obj X` given by the images `ε ≫ F.map one` and
+`μ ≫ F.map mul` of candidate structure morphisms on `X` which satisfy the monoid axioms after
+applying `F`. -/
+@[simps]
+abbrev monObjObjOfMap (h_one_mul : F.map (one ▷ X ≫ mul) = F.map (λ_ X).hom)
+    (h_mul_one : F.map (X ◁ one ≫ mul) = F.map (ρ_ X).hom)
+    (h_mul_assoc : F.map (mul ▷ X ≫ mul) = F.map ((α_ X X X).hom ≫ X ◁ mul ≫ mul)) :
+    MonObj (F.obj X) where
+  one := ε F ≫ F.map one
+  mul := LaxMonoidal.μ F X X ≫ F.map mul
+  one_mul := by
+    simp [← F.map_comp, h_one_mul]
+  mul_one := by
+    simp [← F.map_comp, h_mul_one]
+  mul_assoc := by
+    simp_rw [comp_whiskerRight, Category.assoc, μ_natural_left_assoc,
+      MonoidalCategory.whiskerLeft_comp, Category.assoc, μ_natural_right_assoc]
+    rw [← F.map_comp, h_mul_assoc]
+    simp
+
+end Monoidal
+
+end CategoryTheory.Functor
+
+namespace CategoryTheory.NatTrans
+
+open MonoidalCategory MonObj Functor.LaxMonoidal
+
+variable {C D : Type*} [Category* C] [Category* D] [MonoidalCategory C] [MonoidalCategory D]
+  {F G : C ⥤ D} [F.LaxMonoidal] [G.LaxMonoidal] (τ : F ⟶ G) [τ.IsMonoidal] {X : C}
+  [hF : MonObj (F.obj X)] [hG : MonObj (G.obj X)] {one : 𝟙_ C ⟶ X} {mul : X ⊗ X ⟶ X}
+
+/-- A monoidal natural transformation `τ : F ⟶ G` is a homomorphism of monoid objects
+`F.obj X ⟶ G.obj X` when the units and the multiplications of both are the images of the same
+morphisms `one` and `mul` on `X`. -/
+theorem isMonHom_app (hF_one : η[F.obj X] = ε F ≫ F.map one)
+    (hF_mul : μ[F.obj X] = «μ» F X X ≫ F.map mul) (hG_one : η[G.obj X] = ε G ≫ G.map one)
+    (hG_mul : μ[G.obj X] = «μ» G X X ≫ G.map mul) : IsMonHom (τ.app X) where
+  one_hom := by rw [hF_one, hG_one, Category.assoc, τ.naturality, IsMonoidal.unit_assoc]
+  mul_hom := by rw [hF_mul, hG_mul, Category.assoc, τ.naturality, IsMonoidal.tensor_assoc]
+
+end CategoryTheory.NatTrans

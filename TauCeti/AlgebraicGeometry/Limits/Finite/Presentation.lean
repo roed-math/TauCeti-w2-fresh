@@ -8,6 +8,7 @@ module
 public import TauCeti.AlgebraicGeometry.Limits.BaseChange
 public import TauCeti.AlgebraicGeometry.Morphisms.FinitePresentation.Basic
 public import TauCeti.CategoryTheory.Comma.Over.Pullback
+public import TauCeti.CategoryTheory.Filtered.Basic
 
 /-!
 # Descent of morphisms and their properties along cofiltered limits
@@ -440,5 +441,24 @@ theorem exists_overPullback_map_eq_map [∀ i, CompactSpace (D.obj i)] {j : I}
   refine ⟨k.left, k.hom, (Over.pullback_map_eq_map_iff _ u v).mpr ?_⟩
   simpa [D.pullbackOver_map_snd_assoc] using
     congrArg ((pullbackSymmetry A.hom (D.map k.hom)).hom ≫ ·) e
+
+include hc in
+/-- A finite family of equations over a member, holding after base change to the cone point,
+holds after base change to a common later member. -/
+theorem exists_overPullback_map_eq_map_family [∀ i, CompactSpace (D.obj i)]
+    {α : Type*} [Finite α] {j : I} (Y : Over (D.obj j))
+    [LocallyOfFiniteType Y.hom] (P : α → Σ A : Over (D.obj j), (A ⟶ Y) × (A ⟶ Y))
+    [∀ n, QuasiCompact (P n).1.hom]
+    (hP : ∀ n, (Over.pullback (c.π.app j)).map (P n).2.1 =
+      (Over.pullback (c.π.app j)).map (P n).2.2) :
+    ∃ (k : I) (h : k ⟶ j), ∀ n, (Over.pullback (D.map h)).map (P n).2.1 =
+      (Over.pullback (D.map h)).map (P n).2.2 := by
+  exact IsCofiltered.exists_forall_of_stable
+    (R := fun n {_} h ↦ (Over.pullback (D.map h)).map (P n).2.1 =
+      (Over.pullback (D.map h)).map (P n).2.2)
+    (by
+      intro n k l g h e
+      exact Over.pullback_map_eq_map_of_comp_eq (D.map_comp h g).symm e)
+    (fun n ↦ hc.exists_overPullback_map_eq_map _ _ (hP n))
 
 end CategoryTheory.Limits.IsLimit

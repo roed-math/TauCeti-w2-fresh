@@ -373,6 +373,12 @@ theorem liftsAlong_id {i : J} (A : Over (D.obj i)) {k : J} (g : k ⟶ i) :
     c.LiftsAlong (𝟙 ((Over.pullback (c.π.app i)).obj A)) g :=
   ⟨𝟙 _, by simp⟩
 
+/-- A morphism defined over the original member lifts along every morphism to that member. -/
+@[simp]
+theorem liftsAlong_map {i : J} {A B : Over (D.obj i)} (v : A ⟶ B) {k : J} (g : k ⟶ i) :
+    c.LiftsAlong ((Over.pullback (c.π.app i)).map v) g :=
+  ⟨(Over.pullback (D.map g)).map v, (Over.pullbackCompIsoOfEq (c.w g)).hom.naturality v⟩
+
 /-- Lifts of two composable morphisms along the same morphism to `i` compose to a lift of their
 composite. -/
 theorem liftsAlong_comp {i : J} {A B E : Over (D.obj i)}

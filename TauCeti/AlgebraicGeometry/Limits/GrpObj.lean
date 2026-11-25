@@ -8,7 +8,7 @@ module
 public import TauCeti.AlgebraicGeometry.Limits.Descent
 public import TauCeti.AlgebraicGeometry.Morphisms.QuasiCompact.Over
 public import TauCeti.CategoryTheory.Filtered.Basic
-public import TauCeti.CategoryTheory.Monoidal.Grp.OfMap
+public import TauCeti.CategoryTheory.Monoidal.Grp.Over
 
 /-!
 # Spreading out group schemes along cofiltered limits
@@ -109,123 +109,6 @@ private theorem exists_lifts {i : I} (X : Over (D.obj i)) [LocallyOfFinitePresen
       congrArg (· ≫ δ (Over.pullback (c.π.app i)) X X ≫
         μ[(Over.pullback (c.π.app i)).obj X]) ht
 
-omit [∀ i, QuasiSeparatedSpace (D.obj i)] in
-include hc in
-/-- Candidate group structure morphisms on a scheme of finite type over a member of the diagram
-which satisfy the group axioms after base change to the cone point satisfy them after base change
-to some later member. -/
-private theorem exists_map_axioms {j : I} (Y : Over (D.obj j)) [QuasiCompact Y.hom]
-    [LocallyOfFiniteType Y.hom] (one : 𝟙_ _ ⟶ Y) (mul : Y ⊗ Y ⟶ Y) (inv : Y ⟶ Y)
-    (h_one_mul : (Over.pullback (c.π.app j)).map (one ▷ Y ≫ mul) =
-      (Over.pullback (c.π.app j)).map (λ_ Y).hom)
-    (h_mul_one : (Over.pullback (c.π.app j)).map (Y ◁ one ≫ mul) =
-      (Over.pullback (c.π.app j)).map (ρ_ Y).hom)
-    (h_mul_assoc : (Over.pullback (c.π.app j)).map (mul ▷ Y ≫ mul) =
-      (Over.pullback (c.π.app j)).map ((α_ Y Y Y).hom ≫ Y ◁ mul ≫ mul))
-    (h_left_inv : (Over.pullback (c.π.app j)).map
-      (CartesianMonoidalCategory.lift inv (𝟙 Y) ≫ mul) =
-        (Over.pullback (c.π.app j)).map (toUnit Y ≫ one))
-    (h_right_inv : (Over.pullback (c.π.app j)).map
-      (CartesianMonoidalCategory.lift (𝟙 Y) inv ≫ mul) =
-        (Over.pullback (c.π.app j)).map (toUnit Y ≫ one)) :
-    ∃ (k : I) (h : k ⟶ j),
-      (Over.pullback (D.map h)).map (one ▷ Y ≫ mul) = (Over.pullback (D.map h)).map (λ_ Y).hom ∧
-      (Over.pullback (D.map h)).map (Y ◁ one ≫ mul) = (Over.pullback (D.map h)).map (ρ_ Y).hom ∧
-      (Over.pullback (D.map h)).map (mul ▷ Y ≫ mul) =
-        (Over.pullback (D.map h)).map ((α_ Y Y Y).hom ≫ Y ◁ mul ≫ mul) ∧
-      (Over.pullback (D.map h)).map (CartesianMonoidalCategory.lift inv (𝟙 Y) ≫ mul) =
-        (Over.pullback (D.map h)).map (toUnit Y ≫ one) ∧
-      (Over.pullback (D.map h)).map (CartesianMonoidalCategory.lift (𝟙 Y) inv ≫ mul) =
-        (Over.pullback (D.map h)).map (toUnit Y ≫ one) := by
-  -- Equality after base change along `g` persists after base change along `h ≫ g`.
-  have stable {A B : Over (D.obj j)} {u v : A ⟶ B} {k l : I} {g : k ⟶ j} (h : l ⟶ k)
-      (e : (Over.pullback (D.map g)).map u = (Over.pullback (D.map g)).map v) :
-      (Over.pullback (D.map (h ≫ g))).map u = (Over.pullback (D.map (h ≫ g))).map v :=
-    Over.pullback_map_eq_map_of_comp_eq (D.map_comp h g).symm e
-  -- Each axiom holds along some morphism to `j`; combine them along a common one.
-  let R : Fin 5 → ∀ {k : I}, (k ⟶ j) → Prop := ![
-    fun h ↦ (Over.pullback (D.map h)).map (one ▷ Y ≫ mul) =
-      (Over.pullback (D.map h)).map (λ_ Y).hom,
-    fun h ↦ (Over.pullback (D.map h)).map (Y ◁ one ≫ mul) =
-      (Over.pullback (D.map h)).map (ρ_ Y).hom,
-    fun h ↦ (Over.pullback (D.map h)).map (mul ▷ Y ≫ mul) =
-      (Over.pullback (D.map h)).map ((α_ Y Y Y).hom ≫ Y ◁ mul ≫ mul),
-    fun h ↦ (Over.pullback (D.map h)).map (CartesianMonoidalCategory.lift inv (𝟙 Y) ≫ mul) =
-      (Over.pullback (D.map h)).map (toUnit Y ≫ one),
-    fun h ↦ (Over.pullback (D.map h)).map (CartesianMonoidalCategory.lift (𝟙 Y) inv ≫ mul) =
-      (Over.pullback (D.map h)).map (toUnit Y ≫ one)]
-  obtain ⟨k, h, hh⟩ := IsCofiltered.exists_forall_of_stable (R := R)
-    (by intro n; fin_cases n <;> exact fun h e ↦ stable h e)
-    (by
-      intro n
-      fin_cases n
-      · exact hc.exists_overPullback_map_eq_map _ _ h_one_mul
-      · exact hc.exists_overPullback_map_eq_map _ _ h_mul_one
-      · exact hc.exists_overPullback_map_eq_map _ _ h_mul_assoc
-      · exact hc.exists_overPullback_map_eq_map _ _ h_left_inv
-      · exact hc.exists_overPullback_map_eq_map _ _ h_right_inv)
-  exact ⟨k, h, hh 0, hh 1, hh 2, hh 3, hh 4⟩
-
-omit [IsCofiltered I] [∀ {i j} (f : i ⟶ j), IsAffineHom (D.map f)] [∀ i, CompactSpace (D.obj i)]
-  [∀ i, QuasiSeparatedSpace (D.obj i)] in
-/-- Let `Y = X ×_{Dᵢ} Dⱼ` carry candidate group structure morphisms, and let its base change to the
-cone point carry a group law whose unit and multiplication are their base changes, such that the
-identification with the base change of `X` is a homomorphism to a given group law. If the group
-axioms hold for the candidates after base change along `h : k ⟶ j`, then their base changes are a
-group law on `X ×_{Dᵢ} Dₖ` whose base change to the cone point is the given one. -/
-private theorem exists_grpObj_of_map_axioms {i j k : I} (X : Over (D.obj i))
-    [GrpObj ((Over.pullback (c.π.app i)).obj X)] (g : j ⟶ i) (h : k ⟶ j)
-    (one : 𝟙_ _ ⟶ (Over.pullback (D.map g)).obj X)
-    (mul : (Over.pullback (D.map g)).obj X ⊗ (Over.pullback (D.map g)).obj X ⟶
-      (Over.pullback (D.map g)).obj X)
-    (inv : (Over.pullback (D.map g)).obj X ⟶ (Over.pullback (D.map g)).obj X)
-    [T : GrpObj ((Over.pullback (c.π.app j)).obj ((Over.pullback (D.map g)).obj X))]
-    (h_one : η[(Over.pullback (c.π.app j)).obj ((Over.pullback (D.map g)).obj X)] =
-      ε _ ≫ (Over.pullback (c.π.app j)).map one)
-    (h_mul : μ[(Over.pullback (c.π.app j)).obj ((Over.pullback (D.map g)).obj X)] =
-      Functor.LaxMonoidal.μ _ _ _ ≫ (Over.pullback (c.π.app j)).map mul)
-    [hT : IsMonHom (M := (Over.pullback (c.π.app j)).obj ((Over.pullback (D.map g)).obj X))
-      ((Over.pullbackCompIsoOfEq (c.w g)).hom.app X)]
-    (e₁ : (Over.pullback (D.map h)).map (one ▷ _ ≫ mul) =
-      (Over.pullback (D.map h)).map (λ_ _).hom)
-    (e₂ : (Over.pullback (D.map h)).map (_ ◁ one ≫ mul) =
-      (Over.pullback (D.map h)).map (ρ_ _).hom)
-    (e₃ : (Over.pullback (D.map h)).map (mul ▷ _ ≫ mul) =
-      (Over.pullback (D.map h)).map ((α_ _ _ _).hom ≫ _ ◁ mul ≫ mul))
-    (e₄ : (Over.pullback (D.map h)).map (CartesianMonoidalCategory.lift inv (𝟙 _) ≫ mul) =
-      (Over.pullback (D.map h)).map (toUnit _ ≫ one))
-    (e₅ : (Over.pullback (D.map h)).map (CartesianMonoidalCategory.lift (𝟙 _) inv ≫ mul) =
-      (Over.pullback (D.map h)).map (toUnit _ ≫ one)) :
-    ∃ (_ : GrpObj ((Over.pullback (D.map (h ≫ g))).obj X)),
-      IsMonHom (M := (Over.pullback (c.π.app k)).obj ((Over.pullback (D.map (h ≫ g))).obj X))
-        ((Over.pullbackCompIsoOfEq (c.w (h ≫ g))).hom.app X) := by
-  -- The group law over `Dₖ`, on the iterated base change and transported to the direct one. The
-  -- structures are restated on the objects written as images under composite functors, as which
-  -- they occur in the sources of the comparison isomorphisms.
-  let S : GrpObj ((Over.pullback (D.map h)).obj ((Over.pullback (D.map g)).obj X)) :=
-    (Over.pullback (D.map h)).grpObjObjOfMap one mul inv e₁ e₂ e₃ e₄ e₅
-  let S' : GrpObj ((Over.pullback (D.map g) ⋙ Over.pullback (D.map h)).obj X) := S
-  let T' : GrpObj ((Over.pullback (D.map g) ⋙ Over.pullback (c.π.app j)).obj X) := T
-  let C := Over.pullbackCompIsoOfEq (D.map_comp h g).symm
-  let G : GrpObj ((Over.pullback (D.map (h ≫ g))).obj X) := .ofIso (C.app X)
-  refine ⟨G, ?_⟩
-  rw [Over.pullbackCompIsoOfEq_hom_app_eq (c.w h) (D.map_comp h g).symm (c.w g) (c.w (h ≫ g)) X]
-  have : IsMonHom (M := (Over.pullback (D.map (h ≫ g))).obj X)
-      (N := (Over.pullback (D.map g) ⋙ Over.pullback (D.map h)).obj X) (C.inv.app X) :=
-    inferInstanceAs (IsMonHom (C.app X).inv)
-  have : IsMonHom (M := (Over.pullback (D.map g) ⋙ Over.pullback (c.π.app j)).obj X)
-      ((Over.pullbackCompIsoOfEq (c.w g)).hom.app X) := hT
-  have : IsMonHom (M := (Over.pullback (c.π.app k)).obj
-        ((Over.pullback (D.map g) ⋙ Over.pullback (D.map h)).obj X))
-      (N := (Over.pullback (D.map g) ⋙ Over.pullback (c.π.app j)).obj X)
-      ((Over.pullbackCompIsoOfEq (c.w h)).hom.app ((Over.pullback (D.map g)).obj X)) := by
-    refine NatTrans.isMonHom_app (F := Over.pullback (D.map h) ⋙ Over.pullback (c.π.app k))
-      (G := Over.pullback (c.π.app j)) (X := (Over.pullback (D.map g)).obj X)
-      (hF := Functor.monObjObj (F := Over.pullback (c.π.app k))
-        ((Over.pullback (D.map g) ⋙ Over.pullback (D.map h)).obj X)) (hG := T'.toMonObj)
-      (one := one) (mul := mul) _ ?_ ?_ h_one h_mul <;> simp [S', S]
-  infer_instance
-
 include hc in
 /-- **Spreading out a group law.** Let `S = lim Dⱼ` be a cofiltered limit of quasi-compact
 quasi-separated schemes with affine transition maps, and let `X` be a scheme of finite presentation,
@@ -265,15 +148,24 @@ theorem exists_grpObj_overPullback {i : I} (X : Over (D.obj i))
   have : LocallyOfFiniteType ((Over.pullback (D.map g)).obj X).hom := by
     simpa only [Over.pullback_obj_hom] using
       (inferInstanceAs (LocallyOfFiniteType (pullback.snd X.hom (D.map g))))
-  obtain ⟨k, h, e₁, e₂, e₃, e₄, e₅⟩ := hc.exists_map_axioms ((Over.pullback (D.map g)).obj X)
-    one mul inv ((Over.pullback (c.π.app j)).map_one_mul h_one' h_mul')
-    ((Over.pullback (c.π.app j)).map_mul_one h_one' h_mul')
-    ((Over.pullback (c.π.app j)).map_mul_assoc h_mul')
-    ((Over.pullback (c.π.app j)).map_left_inv h_one' h_mul' h_inv')
-    ((Over.pullback (c.π.app j)).map_right_inv h_one' h_mul' h_inv')
-  exact ⟨k, h ≫ g, exists_grpObj_of_map_axioms X g h one mul inv
-    (by rw [h_one', Functor.Monoidal.ε_η_assoc]) (by rw [h_mul', Functor.Monoidal.μ_δ_assoc])
-    e₁ e₂ e₃ e₄ e₅⟩
+  let P := TauCeti.groupLawAxiomPairs ((Over.pullback (D.map g)).obj X) one mul inv
+  have (n : Fin 5) : QuasiCompact (P n).1.hom := by
+    fin_cases n <;> dsimp [P, TauCeti.groupLawAxiomPairs] <;> infer_instance
+  have hP : ∀ n, (Over.pullback (c.π.app j)).map (P n).2.1 =
+      (Over.pullback (c.π.app j)).map (P n).2.2 := by
+    intro n
+    fin_cases n
+    · exact (Over.pullback (c.π.app j)).map_one_mul h_one' h_mul'
+    · exact (Over.pullback (c.π.app j)).map_mul_one h_one' h_mul'
+    · exact (Over.pullback (c.π.app j)).map_mul_assoc h_mul'
+    · exact (Over.pullback (c.π.app j)).map_left_inv
+        (X := (Over.pullback (D.map g)).obj X) h_one' h_mul' h_inv'
+    · exact (Over.pullback (c.π.app j)).map_right_inv
+        (X := (Over.pullback (D.map g)).obj X) h_one' h_mul' h_inv'
+  obtain ⟨k, h, hh⟩ := hc.exists_overPullback_map_eq_map_family
+    ((Over.pullback (D.map g)).obj X) P hP
+  exact ⟨k, h ≫ g, c.exists_grpObj_of_map_axioms X g h one mul inv
+    (by rw [h_one', Functor.Monoidal.ε_η_assoc]) (by rw [h_mul', Functor.Monoidal.μ_δ_assoc]) hh⟩
 
 include hc in
 /-- **Spreading out group schemes.** Let `S = lim Dⱼ` be a cofiltered limit of quasi-compact
