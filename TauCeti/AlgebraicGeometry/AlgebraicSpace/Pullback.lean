@@ -29,7 +29,7 @@ The three conditions of `Spaces.IsAlgebraicSpace` are checked separately.
   morphism `h_U ⟶ F ×_H G` is representable because its composite with the projection to `F` is.
 * For étale atlases `h_U ⟶ F` and `h_V ⟶ G`, the presheaf `h_U ×_H h_V` is represented by a
   scheme `W` because `H` has representable diagonal, and `h_W ⟶ F ×_H G` is an étale atlas: it is
-  the composite of base changes of the two atlases.
+  the map of fibre products induced by the two atlases (`MorphismProperty.pullbackMap`).
 
 ## Main results
 
@@ -85,25 +85,17 @@ theorem EtaleAtlas.pullback_lift {U V W : Scheme.{u}} {a : yoneda.obj U ⟶ F}
     {p : yoneda.obj W ⟶ yoneda.obj U} {q : yoneda.obj W ⟶ yoneda.obj V}
     (h : IsPullback p q (a ≫ f) (b ≫ g)) :
     EtaleAtlas (pullback.lift (f := f) (g := g) (p ≫ a) (q ≫ b) (by simpa using h.w)) := by
-  -- The morphism factors as `h_W ⟶ h_U ×_H G ⟶ F ×_H G`: a base change of `b` along
-  -- `h_U ×_H G ⟶ G`, followed by a base change of `a` along `F ×_H G ⟶ F`.
-  let c₂ : pullback (a ≫ f) g ⟶ pullback f g :=
-    pullback.map (a ≫ f) g f g a (𝟙 G) (𝟙 H) (by simp) (by simp)
-  let c₁ : yoneda.obj W ⟶ pullback (a ≫ f) g :=
-    pullback.lift p (q ≫ b) (by simpa using h.w)
-  have h₂ : IsPullback (pullback.fst (a ≫ f) g) c₂ a (pullback.fst f g) :=
-    IsPullback.of_bot (by simpa [c₂] using IsPullback.of_hasPullback (a ≫ f) g) (by simp [c₂])
-      (IsPullback.of_hasPullback f g)
-  have h₁ : IsPullback q c₁ b (pullback.snd (a ≫ f) g) :=
-    IsPullback.of_bot (by simpa [c₁] using h.flip) (by simp [c₁])
-      (IsPullback.of_hasPullback (a ≫ f) g).flip
-  have hc : pullback.lift (f := f) (g := g) (p ≫ a) (q ≫ b) (by simpa using h.w) = c₁ ≫ c₂ := by
-    ext <;> simp [c₁, c₂]
-  -- Both relative properties are stable under base change and composition.
+  -- Up to the isomorphism `h_W ≅ h_U ×_H h_V`, the morphism is the map of pullbacks induced
+  -- by `a` and `b`; both relative properties are stable under base change and composition.
+  have hc : pullback.lift (f := f) (g := g) (p ≫ a) (q ≫ b) (by simpa using h.w) =
+      h.isoPullback.hom ≫ pullback.map (a ≫ f) (b ≫ g) f g a b (𝟙 H) (by simp) (by simp) := by
+    ext <;> simp
   have key (P : MorphismProperty Scheme.{u}) [P.IsStableUnderComposition]
-      (hPa : P.presheaf a) (hPb : P.presheaf b) : P.presheaf (c₁ ≫ c₂) :=
+      (hPa : P.presheaf a) (hPb : P.presheaf b) :
+      P.presheaf (h.isoPullback.hom ≫
+        pullback.map (a ≫ f) (b ≫ g) f g a b (𝟙 H) (by simp) (by simp)) :=
     have := relative_isStableUnderBaseChange (F := yoneda) P
-    comp_mem _ _ _ (of_isPullback h₁ hPb) (of_isPullback h₂ hPa)
+    (cancel_left_of_respectsIso _ _ _).2 (pullbackMap hPa hPb rfl rfl)
   -- Instance search does not recover these parents of the `IsMultiplicative` instances.
   have : IsStableUnderComposition @Etale.{u} :=
     IsMultiplicative.toIsStableUnderComposition
